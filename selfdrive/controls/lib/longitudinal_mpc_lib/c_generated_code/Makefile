@@ -79,8 +79,8 @@ OBJ+= $(OCP_OBJ)
 EXTERNAL_DIR=
 EXTERNAL_LIB=
 
-INCLUDE_PATH = /data/openpilot/third_party/acados/acados/include
-LIB_PATH = /data/openpilot/third_party/acados/acados/lib
+INCLUDE_PATH = /data/openpilot/third_party/acados/include/acados/include
+LIB_PATH = /data/openpilot/third_party/acados/include/acados/lib
 all: clean casadi_fun example_sim example
 shared_lib: bundled_shared_lib ocp_shared_lib sim_shared_lib
 

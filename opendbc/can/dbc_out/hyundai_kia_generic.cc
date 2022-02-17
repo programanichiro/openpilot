@@ -15820,10 +15820,22 @@ const Val vals[] = {
       .sigs = sigs_882,
     },
     {
+      .name = "ACCMode",
+      .address = 0x389,
+      .def_val = "0 OFF 1 ENABLED 2 DRIVER_OVERRIDE 3 OFF_MAYBE_FAULT 4 CANCELLED",
+      .sigs = sigs_905,
+    },
+    {
       .name = "CF_VSM_Warn",
       .address = 0x38D,
       .def_val = "2 FCW 3 AEB",
       .sigs = sigs_909,
+    },
+    {
+      .name = "ACCMode",
+      .address = 0x421,
+      .def_val = "0 OFF 1 ENABLED 2 DRIVER_OVERRIDE 3 OFF_MAYBE_FAULT",
+      .sigs = sigs_1057,
     },
     {
       .name = "HDA_Icon_State",

@@ -229,7 +229,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     nbx[0]  = NBX0;
     nsbx[0] = 0;
     ns[0] = NS - NSBX;
-    nbxe[0] = 6;
+    nbxe[0] = 4;
     ny[0] = NY0;
 
     // terminal - common
@@ -300,7 +300,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
         capsule->forw_vde_casadi[i].casadi_sparsity_in = &lat_expl_vde_forw_sparsity_in;
         capsule->forw_vde_casadi[i].casadi_sparsity_out = &lat_expl_vde_forw_sparsity_out;
         capsule->forw_vde_casadi[i].casadi_work = &lat_expl_vde_forw_work;
-        external_function_param_casadi_create(&capsule->forw_vde_casadi[i], 0);
+        external_function_param_casadi_create(&capsule->forw_vde_casadi[i], 2);
     }
 
     capsule->expl_ode_fun = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*N);
@@ -311,7 +311,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
         capsule->expl_ode_fun[i].casadi_sparsity_in = &lat_expl_ode_fun_sparsity_in;
         capsule->expl_ode_fun[i].casadi_sparsity_out = &lat_expl_ode_fun_sparsity_out;
         capsule->expl_ode_fun[i].casadi_work = &lat_expl_ode_fun_work;
-        external_function_param_casadi_create(&capsule->expl_ode_fun[i], 0);
+        external_function_param_casadi_create(&capsule->expl_ode_fun[i], 2);
     }
 
 
@@ -322,7 +322,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     capsule->cost_y_0_fun.casadi_sparsity_in = &lat_cost_y_0_fun_sparsity_in;
     capsule->cost_y_0_fun.casadi_sparsity_out = &lat_cost_y_0_fun_sparsity_out;
     capsule->cost_y_0_fun.casadi_work = &lat_cost_y_0_fun_work;
-    external_function_param_casadi_create(&capsule->cost_y_0_fun, 0);
+    external_function_param_casadi_create(&capsule->cost_y_0_fun, 2);
 
     capsule->cost_y_0_fun_jac_ut_xt.casadi_fun = &lat_cost_y_0_fun_jac_ut_xt;
     capsule->cost_y_0_fun_jac_ut_xt.casadi_n_in = &lat_cost_y_0_fun_jac_ut_xt_n_in;
@@ -330,7 +330,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     capsule->cost_y_0_fun_jac_ut_xt.casadi_sparsity_in = &lat_cost_y_0_fun_jac_ut_xt_sparsity_in;
     capsule->cost_y_0_fun_jac_ut_xt.casadi_sparsity_out = &lat_cost_y_0_fun_jac_ut_xt_sparsity_out;
     capsule->cost_y_0_fun_jac_ut_xt.casadi_work = &lat_cost_y_0_fun_jac_ut_xt_work;
-    external_function_param_casadi_create(&capsule->cost_y_0_fun_jac_ut_xt, 0);
+    external_function_param_casadi_create(&capsule->cost_y_0_fun_jac_ut_xt, 2);
 
     capsule->cost_y_0_hess.casadi_fun = &lat_cost_y_0_hess;
     capsule->cost_y_0_hess.casadi_n_in = &lat_cost_y_0_hess_n_in;
@@ -338,7 +338,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     capsule->cost_y_0_hess.casadi_sparsity_in = &lat_cost_y_0_hess_sparsity_in;
     capsule->cost_y_0_hess.casadi_sparsity_out = &lat_cost_y_0_hess_sparsity_out;
     capsule->cost_y_0_hess.casadi_work = &lat_cost_y_0_hess_work;
-    external_function_param_casadi_create(&capsule->cost_y_0_hess, 0);
+    external_function_param_casadi_create(&capsule->cost_y_0_hess, 2);
     // nonlinear least squares cost
     capsule->cost_y_fun = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*N);
     for (int i = 0; i < N-1; i++)
@@ -350,7 +350,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
         capsule->cost_y_fun[i].casadi_sparsity_out = &lat_cost_y_fun_sparsity_out;
         capsule->cost_y_fun[i].casadi_work = &lat_cost_y_fun_work;
 
-        external_function_param_casadi_create(&capsule->cost_y_fun[i], 0);
+        external_function_param_casadi_create(&capsule->cost_y_fun[i], 2);
     }
 
     capsule->cost_y_fun_jac_ut_xt = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*N);
@@ -363,7 +363,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
         capsule->cost_y_fun_jac_ut_xt[i].casadi_sparsity_out = &lat_cost_y_fun_jac_ut_xt_sparsity_out;
         capsule->cost_y_fun_jac_ut_xt[i].casadi_work = &lat_cost_y_fun_jac_ut_xt_work;
 
-        external_function_param_casadi_create(&capsule->cost_y_fun_jac_ut_xt[i], 0);
+        external_function_param_casadi_create(&capsule->cost_y_fun_jac_ut_xt[i], 2);
     }
 
     capsule->cost_y_hess = (external_function_param_casadi *) malloc(sizeof(external_function_param_casadi)*N);
@@ -376,7 +376,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
         capsule->cost_y_hess[i].casadi_sparsity_out = &lat_cost_y_hess_sparsity_out;
         capsule->cost_y_hess[i].casadi_work = &lat_cost_y_hess_work;
 
-        external_function_param_casadi_create(&capsule->cost_y_hess[i], 0);
+        external_function_param_casadi_create(&capsule->cost_y_hess[i], 2);
     }
     // nonlinear least square function
     capsule->cost_y_e_fun.casadi_fun = &lat_cost_y_e_fun;
@@ -385,7 +385,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     capsule->cost_y_e_fun.casadi_sparsity_in = &lat_cost_y_e_fun_sparsity_in;
     capsule->cost_y_e_fun.casadi_sparsity_out = &lat_cost_y_e_fun_sparsity_out;
     capsule->cost_y_e_fun.casadi_work = &lat_cost_y_e_fun_work;
-    external_function_param_casadi_create(&capsule->cost_y_e_fun, 0);
+    external_function_param_casadi_create(&capsule->cost_y_e_fun, 2);
 
     capsule->cost_y_e_fun_jac_ut_xt.casadi_fun = &lat_cost_y_e_fun_jac_ut_xt;
     capsule->cost_y_e_fun_jac_ut_xt.casadi_n_in = &lat_cost_y_e_fun_jac_ut_xt_n_in;
@@ -393,7 +393,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     capsule->cost_y_e_fun_jac_ut_xt.casadi_sparsity_in = &lat_cost_y_e_fun_jac_ut_xt_sparsity_in;
     capsule->cost_y_e_fun_jac_ut_xt.casadi_sparsity_out = &lat_cost_y_e_fun_jac_ut_xt_sparsity_out;
     capsule->cost_y_e_fun_jac_ut_xt.casadi_work = &lat_cost_y_e_fun_jac_ut_xt_work;
-    external_function_param_casadi_create(&capsule->cost_y_e_fun_jac_ut_xt, 0);
+    external_function_param_casadi_create(&capsule->cost_y_e_fun_jac_ut_xt, 2);
 
     capsule->cost_y_e_hess.casadi_fun = &lat_cost_y_e_hess;
     capsule->cost_y_e_hess.casadi_n_in = &lat_cost_y_e_hess_n_in;
@@ -401,7 +401,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     capsule->cost_y_e_hess.casadi_sparsity_in = &lat_cost_y_e_hess_sparsity_in;
     capsule->cost_y_e_hess.casadi_sparsity_out = &lat_cost_y_e_hess_sparsity_out;
     capsule->cost_y_e_hess.casadi_work = &lat_cost_y_e_hess_work;
-    external_function_param_casadi_create(&capsule->cost_y_e_hess, 0);
+    external_function_param_casadi_create(&capsule->cost_y_e_hess, 2);
 
     /************************************************
     *  nlp_in
@@ -518,8 +518,6 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
     idxbx0[1] = 1;
     idxbx0[2] = 2;
     idxbx0[3] = 3;
-    idxbx0[4] = 4;
-    idxbx0[5] = 5;
 
     double* lubx0 = calloc(2*NBX0, sizeof(double));
     double* lbx0 = lubx0;
@@ -534,14 +532,12 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
 
 
     // idxbxe_0
-    int* idxbxe_0 = malloc(6 * sizeof(int));
+    int* idxbxe_0 = malloc(4 * sizeof(int));
     
     idxbxe_0[0] = 0;
     idxbxe_0[1] = 1;
     idxbxe_0[2] = 2;
     idxbxe_0[3] = 3;
-    idxbxe_0[4] = 4;
-    idxbxe_0[5] = 5;
     ocp_nlp_constraints_model_set(nlp_config, nlp_dims, nlp_in, 0, "idxbxe", idxbxe_0);
     free(idxbxe_0);
 
@@ -652,7 +648,7 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
 
     /* options QP solver */
     int qp_solver_cond_N;
-    qp_solver_cond_N = 4;
+    qp_solver_cond_N = 1;
     
     ocp_nlp_solver_opts_set(nlp_config, capsule->nlp_opts, "qp_cond_N", &qp_solver_cond_N);
 
@@ -695,6 +691,15 @@ int lat_acados_create_with_discretization(lat_solver_capsule * capsule, int N, d
 
 
 
+    // initialize parameters to nominal value
+    double* p = calloc(NP, sizeof(double));
+    
+
+    for (int i = 0; i <= N; i++)
+    {
+        lat_acados_update_params(capsule, i, p, NP);
+    }
+    free(p);
 
     status = ocp_nlp_precompute(capsule->nlp_solver, nlp_in, nlp_out);
 
@@ -712,12 +717,48 @@ int lat_acados_update_params(lat_solver_capsule * capsule, int stage, double *p,
 {
     int solver_status = 0;
 
-    int casadi_np = 0;
+    int casadi_np = 2;
     if (casadi_np != np) {
         printf("acados_update_params: trying to set %i parameters for external functions."
             " External function has %i parameters. Exiting.\n", np, casadi_np);
         exit(1);
     }
+    const int N = capsule->nlp_solver_plan->N;
+    if (stage < N && stage >= 0)
+    {
+        capsule->forw_vde_casadi[stage].set_param(capsule->forw_vde_casadi+stage, p);
+        capsule->expl_ode_fun[stage].set_param(capsule->expl_ode_fun+stage, p);
+    
+
+        // constraints
+    
+
+        // cost
+        if (stage == 0)
+        {
+            capsule->cost_y_0_fun.set_param(&capsule->cost_y_0_fun, p);
+            capsule->cost_y_0_fun_jac_ut_xt.set_param(&capsule->cost_y_0_fun_jac_ut_xt, p);
+            capsule->cost_y_0_hess.set_param(&capsule->cost_y_0_hess, p);
+        }
+        else // 0 < stage < N
+        {
+            capsule->cost_y_fun[stage-1].set_param(capsule->cost_y_fun+stage-1, p);
+            capsule->cost_y_fun_jac_ut_xt[stage-1].set_param(capsule->cost_y_fun_jac_ut_xt+stage-1, p);
+            capsule->cost_y_hess[stage-1].set_param(capsule->cost_y_hess+stage-1, p);
+        }
+    }
+
+    else // stage == N
+    {
+        // terminal shooting node has no dynamics
+        // cost
+        capsule->cost_y_e_fun.set_param(&capsule->cost_y_e_fun, p);
+        capsule->cost_y_e_fun_jac_ut_xt.set_param(&capsule->cost_y_e_fun_jac_ut_xt, p);
+        capsule->cost_y_e_hess.set_param(&capsule->cost_y_e_hess, p);
+        // constraints
+    
+    }
+
 
     return solver_status;
 }

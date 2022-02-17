@@ -6581,7 +6581,7 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
  */
   __pyx_t_3 = (__Pyx_PySequence_ContainsTF(__pyx_v_field_, __pyx_v_string_fields, Py_EQ)); if (unlikely(__pyx_t_3 < 0)) __PYX_ERR(0, 413, __pyx_L1_error)
   __pyx_t_2 = (__pyx_t_3 != 0);
-  if (__pyx_t_2) {
+  if (likely(__pyx_t_2)) {
 
     /* "acados_template/acados_ocp_solver_pyx.pyx":414
  * 
@@ -6699,7 +6699,7 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
  *             string_value = value_.encode('utf-8')
  *             acados_solver_common.ocp_nlp_solver_opts_set(self.nlp_config, self.nlp_opts, field, <void *> &string_value[0])             # <<<<<<<<<<<<<<
  * 
- *         raise Exception('AcadosOcpSolver.options_set() does not support field {}.'\
+ *         else:
  */
     __pyx_t_8 = __Pyx_PyObject_AsString(__pyx_v_field); if (unlikely((!__pyx_t_8) && PyErr_Occurred())) __PYX_ERR(0, 418, __pyx_L1_error)
     __pyx_t_11 = 0;
@@ -6721,87 +6721,98 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
  *             if not isinstance(value_, bytes):
  *                 raise Exception('solver option {} must be of type str. You have {}.'.format(field_, type(value_)))
  */
+    goto __pyx_L3;
   }
-  __pyx_L3:;
 
   /* "acados_template/acados_ocp_solver_pyx.pyx":421
  * 
- *         raise Exception('AcadosOcpSolver.options_set() does not support field {}.'\
- *             '\n Possible values are {}.'.format(field_, ', '.join(int_fields + double_fields + string_fields)))             # <<<<<<<<<<<<<<
- * 
+ *         else:
+ *             raise Exception('AcadosOcpSolver.options_set() does not support field {}.'\             # <<<<<<<<<<<<<<
+ *                 '\n Possible values are {}.'.format(field_, ', '.join(int_fields + double_fields + string_fields)))
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_u_AcadosOcpSolver_options_set_does, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 421, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __pyx_t_7 = PyNumber_Add(__pyx_v_int_fields, __pyx_v_double_fields); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 421, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __pyx_t_5 = PyNumber_Add(__pyx_t_7, __pyx_v_string_fields); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 421, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_5);
-  __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  __pyx_t_7 = PyUnicode_Join(__pyx_kp_u__6, __pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 421, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_7);
-  __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
-  __pyx_t_5 = NULL;
-  __pyx_t_6 = 0;
-  if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
-    __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_1);
-    if (likely(__pyx_t_5)) {
-      PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
-      __Pyx_INCREF(__pyx_t_5);
-      __Pyx_INCREF(function);
-      __Pyx_DECREF_SET(__pyx_t_1, function);
-      __pyx_t_6 = 1;
-    }
-  }
-  #if CYTHON_FAST_PYCALL
-  if (PyFunction_Check(__pyx_t_1)) {
-    PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v_field_, __pyx_t_7};
-    __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 421, __pyx_L1_error)
-    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  } else
-  #endif
-  #if CYTHON_FAST_PYCCALL
-  if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
-    PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v_field_, __pyx_t_7};
-    __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 421, __pyx_L1_error)
-    __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
-  } else
-  #endif
-  {
-    __pyx_t_12 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 421, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_12);
-    if (__pyx_t_5) {
-      __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_12, 0, __pyx_t_5); __pyx_t_5 = NULL;
-    }
-    __Pyx_INCREF(__pyx_v_field_);
-    __Pyx_GIVEREF(__pyx_v_field_);
-    PyTuple_SET_ITEM(__pyx_t_12, 0+__pyx_t_6, __pyx_v_field_);
-    __Pyx_GIVEREF(__pyx_t_7);
-    PyTuple_SET_ITEM(__pyx_t_12, 1+__pyx_t_6, __pyx_t_7);
-    __pyx_t_7 = 0;
-    __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_12, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 421, __pyx_L1_error)
-    __Pyx_GOTREF(__pyx_t_4);
-    __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
-  }
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+  /*else*/ {
 
-  /* "acados_template/acados_ocp_solver_pyx.pyx":420
- *             acados_solver_common.ocp_nlp_solver_opts_set(self.nlp_config, self.nlp_opts, field, <void *> &string_value[0])
+    /* "acados_template/acados_ocp_solver_pyx.pyx":422
+ *         else:
+ *             raise Exception('AcadosOcpSolver.options_set() does not support field {}.'\
+ *                 '\n Possible values are {}.'.format(field_, ', '.join(int_fields + double_fields + string_fields)))             # <<<<<<<<<<<<<<
  * 
- *         raise Exception('AcadosOcpSolver.options_set() does not support field {}.'\             # <<<<<<<<<<<<<<
- *             '\n Possible values are {}.'.format(field_, ', '.join(int_fields + double_fields + string_fields)))
  * 
  */
-  __pyx_t_1 = __Pyx_PyObject_CallOneArg(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 420, __pyx_L1_error)
-  __Pyx_GOTREF(__pyx_t_1);
-  __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
-  __Pyx_Raise(__pyx_t_1, 0, 0, 0);
-  __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
-  __PYX_ERR(0, 420, __pyx_L1_error)
+    __pyx_t_1 = __Pyx_PyObject_GetAttrStr(__pyx_kp_u_AcadosOcpSolver_options_set_does, __pyx_n_s_format); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 422, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __pyx_t_7 = PyNumber_Add(__pyx_v_int_fields, __pyx_v_double_fields); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 422, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __pyx_t_5 = PyNumber_Add(__pyx_t_7, __pyx_v_string_fields); if (unlikely(!__pyx_t_5)) __PYX_ERR(0, 422, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_5);
+    __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    __pyx_t_7 = PyUnicode_Join(__pyx_kp_u__6, __pyx_t_5); if (unlikely(!__pyx_t_7)) __PYX_ERR(0, 422, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_7);
+    __Pyx_DECREF(__pyx_t_5); __pyx_t_5 = 0;
+    __pyx_t_5 = NULL;
+    __pyx_t_6 = 0;
+    if (CYTHON_UNPACK_METHODS && likely(PyMethod_Check(__pyx_t_1))) {
+      __pyx_t_5 = PyMethod_GET_SELF(__pyx_t_1);
+      if (likely(__pyx_t_5)) {
+        PyObject* function = PyMethod_GET_FUNCTION(__pyx_t_1);
+        __Pyx_INCREF(__pyx_t_5);
+        __Pyx_INCREF(function);
+        __Pyx_DECREF_SET(__pyx_t_1, function);
+        __pyx_t_6 = 1;
+      }
+    }
+    #if CYTHON_FAST_PYCALL
+    if (PyFunction_Check(__pyx_t_1)) {
+      PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v_field_, __pyx_t_7};
+      __pyx_t_4 = __Pyx_PyFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 422, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    } else
+    #endif
+    #if CYTHON_FAST_PYCCALL
+    if (__Pyx_PyFastCFunction_Check(__pyx_t_1)) {
+      PyObject *__pyx_temp[3] = {__pyx_t_5, __pyx_v_field_, __pyx_t_7};
+      __pyx_t_4 = __Pyx_PyCFunction_FastCall(__pyx_t_1, __pyx_temp+1-__pyx_t_6, 2+__pyx_t_6); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 422, __pyx_L1_error)
+      __Pyx_XDECREF(__pyx_t_5); __pyx_t_5 = 0;
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_7); __pyx_t_7 = 0;
+    } else
+    #endif
+    {
+      __pyx_t_12 = PyTuple_New(2+__pyx_t_6); if (unlikely(!__pyx_t_12)) __PYX_ERR(0, 422, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_12);
+      if (__pyx_t_5) {
+        __Pyx_GIVEREF(__pyx_t_5); PyTuple_SET_ITEM(__pyx_t_12, 0, __pyx_t_5); __pyx_t_5 = NULL;
+      }
+      __Pyx_INCREF(__pyx_v_field_);
+      __Pyx_GIVEREF(__pyx_v_field_);
+      PyTuple_SET_ITEM(__pyx_t_12, 0+__pyx_t_6, __pyx_v_field_);
+      __Pyx_GIVEREF(__pyx_t_7);
+      PyTuple_SET_ITEM(__pyx_t_12, 1+__pyx_t_6, __pyx_t_7);
+      __pyx_t_7 = 0;
+      __pyx_t_4 = __Pyx_PyObject_Call(__pyx_t_1, __pyx_t_12, NULL); if (unlikely(!__pyx_t_4)) __PYX_ERR(0, 422, __pyx_L1_error)
+      __Pyx_GOTREF(__pyx_t_4);
+      __Pyx_DECREF(__pyx_t_12); __pyx_t_12 = 0;
+    }
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+
+    /* "acados_template/acados_ocp_solver_pyx.pyx":421
+ * 
+ *         else:
+ *             raise Exception('AcadosOcpSolver.options_set() does not support field {}.'\             # <<<<<<<<<<<<<<
+ *                 '\n Possible values are {}.'.format(field_, ', '.join(int_fields + double_fields + string_fields)))
+ * 
+ */
+    __pyx_t_1 = __Pyx_PyObject_CallOneArg(((PyObject *)(&((PyTypeObject*)PyExc_Exception)[0])), __pyx_t_4); if (unlikely(!__pyx_t_1)) __PYX_ERR(0, 421, __pyx_L1_error)
+    __Pyx_GOTREF(__pyx_t_1);
+    __Pyx_DECREF(__pyx_t_4); __pyx_t_4 = 0;
+    __Pyx_Raise(__pyx_t_1, 0, 0, 0);
+    __Pyx_DECREF(__pyx_t_1); __pyx_t_1 = 0;
+    __PYX_ERR(0, 421, __pyx_L1_error)
+  }
+  __pyx_L3:;
 
   /* "acados_template/acados_ocp_solver_pyx.pyx":372
  * 
@@ -6812,6 +6823,8 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
  */
 
   /* function exit code */
+  __pyx_r = Py_None; __Pyx_INCREF(Py_None);
+  goto __pyx_L0;
   __pyx_L1_error:;
   __Pyx_XDECREF(__pyx_t_1);
   __Pyx_XDECREF(__pyx_t_4);
@@ -6821,6 +6834,7 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
   __Pyx_XDECREF(__pyx_t_12);
   __Pyx_AddTraceback("acados_template.acados_ocp_solver_pyx.AcadosOcpSolverFast.options_set", __pyx_clineno, __pyx_lineno, __pyx_filename);
   __pyx_r = NULL;
+  __pyx_L0:;
   __Pyx_XDECREF(__pyx_v_int_fields);
   __Pyx_XDECREF(__pyx_v_double_fields);
   __Pyx_XDECREF(__pyx_v_string_fields);
@@ -6831,7 +6845,7 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
   return __pyx_r;
 }
 
-/* "acados_template/acados_ocp_solver_pyx.pyx":424
+/* "acados_template/acados_ocp_solver_pyx.pyx":425
  * 
  * 
  *     def __del__(self):             # <<<<<<<<<<<<<<
@@ -6858,7 +6872,7 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
   int __pyx_t_1;
   __Pyx_RefNannySetupContext("__del__", 0);
 
-  /* "acados_template/acados_ocp_solver_pyx.pyx":425
+  /* "acados_template/acados_ocp_solver_pyx.pyx":426
  * 
  *     def __del__(self):
  *         if self.solver_created:             # <<<<<<<<<<<<<<
@@ -6868,7 +6882,7 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
   __pyx_t_1 = (__pyx_v_self->solver_created != 0);
   if (__pyx_t_1) {
 
-    /* "acados_template/acados_ocp_solver_pyx.pyx":426
+    /* "acados_template/acados_ocp_solver_pyx.pyx":427
  *     def __del__(self):
  *         if self.solver_created:
  *             acados_solver.acados_free(self.capsule)             # <<<<<<<<<<<<<<
@@ -6876,14 +6890,14 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
  */
     (void)(lat_acados_free(__pyx_v_self->capsule));
 
-    /* "acados_template/acados_ocp_solver_pyx.pyx":427
+    /* "acados_template/acados_ocp_solver_pyx.pyx":428
  *         if self.solver_created:
  *             acados_solver.acados_free(self.capsule)
  *             acados_solver.acados_free_capsule(self.capsule)             # <<<<<<<<<<<<<<
  */
     (void)(lat_acados_free_capsule(__pyx_v_self->capsule));
 
-    /* "acados_template/acados_ocp_solver_pyx.pyx":425
+    /* "acados_template/acados_ocp_solver_pyx.pyx":426
  * 
  *     def __del__(self):
  *         if self.solver_created:             # <<<<<<<<<<<<<<
@@ -6892,7 +6906,7 @@ static PyObject *__pyx_pf_15acados_template_21acados_ocp_solver_pyx_19AcadosOcpS
  */
   }
 
-  /* "acados_template/acados_ocp_solver_pyx.pyx":424
+  /* "acados_template/acados_ocp_solver_pyx.pyx":425
  * 
  * 
  *     def __del__(self):             # <<<<<<<<<<<<<<

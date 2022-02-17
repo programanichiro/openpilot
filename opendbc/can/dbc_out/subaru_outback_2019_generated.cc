@@ -756,7 +756,7 @@ const Signal sigs_352[] = {
 };
 const Signal sigs_353[] = {
     {
-      .name = "Throttle_Cruise",
+      .name = "Cruise_Throttle",
       .b1 = 0,
       .b2 = 12,
       .bo = 52,
@@ -778,7 +778,7 @@ const Signal sigs_353[] = {
       .type = SignalType::DEFAULT,
     },
     {
-      .name = "Cruise_Activated",
+      .name = "Car_Follow",
       .b1 = 16,
       .b2 = 1,
       .bo = 47,
@@ -1820,7 +1820,7 @@ const Msg msgs[] = {
     .sigs = sigs_352,
   },
   {
-    .name = "ES_CruiseThrottle",
+    .name = "ES_Distance",
     .address = 0x161,
     .size = 8,
     .num_sigs = ARRAYSIZE(sigs_353),

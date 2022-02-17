@@ -37,12 +37,12 @@
 #include "acados_c/ocp_nlp_interface.h"
 #include "acados_c/external_function_interface.h"
 
-#define LAT_NX     6
+#define LAT_NX     4
 #define LAT_NZ     0
 #define LAT_NU     1
-#define LAT_NP     0
+#define LAT_NP     2
 #define LAT_NBX    2
-#define LAT_NBX0   6
+#define LAT_NBX0   4
 #define LAT_NBU    0
 #define LAT_NSBX   0
 #define LAT_NSBU   0

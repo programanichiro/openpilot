@@ -809,6 +809,41 @@ const Signal sigs_326[] = {
       .type = SignalType::DEFAULT,
     },
 };
+const Signal sigs_372[] = {
+    {
+      .name = "CHECKSUM",
+      .b1 = 0,
+      .b2 = 8,
+      .bo = 56,
+      .is_signed = false,
+      .factor = 1,
+      .offset = 0,
+      .is_little_endian = true,
+      .type = SignalType::SUBARU_CHECKSUM,
+    },
+    {
+      .name = "Counter",
+      .b1 = 8,
+      .b2 = 4,
+      .bo = 52,
+      .is_signed = false,
+      .factor = 1,
+      .offset = 0,
+      .is_little_endian = true,
+      .type = SignalType::DEFAULT,
+    },
+    {
+      .name = "STOP_START_STATE",
+      .b1 = 32,
+      .b2 = 2,
+      .bo = 30,
+      .is_signed = false,
+      .factor = 1,
+      .offset = 0,
+      .is_little_endian = false,
+      .type = SignalType::DEFAULT,
+    },
+};
 const Signal sigs_544[] = {
     {
       .name = "CHECKSUM",
@@ -2027,6 +2062,17 @@ const Signal sigs_912[] = {
       .is_little_endian = true,
       .type = SignalType::DEFAULT,
     },
+    {
+      .name = "STOP_START",
+      .b1 = 49,
+      .b2 = 1,
+      .bo = 14,
+      .is_signed = false,
+      .factor = 1,
+      .offset = 0,
+      .is_little_endian = false,
+      .type = SignalType::DEFAULT,
+    },
 };
 const Signal sigs_940[] = {
     {
@@ -2300,6 +2346,13 @@ const Msg msgs[] = {
     .size = 8,
     .num_sigs = ARRAYSIZE(sigs_326),
     .sigs = sigs_326,
+  },
+  {
+    .name = "Engine_Stop_Start",
+    .address = 0x174,
+    .size = 8,
+    .num_sigs = ARRAYSIZE(sigs_372),
+    .sigs = sigs_372,
   },
   {
     .name = "ES_Brake",

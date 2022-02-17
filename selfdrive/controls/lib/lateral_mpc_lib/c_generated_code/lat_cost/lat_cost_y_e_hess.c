@@ -45,17 +45,13 @@ extern "C" {
   #endif
 #endif
 
-static const casadi_int casadi_s0[10] = {6, 1, 0, 6, 0, 1, 2, 3, 4, 5};
+static const casadi_int casadi_s0[8] = {4, 1, 0, 4, 0, 1, 2, 3};
 static const casadi_int casadi_s1[3] = {0, 0, 0};
 static const casadi_int casadi_s2[6] = {2, 1, 0, 2, 0, 1};
-static const casadi_int casadi_s3[11] = {6, 6, 0, 0, 0, 1, 1, 2, 2, 4, 2};
+static const casadi_int casadi_s3[7] = {4, 4, 0, 0, 0, 0, 0};
 
-/* lat_cost_y_e_hess:(i0[6],i1[],i2[2],i3[])->(o0[6x6,2nz]) */
+/* lat_cost_y_e_hess:(i0[4],i1[],i2[2],i3[2])->(o0[4x4,0nz]) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
-  casadi_real a0;
-  a0=arg[2]? arg[2][1] : 0;
-  if (res[0]!=0) res[0][0]=a0;
-  if (res[0]!=0) res[0][1]=a0;
   return 0;
 }
 
@@ -119,7 +115,7 @@ CASADI_SYMBOL_EXPORT const casadi_int* lat_cost_y_e_hess_sparsity_in(casadi_int 
     case 0: return casadi_s0;
     case 1: return casadi_s1;
     case 2: return casadi_s2;
-    case 3: return casadi_s1;
+    case 3: return casadi_s2;
     default: return 0;
   }
 }

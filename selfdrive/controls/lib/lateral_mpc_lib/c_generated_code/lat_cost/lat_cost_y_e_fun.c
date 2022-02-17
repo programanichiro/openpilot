@@ -44,16 +44,16 @@ extern "C" {
   #endif
 #endif
 
-static const casadi_int casadi_s0[10] = {6, 1, 0, 6, 0, 1, 2, 3, 4, 5};
+static const casadi_int casadi_s0[8] = {4, 1, 0, 4, 0, 1, 2, 3};
 static const casadi_int casadi_s1[3] = {0, 0, 0};
 static const casadi_int casadi_s2[6] = {2, 1, 0, 2, 0, 1};
 
-/* lat_cost_y_e_fun:(i0[6],i1[],i2[])->(o0[2]) */
+/* lat_cost_y_e_fun:(i0[4],i1[],i2[2])->(o0[2]) */
 static int casadi_f0(const casadi_real** arg, casadi_real** res, casadi_int* iw, casadi_real* w, int mem) {
   casadi_real a0, a1;
   a0=arg[0]? arg[0][1] : 0;
   if (res[0]!=0) res[0][0]=a0;
-  a0=arg[0]? arg[0][4] : 0;
+  a0=arg[2]? arg[2][0] : 0;
   a1=5.;
   a0=(a0+a1);
   a1=arg[0]? arg[0][2] : 0;
@@ -120,7 +120,7 @@ CASADI_SYMBOL_EXPORT const casadi_int* lat_cost_y_e_fun_sparsity_in(casadi_int i
   switch (i) {
     case 0: return casadi_s0;
     case 1: return casadi_s1;
-    case 2: return casadi_s1;
+    case 2: return casadi_s2;
     default: return 0;
   }
 }
