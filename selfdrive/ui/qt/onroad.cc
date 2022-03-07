@@ -668,6 +668,13 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
   a_rel = leadcar_lockon[num].a;
 
   float dh = 50;
+  { //dhに奥行き値を反映させる。25mで現状に見えるように。
+    float dd = d;
+    dd -= 25; //dd=0〜75
+    dd /= (75.0/2); //dd=0〜2
+    dd += 1; //dd=1〜3
+    dh /= dd;
+  }
 
   ww = ww * 2 * 5 / d;
   hh = hh * 2 * 5 / d;
@@ -857,16 +864,16 @@ void NvgWindow::paintGL() {
     if (s->scene.longitudinal_control) {
       auto leads = (*s->sm)["modelV2"].getModelV2().getLeadsV3();
       size_t leads_num = leads.size();
+      for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
+        if(leads[i].getProb() > .2){ //信用度20%以上で表示。調整中。
+          drawLockon(painter, leads[i], s->scene.lead_vertices[i] , i , leads_num , leads[0] , leads[1]);
+        }
+      }
       if (leads[0].getProb() > .5) {
         drawLead(painter, leads[0], s->scene.lead_vertices[0] , 0 , leads_num);
       }
       if (leads[1].getProb() > .5 && (std::abs(leads[1].getX()[0] - leads[0].getX()[0]) > 3.0)) {
         drawLead(painter, leads[1], s->scene.lead_vertices[1] , 1 , leads_num);
-      }
-      for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
-        if(leads[i].getProb() > .2){ //信用度20%以上で表示。調整中。
-          drawLockon(painter, leads[i], s->scene.lead_vertices[i] , i , leads_num , leads[0] , leads[1]);
-        }
       }
     }
   }
