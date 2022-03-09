@@ -264,8 +264,13 @@ class Planner:
     #  v_desired_rand = random.random() * 1.0 / 3.6
     #  v_desired_rand *= v_ego / 41/3.6
     #
-    if abs(steerAng) > 10 and v_ego * 3.6 < 41:
-      v_cruise = self.v_desired_filter.x / 2 #低速急ハンドルで速度を落とす実験
+    if abs(steerAng) > 10 and v_ego * 3.6 < 41 and self.v_desired_filter.x * 3.6 > 20:
+      rate = abs(steerAng) - 10 # 10->30 >> 0->20
+      rate /= 20 # 0->1
+      rate += 1 # 1->2
+      v_cruise = self.v_desired_filter.x / rate #低速急ハンドルで速度を落とす実験,30度切って最高半分。
+      if v_cruise < 20 / 3.6:
+        v_cruise = 20 / 3.6 #迷惑すぎるから20km/h以下には落とさない
       with open('./cruise_info.txt','w') as fp:
         fp.write('%d.' % (int(v_cruise * 3.6)))
     with open('./debug_out_vd','w') as fp:
