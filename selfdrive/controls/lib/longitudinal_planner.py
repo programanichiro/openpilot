@@ -264,11 +264,10 @@ class Planner:
     #  v_desired_rand = random.random() * 1.0 / 3.6
     #  v_desired_rand *= v_ego / 41/3.6
     #
-    if abs(steerAng) > 10 and v_ego * 3.6 < 41:
-      v_cruise = self.v_desired / 2 #低速急ハンドルで速度を落とす実験
-      with open('./cruise_info.txt','w') as fp:
-        fp.write('%d.' % (int(v_cruise * 3.6)))
-
+    #if abs(steerAng) > 10 and v_ego * 3.6 < 41:
+    #  v_cruise = self.v_desired / 2 #低速急ハンドルで速度を落とす実験
+    #  with open('./cruise_info.txt','w') as fp:
+    #    fp.write('%d.' % (int(v_cruise * 3.6)))
     with open('./debug_out_vd','w') as fp:
       fp.write('vc:%.2f[m/s] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired* 3.6,steerAng , v_ego * 3.6) )
 
