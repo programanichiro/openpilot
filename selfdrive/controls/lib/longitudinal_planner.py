@@ -265,7 +265,7 @@ class Planner:
     #  v_desired_rand *= v_ego / 41/3.6
 
     #低速急ハンドルで速度を落とす実験->このままでは速度落ちすぎ。v_desired_filter.xより少し落とす感じで、v_cruiseは変更せずv_desired_randに差分を渡して試してみたい。ひとまず保留。
-    if abs(steerAng) > 10 and v_ego * 3.6 < 41 and self.v_desired_filter.x * 3.6 > 20:
+    if False and abs(steerAng) > 10 and v_ego * 3.6 < 41 and self.v_desired_filter.x * 3.6 > 20:
       rate = abs(steerAng) - 10 # 10->30 >> 0->20
       rate /= 20 # 0->1
       rate += 1 # 1->2
