@@ -226,7 +226,7 @@ class Planner:
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
 
     if False:
-      msv_desired = max(0,self.v_desired * 3.6)
+      msv_desired = max(0,self.v_desired_filter.x * 3.6)
       msc = "A:%5.1fkm/h" % (v_cruise_kph_org)
       if int(min(v_cruise_kph_org,V_CRUISE_MAX) / 2) - len(msc) > 0:
         for vm in range(int(min(v_cruise_kph_org,V_CRUISE_MAX) / 2) - len(msc)):
@@ -253,8 +253,8 @@ class Planner:
             msv += ">"
       msv += "%+.1fkm/h" % (msv_desired-v_ego_2)
       with open('./debug_out_v','w') as fp:
-        #fp.write('[%i],vc:%.1f(%.1f) , v:%.2f , vd:%.2f[km/h] ; ah:%.2f bh:%.2f ch:%.2f' % (prev_accel_constraint , v_cruise_kph_org , limit_vc , v_ego * 3.6 , self.v_desired* 3.6 , LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH) )
-        #fp.write('[%i],vc:%.1f(%.1f) , v:%.2f , vd:%.2f[km/h] ; a:%.2f , ad:%.2f[m/ss]' % (prev_accel_constraint , v_cruise_kph , limit_vc , v_ego * 3.6 , self.v_desired* 3.6 , a_ego , self.a_desired) )
+        #fp.write('[%i],vc:%.1f(%.1f) , v:%.2f , vd:%.2f[km/h] ; ah:%.2f bh:%.2f ch:%.2f' % (prev_accel_constraint , v_cruise_kph_org , limit_vc , v_ego * 3.6 , self.v_desired_filter.x* 3.6 , LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH) )
+        #fp.write('[%i],vc:%.1f(%.1f) , v:%.2f , vd:%.2f[km/h] ; a:%.2f , ad:%.2f[m/ss]' % (prev_accel_constraint , v_cruise_kph , limit_vc , v_ego * 3.6 , self.v_desired_filter.x* 3.6 , a_ego , self.a_desired) )
         fp.write('ah:%.2f bh:%.2f ch:%.2f\n' % (LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH) )
         #fp.write('op:[%d] vk:%.2f gs:%.2fkm/h\n' % (OP_ENABLE_PREV,OP_ENABLE_v_cruise_kph,OP_ENABLE_gas_speed*3.6) )
         fp.write("%s\n%s\n%s" % (msc ,msl ,msv))
@@ -265,11 +265,11 @@ class Planner:
     #  v_desired_rand *= v_ego / 41/3.6
     #
     if abs(steerAng) > 10 and v_ego * 3.6 < 41:
-      v_cruise = self.v_desired / 2 #低速急ハンドルで速度を落とす実験
+      v_cruise = self.v_desired_filter.x / 2 #低速急ハンドルで速度を落とす実験
       with open('./cruise_info.txt','w') as fp:
         fp.write('%d.' % (int(v_cruise * 3.6)))
-    #with open('./debug_out_vd','w') as fp:
-    #  fp.write('vc:%.2f[km/h] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired* 3.6,steerAng , v_ego * 3.6) )
+    with open('./debug_out_vd','w') as fp:
+      fp.write('vc:%.2f[km/h] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired_filter.x* 3.6,steerAng , v_ego * 3.6) )
 
     accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
     #accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
