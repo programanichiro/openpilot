@@ -265,15 +265,17 @@ class Planner:
     #  v_desired_rand *= v_ego / 41/3.6
 
     #低速急ハンドルで速度を落とす実験->このままでは速度落ちすぎ。v_desired_filter.xより少し落とす感じで、v_cruiseは変更せずv_desired_randに差分を渡して試してみたい。ひとまず保留。
-    #if abs(steerAng) > 10 and v_ego * 3.6 < 41 and self.v_desired_filter.x * 3.6 > 20:
-    #  rate = abs(steerAng) - 10 # 10->30 >> 0->20
-    #  rate /= 20 # 0->1
-    #  rate += 1 # 1->2
-    #  v_cruise = self.v_desired_filter.x / rate #30度切って最高半分。
-    #  if v_cruise < 20 / 3.6:
-    #    v_cruise = 20 / 3.6 #迷惑すぎるから20km/h以下には落とさない
-    #  with open('./cruise_info.txt','w') as fp:
-    #    fp.write('%d.' % (int(v_cruise * 3.6)))
+    if abs(steerAng) > 10 and v_ego * 3.6 < 41 and self.v_desired_filter.x * 3.6 > 20:
+      rate = abs(steerAng) - 10 # 10->30 >> 0->20
+      rate /= 20 # 0->1
+      rate += 1 # 1->2
+      if rate > 1.2:
+        rate = 1.2
+      new_vd = self.v_desired_filter.x / rate #30度切って最高半分。
+      if new_vd < v_cruise and new_vd < self.v_desired_filter.x:
+        v_desired_rand = new_vd - self.v_desired_filter.x
+        with open('./cruise_info.txt','w') as fp:
+          fp.write('%d.' % (int(new_vd * 3.6)))
     #with open('./debug_out_vd','w') as fp:
     #  fp.write('vc:%.2f[km/h] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired_filter.x* 3.6,steerAng , v_ego * 3.6) )
 
