@@ -150,7 +150,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelCtrlButton->setFixedHeight(150);
     btns_layout->addSpacing(50);
     btns_layout->addWidget(accelCtrlButton, 0, Qt::AlignRight);
-    accelCtrlButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mAccelCtrlButtonColors.at(mAccelCtrlButton)));
+    accelCtrlButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mAccelCtrlButton)));
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
