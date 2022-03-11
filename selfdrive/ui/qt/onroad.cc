@@ -115,15 +115,16 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 // ***** onroad widgets *****
 
 // ButtonsWindow
+const static char *btn_style = "font-size: 100px; border-radius: 75px; border-color: %1";
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
   QWidget *btns_wrapper = new QWidget;
-  QHBoxLayout *btns_layout  = new QHBoxLayout(btns_wrapper);
+  QHBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(30, 0, 30, 30);
+  btns_layout->setContentsMargins(30, 400, 30, 30);
 
-  main_layout->addWidget(btns_wrapper, 0, Qt::AlignBottom);
+  main_layout->addWidget(btns_wrapper, 0, Qt::AlignRight);
 
   {
     // LockOn button
@@ -133,11 +134,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     lockOnButton->setFixedWidth(150);
     lockOnButton->setFixedHeight(150);
-    btns_layout->addSpacing(250);
     //btns_layout->addStretch(4);
-    btns_layout->addWidget(lockOnButton, 0, Qt::AlignRight);
+    btns_layout->addWidget(lockOnButton);
     //btns_layout->addStretch(3);
-    lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mLockOnButton)));
+    lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
   }
 
   {
@@ -149,8 +149,21 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelCtrlButton->setFixedWidth(150);
     accelCtrlButton->setFixedHeight(150);
     btns_layout->addSpacing(50);
-    btns_layout->addWidget(accelCtrlButton, 0, Qt::AlignRight);
-    accelCtrlButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mAccelCtrlButton)));
+    btns_layout->addWidget(accelCtrlButton);
+    accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
+  }
+
+  {
+    // Decel Ctrl button
+    decelCtrlButton = new QPushButton("↓");
+    QObject::connect(decelCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
+    });
+    decelCtrlButton->setFixedWidth(150);
+    decelCtrlButton->setFixedHeight(150);
+    btns_layout->addSpacing(50);
+    btns_layout->addWidget(decelCtrlButton);
+    decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
@@ -173,7 +186,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 void ButtonsWindow::updateState(const UIState &s) {
   if (mLockOnButton != s.scene.mLockOnButton) {  // update model longitudinal button
     mLockOnButton = s.scene.mLockOnButton;
-    lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mLockOnButton)));
+    lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
 
     // MessageBuilder msg;
     // auto mlButtonEnabled = msg.initEvent().initModelLongButton();
@@ -183,7 +196,12 @@ void ButtonsWindow::updateState(const UIState &s) {
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update model longitudinal button
     mAccelCtrlButton = s.scene.mAccelCtrlButton;
-    accelCtrlButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mAccelCtrlButton)));
+    accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
+  }
+
+  if (mDecelCtrlButton != s.scene.mDecelCtrlButton) {  // update model longitudinal button
+    mDecelCtrlButton = s.scene.mDecelCtrlButton;
+    decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 }
 
