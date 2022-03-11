@@ -17,7 +17,9 @@
 #define BACKLIGHT_OFFROAD 50
 
 void piInit(UIState *s) {
-  s->scene.mlockOnDisp = true;  // reset on ignition
+  s->scene.mLockOnButton = true;  // reset on ignition
+  s->scene.mAccelCtrlButton = true;  // reset on ignition
+  s->scene.mDecelCtrlButton = true;  // reset on ignition
 }
 
 // Projects a point in car to space to the corresponding point in full frame

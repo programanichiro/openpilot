@@ -125,18 +125,33 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   main_layout->addWidget(btns_wrapper, 0, Qt::AlignBottom);
 
-  // LockOn button
-  lockOnButton = new QPushButton("□");
-  QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
-    uiState()->scene.mlockOnDisp = !mlockOnDisp;
-  });
-  lockOnButton->setFixedWidth(150);
-  lockOnButton->setFixedHeight(150);
-  btns_layout->addSpacing(500);
-  //btns_layout->addStretch(4);
-  btns_layout->addWidget(lockOnButton, 0, Qt::AlignRight);
-  //btns_layout->addStretch(3);
-  lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mlockOnButtonColors.at(mlockOnDisp)));
+  {
+    // LockOn button
+    lockOnButton = new QPushButton("□");
+    QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mLockOnButton = !mLockOnButton;
+    });
+    lockOnButton->setFixedWidth(150);
+    lockOnButton->setFixedHeight(150);
+    btns_layout->addSpacing(250);
+    //btns_layout->addStretch(4);
+    btns_layout->addWidget(lockOnButton, 0, Qt::AlignRight);
+    //btns_layout->addStretch(3);
+    lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mLockOnButton)));
+  }
+
+  {
+    // Accel Ctrl button
+    accelCtrlButton = new QPushButton("↑");
+    QObject::connect(accelCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
+    });
+    accelCtrlButton->setFixedWidth(150);
+    accelCtrlButton->setFixedHeight(150);
+    btns_layout->addSpacing(50);
+    btns_layout->addWidget(accelCtrlButton, 0, Qt::AlignRight);
+    accelCtrlButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mAccelCtrlButtonColors.at(mAccelCtrlButton)));
+  }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
   // if (hide_model_long == "true"){
@@ -156,14 +171,19 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 }
 
 void ButtonsWindow::updateState(const UIState &s) {
-  if (mlockOnDisp != s.scene.mlockOnDisp) {  // update model longitudinal button
-    mlockOnDisp = s.scene.mlockOnDisp;
-    lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 25px; border-color: %1").arg(mlockOnButtonColors.at(mlockOnDisp)));
+  if (mLockOnButton != s.scene.mLockOnButton) {  // update model longitudinal button
+    mLockOnButton = s.scene.mLockOnButton;
+    lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mLockOnButton)));
 
     // MessageBuilder msg;
     // auto mlButtonEnabled = msg.initEvent().initModelLongButton();
     // mlButtonEnabled.setEnabled(mlEnabled);
     // uiState()->pm->send("modelLongButton", msg);
+  }
+
+  if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update model longitudinal button
+    mAccelCtrlButton = s.scene.mAccelCtrlButton;
+    accelCtrlButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mButtonColors.at(mAccelCtrlButton)));
   }
 }
 

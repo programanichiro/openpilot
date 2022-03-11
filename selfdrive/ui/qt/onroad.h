@@ -17,9 +17,9 @@ public:
   ButtonsWindow(QWidget* parent = 0);
 
 private:
-  //QPushButton *dfButton;
-  //QPushButton *lsButton;
   QPushButton *lockOnButton;
+  QPushButton *accelCtrlButton;
+  QPushButton *decelCtrlButton;
 
   // int dfStatus = -1;  // always initialize style sheet and send msg
   // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
@@ -27,9 +27,12 @@ private:
   // int lsStatus = -1;  // always initialize style sheet and send msg
   // const QStringList lsButtonColors = {"#ff3737", "#37b868", "#044389"};
 
+  const QStringList mButtonColors = {"#909090", "#37b868"};
+
   // model long button
-  bool mlockOnDisp = true;  // triggers initialization
-  const QStringList mlockOnButtonColors = {"#373737", "#37b868"};
+  bool mLockOnButton = true;  // triggers initialization
+  bool mAccelCtrlButton = true;  // triggers initialization
+  bool mDecelCtrlButton = true;  // triggers initialization
 
 public slots:
   void updateState(const UIState &s);

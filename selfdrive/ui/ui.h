@@ -109,7 +109,9 @@ typedef struct UIScene {
   uint64_t started_frame;
 
   // PI button statuses
-  bool mlockOnDisp = true;
+  bool mLockOnButton = true;
+  bool mAccelCtrlButton = true;
+  bool mDecelCtrlButton = true;
 
 } UIScene;
 
