@@ -130,7 +130,7 @@ bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"�
 bool fp_error = false;
 void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。flagは素直にtrueなら有効。
   //util::write_file(fn, (void*)(flag ? "0" : "1"), 1); //flagと書き込む数値文字列の意味が逆なので注意。
-  FILE *fp = fopen(fn,"w");
+  FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
     if(flag == true){
@@ -173,7 +173,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Ctrl button
-    mAccelCtrlButton = getButtonEnabled("../manager/accel_ctrl_disable.txt");
+    mAccelCtrlButton = false; //getButtonEnabled("../manager/accel_ctrl_disable.txt");
     accelCtrlButton = new QPushButton("↑");
     QObject::connect(accelCtrlButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
