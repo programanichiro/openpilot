@@ -25,6 +25,13 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   hud = new OnroadHud(this);
   road_view_layout->addWidget(hud);
 
+  buttons = new ButtonsWindow(this);
+  QObject::connect(uiState(), &UIState::uiUpdate, buttons, &ButtonsWindow::updateState);
+  QObject::connect(nvg, &NvgWindow::resizeSignal, [=](int w){
+    buttons->setFixedWidth(w);
+  });
+  stacked_layout->addWidget(buttons);
+
   QWidget * split_wrapper = new QWidget;
   split = new QHBoxLayout(split_wrapper);
   split->setContentsMargins(0, 0, 0, 0);
@@ -106,6 +113,57 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 }
 
 // ***** onroad widgets *****
+
+// ButtonsWindow
+ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
+  QVBoxLayout *main_layout  = new QVBoxLayout(this);
+
+  QWidget *btns_wrapper = new QWidget;
+  QHBoxLayout *btns_layout  = new QHBoxLayout(btns_wrapper);
+  btns_layout->setSpacing(0);
+  btns_layout->setContentsMargins(30, 0, 30, 30);
+
+  main_layout->addWidget(btns_wrapper, 0, Qt::AlignBottom);
+
+  // LockOn button
+  lockOnButton = new QPushButton("LockOn");
+  QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
+    uiState()->scene.mlockOnDisp = !mlockOnDisp;
+  });
+  lockOnButton->setFixedWidth(575);
+  lockOnButton->setFixedHeight(150);
+  btns_layout->addStretch(4);
+  btns_layout->addWidget(lockOnButton, 0, Qt::AlignHCenter | Qt::AlignBottom);
+  btns_layout->addStretch(3);
+
+  // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
+  // if (hide_model_long == "true"){
+  //   mlButton->hide();
+  // }
+
+  setStyleSheet(R"(
+    QPushButton {
+      color: white;
+      text-align: center;
+      padding: 0px;
+      border-width: 12px;
+      border-style: solid;
+      background-color: rgba(75, 75, 75, 0.3);
+    }
+  )");
+}
+
+void ButtonsWindow::updateState(const UIState &s) {
+  if (mlockOnDisp != s.scene.mlockOnDisp) {  // update model longitudinal button
+    mlockOnDisp = s.scene.mlockOnDisp;
+    mlButton->setStyleSheet(QString("font-size: 50px; border-radius: 25px; border-color: %1").arg(mlockOnButtonColors.at(lockOnButton)));
+
+    // MessageBuilder msg;
+    // auto mlButtonEnabled = msg.initEvent().initModelLongButton();
+    // mlButtonEnabled.setEnabled(mlEnabled);
+    // uiState()->pm->send("modelLongButton", msg);
+  }
+}
 
 // OnroadAlerts
 void OnroadAlerts::updateAlert(const Alert &a, const QColor &color) {

@@ -2,12 +2,38 @@
 
 #include <QStackedLayout>
 #include <QWidget>
+#include <QPushButton>
 
 #include "selfdrive/ui/qt/widgets/cameraview.h"
 #include "selfdrive/ui/ui.h"
 
 
 // ***** onroad widgets *****
+
+class ButtonsWindow : public QWidget {
+  Q_OBJECT
+
+public:
+  ButtonsWindow(QWidget* parent = 0);
+
+private:
+  //QPushButton *dfButton;
+  //QPushButton *lsButton;
+  QPushButton *lockOnButton;
+
+  // int dfStatus = -1;  // always initialize style sheet and send msg
+  // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
+
+  // int lsStatus = -1;  // always initialize style sheet and send msg
+  // const QStringList lsButtonColors = {"#ff3737", "#37b868", "#044389"};
+
+  // model long button
+  bool mlockOnDisp = true;  // triggers initialization
+  const QStringList mlockOnButtonColors = {"#b83737", "#37b868"};
+
+public slots:
+  void updateState(const UIState &s);
+};
 
 class OnroadHud : public QWidget {
   Q_OBJECT
@@ -68,6 +94,7 @@ class NvgWindow : public CameraViewWidget {
 
 public:
   explicit NvgWindow(VisionStreamType type, QWidget* parent = 0) : CameraViewWidget("camerad", type, true, parent) {}
+  int prev_width = -1;  // initializes ButtonsWindow width and holds prev width to update it
 
 protected:
   void paintGL() override;
@@ -96,6 +123,7 @@ private:
   OnroadHud *hud;
   OnroadAlerts *alerts;
   NvgWindow *nvg;
+  ButtonsWindow *buttons;
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QWidget *map = nullptr;
   QHBoxLayout* split;
