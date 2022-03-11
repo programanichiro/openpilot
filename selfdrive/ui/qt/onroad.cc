@@ -113,7 +113,7 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 }
 
 // ***** onroad widgets *****
-static bool disp_lockon;
+static bool disp_lockon = true;
 bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
@@ -221,6 +221,7 @@ void ButtonsWindow::updateState(const UIState &s) {
     mLockOnButton = s.scene.mLockOnButton;
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
     setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
+    disp_lockon = mLockOnButton;
   }
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update model longitudinal button
