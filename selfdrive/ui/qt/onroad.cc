@@ -126,15 +126,17 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   main_layout->addWidget(btns_wrapper, 0, Qt::AlignBottom);
 
   // LockOn button
-  lockOnButton = new QPushButton("LockOn");
+  lockOnButton = new QPushButton("□");
   QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
     uiState()->scene.mlockOnDisp = !mlockOnDisp;
   });
-  lockOnButton->setFixedWidth(575);
+  lockOnButton->setFixedWidth(150);
   lockOnButton->setFixedHeight(150);
-  btns_layout->addStretch(4);
-  btns_layout->addWidget(lockOnButton, 0, Qt::AlignHCenter | Qt::AlignBottom);
-  btns_layout->addStretch(3);
+  btns_layout->addSpacing(500);
+  //btns_layout->addStretch(4);
+  btns_layout->addWidget(lockOnButton, 0, Qt::AlignRight);
+  //btns_layout->addStretch(3);
+  lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 75px; border-color: %1").arg(mlockOnButtonColors.at(mlockOnDisp)));
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
   // if (hide_model_long == "true"){

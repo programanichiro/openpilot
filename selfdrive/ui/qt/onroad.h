@@ -29,7 +29,7 @@ private:
 
   // model long button
   bool mlockOnDisp = true;  // triggers initialization
-  const QStringList mlockOnButtonColors = {"#b83737", "#37b868"};
+  const QStringList mlockOnButtonColors = {"#373737", "#37b868"};
 
 public slots:
   void updateState(const UIState &s);
