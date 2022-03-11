@@ -156,7 +156,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 void ButtonsWindow::updateState(const UIState &s) {
   if (mlockOnDisp != s.scene.mlockOnDisp) {  // update model longitudinal button
     mlockOnDisp = s.scene.mlockOnDisp;
-    mlButton->setStyleSheet(QString("font-size: 50px; border-radius: 25px; border-color: %1").arg(mlockOnButtonColors.at(lockOnButton)));
+    lockOnButton->setStyleSheet(QString("font-size: 50px; border-radius: 25px; border-color: %1").arg(mlockOnButtonColors.at(mlockOnDisp)));
 
     // MessageBuilder msg;
     // auto mlButtonEnabled = msg.initEvent().initModelLongButton();
