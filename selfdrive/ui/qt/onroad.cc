@@ -114,8 +114,25 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 
 // ***** onroad widgets *****
 
+bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
+  std::string txt = util::read_file(fn);
+  if(txt.empty() == false){
+    if ( txt == "0" ) {
+      return true; //ファイルが無効値なのでtrue
+    } else {
+      return false; //ファイルが有効値なのでfalse
+    }
+  } else {
+    return true; //ファイルがなければtrue
+  }
+}
+
+void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。flagは素直にtrueなら有効。
+  util::write_file(fn, (void*)(flag ? "0" : "1"), 1); //flagと書き込む数値文字列の意味が逆なので注意。
+}
+
 // ButtonsWindow
-const static char *btn_style = "font-size: 100px; border-radius: 75px; border-color: %1";
+const static char *btn_style = "font-size: 90px; border-radius: 75px; border-color: %1";
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
@@ -128,6 +145,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // LockOn button
+    mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
     QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mLockOnButton = !mLockOnButton;
@@ -142,6 +160,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Ctrl button
+    mAccelCtrlButton = getButtonEnabled("../manager/accel_ctrl_disable.txt");
     accelCtrlButton = new QPushButton("↑");
     QObject::connect(accelCtrlButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
@@ -155,6 +174,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Decel Ctrl button
+    mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
     decelCtrlButton = new QPushButton("↓");
     QObject::connect(decelCtrlButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
@@ -187,21 +207,19 @@ void ButtonsWindow::updateState(const UIState &s) {
   if (mLockOnButton != s.scene.mLockOnButton) {  // update model longitudinal button
     mLockOnButton = s.scene.mLockOnButton;
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
-
-    // MessageBuilder msg;
-    // auto mlButtonEnabled = msg.initEvent().initModelLongButton();
-    // mlButtonEnabled.setEnabled(mlEnabled);
-    // uiState()->pm->send("modelLongButton", msg);
+    setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
   }
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update model longitudinal button
     mAccelCtrlButton = s.scene.mAccelCtrlButton;
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
+    setButtonEnabled("../manager/accel_ctrl_disable.txt" , mAccelCtrlButton);
   }
 
   if (mDecelCtrlButton != s.scene.mDecelCtrlButton) {  // update model longitudinal button
     mDecelCtrlButton = s.scene.mDecelCtrlButton;
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
+    setButtonEnabled("../manager/decel_ctrl_disable.txt" , mDecelCtrlButton);
   }
 }
 
