@@ -158,7 +158,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // LockOn button
-    mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
+    uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
     QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mLockOnButton = !mLockOnButton;
@@ -173,7 +173,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Ctrl button
-    mAccelCtrlButton = false; //getButtonEnabled("../manager/accel_ctrl_disable.txt");
+    uiState()->scene.mAccelCtrlButton = mAccelCtrlButton = getButtonEnabled("../manager/accel_ctrl_disable.txt");
     accelCtrlButton = new QPushButton("↑");
     QObject::connect(accelCtrlButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
@@ -187,7 +187,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Decel Ctrl button
-    mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
+    uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
     decelCtrlButton = new QPushButton("↓");
     QObject::connect(decelCtrlButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
