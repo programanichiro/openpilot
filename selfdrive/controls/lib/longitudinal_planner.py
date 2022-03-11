@@ -22,6 +22,8 @@ from common.params import Params
 PARAMS = Params()
 CVS_FRAME = 0
 handle_center = STEERING_CENTER
+accel_lead_ctrl = True
+decel_lead_ctrl = True
 
 def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
   Z1 = (X2-X1)/(Y1-Y2) - (X3-X2)/(Y2-Y3)
@@ -145,7 +147,22 @@ class Planner:
 #  }
     hasLead = sm['radarState'].leadOne.status
     add_v_by_lead = False #前走車に追いつくための増速処理
-    if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+
+    global accel_lead_ctrl
+    if CVS_FRAME % 30 == 13:
+      if os.path.isfile('./accel_ctrl_disable.txt'):
+        with open('./accel_ctrl_disable.txt','r') as fp:
+          accel_lead_ctrl_disable_str = fp.read()
+          if accel_lead_ctrl_disable_str:
+            accel_lead_ctrl_disable = int(accel_lead_ctrl_disable_str)
+            if accel_lead_ctrl_disable == 0:
+              accel_lead_ctrl = True
+            else:
+              accel_lead_ctrl = False
+      else:
+        accel_lead_ctrl = True
+
+    if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       d_rel = leadOne.dRel #前走者までの距離
       a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス
@@ -162,7 +179,22 @@ class Planner:
     limit_vc_h = V_CRUISE_MAX
     md = sm['modelV2']
     ml_csv = ""
-    if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE and PARAMS.get_bool("IsMetric"):
+
+    global decel_lead_ctrl
+    if CVS_FRAME % 30 == 29:
+      if os.path.isfile('./decel_ctrl_disable.txt'):
+        with open('./decel_ctrl_disable.txt','r') as fp:
+          decel_lead_ctrl_disable_str = fp.read()
+          if decel_lead_ctrl_disable_str:
+            decel_lead_ctrl_disable = int(decel_lead_ctrl_disable_str)
+            if decel_lead_ctrl_disable == 0:
+              decel_lead_ctrl = True
+            else:
+              decel_lead_ctrl = False
+      else:
+        decel_lead_ctrl = True
+
+    if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE and decel_lead_ctrl == True:
       path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       path_y = path_xyz[:,1]
       max_yp = 0
