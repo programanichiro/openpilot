@@ -909,6 +909,12 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 }
 
 void NvgWindow::paintGL() {
+  const int _width = width();  // for ButtonsWindow
+  if (prev_width != _width) {
+    emit resizeSignal(_width);
+    prev_width = _width;
+  }
+
   CameraViewWidget::paintGL();
 
   UIState *s = uiState();
