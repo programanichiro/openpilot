@@ -127,8 +127,21 @@ bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"�
   }
 }
 
+bool fp_error = false;
 void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。flagは素直にtrueなら有効。
-  util::write_file(fn, (void*)(flag ? "0" : "1"), 1); //flagと書き込む数値文字列の意味が逆なので注意。
+  //util::write_file(fn, (void*)(flag ? "0" : "1"), 1); //flagと書き込む数値文字列の意味が逆なので注意。
+  FILE *fp = fopen(fn,"w");
+  if(fp != NULL){
+    fp_error = false;
+    if(flag == true){
+      fwrite("0",1,1,fp);
+    } else {
+      fwrite("1",1,1,fp);
+    }
+    fclose(fp);
+  } else {
+    fp_error = true;
+  }
 }
 
 // ButtonsWindow
@@ -206,19 +219,19 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 void ButtonsWindow::updateState(const UIState &s) {
   if (mLockOnButton != s.scene.mLockOnButton) {  // update model longitudinal button
     mLockOnButton = s.scene.mLockOnButton;
-    lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
+    lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
     setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
   }
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update model longitudinal button
     mAccelCtrlButton = s.scene.mAccelCtrlButton;
-    accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
+    accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/accel_ctrl_disable.txt" , mAccelCtrlButton);
   }
 
   if (mDecelCtrlButton != s.scene.mDecelCtrlButton) {  // update model longitudinal button
     mDecelCtrlButton = s.scene.mDecelCtrlButton;
-    decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
+    decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/decel_ctrl_disable.txt" , mDecelCtrlButton);
   }
 }
