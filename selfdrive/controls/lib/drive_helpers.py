@@ -18,7 +18,7 @@ CAR_ROTATION_RADIUS = 0.0
 
 # this corresponds to 80deg/s and 20deg/s steering angle in a toyota corolla
 #MAX_CURVATURE_RATES = [0.03762194918267951, 0.003441203371932992]
-MAX_CURVATURE_RATES = [0.03762194918267951 * 2.5, 0.03762194918267951 * 0.7] #藤沢警察署前Y字路カーブ、キコーナ前上りカーブ、養命寺横カーブ成功
+MAX_CURVATURE_RATES = [0.03762194918267951 * 2.5, 0.03762194918267951 * 0.9] #藤沢警察署前Y字路カーブ、キコーナ前上りカーブ、養命寺横カーブ、吹上下り走行車線成功
 MAX_CURVATURE_RATE_SPEEDS = [0, 35]
 
 CRUISE_LONG_PRESS = 50
@@ -117,7 +117,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
 
   max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
   vv2 = v_ego if v_ego >= 31/3.6 else 31/3.6 #この速度(31km/h)以下はk_vが上がらないようにする
-  k_v = 1.0 if vv2 >= 65/3.6 else 1+ (1 - vv2 / (65/3.6))*0.8 # 1〜0 -> 1〜1.8(65km/h以上はk_v=1)
+  k_v = 1.0 if vv2 >= 75/3.6 else 1+ (1 - vv2 / (75/3.6))*0.8 # 1〜0 -> 1〜1.8(75km/h以上はk_v=1)
   safe_desired_curvature_rate = clip(desired_curvature_rate *k_v,
                                           -max_curvature_rate,
                                           max_curvature_rate)
