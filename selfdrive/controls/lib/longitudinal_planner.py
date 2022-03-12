@@ -34,9 +34,10 @@ def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
   C = Y1 - A / (X1 - B)
   return (A,B,C)
 
-LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 86-4      ,60-4      ,47-4      )
-#LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(8.7,11.6,23.0 , 96-4+3+1+4,72-4+4+3+3,60-4+5+6+2)
-LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(8.7,13.0,25.0 , 112,93,81)
+#LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 86-4      ,60-4      ,47-4      )
+LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,65-4      ,49-4      )
+#LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(8.7,13.0,25.0 , 112,93,81)
+LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(9.5,13.0,25.0 , 116,98,87)
 
 OP_ENABLE_PREV = False
 OP_ENABLE_v_cruise_kph = 0
@@ -211,7 +212,7 @@ class Planner:
       #    ml_csv += '%0.2f,' % i
     v_cruise_kph_org = v_cruise_kph
     limit_vc_th = 95-5 #85-5 #80-4
-    limit_vc_tl = 65-4 #70-4
+    limit_vc_tl = 50-4 #65-4 #70-4
     if v_cruise_kph_org > limit_vc_th:
       limit_vc = limit_vc_h
     elif v_cruise_kph_org >= limit_vc_tl:
