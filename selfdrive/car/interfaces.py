@@ -164,7 +164,8 @@ class CarInterfaceBase(ABC):
       ACCEL_PUSH_COUNT = 0
 
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
-    if (cs_out.vEgo * 3.6 > 1 and (engage_disable == True or cs_out.gasPressed and not self.CS.out.gasPressed)) or \
+    #if (cs_out.gasPressed and not self.CS.out.gasPressed) or \
+    if (cs_out.vEgo * 3.6 > 1 and engage_disable == True) or \
        (cs_out.brakePressed and (not self.CS.out.brakePressed or not cs_out.standstill)):
       events.add(EventName.pedalPressed)
 
