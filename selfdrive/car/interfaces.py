@@ -157,6 +157,15 @@ class CarInterfaceBase(ABC):
     global ACCEL_PUSH_COUNT
     engage_disable = False
     if cs_out.gasPressed:
+      accel_engaged = False
+      if os.path.isfile('./accel_engaged.txt'):
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+              accel_engaged = True
+      if accel_engaged == False and cs_out.gasPressed and not self.CS.out.gasPressed:
+        engage_disable = True
       ACCEL_PUSH_COUNT += 1
     else:
       if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
