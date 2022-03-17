@@ -39,6 +39,7 @@ LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,6
 #LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(8.7,13.0,25.0 , 112,93,81)
 LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(9.5,13.0,25.0 , 116,98,87)
 
+OP_ENABLE_ACCEL_RELEASE = False
 OP_ENABLE_PREV = False
 OP_ENABLE_v_cruise_kph = 0
 OP_ENABLE_gas_speed = 0
@@ -89,7 +90,7 @@ class Planner:
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
 
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -111,13 +112,16 @@ class Planner:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = v_ego
+      OP_ENABLE_ACCEL_RELEASE = False
     if sm['controlsState'].longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
-      if sm['carState'].gasPressed:
+      if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         OP_ENABLE_gas_speed = v_ego
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
+    if sm['carState'].gasPressed == False: #一旦アクセルを離したら、クルーズ速度は変更しない。変更を許すと、ACC速度とMAX速度の乖離が大きくなり過ぎる可能性があるから。
+      OP_ENABLE_ACCEL_RELEASE = True
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
     if OP_ENABLE_v_cruise_kph != 0:
