@@ -159,7 +159,7 @@ class CarInterfaceBase(ABC):
     if cs_out.gasPressed:
       ACCEL_PUSH_COUNT += 1
     else:
-      if ACCEL_PUSH_COUNT < 10:
+      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 10:
         engage_disable = True
       ACCEL_PUSH_COUNT = 0
 
