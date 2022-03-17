@@ -22,6 +22,7 @@ ACCEL_MIN = -3.5
 
 # generic car and radar interfaces
 
+ACCEL_PUSH_COUNT = 0
 
 class CarInterfaceBase(ABC):
   def __init__(self, CP, CarController, CarState):
@@ -153,8 +154,17 @@ class CarInterfaceBase(ABC):
     if cs_out.steerError:
       events.add(EventName.steerUnavailable)
 
+    global ACCEL_PUSH_COUNT
+    engage_disable = False
+    if cs_out.gasPressed:
+      ACCEL_PUSH_COUNT += 1
+    else:
+      if ACCEL_PUSH_COUNT < 10:
+        engage_disable = True
+      ACCEL_PUSH_COUNT = 0
+
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
-    if (cs_out.vEgo * 3.6 > 1 and cs_out.gasPressed and not self.CS.out.gasPressed) or \
+    if (cs_out.vEgo * 3.6 > 1 and engage_disable == True and cs_out.gasPressed and not self.CS.out.gasPressed) or \
        (cs_out.brakePressed and (not self.CS.out.brakePressed or not cs_out.standstill)):
       events.add(EventName.pedalPressed)
 
