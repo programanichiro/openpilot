@@ -180,7 +180,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(30, 400, 30, 30);
+  btns_layout->setContentsMargins(30, 400, 30, 15);
 
   main_layout->addWidget(btns_wrapper, 0, Qt::AlignRight);
 
