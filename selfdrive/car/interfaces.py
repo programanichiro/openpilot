@@ -22,6 +22,7 @@ ACCEL_MIN = -3.5
 
 # generic car and radar interfaces
 
+ACCEL_PUSH_COUNT = 0
 
 class CarInterfaceBase(ABC):
   def __init__(self, CP, CarController, CarState):
@@ -153,8 +154,27 @@ class CarInterfaceBase(ABC):
     if cs_out.steerError:
       events.add(EventName.steerUnavailable)
 
+    global ACCEL_PUSH_COUNT
+    engage_disable = False
+    if cs_out.gasPressed:
+      accel_engaged = False
+      if os.path.isfile('./accel_engaged.txt'):
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+              accel_engaged = True
+      if accel_engaged == False and cs_out.gasPressed and not self.CS.out.gasPressed:
+        engage_disable = True
+      ACCEL_PUSH_COUNT += 1
+    else:
+      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+        engage_disable = True
+      ACCEL_PUSH_COUNT = 0
+
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
-    if (cs_out.gasPressed and not self.CS.out.gasPressed) or \
+    #if (cs_out.gasPressed and not self.CS.out.gasPressed) or \
+    if (cs_out.vEgo * 3.6 > 1 and engage_disable == True) or \
        (cs_out.brakePressed and (not self.CS.out.brakePressed or not cs_out.standstill)):
       events.add(EventName.pedalPressed)
 

@@ -127,6 +127,19 @@ bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"�
   }
 }
 
+bool getButtonEnabled0(const char*fn){ //fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
+  std::string txt = util::read_file(fn);
+  if(txt.empty() == false){
+    if ( txt == "0" ) {
+      return false; //ファイルが無効値なのでfalse
+    } else {
+      return true; //ファイルが有効値なのでtrue
+    }
+  } else {
+    return false; //ファイルがなければfalse
+  }
+}
+
 bool fp_error = false;
 void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。flagは素直にtrueなら有効。
   //util::write_file(fn, (void*)(flag ? "0" : "1"), 1); //flagと書き込む数値文字列の意味が逆なので注意。
@@ -144,15 +157,30 @@ void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_d
   }
 }
 
+void setButtonEnabled0(const char*fn , bool flag){ //fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
+  FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
+  if(fp != NULL){
+    fp_error = false;
+    if(flag == true){
+      fwrite("1",1,1,fp);
+    } else {
+      fwrite("0",1,1,fp);
+    }
+    fclose(fp);
+  } else {
+    fp_error = true;
+  }
+}
+
 // ButtonsWindow
-const static char *btn_style = "font-size: 90px; border-radius: 75px; border-color: %1";
+const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(30, 400, 30, 30);
+  btns_layout->setContentsMargins(30, 400, 15, 30);
 
   main_layout->addWidget(btns_wrapper, 0, Qt::AlignRight);
 
@@ -164,7 +192,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mLockOnButton = !mLockOnButton;
     });
     lockOnButton->setFixedWidth(150);
-    lockOnButton->setFixedHeight(150);
+    lockOnButton->setFixedHeight(120);
     //btns_layout->addStretch(4);
     btns_layout->addWidget(lockOnButton);
     //btns_layout->addStretch(3);
@@ -179,8 +207,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
     });
     accelCtrlButton->setFixedWidth(150);
-    accelCtrlButton->setFixedHeight(150);
-    btns_layout->addSpacing(50);
+    accelCtrlButton->setFixedHeight(120);
+    btns_layout->addSpacing(10);
     btns_layout->addWidget(accelCtrlButton);
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
   }
@@ -193,10 +221,25 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
     });
     decelCtrlButton->setFixedWidth(150);
-    decelCtrlButton->setFixedHeight(150);
-    btns_layout->addSpacing(50);
+    decelCtrlButton->setFixedHeight(120);
+    btns_layout->addSpacing(10);
     btns_layout->addWidget(decelCtrlButton);
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
+  }
+
+
+  {
+    // Accel Engage button
+    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonEnabled0("../manager/accel_engaged.txt");
+    accelEngagedButton = new QPushButton("A");
+    QObject::connect(accelEngagedButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton;
+    });
+    accelEngagedButton->setFixedWidth(150);
+    accelEngagedButton->setFixedHeight(120);
+    btns_layout->addSpacing(10);
+    btns_layout->addWidget(accelEngagedButton);
+    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton)));
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
@@ -209,7 +252,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       color: white;
       text-align: center;
       padding: 0px;
-      border-width: 12px;
+      border-width: 8px;
       border-style: solid;
       background-color: rgba(75, 75, 75, 0.3);
     }
@@ -217,23 +260,29 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 }
 
 void ButtonsWindow::updateState(const UIState &s) {
-  if (mLockOnButton != s.scene.mLockOnButton) {  // update model longitudinal button
+  if (mLockOnButton != s.scene.mLockOnButton) {  // update mLockOnButton
     mLockOnButton = s.scene.mLockOnButton;
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
     setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
     disp_lockon = mLockOnButton;
   }
 
-  if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update model longitudinal button
+  if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update mAccelCtrlButton
     mAccelCtrlButton = s.scene.mAccelCtrlButton;
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/accel_ctrl_disable.txt" , mAccelCtrlButton);
   }
 
-  if (mDecelCtrlButton != s.scene.mDecelCtrlButton) {  // update model longitudinal button
+  if (mDecelCtrlButton != s.scene.mDecelCtrlButton) {  // update mDecelCtrlButton
     mDecelCtrlButton = s.scene.mDecelCtrlButton;
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/decel_ctrl_disable.txt" , mDecelCtrlButton);
+  }
+
+  if (mAccelEngagedButton != s.scene.mAccelEngagedButton) {  // update mAccelEngagedButton
+    mAccelEngagedButton = s.scene.mAccelEngagedButton;
+    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton && fp_error==false)));
+    setButtonEnabled0("../manager/accel_engaged.txt" , mAccelEngagedButton);
   }
 }
 

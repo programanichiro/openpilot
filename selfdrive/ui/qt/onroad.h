@@ -20,6 +20,7 @@ private:
   QPushButton *lockOnButton;
   QPushButton *accelCtrlButton;
   QPushButton *decelCtrlButton;
+  QPushButton *accelEngagedButton;
 
   // int dfStatus = -1;  // always initialize style sheet and send msg
   // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
@@ -33,6 +34,7 @@ private:
   bool mLockOnButton = true;  // triggers initialization
   bool mAccelCtrlButton = true;  // triggers initialization
   bool mDecelCtrlButton = true;  // triggers initialization
+  bool mAccelEngagedButton = false;  // triggers initialization
 
 public slots:
   void updateState(const UIState &s);
