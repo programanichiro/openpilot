@@ -252,7 +252,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       color: white;
       text-align: center;
       padding: 0px;
-      border-width: 12px;
+      border-width: 8px;
       border-style: solid;
       background-color: rgba(75, 75, 75, 0.3);
     }
