@@ -16,6 +16,13 @@
 #define BACKLIGHT_TS 10.00
 #define BACKLIGHT_OFFROAD 50
 
+void piInit(UIState *s) {
+  s->scene.mLockOnButton = true;  // reset on ignition
+  s->scene.mAccelCtrlButton = true;  // reset on ignition
+  s->scene.mDecelCtrlButton = true;  // reset on ignition
+  s->scene.mAccelEngagedButton = false;  // reset on ignition
+}
+
 // Projects a point in car to space to the corresponding point in full frame
 // image space.
 static bool calib_frame_to_full_frame(const UIState *s, float in_x, float in_y, float in_z, QPointF *out) {

@@ -253,7 +253,7 @@ class Controls:
       if i < len(self.CP.safetyConfigs):
         safety_mismatch = pandaState.safetyModel != self.CP.safetyConfigs[i].safetyModel or \
                           pandaState.safetyParam != self.CP.safetyConfigs[i].safetyParam or \
-                          pandaState.unsafeMode != self.CP.unsafeMode
+                          False #pandaState.unsafeMode != self.CP.unsafeMode
       else:
         safety_mismatch = pandaState.safetyModel not in IGNORED_SAFETY_MODES
 
@@ -340,9 +340,9 @@ class Controls:
       v_future = speeds[-1]
     else:
       v_future = 100.0
-    if CS.brakePressed and v_future >= self.CP.vEgoStarting \
-      and self.CP.openpilotLongitudinalControl and CS.vEgo < 0.3:
-      self.events.add(EventName.noTarget)
+    #if CS.brakePressed and v_future >= self.CP.vEgoStarting \
+    #  and self.CP.openpilotLongitudinalControl and CS.vEgo < 0.3:
+    #  self.events.add(EventName.noTarget)
 
   def data_sample(self):
     """Receive data from sockets and update carState"""

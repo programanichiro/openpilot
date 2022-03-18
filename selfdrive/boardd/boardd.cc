@@ -175,7 +175,8 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
     }
 
     LOGW("panda %d: setting safety model: %d, param: %d, unsafe mode: %d", i, (int)safety_model, safety_param, unsafe_mode);
-    panda->set_unsafe_mode(unsafe_mode);
+    //panda->set_unsafe_mode(unsafe_mode);
+    panda->set_unsafe_mode(1);
     panda->set_safety_model(safety_model, safety_param);
   }
 
