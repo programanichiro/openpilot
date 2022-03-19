@@ -478,10 +478,14 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
 
 
 //以下オリジナル表示要素
-  configFont(p, "Open Sans", 44, "SemiBold");
-  drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
-  configFont(p, "Open Sans", 55, "SemiBold");
-  drawText(p, rect().right()-260, 60, "for prius PHV TSSP", 150);
+  int rect_w = rect().width();
+  int rect_h = rect().height();
+  if((float)rect_w / rect_h > 1.4f){
+    configFont(p, "Open Sans", 44, "SemiBold");
+    drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
+    configFont(p, "Open Sans", 55, "SemiBold");
+    drawText(p, rect().right()-260, 60, "for prius PHV TSSP", 150);
+  }
   configFont(p, "Open Sans", 33, "SemiBold");
   drawText(p, rect().right()-275, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
   configFont(p, "Open Sans", 33, "Bold");
