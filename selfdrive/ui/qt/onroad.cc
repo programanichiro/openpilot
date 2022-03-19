@@ -429,7 +429,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   int rect_h = rect().height();
   if((float)rect_w / rect_h > 1.4f){
     max_disp_k = 1.3;
-    max_disp_a =* max_disp_k;
+    max_disp_a *= max_disp_k;
   }
 
   QRect rc(bdr_s * 2, bdr_s * 1.5+y_ofs, 184*max_disp_k, 202*max_disp_k);
