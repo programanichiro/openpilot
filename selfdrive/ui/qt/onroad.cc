@@ -444,6 +444,9 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
     } else if(maxSpeed.mid(maxSpeed.length()-1,1) == "."){ //末尾ピリオドで減速
       ms = maxSpeed.mid(0,maxSpeed.length()-1);
       p.setPen(QPen(QColor(0xff, 0, 0, 200), 10)); //減速時は赤
+    } else if(maxSpeed.mid(maxSpeed.length()-1,1) == ";"){ //末尾セミコロンで黄色
+      ms = maxSpeed.mid(0,maxSpeed.length()-1);
+      p.setPen(QPen(QColor(0xff, 0xff, 0, 200), 10)); //黄色
     } else {
       p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
     }
