@@ -425,9 +425,11 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   // max speed
   float max_disp_k = 1.8;
   float max_disp_a = 50;
-  int rect_w = rect().width();
-  int rect_h = rect().height();
+  const int rect_w = rect().width();
+  const int rect_h = rect().height();
   if((float)rect_w / rect_h > 1.4f){
+  } else {
+    max_disp_a /= max_disp_k;
     max_disp_k = 1.3;
     max_disp_a *= max_disp_k;
   }
