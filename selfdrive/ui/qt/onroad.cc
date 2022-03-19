@@ -425,6 +425,13 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   // max speed
   float max_disp_k = 1.8;
   float max_disp_a = 50;
+  int rect_w = rect().width();
+  int rect_h = rect().height();
+  if((float)rect_w / rect_h > 1.4f){
+    max_disp_k = 1.3;
+    max_disp_a =* max_disp_k;
+  }
+
   QRect rc(bdr_s * 2, bdr_s * 1.5+y_ofs, 184*max_disp_k, 202*max_disp_k);
 #if 0
   p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
@@ -478,8 +485,6 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
 
 
 //以下オリジナル表示要素
-  int rect_w = rect().width();
-  int rect_h = rect().height();
   if((float)rect_w / rect_h > 1.4f){
     configFont(p, "Open Sans", 44, "SemiBold");
     drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
