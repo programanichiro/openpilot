@@ -322,8 +322,8 @@ class Controls:
         if not self.sm['liveLocationKalman'].gpsOK and (self.distance_traveled > 1000):
           # Not show in first 1 km to allow for driving out of garage. This event shows after 5 minutes
           self.events.add(EventName.noGps)
-      if not self.sm.all_alive(self.camera_packets):
-        self.events.add(EventName.cameraMalfunction)
+      #if not self.sm.all_alive(self.camera_packets):
+      #  self.events.add(EventName.cameraMalfunction)
       if self.sm['modelV2'].frameDropPerc > 20:
         self.events.add(EventName.modeldLagging)
       if self.sm['liveLocationKalman'].excessiveResets:
