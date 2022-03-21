@@ -127,7 +127,7 @@ bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"�
   }
 }
 
-bool getButtonEnabled0(const char*fn){ //fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
+bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
     if ( txt == "0" ) {
@@ -138,6 +138,20 @@ bool getButtonEnabled0(const char*fn){ //fn="../manager/accel_engaged.txt"など
   } else {
     return false; //ファイルがなければfalse
   }
+}
+
+int getButtonInt(const char*fn){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。あとは0〜3までの数字を返す
+  std::string txt = util::read_file(fn);
+  if(txt.empty() == false){
+    if ( txt == "1" ) {
+      return 1;
+    } else if ( txt == "2" ) {
+      return 2;
+    } else if ( txt == "3" ) {
+      return 3;
+    }
+  }
+  return 0;
 }
 
 bool fp_error = false;
@@ -157,12 +171,31 @@ void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_d
   }
 }
 
-void setButtonEnabled0(const char*fn , bool flag){ //fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
+void setButtonEnabled0(const char*fn , bool flag){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
     if(flag == true){
       fwrite("1",1,1,fp);
+    } else {
+      fwrite("0",1,1,fp);
+    }
+    fclose(fp);
+  } else {
+    fp_error = true;
+  }
+}
+
+void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。num(0〜3)はそのまま数字で。
+  FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
+  if(fp != NULL){
+    fp_error = false;
+    if(num == 1){
+      fwrite("1",1,1,fp);
+    } else if(num == 2){
+      fwrite("2",1,1,fp);
+    } else if(num == 3){
+      fwrite("3",1,1,fp);
     } else {
       fwrite("0",1,1,fp);
     }
@@ -230,16 +263,16 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Engage button
-    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonEnabled0("../manager/accel_engaged.txt");
-    accelEngagedButton = new QPushButton("A");
+    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt");
+    accelEngagedButton = new QPushButton("A"); //ここを2ならAA(ALL ACCEL)とかにする
     QObject::connect(accelEngagedButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton;
+      uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2にすれば良い
     });
     accelEngagedButton->setFixedWidth(150);
     accelEngagedButton->setFixedHeight(120);
     btns_layout->addSpacing(10);
     btns_layout->addWidget(accelEngagedButton);
-    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton)));
+    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
@@ -281,8 +314,9 @@ void ButtonsWindow::updateState(const UIState &s) {
 
   if (mAccelEngagedButton != s.scene.mAccelEngagedButton) {  // update mAccelEngagedButton
     mAccelEngagedButton = s.scene.mAccelEngagedButton;
-    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton && fp_error==false)));
-    setButtonEnabled0("../manager/accel_engaged.txt" , mAccelEngagedButton);
+    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0 && fp_error==false)));
+    //ここでボタンのラベルを変えられないかな？mAccelEngagedButton == 2でAAとかにしたい。
+    setButtonInt("../manager/accel_engaged.txt" , mAccelEngagedButton);
   }
 }
 

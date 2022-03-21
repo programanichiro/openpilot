@@ -34,7 +34,7 @@ private:
   bool mLockOnButton = true;  // triggers initialization
   bool mAccelCtrlButton = true;  // triggers initialization
   bool mDecelCtrlButton = true;  // triggers initialization
-  bool mAccelEngagedButton = false;  // triggers initialization
+  int mAccelEngagedButton = 0;  // triggers initialization
 
 public slots:
   void updateState(const UIState &s);
