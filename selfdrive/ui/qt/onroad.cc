@@ -210,12 +210,42 @@ const static char *btn_style = "font-size: 90px; border-radius: 20px; border-col
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
+  QWidget *btns_wrapper0 = new QWidget;
+  QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
+  btns_wrapper0->setSpacing(0);
+  btns_wrapper0->setContentsMargins(15, 0, 15, 30);
+  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignLeft);
+
+  QWidget *btns_wrapperL = new QWidget;
+  QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
+  btns_layoutL->setSpacing(0);
+  btns_layoutL->setContentsMargins(15, 400, 30, 30);
+
+  btns_wrapper0->addWidget(btns_wrapperL, 0, Qt::AlignLeft);
+
+  {
+    // Handle Ctrl button
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
+    handleCtrlButton = new QPushButton("↔︎");
+    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
+    });
+    handleCtrlButton->setFixedWidth(150);
+    handleCtrlButton->setFixedHeight(120);
+    btns_layoutL->addSpacing(100);
+    btns_layoutL->addWidget(handleCtrlButton);
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
+  }
+
+
+
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
   btns_layout->setContentsMargins(30, 400, 15, 30);
 
-  main_layout->addWidget(btns_wrapper, 0, Qt::AlignRight);
+  btns_wrapper0->addStretch();
+  btns_wrapper0->addWidget(btns_wrapper, 0, Qt::AlignRight);
 
   {
     // LockOn button
@@ -274,28 +304,6 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     btns_layout->addWidget(accelEngagedButton);
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
-
-  QWidget *btns_wrapperL = new QWidget;
-  QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
-  btns_layoutL->setSpacing(0);
-  btns_layoutL->setContentsMargins(15, 400, 30, 30);
-
-  main_layout->addWidget(btns_wrapperL, 0, Qt::AlignLeft);
-
-  {
-    // Handle Ctrl button
-    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
-    handleCtrlButton = new QPushButton("↔︎");
-    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
-    });
-    handleCtrlButton->setFixedWidth(150);
-    handleCtrlButton->setFixedHeight(120);
-    btns_layoutL->addSpacing(100);
-    btns_layoutL->addWidget(handleCtrlButton);
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
-  }
-
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
   // if (hide_model_long == "true"){
