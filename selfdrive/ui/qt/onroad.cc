@@ -213,15 +213,16 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0 = new QWidget;
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
+  btns_layout0->setFixedWidth(rect().width());
   btns_layout0->setContentsMargins(15, 0, 15, 30);
-  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignLeft);
+  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignLeft);
 
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
   btns_layoutL->setSpacing(0);
   btns_layoutL->setContentsMargins(15, 400, 30, 30);
 
-  btns_layout0->addWidget(btns_wrapperL, 0, Qt::AlignLeft);
+  btns_layout0->addWidget(btns_wrapperL, 0, Qt::AlignTop | Qt::AlignLeft);
 
   {
     // Handle Ctrl button
@@ -243,7 +244,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout->setContentsMargins(30, 400, 15, 30);
 
   btns_layout0->addStretch(1);
-  btns_layout0->addWidget(btns_wrapper, 0, Qt::AlignRight);
+  btns_layout0->addWidget(btns_wrapper, 0, Qt::AlignTop | Qt::AlignRight);
 
   {
     // LockOn button
