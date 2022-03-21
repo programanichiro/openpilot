@@ -254,7 +254,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     lockOnButton->setFixedWidth(150);
     lockOnButton->setFixedHeight(120);
     //btns_layout->addStretch(4);
-    btns_layout->addWidget(lockOnButton);
+    btns_layout->addWidget(lockOnButton,0,Qt::AlignRight);
     //btns_layout->addStretch(3);
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
   }
@@ -269,7 +269,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelCtrlButton->setFixedWidth(150);
     accelCtrlButton->setFixedHeight(120);
     btns_layout->addSpacing(10);
-    btns_layout->addWidget(accelCtrlButton);
+    btns_layout->addWidget(accelCtrlButton,0,Qt::AlignRight);
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
   }
 
@@ -283,7 +283,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     decelCtrlButton->setFixedWidth(150);
     decelCtrlButton->setFixedHeight(120);
     btns_layout->addSpacing(10);
-    btns_layout->addWidget(decelCtrlButton);
+    btns_layout->addWidget(decelCtrlButton,0,Qt::AlignRight);
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
@@ -298,7 +298,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelEngagedButton->setFixedWidth(150);
     accelEngagedButton->setFixedHeight(120);
     btns_layout->addSpacing(10);
-    btns_layout->addWidget(accelEngagedButton);
+    btns_layout->addWidget(accelEngagedButton,0,Qt::AlignRight);
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
 
