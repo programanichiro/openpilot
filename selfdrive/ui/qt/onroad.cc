@@ -232,7 +232,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     handleCtrlButton->setFixedWidth(150);
     handleCtrlButton->setFixedHeight(120);
-    btns_layoutL->addSpacing(100);
+    btns_layoutL->addSpacing(0);
     btns_layoutL->addWidget(handleCtrlButton);
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
   }
@@ -242,7 +242,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout->setSpacing(0);
   btns_layout->setContentsMargins(30, 400, 15, 30);
 
-  btns_layout0->addStretch();
+  btns_layout0->addStretch(1);
   btns_layout0->addWidget(btns_wrapper, 0, Qt::AlignRight);
 
   {
