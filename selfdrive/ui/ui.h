@@ -113,6 +113,7 @@ typedef struct UIScene {
   bool mAccelCtrlButton = true;
   bool mDecelCtrlButton = true;
   int mAccelEngagedButton = 0;
+  bool mHandleCtrlButton = true;
 
 } UIScene;
 

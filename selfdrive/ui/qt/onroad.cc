@@ -275,6 +275,28 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
 
+  QWidget *btns_wrapperL = new QWidget;
+  QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
+  btns_layoutL->setSpacing(0);
+  btns_layoutL->setContentsMargins(15, 400, 30, 30);
+
+  main_layout->addWidget(btns_wrapperL, 0, Qt::AlignLeft);
+
+  {
+    // Handle Ctrl button
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
+    handleCtrlButton = new QPushButton("↔︎");
+    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
+    });
+    handleCtrlButton->setFixedWidth(150);
+    handleCtrlButton->setFixedHeight(120);
+    btns_layoutL->addSpacing(100);
+    btns_layoutL->addWidget(handleCtrlButton);
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
+  }
+
+
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
   // if (hide_model_long == "true"){
   //   mlButton->hide();
@@ -317,6 +339,12 @@ void ButtonsWindow::updateState(const UIState &s) {
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0 && fp_error==false)));
     //ここでボタンのラベルを変えられないかな？mAccelEngagedButton == 2でAAとかにしたい。
     setButtonInt("../manager/accel_engaged.txt" , mAccelEngagedButton);
+  }
+
+  if (mHandleCtrlButton != s.scene.mHandleCtrlButton) {  // update mHandleCtrlButton
+    mHandleCtrlButton = s.scene.mHandleCtrlButton;
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton && fp_error==false)));
+    setButtonEnabled("../manager/handle_ctrl_disable.txt" , mHandleCtrlButton);
   }
 }
 
