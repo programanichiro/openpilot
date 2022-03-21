@@ -232,7 +232,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     handleCtrlButton->setFixedWidth(150);
     handleCtrlButton->setFixedHeight(120);
-    btns_layoutL->addSpacing(0);
+    btns_layoutL->addSpacing(70);
     btns_layoutL->addWidget(handleCtrlButton);
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
   }
@@ -494,8 +494,9 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   float max_disp_a = 50;
   const int rect_w = rect().width();
   const int rect_h = rect().height();
-  if((float)rect_w / rect_h > 1.4f){
+  if(false && (float)rect_w / rect_h > 1.4f){
   } else {
+    //こちらの大きさを採用。
     max_disp_k = 1.3;
     max_disp_a = 20;
   }
