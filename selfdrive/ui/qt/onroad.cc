@@ -242,8 +242,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout->setSpacing(0);
   btns_layout->setContentsMargins(30, 400, 15, 30);
 
-  btns_layout0->addSpacing(rect().width() - (15+150)*2);
-  btns_layout0->addWidget(btns_wrapper, 0, Qt::AlignTop | Qt::AlignRight);
+  btns_layout0->addStretch();
+  btns_layout0->addWidget(btns_wrapper);
 
   {
     // LockOn button
