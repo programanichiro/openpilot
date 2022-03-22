@@ -12,7 +12,7 @@
 #include "selfdrive/common/watchdog.h"
 #include "selfdrive/hardware/hw.h"
 
-#define BACKLIGHT_DT 0.05
+#define BACKLIGHT_DT 20 //0.05
 #define BACKLIGHT_TS 10.00
 #define BACKLIGHT_OFFROAD 50
 
