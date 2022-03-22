@@ -199,4 +199,4 @@ class LanePlanner:
     #  dcm = -dcm
 #    if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
 #      dcm -= self.camera_offset #レーンレスモデル用のカメラオフセット反映値
-    return dcm
+    return dcm * 0.71 #現在の舵力だと少し落とした方が総じて良いか？
