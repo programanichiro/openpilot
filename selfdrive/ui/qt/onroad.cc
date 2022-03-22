@@ -221,7 +221,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layoutL->setSpacing(0);
   btns_layoutL->setContentsMargins(15, 400, 30, 30);
 
-  btns_layout0->addWidget(btns_wrapperL,5);
+  btns_layout0->addWidget(btns_wrapperL,5,Qt::AlignHCenter);
 
   {
     // LockOn button
@@ -248,7 +248,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelEngagedButton->setFixedWidth(150);
     accelEngagedButton->setFixedHeight(130);
     btns_layoutL->addSpacing(10);
-    btns_layoutL->addWidget(accelEngagedButton,0,Qt::AlignRight);
+    btns_layoutL->addWidget(accelEngagedButton);
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
 
@@ -257,7 +257,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout->setSpacing(0);
   btns_layout->setContentsMargins(30, 400, 15, 30);
 
-  btns_layout0->addWidget(btns_wrapper,5);
+  btns_layout0->addWidget(btns_wrapper,5,Qt::AlignHCenter);
 
   {
     // Accel Ctrl button
