@@ -93,8 +93,8 @@ const LogCameraInfo cameras_logged[] = {
     .downscale = false,
     .has_qcamera = false,
     .trigger_rotate = true,
-    .enable = Hardware::TICI(),
-    .record = Hardware::TICI(),
+    .enable = false, //Hardware::TICI(),
+    .record = false, //Hardware::TICI(),
   },
 };
 const LogCameraInfo qcam_info = {
