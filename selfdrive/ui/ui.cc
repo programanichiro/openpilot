@@ -12,7 +12,7 @@
 #include "selfdrive/common/watchdog.h"
 #include "selfdrive/hardware/hw.h"
 
-#define BACKLIGHT_DT 40 //0.05
+#define BACKLIGHT_DT 0.05
 #define BACKLIGHT_TS 10.00
 #define BACKLIGHT_OFFROAD 50
 
@@ -300,6 +300,7 @@ void Device::updateBrightness(const UIState &s) {
     // Scale back to 10% to 100%
     clipped_brightness = std::clamp(100.0f * clipped_brightness, 10.0f, 100.0f);
   }
+  clipped_brightness = 50;
 
   int brightness = brightness_filter.update(clipped_brightness);
   if (!awake) {
