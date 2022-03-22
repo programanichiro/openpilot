@@ -97,7 +97,7 @@ def snapshot():
     if not PC:
       managed_processes['camerad'].start()
 
-    frame = "wideRoadCameraState" if TICI else "roadCameraState"
+    frame = "wideRoadCameraState" if False and TICI else "roadCameraState"
     front_frame = "driverCameraState" if front_camera_allowed else None
     focus_perc_threshold = 0. if TICI else 10 / 12.
 
