@@ -99,7 +99,7 @@ def snapshot():
 
     frame = "wideRoadCameraState" if False and TICI else "roadCameraState"
     front_frame = "driverCameraState" if front_camera_allowed else None
-    focus_perc_threshold = 0. if TICI else 10 / 12.
+    focus_perc_threshold = 0. if False and TICI else 10 / 12.
 
     rear, front = get_snapshots(frame, front_frame, focus_perc_threshold)
   finally:
