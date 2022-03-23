@@ -219,7 +219,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
   btns_layoutL->setSpacing(0);
-  btns_layoutL->setContentsMargins(15, 400, 0, 30);
+  btns_layoutL->setContentsMargins(15, 430, 0, 30);
 
   btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
 
@@ -232,7 +232,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     handleCtrlButton->setFixedWidth(150);
     handleCtrlButton->setFixedHeight(150);
-    btns_layoutL->addSpacing(15);
+    //btns_layoutL->addSpacing(70);
     btns_layoutL->addWidget(handleCtrlButton);
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
   }
@@ -246,7 +246,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     lockOnButton->setFixedWidth(150);
     lockOnButton->setFixedHeight(150);
-    //btns_layoutL->addSpacing(70);
+    btns_layoutL->addSpacing(15);
     btns_layoutL->addWidget(lockOnButton);
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
   }
@@ -254,7 +254,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(30, 400, 15, 30);
+  btns_layout->setContentsMargins(15, 430, 30, 30);
 
   btns_layout0->addWidget(btns_wrapper,0,Qt::AlignVCenter);
 
