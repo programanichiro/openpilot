@@ -216,6 +216,41 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout0->setContentsMargins(30, 0, 30, 30);
   main_layout->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignRight);
 
+  QWidget *btns_wrapperL = new QWidget;
+  QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
+  btns_layoutL->setSpacing(0);
+  btns_layoutL->setContentsMargins(15, 400, 0, 30);
+
+  btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
+
+  {
+    // Handle Ctrl button
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
+    handleCtrlButton = new QPushButton("↔︎");
+    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
+    });
+    handleCtrlButton->setFixedWidth(150);
+    handleCtrlButton->setFixedHeight(150);
+    btns_layoutL->addSpacing(15);
+    btns_layoutL->addWidget(handleCtrlButton);
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
+  }
+
+  {
+    // LockOn button
+    disp_lockon = uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
+    lockOnButton = new QPushButton("□");
+    QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mLockOnButton = !mLockOnButton;
+    });
+    lockOnButton->setFixedWidth(150);
+    lockOnButton->setFixedHeight(150);
+    //btns_layoutL->addSpacing(70);
+    btns_layoutL->addWidget(lockOnButton);
+    lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
+  }
+
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
@@ -238,20 +273,6 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   }
 
   {
-    // Handle Ctrl button
-    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
-    handleCtrlButton = new QPushButton("↔︎");
-    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
-    });
-    handleCtrlButton->setFixedWidth(150);
-    handleCtrlButton->setFixedHeight(150);
-    btns_layout->addSpacing(15);
-    btns_layout->addWidget(handleCtrlButton);
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
-  }
-
-  {
     // Decel Ctrl button
     uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
     decelCtrlButton = new QPushButton("↓");
@@ -265,27 +286,6 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
-  QWidget *btns_wrapperL = new QWidget;
-  QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
-  btns_layoutL->setSpacing(0);
-  btns_layoutL->setContentsMargins(15, 400, 15, 30);
-
-  btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
-
-  {
-    // LockOn button
-    disp_lockon = uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
-    lockOnButton = new QPushButton("□");
-    QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mLockOnButton = !mLockOnButton;
-    });
-    lockOnButton->setFixedWidth(150);
-    lockOnButton->setFixedHeight(150);
-    //btns_layoutL->addSpacing(70);
-    btns_layoutL->addWidget(lockOnButton);
-    lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
-  }
-
   {
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt");
@@ -296,8 +296,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     accelEngagedButton->setFixedWidth(150);
     accelEngagedButton->setFixedHeight(150);
-    btns_layoutL->addSpacing(15);
-    btns_layoutL->addWidget(accelEngagedButton);
+    btns_layout->addSpacing(15);
+    btns_layout->addWidget(accelEngagedButton);
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
 
