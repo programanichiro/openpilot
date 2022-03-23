@@ -233,7 +233,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelCtrlButton->setFixedWidth(150);
     accelCtrlButton->setFixedHeight(150);
     //btns_layout->addSpacing(10);
-    btns_layout->addWidget(accelCtrlButton;
+    btns_layout->addWidget(accelCtrlButton);
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
   }
 
