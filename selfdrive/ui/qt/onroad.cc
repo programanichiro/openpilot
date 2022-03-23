@@ -911,7 +911,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 
   painter.setPen(QPen(QColor(0, 245, 0, prob_alpha), 2));
   painter.setBrush(QColor(0, 0, 0, 0));
-  float ww = 300 , hh = 300;
+  float ww = 300 *1.25 , hh = 300 *1.25;
   float d = d_rel; //距離をロックターケットの大きさに反映させる。
   if(d < 1){
     d = 1;
