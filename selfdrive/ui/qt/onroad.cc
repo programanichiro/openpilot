@@ -587,7 +587,9 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
       angle_steer = std::stof(angle_steer_txt);
     }
     if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){ //低速では1.0だが、一緒くたにする
-      a2 = 200;
+      if(uiState()->scene.mHandleCtrlButton == true){
+        a2 = 200; //↔︎ボタンOFFで濃くしない。
+      }
     }
     if ( maxSpeed.contains(".", Qt::CaseInsensitive) == true ) {
       a1 = 200;
