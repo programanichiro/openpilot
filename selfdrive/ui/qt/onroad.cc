@@ -213,15 +213,64 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0 = new QWidget;
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
-  btns_layout0->setContentsMargins(15, 0, 15, 30);
-  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignTop);
+  btns_layout0->setContentsMargins(30, 0, 30, 30);
+  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignRight);
+
+  QWidget *btns_wrapper = new QWidget;
+  QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
+  btns_layout->setSpacing(0);
+  btns_layout->setContentsMargins(30, 400, 15, 30);
+
+  btns_layout0->addWidget(btns_wrapper,0,Qt::AlignVCenter);
+
+  {
+    // Accel Ctrl button
+    uiState()->scene.mAccelCtrlButton = mAccelCtrlButton = getButtonEnabled("../manager/accel_ctrl_disable.txt");
+    accelCtrlButton = new QPushButton("↑");
+    QObject::connect(accelCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
+    });
+    accelCtrlButton->setFixedWidth(150);
+    accelCtrlButton->setFixedHeight(150);
+    //btns_layout->addSpacing(10);
+    btns_layout->addWidget(accelCtrlButton;
+    accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
+  }
+
+  {
+    // Handle Ctrl button
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
+    handleCtrlButton = new QPushButton("↔︎");
+    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
+    });
+    handleCtrlButton->setFixedWidth(150);
+    handleCtrlButton->setFixedHeight(150);
+    btns_layout->addSpacing(15);
+    btns_layout->addWidget(handleCtrlButton);
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
+  }
+
+  {
+    // Decel Ctrl button
+    uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
+    decelCtrlButton = new QPushButton("↓");
+    QObject::connect(decelCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
+    });
+    decelCtrlButton->setFixedWidth(150);
+    decelCtrlButton->setFixedHeight(150);
+    btns_layout->addSpacing(15);
+    btns_layout->addWidget(decelCtrlButton);
+    decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
+  }
 
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
   btns_layoutL->setSpacing(0);
-  btns_layoutL->setContentsMargins(15, 400, 30, 30);
+  btns_layoutL->setContentsMargins(15, 400, 15, 30);
 
-  btns_layout0->addWidget(btns_wrapperL,5,Qt::AlignVCenter);
+  btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
 
   {
     // LockOn button
@@ -231,7 +280,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mLockOnButton = !mLockOnButton;
     });
     lockOnButton->setFixedWidth(150);
-    lockOnButton->setFixedHeight(130);
+    lockOnButton->setFixedHeight(150);
     //btns_layoutL->addSpacing(70);
     btns_layoutL->addWidget(lockOnButton);
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
@@ -246,59 +295,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 3; //0->1->2->0
     });
     accelEngagedButton->setFixedWidth(150);
-    accelEngagedButton->setFixedHeight(130);
-    btns_layoutL->addSpacing(10);
+    accelEngagedButton->setFixedHeight(150);
+    btns_layoutL->addSpacing(15);
     btns_layoutL->addWidget(accelEngagedButton);
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
-  }
-
-  QWidget *btns_wrapper = new QWidget;
-  QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
-  btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(30, 400, 15, 30);
-
-  btns_layout0->addWidget(btns_wrapper,5,Qt::AlignVCenter);
-
-  {
-    // Accel Ctrl button
-    uiState()->scene.mAccelCtrlButton = mAccelCtrlButton = getButtonEnabled("../manager/accel_ctrl_disable.txt");
-    accelCtrlButton = new QPushButton("↑");
-    QObject::connect(accelCtrlButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
-    });
-    accelCtrlButton->setFixedWidth(150);
-    accelCtrlButton->setFixedHeight(130);
-    //btns_layout->addSpacing(10);
-    btns_layout->addWidget(accelCtrlButton,0,Qt::AlignRight);
-    accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
-  }
-
-  {
-    // Handle Ctrl button
-    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
-    handleCtrlButton = new QPushButton("↔︎");
-    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
-    });
-    handleCtrlButton->setFixedWidth(150);
-    handleCtrlButton->setFixedHeight(130);
-    btns_layout->addSpacing(10);
-    btns_layout->addWidget(handleCtrlButton,0,Qt::AlignRight);
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
-  }
-
-  {
-    // Decel Ctrl button
-    uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
-    decelCtrlButton = new QPushButton("↓");
-    QObject::connect(decelCtrlButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
-    });
-    decelCtrlButton->setFixedWidth(150);
-    decelCtrlButton->setFixedHeight(130);
-    btns_layout->addSpacing(10);
-    btns_layout->addWidget(decelCtrlButton,0,Qt::AlignRight);
-    decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
