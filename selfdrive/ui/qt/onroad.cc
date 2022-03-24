@@ -113,7 +113,6 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 }
 
 // ***** onroad widgets *****
-static bool disp_lockon = true;
 bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
@@ -239,7 +238,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // LockOn button
-    disp_lockon = uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
+    uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
     QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mLockOnButton = !mLockOnButton;
@@ -323,7 +322,6 @@ void ButtonsWindow::updateState(const UIState &s) {
     mLockOnButton = s.scene.mLockOnButton;
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
     setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
-    disp_lockon = mLockOnButton;
   }
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update mAccelCtrlButton
@@ -956,7 +954,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 #endif
 
   configFont(painter, "Open Sans", 38, "SemiBold");
-  if(num == 0 && disp_lockon){
+  if(num == 0 && uiState()->scene.mLockOnButton){
     //推論1番
     painter.setPen(QPen(QColor(0, 245, 0, prob_alpha), 2));
     painter.drawRect(r);
@@ -1045,7 +1043,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
       painter.drawLine(r.center().x() , r.bottom()+tlw_2 , r.center().x() , r.bottom() + td);
     }
 
-  } else if(disp_lockon){
+  } else if(uiState()->scene.mLockOnButton){
     if(num == 1){
       //推論2番
       //邪魔な前右寄りを走るバイクを認識したい。
