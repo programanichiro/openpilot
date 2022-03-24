@@ -858,7 +858,7 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
     //float dist = d_rel; //lead_data.getT()[0];
     QString dist = QString::number(d_rel,'f',1) + "m";
     int str_w = 200;
-    dist += "<" + rect().height() + ">"; str_w += 500;
+    dist += "<" + QString::number(rect().height()) + ">"; str_w += 500;
 //    dist += "<" + QString::number(leads_num) + ">";
 //   int str_w = 600; //200;
 //    dist += QString::number(v_rel,'f',1) + "v";
