@@ -18,8 +18,8 @@ CAR_ROTATION_RADIUS = 0.0
 
 # this corresponds to 80deg/s and 20deg/s steering angle in a toyota corolla
 #MAX_CURVATURE_RATES = [0.03762194918267951, 0.003441203371932992]
-MAX_CURVATURE_RATES = [0.03762194918267951 * 2.2, 0.03762194918267951 * 0.7] #藤沢警察署前Y字路カーブ、キコーナ前上りカーブ、養命寺横カーブ、吹上下り走行車線成功,どこまで上がる？
-MAX_CURVATURE_RATE_SPEEDS = [0, 35]
+MAX_CURVATURE_RATES = [0.03762194918267951 * 2.9, 0.03762194918267951 * 1.2, 0.03762194918267951 * 0.7] #藤沢警察署前Y字路カーブ、キコーナ前上りカーブ、養命寺横カーブ、吹上下り走行車線成功,どこまで上がる？,低速域の限界を上げてみる。
+MAX_CURVATURE_RATE_SPEEDS = [0, 60/3.6 , 35]
 
 CRUISE_LONG_PRESS = 50
 CRUISE_NEAREST_FUNC = {
