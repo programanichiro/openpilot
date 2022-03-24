@@ -117,7 +117,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
 
   max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
   vv2 = v_ego if v_ego >= 31/3.6 else 31/3.6 #この速度(31km/h)以下はk_vが上がらないようにする
-  k_v = 1.0 if vv2 >= 75/3.6 else 1+ (1 - vv2 / (75/3.6))*(1.6-1) # 1〜0 -> 1〜1.6(75km/h以上はk_v=1)
+  k_v = 1.0 if vv2 >= 75/3.6 else 1+ (1 - vv2 / (75/3.6))*(1.9-1) # 1〜0 -> 1〜1.9(75km/h以上はk_v=1)
   safe_desired_curvature_rate = clip(desired_curvature_rate *k_v,
                                           -max_curvature_rate,
                                           max_curvature_rate)
