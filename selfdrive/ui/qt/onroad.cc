@@ -944,7 +944,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 
   ww = ww * 2 * 5 / d;
   hh = hh * 2 * 5 / d;
-  y = std::fmin(height() /*- sz * .6*/, y - hh - dh) + hh + dh;
+  y = std::fmin(height() /*- sz * .6*/, y - dh) + dh;
   QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
 
 #if 0
