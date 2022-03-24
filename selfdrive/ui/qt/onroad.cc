@@ -892,7 +892,8 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
   float x = std::clamp((float)vd.x(), 0.f, width() - sz / 2);
-  float y = std::fmin(height() /*- sz * .6*/, (float)vd.y());
+  //float y = std::fmin(height() /*- sz * .6*/, (float)vd.y());
+  float y = (float)vd.y();
 
   //float g_xo = sz / 5;
   //float g_yo = sz / 10;
@@ -943,6 +944,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 
   ww = ww * 2 * 5 / d;
   hh = hh * 2 * 5 / d;
+  y = std::fmin(height() /*- sz * .6*/, y - hh - dh) + hh + dh;
   QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
 
 #if 0
