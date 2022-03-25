@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import math
+import numpy as np
 from numbers import Number
 
 from cereal import car, log
@@ -13,7 +14,7 @@ from selfdrive.config import Conversions as CV
 from selfdrive.swaglog import cloudlog
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
-from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET
+from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET, STEERING_CENTER, TRAJECTORY_SIZE
 from selfdrive.controls.lib.drive_helpers import update_v_cruise, initialize_v_cruise
 from selfdrive.controls.lib.drive_helpers import get_lag_adjusted_curvature
 from selfdrive.controls.lib.longcontrol import LongControl
@@ -153,6 +154,10 @@ class Controls:
     self.logged_comm_issue = False
     self.button_timers = {ButtonEvent.Type.decelCruise: 0, ButtonEvent.Type.accelCruise: 0}
     self.last_actuators = car.CarControl.Actuators.new_message()
+
+    self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
+    self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
+    self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
@@ -496,7 +501,28 @@ class Controls:
 
       # Steering PID loop and lateral MPC
       lat_active = self.active and not CS.steerWarning and not CS.steerError and CS.vEgo > self.CP.minSteerSpeed
-      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,
+      md = self.sm['modelV2']
+      if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+        self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+        self.t_idxs = np.array(md.position.t)
+        self.plan_yaw = list(md.orientation.z)
+      if len(md.position.xStd) == TRAJECTORY_SIZE:
+        self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
+
+      STEER_CTRL_Y = CS.steeringAngleDeg
+      max_yp = 0
+      for yp in self.path_xyz[:,1]:
+        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+      handle_center = STEERING_CENTER # キャリブレーション前の手抜き
+      if os.path.isfile('./handle_center_info.txt'):
+        with open('./handle_center_info.txt','r') as fp:
+          handle_center_info_str = fp.read()
+          if handle_center_info_str:
+            handle_center = float(handle_center_info_str)
+      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
+        STEER_CTRL_Y = (-max_yp / 2.5)
+      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
                                                                              lat_plan.psis,
                                                                              lat_plan.curvatures,
                                                                              lat_plan.curvatureRates)
