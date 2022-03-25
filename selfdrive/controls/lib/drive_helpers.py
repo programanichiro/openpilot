@@ -18,7 +18,7 @@ CAR_ROTATION_RADIUS = 0.0
 
 # this corresponds to 80deg/s and 20deg/s steering angle in a toyota corolla
 #MAX_CURVATURE_RATES = [0.03762194918267951, 0.003441203371932992]
-MAX_CURVATURE_RATES = [0.03762194918267951 * 2.7, 0.03762194918267951 * 0.9] #藤沢警察署前Y字路カーブ、キコーナ前上りカーブ、養命寺横カーブ、吹上下り走行車線成功,どこまで上がる？,低速域の限界を上げてみる。
+MAX_CURVATURE_RATES = [0.03762194918267951 * 2.6, 0.03762194918267951 * 0.9] #藤沢警察署前Y字路カーブ、キコーナ前上りカーブ、養命寺横カーブ、吹上下り走行車線成功,どこまで上がる？,低速域の限界を上げてみる。
 MAX_CURVATURE_RATE_SPEEDS = [0, 35]
 
 CRUISE_LONG_PRESS = 50
@@ -117,9 +117,9 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
 
   max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
   vv2 = v_ego if v_ego >= 31/3.6 else 31/3.6 #この速度(31km/h)以下はk_vが上がらないようにする
-  #abs(steerAng):0〜13→1〜2.4
-  max_k_v = 2.4
-  abs_sta = abs(steerAng) / 13
+  #abs(steerAng):0〜10→1〜1.9
+  max_k_v = 1.9
+  abs_sta = abs(steerAng) / 10
   if abs_sta > 1:
     abs_sta = 1 # abs_sta:0〜1
   max_k_v = 1 + (max_k_v - 1) * abs_sta #max_k_v = 1〜max_k_v , ひとまずハンドル（前方カーブ予測含む）が10度で最大値になる。
