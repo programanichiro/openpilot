@@ -10,6 +10,8 @@ from selfdrive.swaglog import cloudlog
 STEER_SAME_DIRECTION_CT = 0
 STEER_OLD_ANGLE = 0
 STEERING_CENTER = -4.3
+DCM_FRAME = 0
+dcm_handle_ctrl = True
 if os.path.isfile('./handle_center_info.txt'):
   with open('./handle_center_info.txt','r') as fp:
     handle_center_info_str = fp.read()
@@ -128,7 +130,24 @@ class LanePlanner:
 
 #関数を最後に追加,dcm(ダイナミックカメラマージン？)名前がおかしいが、コーナーのイン側に寄せるオフセットである。
   def calc_dcm(self, st_angle, v_ego,clipped_lane_width,l_prob,r_prob):
-    #数値を実際に取得して、調整してみる。
+    #数値を実際に取得して、調整してみる。UIスイッチで車体寄せをやめるなら、ここでゼロを返せばいい。
+    global DCM_FRAME , dcm_handle_ctrl
+    if DCM_FRAME % 30 == 1:
+      if os.path.isfile('./handle_ctrl_disable.txt'):
+        with open('./handle_ctrl_disable.txt','r') as fp:
+          dcm_handle_ctrl_disable_str = fp.read()
+          if dcm_handle_ctrl_disable_str:
+            dcm_handle_ctrl_disable = int(dcm_handle_ctrl_disable_str)
+            if dcm_handle_ctrl_disable == 0:
+              dcm_handle_ctrl = True
+            else:
+              dcm_handle_ctrl = False
+      else:
+        dcm_handle_ctrl = True
+    DCM_FRAME += 1
+    if dcm_handle_ctrl == False:
+      return 0 #車体寄せを行わない
+
     handle_margin = 1 #1.5
     handle_over = 10
     camera_margin = 0.1 #0.05 -> 0.1
@@ -155,7 +174,7 @@ class LanePlanner:
       dcm -= w_add * 0.8 / 1.2 #減速と合わせると相当寄りすぎなので小さく
       dcm *= min(-(st_angle +(handle_margin)) / handle_over,1.2)
 #🟥🟥🟥🟥🟥🟥🟥
-    if True:
+    if False: #デバッグ表示なし。
       ms = "O:%+.2f" % (dcm)
       if dcm >= 0.01:
         ms+= "<"
@@ -176,8 +195,8 @@ class LanePlanner:
       #  #fp.write('ofst:%0.2f[m] , lane_w:%0.2f[m], ct:%d' % (dcm , clipped_lane_width,STEER_SAME_DIRECTION_CT))
       #  #fp.write('OFS:%+.2f,w:%.2f[m],ct:%d' % (dcm , clipped_lane_width,min(STEER_SAME_DIRECTION_CT,99)))
       #  fp.write(ms)
-    if self.camera_offset * CAMERA_OFFSET < 0: #Consider wide_camera
-      dcm = -dcm
+    #if self.camera_offset * CAMERA_OFFSET < 0: #Consider wide_cameraこれ不要。ワイドカメラがメインカメラの反対についているだけで、方向が反対になるわけではない。
+    #  dcm = -dcm
 #    if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
 #      dcm -= self.camera_offset #レーンレスモデル用のカメラオフセット反映値
-    return dcm
+    return dcm * 1 #現在の舵力だと少し落とした方が総じて良いか？減らしたがちょっと悪くなった気がする。こちらは1固定で検証する。

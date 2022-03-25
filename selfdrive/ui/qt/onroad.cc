@@ -113,7 +113,6 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 }
 
 // ***** onroad widgets *****
-static bool disp_lockon = true;
 bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
@@ -127,7 +126,7 @@ bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"�
   }
 }
 
-bool getButtonEnabled0(const char*fn){ //fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
+bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
     if ( txt == "0" ) {
@@ -138,6 +137,20 @@ bool getButtonEnabled0(const char*fn){ //fn="../manager/accel_engaged.txt"など
   } else {
     return false; //ファイルがなければfalse
   }
+}
+
+int getButtonInt(const char*fn){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。あとは0〜3までの数字を返す
+  std::string txt = util::read_file(fn);
+  if(txt.empty() == false){
+    if ( txt == "1" ) {
+      return 1;
+    } else if ( txt == "2" ) {
+      return 2;
+    } else if ( txt == "3" ) {
+      return 3;
+    }
+  }
+  return 0;
 }
 
 bool fp_error = false;
@@ -157,7 +170,7 @@ void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_d
   }
 }
 
-void setButtonEnabled0(const char*fn , bool flag){ //fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
+void setButtonEnabled0(const char*fn , bool flag){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
@@ -172,32 +185,77 @@ void setButtonEnabled0(const char*fn , bool flag){ //fn="../manager/accel_engage
   }
 }
 
+void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。num(0〜3)はそのまま数字で。
+  FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
+  if(fp != NULL){
+    fp_error = false;
+    if(num == 1){
+      fwrite("1",1,1,fp);
+    } else if(num == 2){
+      fwrite("2",1,1,fp);
+    } else if(num == 3){
+      fwrite("3",1,1,fp);
+    } else {
+      fwrite("0",1,1,fp);
+    }
+    fclose(fp);
+  } else {
+    fp_error = true;
+  }
+}
+
 // ButtonsWindow
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
-  QWidget *btns_wrapper = new QWidget;
-  QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
-  btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(30, 400, 15, 30);
+  QWidget *btns_wrapper0 = new QWidget;
+  QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
+  btns_layout0->setSpacing(0);
+  btns_layout0->setContentsMargins(0, 0, 0, 30);
+  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignRight);
 
-  main_layout->addWidget(btns_wrapper, 0, Qt::AlignRight);
+  QWidget *btns_wrapperL = new QWidget;
+  QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
+  btns_layoutL->setSpacing(0);
+  btns_layoutL->setContentsMargins(15, 430, 0, 30);
+
+  btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
+
+  {
+    // Handle Ctrl button
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
+    handleCtrlButton = new QPushButton("↔︎");
+    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
+    });
+    handleCtrlButton->setFixedWidth(150);
+    handleCtrlButton->setFixedHeight(150);
+    //btns_layoutL->addSpacing(70);
+    btns_layoutL->addWidget(handleCtrlButton);
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
+  }
 
   {
     // LockOn button
-    disp_lockon = uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
+    uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
     QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mLockOnButton = !mLockOnButton;
     });
     lockOnButton->setFixedWidth(150);
-    lockOnButton->setFixedHeight(120);
-    //btns_layout->addStretch(4);
-    btns_layout->addWidget(lockOnButton);
-    //btns_layout->addStretch(3);
+    lockOnButton->setFixedHeight(150);
+    btns_layoutL->addSpacing(15);
+    btns_layoutL->addWidget(lockOnButton);
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
   }
+
+  QWidget *btns_wrapper = new QWidget;
+  QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
+  btns_layout->setSpacing(0);
+  btns_layout->setContentsMargins(15, 430, 30, 30);
+
+  btns_layout0->addWidget(btns_wrapper,0,Qt::AlignVCenter);
 
   {
     // Accel Ctrl button
@@ -207,8 +265,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
     });
     accelCtrlButton->setFixedWidth(150);
-    accelCtrlButton->setFixedHeight(120);
-    btns_layout->addSpacing(10);
+    accelCtrlButton->setFixedHeight(150);
+    //btns_layout->addSpacing(10);
     btns_layout->addWidget(accelCtrlButton);
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
   }
@@ -221,25 +279,25 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
     });
     decelCtrlButton->setFixedWidth(150);
-    decelCtrlButton->setFixedHeight(120);
-    btns_layout->addSpacing(10);
+    decelCtrlButton->setFixedHeight(150);
+    btns_layout->addSpacing(15);
     btns_layout->addWidget(decelCtrlButton);
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
-
   {
     // Accel Engage button
-    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonEnabled0("../manager/accel_engaged.txt");
-    accelEngagedButton = new QPushButton("A");
+    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt");
+    accelEngagedButton = new QPushButton("A"); //ここを2ならAA(ALL ACCEL)とかにする
     QObject::connect(accelEngagedButton, &QPushButton::clicked, [=]() {
-      uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton;
+      //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2にすれば良い
+      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 3; //0->1->2->0
     });
     accelEngagedButton->setFixedWidth(150);
-    accelEngagedButton->setFixedHeight(120);
-    btns_layout->addSpacing(10);
+    accelEngagedButton->setFixedHeight(150);
+    btns_layout->addSpacing(15);
     btns_layout->addWidget(accelEngagedButton);
-    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton)));
+    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
@@ -264,7 +322,6 @@ void ButtonsWindow::updateState(const UIState &s) {
     mLockOnButton = s.scene.mLockOnButton;
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
     setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
-    disp_lockon = mLockOnButton;
   }
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update mAccelCtrlButton
@@ -281,8 +338,20 @@ void ButtonsWindow::updateState(const UIState &s) {
 
   if (mAccelEngagedButton != s.scene.mAccelEngagedButton) {  // update mAccelEngagedButton
     mAccelEngagedButton = s.scene.mAccelEngagedButton;
-    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton && fp_error==false)));
-    setButtonEnabled0("../manager/accel_engaged.txt" , mAccelEngagedButton);
+    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0 && fp_error==false)));
+    //ここでボタンのラベルを変えられないかな？mAccelEngagedButton == 2でAAとかにしたい。
+    if(mAccelEngagedButton == 2){
+      accelEngagedButton->setText("AA");
+    } else {
+      accelEngagedButton->setText("A");
+    }
+    setButtonInt("../manager/accel_engaged.txt" , mAccelEngagedButton);
+  }
+
+  if (mHandleCtrlButton != s.scene.mHandleCtrlButton) {  // update mHandleCtrlButton
+    mHandleCtrlButton = s.scene.mHandleCtrlButton;
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton && fp_error==false)));
+    setButtonEnabled("../manager/handle_ctrl_disable.txt" , mHandleCtrlButton);
   }
 }
 
@@ -425,6 +494,15 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   // max speed
   float max_disp_k = 1.8;
   float max_disp_a = 50;
+  const int rect_w = rect().width();
+  const int rect_h = rect().height();
+  if(false && (float)rect_w / rect_h > 1.4f){
+  } else {
+    //こちらの大きさを採用。
+    max_disp_k = 1.3;
+    max_disp_a = 20;
+  }
+
   QRect rc(bdr_s * 2, bdr_s * 1.5+y_ofs, 184*max_disp_k, 202*max_disp_k);
 #if 0
   p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
@@ -437,6 +515,9 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
     } else if(maxSpeed.mid(maxSpeed.length()-1,1) == "."){ //末尾ピリオドで減速
       ms = maxSpeed.mid(0,maxSpeed.length()-1);
       p.setPen(QPen(QColor(0xff, 0, 0, 200), 10)); //減速時は赤
+    } else if(maxSpeed.mid(maxSpeed.length()-1,1) == ";"){ //末尾セミコロンで黄色
+      ms = maxSpeed.mid(0,maxSpeed.length()-1);
+      p.setPen(QPen(QColor(0xff, 0xff, 0, 200), 10)); //黄色
     } else {
       p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
     }
@@ -478,10 +559,12 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
 
 
 //以下オリジナル表示要素
-  configFont(p, "Open Sans", 44, "SemiBold");
-  drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
-  configFont(p, "Open Sans", 55, "SemiBold");
-  drawText(p, rect().right()-260, 60, "for prius PHV TSSP", 150);
+  if((float)rect_w / rect_h > 1.4f){
+    configFont(p, "Open Sans", 44, "SemiBold");
+    drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
+    configFont(p, "Open Sans", 55, "SemiBold");
+    drawText(p, rect().right()-260, 60, "for prius PHV TSSP", 150);
+  }
   configFont(p, "Open Sans", 33, "SemiBold");
   drawText(p, rect().right()-275, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
   configFont(p, "Open Sans", 33, "Bold");
@@ -502,7 +585,9 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
       angle_steer = std::stof(angle_steer_txt);
     }
     if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){ //低速では1.0だが、一緒くたにする
-      a2 = 200;
+      if(uiState()->scene.mHandleCtrlButton == true){
+        a2 = 200; //↔︎ボタンOFFで濃くしない。
+      }
     }
     if ( maxSpeed.contains(".", Qt::CaseInsensitive) == true ) {
       a1 = 200;
@@ -773,6 +858,7 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
     //float dist = d_rel; //lead_data.getT()[0];
     QString dist = QString::number(d_rel,'f',1) + "m";
     int str_w = 200;
+//    dist += "<" + QString::number(rect().height()) + ">"; str_w += 500;画面の高さはc2,c3共に1020だった。
 //    dist += "<" + QString::number(leads_num) + ">";
 //   int str_w = 600; //200;
 //    dist += QString::number(v_rel,'f',1) + "v";
@@ -806,7 +892,8 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
   float x = std::clamp((float)vd.x(), 0.f, width() - sz / 2);
-  float y = std::fmin(height() - sz * .6, (float)vd.y());
+  //float y = std::fmin(height() /*- sz * .6*/, (float)vd.y());
+  float y = (float)vd.y();
 
   //float g_xo = sz / 5;
   //float g_yo = sz / 10;
@@ -826,7 +913,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 
   painter.setPen(QPen(QColor(0, 245, 0, prob_alpha), 2));
   painter.setBrush(QColor(0, 0, 0, 0));
-  float ww = 300 , hh = 300;
+  float ww = 300 *1.25 , hh = 300 *1.25;
   float d = d_rel; //距離をロックターケットの大きさに反映させる。
   if(d < 1){
     d = 1;
@@ -857,6 +944,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 
   ww = ww * 2 * 5 / d;
   hh = hh * 2 * 5 / d;
+  y = std::fmin(height() /*- sz * .6*/, y - dh) + dh;
   QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
 
 #if 0
@@ -869,7 +957,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
 #endif
 
   configFont(painter, "Open Sans", 38, "SemiBold");
-  if(num == 0 && disp_lockon){
+  if(num == 0 && uiState()->scene.mLockOnButton){
     //推論1番
     painter.setPen(QPen(QColor(0, 245, 0, prob_alpha), 2));
     painter.drawRect(r);
@@ -958,7 +1046,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
       painter.drawLine(r.center().x() , r.bottom()+tlw_2 , r.center().x() , r.bottom() + td);
     }
 
-  } else if(disp_lockon){
+  } else if(uiState()->scene.mLockOnButton){
     if(num == 1){
       //推論2番
       //邪魔な前右寄りを走るバイクを認識したい。
