@@ -501,7 +501,13 @@ class Controls:
 
       # Steering PID loop and lateral MPC
       lat_active = self.active and not CS.steerWarning and not CS.steerError and CS.vEgo > self.CP.minSteerSpeed
- 
+      md = self.sm['modelV2']
+      if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+        self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+        self.t_idxs = np.array(md.position.t)
+        self.plan_yaw = list(md.orientation.z)
+      if len(md.position.xStd) == TRAJECTORY_SIZE:
+        self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
       desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,0,
                                                                              lat_plan.psis,
                                                                              lat_plan.curvatures,
