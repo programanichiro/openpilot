@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import os
 import math
+import numpy as np
 from numbers import Number
 
 from cereal import car, log
@@ -153,6 +154,10 @@ class Controls:
     self.logged_comm_issue = False
     self.button_timers = {ButtonEvent.Type.decelCruise: 0, ButtonEvent.Type.accelCruise: 0}
     self.last_actuators = car.CarControl.Actuators.new_message()
+
+    self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
+    self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
+    self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
