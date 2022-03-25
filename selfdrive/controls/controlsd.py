@@ -66,7 +66,8 @@ class Controls:
       self.pm = messaging.PubMaster(['sendcan', 'controlsState', 'carState',
                                      'carControl', 'carEvents', 'carParams'])
 
-    self.camera_packets = ["roadCameraState", "driverCameraState"]
+    #self.camera_packets = ["roadCameraState", "driverCameraState"]
+    self.camera_packets = ["roadCameraState"]
     #if TICI: #とりあえずここを無効にしてもcomma 2に影響はない。
     #  self.camera_packets.append("wideRoadCameraState")
 
