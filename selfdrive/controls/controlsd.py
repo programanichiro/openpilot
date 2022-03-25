@@ -509,7 +509,20 @@ class Controls:
       if len(md.position.xStd) == TRAJECTORY_SIZE:
         self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
 
-      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,0,
+      STEER_CTRL_Y = CS.steeringAngleDeg
+      max_yp = 0
+      for yp in self.path_xyz[:,1]:
+        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+      handle_center = STEERING_CENTER # キャリブレーション前の手抜き
+      if os.path.isfile('./handle_center_info.txt'):
+        with open('./handle_center_info.txt','r') as fp:
+          handle_center_info_str = fp.read()
+          if handle_center_info_str:
+            handle_center = float(handle_center_info_str)
+      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
+        STEER_CTRL_Y = (-max_yp / 2.5)
+      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
                                                                              lat_plan.psis,
                                                                              lat_plan.curvatures,
                                                                              lat_plan.curvatureRates)
