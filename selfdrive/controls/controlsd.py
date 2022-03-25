@@ -67,8 +67,8 @@ class Controls:
                                      'carControl', 'carEvents', 'carParams'])
 
     self.camera_packets = ["roadCameraState", "driverCameraState"]
-    #if TICI: #とりあえずここを無効にしてもcomma 2に影響はない。
-    #  self.camera_packets.append("wideRoadCameraState")
+    if TICI: #とりあえずここを無効にしてもcomma 2に影響はない。
+      self.camera_packets.append("wideRoadCameraState")
 
     params = Params()
     self.joystick_mode = params.get_bool("JoystickDebugMode")
