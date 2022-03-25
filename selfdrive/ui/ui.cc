@@ -20,7 +20,8 @@ void piInit(UIState *s) {
   s->scene.mLockOnButton = true;  // reset on ignition
   s->scene.mAccelCtrlButton = true;  // reset on ignition
   s->scene.mDecelCtrlButton = true;  // reset on ignition
-  s->scene.mAccelEngagedButton = false;  // reset on ignition
+  s->scene.mAccelEngagedButton = 0;  // reset on ignition
+  s->scene.mHandleCtrlButton = true;  // reset on ignition
 }
 
 // Projects a point in car to space to the corresponding point in full frame
@@ -173,7 +174,7 @@ static void update_state(UIState *s) {
       }
     }
   }
-  if (!Hardware::TICI() && sm.updated("roadCameraState")) {
+  if ((!Hardware::TICI() && sm.updated("roadCameraState"))) { //括弧の位置が厳密には違うのだが、下のelseifとの兼ね合い、light_sensorセットくらいはそんなに重くないだろうと、あえてこう書いている。あと括弧がないとcomma２でビルド通らない。
     auto camera_state = sm["roadCameraState"].getRoadCameraState();
 
     float max_lines = Hardware::EON() ? 5408 : 1904;
