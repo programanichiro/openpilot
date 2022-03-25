@@ -509,8 +509,7 @@ class Controls:
       if len(md.position.xStd) == TRAJECTORY_SIZE:
         self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
 
-      STEER_CTRL_Y = CS.steeringAngleDeg
-      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
+      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,0,
                                                                              lat_plan.psis,
                                                                              lat_plan.curvatures,
                                                                              lat_plan.curvatureRates)
