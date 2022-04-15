@@ -217,7 +217,7 @@ class Planner:
       #    ml_csv += '%0.2f,' % i
     v_cruise_kph_org = v_cruise_kph
     limit_vc_th = 95-5 #85-5 #80-4
-    limit_vc_tl = 50-4 #65-4 #70-4
+    limit_vc_tl = 60-4 #50-4 #65-4 #70-4
     if v_cruise_kph_org > limit_vc_th:
       limit_vc = limit_vc_h
     elif v_cruise_kph_org >= limit_vc_tl:
