@@ -222,6 +222,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
 
+  //const float all_opac = 0.2;
   {
     // Handle Ctrl button
     uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
@@ -231,6 +232,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     handleCtrlButton->setFixedWidth(150);
     handleCtrlButton->setFixedHeight(150);
+    //handleCtrlButton->setPalette(QColor(255,255,255,all_opac*255));
+    //handleCtrlButton->setAutoFillBackground(true);
     //btns_layoutL->addSpacing(70);
     btns_layoutL->addWidget(handleCtrlButton);
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
@@ -245,6 +248,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     lockOnButton->setFixedWidth(150);
     lockOnButton->setFixedHeight(150);
+    //lockOnButton->setWindowOpacity(all_opac);
     btns_layoutL->addSpacing(15);
     btns_layoutL->addWidget(lockOnButton);
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
@@ -266,6 +270,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     accelCtrlButton->setFixedWidth(150);
     accelCtrlButton->setFixedHeight(150);
+    //accelCtrlButton->setWindowOpacity(all_opac);
     //btns_layout->addSpacing(10);
     btns_layout->addWidget(accelCtrlButton);
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
@@ -280,6 +285,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     decelCtrlButton->setFixedWidth(150);
     decelCtrlButton->setFixedHeight(150);
+    //decelCtrlButton->setWindowOpacity(all_opac);
     btns_layout->addSpacing(15);
     btns_layout->addWidget(decelCtrlButton);
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
@@ -288,13 +294,18 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt");
-    accelEngagedButton = new QPushButton("A"); //ここを2ならAA(ALL ACCEL)とかにする
+    if(mAccelEngagedButton == 2){
+      accelEngagedButton = new QPushButton("AA"); //2ならAA(ALL ACCEL)
+    } else {
+      accelEngagedButton = new QPushButton("A");
+    }
     QObject::connect(accelEngagedButton, &QPushButton::clicked, [=]() {
       //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2にすれば良い
       uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 3; //0->1->2->0
     });
     accelEngagedButton->setFixedWidth(150);
     accelEngagedButton->setFixedHeight(150);
+    //accelEngagedButton->setWindowOpacity(all_opac);
     btns_layout->addSpacing(15);
     btns_layout->addWidget(accelEngagedButton);
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
@@ -307,10 +318,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   setStyleSheet(R"(
     QPushButton {
-      color: white;
+      color: rgba(255, 255, 255, 0.7);
       text-align: center;
       padding: 0px;
-      border-width: 8px;
+      border-width: 4px;
       border-style: solid;
       background-color: rgba(75, 75, 75, 0.3);
     }
@@ -559,6 +570,21 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
 
 
 //以下オリジナル表示要素
+  //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
+  UIState *s = uiState();
+  auto deviceState = (*s->sm)["deviceState"].getDeviceState();
+  int temp = (int)deviceState.getAmbientTempC();
+  QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
+  configFont(p, "Open Sans", 44, "SemiBold");
+  if(temp < 48){ //警告色の変化はサイドバーと違う。もっと早く警告される。
+    p.setPen(QColor(0xff, 0xff, 0xff , 200));
+  } else if(temp < 55){
+    p.setPen(QColor(0xff, 0xff, 0 , 255));
+  } else {
+    p.setPen(QColor(0xff, 0, 0 , 255));
+  }
+  p.drawText(QRect(rect().left()+65, rect().top()+110, 300, 50), Qt::AlignTop | Qt::AlignLeft, temp_disp);
+
   if((float)rect_w / rect_h > 1.4f){
     configFont(p, "Open Sans", 44, "SemiBold");
     drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
@@ -569,6 +595,11 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   drawText(p, rect().right()-275, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
   configFont(p, "Open Sans", 33, "Bold");
   float angle_steer = 0;
+  float angle_steer0 = 0;
+  std::string angle_steer0_txt = util::read_file("../manager/steer_ang_info.txt");
+  if(angle_steer0_txt.empty() == false){
+    angle_steer0 = std::stof(angle_steer0_txt);
+  }
   float a0 = 150,a1 = 150,a2 = 150,a3 = 150;
   curve_value = 0;
   global_status = status;
@@ -580,10 +611,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
     if(vc_speed < 1/3.6){
       a3 = 200;
     }
-    std::string angle_steer_txt = util::read_file("../manager/steer_ang_info.txt");
-    if(angle_steer_txt.empty() == false){
-      angle_steer = std::stof(angle_steer_txt);
-    }
+    angle_steer = angle_steer0;
     if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){ //低速では1.0だが、一緒くたにする
       if(uiState()->scene.mHandleCtrlButton == true){
         a2 = 200; //↔︎ボタンOFFで濃くしない。
@@ -612,7 +640,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   // engage-ability icon
   if (engageable) {
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5)+y_ofs,
-             engage_img, bg_colors[status], 1.0);
+             engage_img, bg_colors[status], 1.0 , -angle_steer0);
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
@@ -654,7 +682,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   // dm icon
   if (!hideDM) {
     drawIcon(p, radius / 2 + (bdr_s * 2), rect().bottom() - footer_h / 2,
-             dm_img, QColor(0, 0, 0, 70), dmActive ? 1.0 : 0.2);
+             dm_img, QColor(0, 0, 0, 70), dmActive ? 1.0 : 0.2 , 0);
   }
 
 }
@@ -679,12 +707,21 @@ void OnroadHud::drawText(QPainter &p, int x, int y, const QString &text, const Q
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
-void OnroadHud::drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity) {
+void OnroadHud::drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity , float ang) {
   p.setPen(Qt::NoPen);
   p.setBrush(bg);
   p.drawEllipse(x - radius / 2, y - radius / 2, radius, radius);
   p.setOpacity(opacity);
-  p.drawPixmap(x - img_size / 2, y - img_size / 2, img);
+  p.resetTransform();
+  p.translate(x - img_size / 2,y - img_size / 2);
+  if(ang != 0){
+    p.translate(img_size/2,img_size/2);
+    p.rotate(ang); //degree指定
+    p.translate(-img_size/2,-img_size/2);
+  }
+  QRect r(0,0,img_size,img_size);
+  p.drawPixmap(r, img);
+  p.resetTransform();
 }
 
 // NvgWindow
@@ -751,12 +788,12 @@ void NvgWindow::knightScanner(QPainter &p) {
   int rect_w = rect().width();
   int rect_h = rect().height();
 
-  const int n = 15;
+  const int n = 15+1; //タイミングの問題で画面外に一つ増やす
   static float t[n];
   //int dim_n = (sin(ct/5) + 1) * (n-0.01);
   //t[dim_n] = 1.0;
   t[(int)(ct/ct_n)] = 1.0;
-  int ww = rect_w / n;
+  int ww = rect_w / (n-1); //画面外の一つ分を外す。
   int hh = ww;
 
   static float dir0 = 1.0;
@@ -801,7 +838,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     }
   }
   p.setCompositionMode(QPainter::CompositionMode_Plus);
-  for(int i=0; i<n; i++){
+  for(int i=0; i<(n-1); i++){
     //QRect rc(0, h_pos, ww, hh);
     if(t[i] > 0.01){
       //p.drawRoundedRect(rc, 0, 0);
@@ -810,11 +847,72 @@ void NvgWindow::knightScanner(QPainter &p) {
       } else {
         p.setBrush(QColor(200, 200, 0, 255 * t[i])); //ハンドルセンターキャリブレーション中は色を緑に。
       }
-      p.drawRect(rect_w * i / n, h_pos, ww, hh);
+      p.drawRect(rect_w * i / (n-1), h_pos, ww, hh);
     }
     t[i] *= 0.9;
   }
+
+#if 1 //加速減速表示テスト
+  UIState *s = uiState();
+  //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
+  float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
+  static float vc_accel;
+  vc_accel = vc_accel + (vc_accel0 - vc_accel) / 5;
+  //vc_accel = -0.5;
+  float hha = 0;
+  if(vc_accel > 0){
+    hha = 1 - 0.1 / vc_accel;
+    p.setBrush(QColor(0, 245, 0, 200));
+  }
+  if(vc_accel < 0){
+    hha = 1 + 0.1 / vc_accel;
+    p.setBrush(QColor(245, 0, 0, 200));
+  }
+  if(hha < 0){
+    hha = 0;
+  }
+  hha = hha * rect_h;
+  float wp = 35;
+  if(vc_accel > 0){
+    QRect ra = QRect(rect_w - wp , rect_h/2 - hha/2 , wp , hha/2);
+    p.drawRect(ra);
+  } else {
+    QRect ra = QRect(rect_w - wp , rect_h/2         , wp , hha/2);
+    p.drawRect(ra);
+  }
+#endif
   p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+
+#if 1 //減速度と舵角を表示
+  static float cv = 0;
+  static float ang = 0;
+#if 1
+  static unsigned int debug_ct;
+  if(debug_ct % 10 == 0){
+    std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
+    if(limit_vc_txt.empty() == false){
+      cv = std::stof(limit_vc_txt);
+    }
+  }
+  if(debug_ct % 10 == 5){
+    std::string angle_steer0_txt = util::read_file("../manager/steer_ang_info.txt");
+    if(angle_steer0_txt.empty() == false){
+      ang = std::stof(angle_steer0_txt);
+    }
+  }
+  debug_ct ++;
+#endif
+  configFont(p, "Open Sans", 44, "SemiBold");
+  p.setPen(QColor(0xdf, 0xdf, 0x00 , 200));
+  {
+    QString debug_disp = QString("Slow:") + QString::number(cv,'f',0);
+    p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  }
+  {
+    QString debug_disp = QString(",Ang:") + QString::number(ang,'f',1);
+    p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  }
+#endif
 }
 
 void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num) {
