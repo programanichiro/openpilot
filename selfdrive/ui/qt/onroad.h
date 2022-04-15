@@ -58,7 +58,7 @@ public:
   void updateState(const UIState &s);
 
 private:
-  void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
+  void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity , float ang);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
   void drawText(QPainter &p, int x, int y, const QString &text, const QColor &col);
   void paintEvent(QPaintEvent *event) override;
