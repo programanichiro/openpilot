@@ -909,7 +909,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
-    QString debug_disp = QString(",Ang:") + QString::number(ang,'f',1);
+    QString debug_disp = QString(",Pre:") + QString::number(ang,'f',1);
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
