@@ -228,8 +228,8 @@ class Planner:
         fp.write('%d' % (limit_vc))
     if CVS_FRAME % 5 == 1:
       with open('./steer_ang_info.txt','w') as fp:
-        #fp.write('%f' % (steerAng))
-        fp.write('%f' % (-max_yp / 2.5))
+        fp.write('%f' % (steerAng))
+        #fp.write('%f' % (-max_yp / 2.5))
     if CVS_FRAME % 5 == 0:
       with open('./cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
