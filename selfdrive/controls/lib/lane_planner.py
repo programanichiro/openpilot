@@ -74,7 +74,7 @@ class LanePlanner:
       self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
       self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
 
-  def get_d_path(self, st_angle, v_ego, path_t, path_xyz):
+  def get_d_path(self, st_angle, pred_angle , v_ego, path_t, path_xyz):
     # Reduce reliance on lanelines that are too far apart or
     # will be in a few seconds
     path_xyz[:, 1] += self.path_offset
@@ -113,7 +113,7 @@ class LanePlanner:
     elif st_angle > prob_limit_angle:
       if l_prob > 0.5 and l_prob*0.8 > r_prob:
         r_prob = 0
-    dcm = self.calc_dcm(st_angle, v_ego,clipped_lane_width,l_prob,r_prob)
+    dcm = self.calc_dcm(st_angle, pred_angle , v_ego,clipped_lane_width,l_prob,r_prob)
     path_from_left_lane -= dcm
     path_from_right_lane -= dcm
     path_xyz[:,1] -= dcm
@@ -129,7 +129,7 @@ class LanePlanner:
     return path_xyz
 
 #関数を最後に追加,dcm(ダイナミックカメラマージン？)名前がおかしいが、コーナーのイン側に寄せるオフセットである。
-  def calc_dcm(self, st_angle, v_ego,clipped_lane_width,l_prob,r_prob):
+  def calc_dcm(self, st_angle, pred_angle , v_ego,clipped_lane_width,l_prob,r_prob):
     #数値を実際に取得して、調整してみる。UIスイッチで車体寄せをやめるなら、ここでゼロを返せばいい。
     global DCM_FRAME , dcm_handle_ctrl
     if DCM_FRAME % 30 == 1:
@@ -199,4 +199,8 @@ class LanePlanner:
     #  dcm = -dcm
 #    if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
 #      dcm -= self.camera_offset #レーンレスモデル用のカメラオフセット反映値
-    return dcm * 1 #現在の舵力だと少し落とした方が総じて良いか？減らしたがちょっと悪くなった気がする。こちらは1固定で検証する。
+    dcm_k = abs(pred_angle)
+    if dcm_k > 10:
+      dcm_k = 10
+    dcm_k /= 10
+    return dcm * dcm_k #前方推論舵角だけ最大10度でdcmの大きさをリミットつける
