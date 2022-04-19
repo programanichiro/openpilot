@@ -294,14 +294,16 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt");
-    if(mAccelEngagedButton == 2){
+    if(mAccelEngagedButton == 3){
+      accelEngagedButton = new QPushButton("O"); //3ならワンペダルモード(O)
+    } else if(mAccelEngagedButton == 2){
       accelEngagedButton = new QPushButton("AA"); //2ならAA(ALL ACCEL)
     } else {
       accelEngagedButton = new QPushButton("A");
     }
     QObject::connect(accelEngagedButton, &QPushButton::clicked, [=]() {
-      //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2にすれば良い
-      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 3; //0->1->2->0
+      //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2・・・にすれば良い
+      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0
     });
     accelEngagedButton->setFixedWidth(150);
     accelEngagedButton->setFixedHeight(150);
@@ -351,7 +353,9 @@ void ButtonsWindow::updateState(const UIState &s) {
     mAccelEngagedButton = s.scene.mAccelEngagedButton;
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0 && fp_error==false)));
     //ここでボタンのラベルを変えられないかな？mAccelEngagedButton == 2でAAとかにしたい。
-    if(mAccelEngagedButton == 2){
+    if(mAccelEngagedButton == 3){
+      accelEngagedButton->setText("O");
+    } else if(mAccelEngagedButton == 2){
       accelEngagedButton->setText("AA");
     } else {
       accelEngagedButton->setText("A");
