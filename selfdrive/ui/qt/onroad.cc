@@ -587,7 +587,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   } else {
     p.setPen(QColor(0xff, 0, 0 , 255));
   }
-  p.drawText(QRect(rect().left()+65, rect().top()+110, 300, 50), Qt::AlignTop | Qt::AlignLeft, temp_disp);
+  p.drawText(QRect(rect().left()+65, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp);
 
   if((float)rect_w / rect_h > 1.4f){
     configFont(p, "Open Sans", 44, "SemiBold");
