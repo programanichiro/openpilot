@@ -29,6 +29,9 @@ from selfdrive.locationd.calibrationd import Calibration
 from selfdrive.hardware import HARDWARE, TICI, EON
 from selfdrive.manager.process_config import managed_processes
 
+handle_center = STEERING_CENTER # キャリブレーション前の手抜き
+handle_center_ct = 0
+
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
 LANE_DEPARTURE_THRESHOLD = 0.1
@@ -513,13 +516,14 @@ class Controls:
       max_yp = 0
       for yp in self.path_xyz[:,1]:
         max_yp = yp if abs(yp) > abs(max_yp) else max_yp
-      handle_center = STEERING_CENTER # キャリブレーション前の手抜き
-      if os.path.isfile('./handle_center_info.txt'):
+      global handle_center,handle_center_ct
+      if handle_center_ct % 5 == 3 and os.path.isfile('./handle_center_info.txt'):
         with open('./handle_center_info.txt','r') as fp:
           handle_center_info_str = fp.read()
           if handle_center_info_str:
             handle_center = float(handle_center_info_str)
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      handle_center_ct += 1
       if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
         STEER_CTRL_Y = (-max_yp / 2.5)
       desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,

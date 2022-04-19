@@ -164,7 +164,7 @@ class CarInterfaceBase(ABC):
           if accel_engaged_str:
             if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
               accel_engaged = True
-            if int(accel_engaged_str) == 2: #2でALL ACCEL Engage。時間反対がなくなる
+            if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
               accel_engaged = True
               ACCEL_PUSH_COUNT = 100
       if accel_engaged == False and cs_out.gasPressed and not self.CS.out.gasPressed:
