@@ -44,6 +44,7 @@ OP_ENABLE_ACCEL_RELEASE = False
 OP_ENABLE_PREV = False
 OP_ENABLE_v_cruise_kph = 0
 OP_ENABLE_gas_speed = 0
+OP_ACCEL_PUSH = False
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -108,13 +109,20 @@ class Planner:
     if v_cruise_kph < min_acc_speed:
       v_cruise_kph = min_acc_speed #念のため
     one_pedal = False
-    if v_ego <= 3/3.6:
+    on_accel0 = False #押した瞬間
+    if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
       if os.path.isfile('./accel_engaged.txt'):
         with open('./accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
             if int(accel_engaged_str) == 3: #ワンペダルモード
               one_pedal = True
+              if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
+                on_accel0 = True
+    if on_accel0: #オートパイロット中にアクセルを操作したら押した瞬間にワンペダルモード有効
+      OP_ENABLE_v_cruise_kph = v_cruise_kph
+      OP_ENABLE_gas_speed = 1.0 / 3.6
+
     if OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
        #速度が時速３km以上かつ31km未満かつsm['controlsState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
@@ -143,6 +151,9 @@ class Planner:
       OP_ENABLE_v_cruise_kph = 0
     if sm['carState'].gasPressed == False: #一旦アクセルを離したら、クルーズ速度は変更しない。変更を許すと、ACC速度とMAX速度の乖離が大きくなり過ぎる可能性があるから。
       OP_ENABLE_ACCEL_RELEASE = True
+      OP_ACCEL_PUSH = False #アクセル離した
+    else:
+      OP_ACCEL_PUSH = True #アクセル押した
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
     if OP_ENABLE_v_cruise_kph != 0:
