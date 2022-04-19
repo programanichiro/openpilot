@@ -36,7 +36,7 @@ def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
 
 #LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 86-4      ,60-4      ,47-4      )
 #LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,65-4      ,49-4      )
-LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,60-4      ,45-4      )
+LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,62.5-4      ,47.5-4      )
 #LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(8.7,13.0,25.0 , 112,93,81)
 LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(9.5,13.0,25.0 , 116,98,87)
 
@@ -44,6 +44,7 @@ OP_ENABLE_ACCEL_RELEASE = False
 OP_ENABLE_PREV = False
 OP_ENABLE_v_cruise_kph = 0
 OP_ENABLE_gas_speed = 0
+OP_ACCEL_PUSH = False
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -91,7 +92,7 @@ class Planner:
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
 
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -107,22 +108,52 @@ class Planner:
           fp.write('%d' % (2))
     if v_cruise_kph < min_acc_speed:
       v_cruise_kph = min_acc_speed #念のため
-    if OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and ((v_ego > 3/3.6 and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
+    one_pedal = False
+    on_accel0 = False #押した瞬間
+    if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
+      if os.path.isfile('./accel_engaged.txt'):
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 3: #ワンペダルモード
+              one_pedal = True
+              if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
+                on_accel0 = True
+    if on_accel0: #オートパイロット中にアクセルを操作したら押した瞬間にワンペダルモード有効
+      OP_ENABLE_v_cruise_kph = v_cruise_kph
+      OP_ENABLE_gas_speed = 1.0 / 3.6
+
+    if OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
        #速度が時速３km以上かつ31km未満かつsm['controlsState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = v_ego
+      if os.path.isfile('./accel_engaged.txt'):
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 3: #ワンペダルモード
+              OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
     if sm['controlsState'].longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         OP_ENABLE_gas_speed = v_ego
+        if os.path.isfile('./accel_engaged.txt'):
+          with open('./accel_engaged.txt','r') as fp:
+            accel_engaged_str = fp.read()
+            if accel_engaged_str:
+              if int(accel_engaged_str) == 3: #ワンペダルモード
+                OP_ENABLE_gas_speed = 1.0 / 3.6
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
     if sm['carState'].gasPressed == False: #一旦アクセルを離したら、クルーズ速度は変更しない。変更を許すと、ACC速度とMAX速度の乖離が大きくなり過ぎる可能性があるから。
       OP_ENABLE_ACCEL_RELEASE = True
+      OP_ACCEL_PUSH = False #アクセル離した
+    else:
+      OP_ACCEL_PUSH = True #アクセル押した
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
     if OP_ENABLE_v_cruise_kph != 0:
@@ -229,6 +260,7 @@ class Planner:
     if CVS_FRAME % 5 == 1:
       with open('./steer_ang_info.txt','w') as fp:
         fp.write('%f' % (steerAng))
+        #fp.write('%f' % (-max_yp / 2.5))
     if CVS_FRAME % 5 == 0:
       with open('./cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
