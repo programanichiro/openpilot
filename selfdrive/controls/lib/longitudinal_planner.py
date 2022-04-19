@@ -92,7 +92,7 @@ class Planner:
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
 
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
