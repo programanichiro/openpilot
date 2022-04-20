@@ -122,7 +122,7 @@ class Planner:
               one_pedal = True
               if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
                 on_accel0 = True
-    if on_accel0 and v_ego > 1/3.6 and sm['carState'].gas < 0.03 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
+    if on_accel0 and v_ego > 1/3.6 and sm['carState'].gas < 0.07 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
 
