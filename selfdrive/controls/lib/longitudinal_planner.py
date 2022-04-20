@@ -119,10 +119,11 @@ class Planner:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
             if int(accel_engaged_str) == 3: #ワンペダルモード
-              on_accel0_v_ego = v_ego
-              on_accel0_ct = 0
-              if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
-                on_accel0_gasPressed = True
+              if on_accel0_ct < 0:
+                on_accel0_v_ego = v_ego
+                on_accel0_ct = 0
+                if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
+                  on_accel0_gasPressed = True
     if on_accel0_ct >= 0:
       on_accel0_ct += 1
       if on_accel0_ct > 100:
