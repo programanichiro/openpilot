@@ -45,8 +45,6 @@ OP_ENABLE_PREV = False
 OP_ENABLE_v_cruise_kph = 0
 OP_ENABLE_gas_speed = 0
 OP_ACCEL_PUSH = False
-on_accel0_v_ego = 0
-on_accel0_ct = -1
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -94,7 +92,7 @@ class Planner:
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
 
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH ,on_accel0_v_ego , on_accel0_ct
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -120,14 +118,7 @@ class Planner:
             if int(accel_engaged_str) == 3: #ワンペダルモード
               one_pedal = True
               if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
-                on_accel0_v_ego = v_ego
-                on_accel0_ct = 0
-    if on_accel0_ct >= 0:
-      on_accel0_ct += 1
-      if on_accel0_ct > 100:
-        if v_ego - on_accel0_v_ego < 2/3.6: #1秒後に加速2km/hならACCモード継続
-          on_accel0 = True
-        on_accel0_ct = -1
+                on_accel0 = True
     if on_accel0 and v_ego > 1/3.6: #オートパイロット中にアクセルを操作したら押した瞬間にワンペダルモード有効。ただし先頭スタートは除く。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
