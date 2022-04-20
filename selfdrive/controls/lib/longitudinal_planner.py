@@ -45,6 +45,7 @@ OP_ENABLE_PREV = False
 OP_ENABLE_v_cruise_kph = 0
 OP_ENABLE_gas_speed = 0
 OP_ACCEL_PUSH = False
+on_onepedal_ct = -1
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -95,7 +96,7 @@ class Planner:
     #with open('./debug_out_v','w') as fp:
     #  fp.write("push:%d , gas:%2f" % (sm['carState'].gasPressed,sm['carState'].gas))
 
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -121,8 +122,14 @@ class Planner:
             if int(accel_engaged_str) == 3: #ワンペダルモード
               one_pedal = True
               if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
-                on_accel0 = True
-    if on_accel0 and v_ego > 1/3.6 and sm['carState'].gas < 0.07 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
+                on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
+    if on_onepedal_ct >= 0:
+      on_onepedal_ct += 1
+      if on_onepedal_ct > 100:# 1秒後に
+        if sm['carState'].gas < 0.07: #アクセルが弱いかチョン押しなら
+          on_accel0 = True #ワンペダルに変更
+        on_onepedal_ct = -1 #アクセル判定消去
+    if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
 
