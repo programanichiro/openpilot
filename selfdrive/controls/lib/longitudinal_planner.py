@@ -92,11 +92,9 @@ class Planner:
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
-
-    #with open('./debug_out_v','w') as fp:
-    #  fp.write("push:%d , gas:%2f" % (sm['carState'].gasPressed,sm['carState'].gas))
-
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct
+    with open('./debug_out_v','w') as fp:
+      fp.write("%d push:%d , gas:%2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
