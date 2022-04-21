@@ -124,8 +124,8 @@ class Planner:
                   on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
     if on_onepedal_ct >= 0:
       on_onepedal_ct += 1
-      if on_onepedal_ct > 30:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
-        if sm['carState'].gas < 0.2: #アクセルが弱いかチョン押しなら
+      if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
+        if sm['carState'].gas < 0.15: #アクセルが弱いかチョン押しなら
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
