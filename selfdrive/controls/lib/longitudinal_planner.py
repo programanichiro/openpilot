@@ -93,8 +93,8 @@ class Planner:
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct
-    with open('./debug_out_v','w') as fp:
-      fp.write("%d push:%d , gas:%2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
+    #with open('./debug_out_v','w') as fp:
+    #  fp.write("%d push:%d , gas:%2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -123,8 +123,8 @@ class Planner:
                 on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
     if on_onepedal_ct >= 0:
       on_onepedal_ct += 1
-      if on_onepedal_ct > 100:# 1秒後に
-        if sm['carState'].gas < 0.07: #アクセルが弱いかチョン押しなら
+      if on_onepedal_ct > 30:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
+        if sm['carState'].gas < 0.2: #アクセルが弱いかチョン押しなら
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
