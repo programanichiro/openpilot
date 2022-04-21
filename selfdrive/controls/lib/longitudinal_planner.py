@@ -120,7 +120,8 @@ class Planner:
             if int(accel_engaged_str) == 3: #ワンペダルモード
               one_pedal = True
               if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
-                on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
+                if on_onepedal_ct < 0:
+                  on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
     if on_onepedal_ct >= 0:
       on_onepedal_ct += 1
       if on_onepedal_ct > 30:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
