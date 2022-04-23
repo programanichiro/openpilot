@@ -94,7 +94,7 @@ class Planner:
     a_ego = sm['carState'].aEgo
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct
     #with open('./debug_out_v','w') as fp:
-    #  fp.write("%d push:%d , gas:%2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
+    #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -366,10 +366,15 @@ class Planner:
       accel_limits_turns[1] = min(accel_limits_turns[1], AWARENESS_DECEL)
       accel_limits_turns[0] = min(accel_limits_turns[0], accel_limits_turns[1])
     # clip limits, cannot init MPC outside of bounds
-    accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
-    accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
+    a_desired_mul = 1.0
+    if hasLead == False and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+      a_desired_mul = 2.0
+    with open('./debug_out_v','w') as fp:
+      fp.write("lead:%d a:%.2f , m:%.2f" % (hasLead,self.a_desired,a_desired_mul))
+    accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
+    accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-    self.mpc.set_cur_state(self.v_desired_filter.x + v_desired_rand, self.a_desired)
+    self.mpc.set_cur_state(self.v_desired_filter.x + v_desired_rand, self.a_desired*a_desired_mul)
     self.mpc.update(sm['carState'], sm['radarState'], v_cruise, prev_accel_constraint=prev_accel_constraint)
     self.v_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.a_solution)
