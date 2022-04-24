@@ -367,10 +367,21 @@ class Planner:
       accel_limits_turns[0] = min(accel_limits_turns[0], accel_limits_turns[1])
     # clip limits, cannot init MPC outside of bounds
     a_desired_mul = 1.0
-    #if hasLead == False and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
-    #  a_desired_mul = 2.0
-    #with open('./debug_out_v','w') as fp:
-    #  fp.write("lead:%d a:%.2f , m:%.2f" % (hasLead,self.a_desired,a_desired_mul))
+    vl = 0
+    vd = 0
+    if hasLead == False and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+      vl = v_cruise
+      if vl > 40/3.6:
+        vl = 40/3.6
+      vd = v_ego
+      if vd > vl:
+        vd = vl #vdの最大値はvl
+      if vl > 0:
+        vd /= vl #0〜1
+        vd = 1 - vd #1〜0
+        a_desired_mul = 1 + 1*vd #2〜1倍で、最大40km/hかv_cruiseに達すると1になる。
+    with open('./debug_out_v','w') as fp:
+      fp.write("lead:%d a:%.2f , m:%.2f , vl:%.2fkm/h , vd:%.2f" % (hasLead,self.a_desired,a_desired_mul,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
