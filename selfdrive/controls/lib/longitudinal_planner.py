@@ -369,10 +369,21 @@ class Planner:
     a_desired_mul = 1.0
     vl = 0
     vd = 0
-    if hasLead == False and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+    lcd = 0
+    if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+      leadOne = sm['radarState'].leadOne
+      if leadOne.dRel > 50: #50m以上空いている
+        lcd = leadOne.dRel #前走者までの距離
+        lcd -= 50 #0〜
+        lcd /= (100-50) #100m離れていたら1.0
+        if lcd > 1:
+          lcd = 1
+    if (hasLead == False or lcd > 0) and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+      if hasLead == False:
+        lcd = 1.0 #前走車がいなければlcd=1扱い。
       vl = v_cruise
-      if vl > 40/3.6:
-        vl = 40/3.6
+      if vl > 100/3.6:
+        vl = 100/3.6
       vl *= 0.5 #加速は目標速度の半分でおしまい。そうしないと増速しすぎる
       vd = v_ego
       if vd > vl:
@@ -380,9 +391,9 @@ class Planner:
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        a_desired_mul = 1 + 0.3*vd #1.3〜1倍で、最大40km/hかv_cruiseに達すると1になる。
+        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.5に達すると1になる。
     with open('./debug_out_v','w') as fp:
-      fp.write("lead:%d a:%.2f , m:%.2f , vl:%dkm/h , vd:%.2f" % (hasLead,self.a_desired,a_desired_mul,vl*3.6,vd))
+      fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
