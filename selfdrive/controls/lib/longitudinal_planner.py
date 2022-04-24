@@ -373,15 +373,16 @@ class Planner:
       vl = v_cruise
       if vl > 40/3.6:
         vl = 40/3.6
+      vl *= 0.5 #加速は目標速度の半分でおしまい。そうしないと増速しすぎる
       vd = v_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        a_desired_mul = 1 + 0.5*vd #1.5〜1倍で、最大40km/hかv_cruiseに達すると1になる。
+        a_desired_mul = 1 + 0.3*vd #1.3〜1倍で、最大40km/hかv_cruiseに達すると1になる。
     with open('./debug_out_v','w') as fp:
-      fp.write("lead:%d a:%.2f , m:%.2f , vl:%.2fkm/h , vd:%.2f" % (hasLead,self.a_desired,a_desired_mul,vl*3.6,vd))
+      fp.write("lead:%d a:%.2f , m:%.2f , vl:%dkm/h , vd:%.2f" % (hasLead,self.a_desired,a_desired_mul,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
