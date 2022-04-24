@@ -367,10 +367,10 @@ class Planner:
       accel_limits_turns[0] = min(accel_limits_turns[0], accel_limits_turns[1])
     # clip limits, cannot init MPC outside of bounds
     a_desired_mul = 1.0
-    if hasLead == False and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
-      a_desired_mul = 2.0
-    with open('./debug_out_v','w') as fp:
-      fp.write("lead:%d a:%.2f , m:%.2f" % (hasLead,self.a_desired,a_desired_mul))
+    #if hasLead == False and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+    #  a_desired_mul = 2.0
+    #with open('./debug_out_v','w') as fp:
+    #  fp.write("lead:%d a:%.2f , m:%.2f" % (hasLead,self.a_desired,a_desired_mul))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
