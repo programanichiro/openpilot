@@ -379,7 +379,7 @@ class Planner:
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        a_desired_mul = 1 + 1*vd #2〜1倍で、最大40km/hかv_cruiseに達すると1になる。
+        a_desired_mul = 1 + 0.5*vd #1.5〜1倍で、最大40km/hかv_cruiseに達すると1になる。
     with open('./debug_out_v','w') as fp:
       fp.write("lead:%d a:%.2f , m:%.2f , vl:%.2fkm/h , vd:%.2f" % (hasLead,self.a_desired,a_desired_mul,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
