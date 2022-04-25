@@ -139,7 +139,7 @@ bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"な
   }
 }
 
-int getButtonInt(const char*fn){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。あとは0〜3までの数字を返す
+int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。あとは0〜3までの数字を返す
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
     if ( txt == "1" ) {
@@ -148,9 +148,11 @@ int getButtonInt(const char*fn){ //新fn="../manager/accel_engaged.txt"など、
       return 2;
     } else if ( txt == "3" ) {
       return 3;
+    } else {
+      return 0;
     }
   }
-  return 0;
+  return defaultNum; //ファイルがない場合はこれを返す。
 }
 
 bool fp_error = false;
@@ -293,7 +295,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Engage button
-    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt");
+    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt" , 0);
     if(mAccelEngagedButton == 3){
       accelEngagedButton = new QPushButton("O"); //3ならワンペダルモード(O)
     } else if(mAccelEngagedButton == 2){
