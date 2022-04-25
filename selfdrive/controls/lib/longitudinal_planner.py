@@ -410,7 +410,7 @@ class Planner:
             start_accel_power_up_disable = int(start_accel_power_up_disable_str)
             if start_accel_power_up_disable == 1:
               a_desired_mul = 1 #臨時でロックオン非表示ならスタート加速増なし
-    if a_desired_mul == 1.0:
+    if a_desired_mul == 1.0 or vl == 0:
       cruise_info_power_up = False
     else:
       cruise_info_power_up = True
