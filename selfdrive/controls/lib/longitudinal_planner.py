@@ -414,6 +414,7 @@ class Planner:
       cruise_info_power_up = False
     else:
       cruise_info_power_up = True
+    cruise_info_power_up = True
 
     with open('./debug_out_v','w') as fp:
       fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,vl*3.6,vd))
