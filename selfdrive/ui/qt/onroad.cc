@@ -139,18 +139,10 @@ bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"な
   }
 }
 
-int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。あとは0〜3までの数字を返す
+int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    if ( txt == "1" ) {
-      return 1;
-    } else if ( txt == "2" ) {
-      return 2;
-    } else if ( txt == "3" ) {
-      return 3;
-    } else {
-      return 0;
-    }
+    return std::stoi(txt);
   }
   return defaultNum; //ファイルがない場合はこれを返す。
 }
