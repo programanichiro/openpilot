@@ -416,7 +416,7 @@ class Planner:
       cruise_info_power_up = True
 
     with open('./debug_out_v','w') as fp:
-      fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,vl*3.6,vd))
+      fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
