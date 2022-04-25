@@ -382,10 +382,11 @@ class Planner:
     lcd = 0
     if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
-      if leadOne.dRel > 50: #50m以上空いている
+      to_lead_distance = 40 #40m以上空いている
+      if leadOne.dRel > to_lead_distance:
         lcd = leadOne.dRel #前走者までの距離
-        lcd -= 50 #0〜
-        lcd /= (100-50) #100m離れていたら1.0
+        lcd -= to_lead_distance #0〜
+        lcd /= (80-to_lead_distance) #80m離れていたら1.0
         if lcd > 1:
           lcd = 1
     if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
@@ -415,8 +416,8 @@ class Planner:
     else:
       cruise_info_power_up = True
 
-    with open('./debug_out_v','w') as fp:
-      fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
+    #with open('./debug_out_v','w') as fp:
+    #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
