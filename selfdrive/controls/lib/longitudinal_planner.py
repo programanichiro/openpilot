@@ -408,13 +408,12 @@ class Planner:
           start_accel_power_up_disable_str = fp.read()
           if start_accel_power_up_disable_str:
             start_accel_power_up_disable = int(start_accel_power_up_disable_str)
-            if start_accel_power_up_disable == 0:
+            if start_accel_power_up_disable == 1:
               a_desired_mul = 1 #臨時でロックオン非表示ならスタート加速増なし
     if a_desired_mul == 1.0:
       cruise_info_power_up = False
     else:
       cruise_info_power_up = True
-    cruise_info_power_up = True
 
     with open('./debug_out_v','w') as fp:
       fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,vl*3.6,vd))
