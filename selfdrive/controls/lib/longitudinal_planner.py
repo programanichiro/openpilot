@@ -388,20 +388,20 @@ class Planner:
         lcd /= (100-50) #100m離れていたら1.0
         if lcd > 1:
           lcd = 1
-    if (hasLead == False or lcd > 0) and self.a_desired > 0 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+    if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
       if hasLead == False:
         lcd = 1.0 #前走車がいなければlcd=1扱い。
       vl = v_cruise
       if vl > 100/3.6:
         vl = 100/3.6
-      vl *= 0.5 #加速は目標速度の半分でおしまい。そうしないと増速しすぎる
+      vl *= 0.6 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
       vd = v_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.5に達すると1になる。
+        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.6に達すると1になる。
 
       if os.path.isfile('./lockon_disp_disable.txt'):
         with open('./lockon_disp_disable.txt','r') as fp:
@@ -410,7 +410,7 @@ class Planner:
             start_accel_power_up_disable = int(start_accel_power_up_disable_str)
             if start_accel_power_up_disable == 1:
               a_desired_mul = 1 #臨時でロックオン非表示ならスタート加速増なし
-    if a_desired_mul == 1.0 or vl == 0:
+    if a_desired_mul == 1.0 or v_ego >= 1/3.6:
       cruise_info_power_up = False
     else:
       cruise_info_power_up = True
