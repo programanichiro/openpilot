@@ -46,6 +46,7 @@ OP_ENABLE_v_cruise_kph = 0
 OP_ENABLE_gas_speed = 0
 OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
+cruise_info_power_up = False
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -92,7 +93,7 @@ class Planner:
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up
     #with open('./debug_out_v','w') as fp:
     #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
@@ -274,15 +275,24 @@ class Planner:
       with open('./cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
         if v_cruise_kph == limit_vc:
-          fp.write('%d.' % (v_cruise_kph))
+          if cruise_info_power_up:
+            fp.write('%d;' % (v_cruise_kph))
+          else:
+            fp.write('%d.' % (v_cruise_kph))
         else:
           if add_v_by_lead == True:
-            fp.write(',%d' % (v_cruise_kph_org))
+            if cruise_info_power_up:
+              fp.write('%d;' % (v_cruise_kph_org))
+            else:
+              fp.write(',%d' % (v_cruise_kph_org))
           else:
             vo = v_cruise_kph_org
             if int(vo) == 59 or int(vo) == 61:
               vo += 0.5 #メーター表示誤差補正
-            fp.write('%d' % (vo))
+            if cruise_info_power_up:
+              fp.write('%d;' % (vo))
+            else:
+              fp.write('%d' % (vo))
     #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and v_ego * 3.6 > 20: # over 20km/h
     #  with open('./ml_data.csv','a') as fp:
     #    fp.write('%s%0.2f\n' % (ml_csv , limit_vc))
@@ -392,6 +402,19 @@ class Planner:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
         a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.5に達すると1になる。
+
+      if os.path.isfile('./lockon_disp_disable.txt'):
+        with open('./lockon_disp_disable.txt','r') as fp:
+          start_accel_power_up_disable_str = fp.read()
+          if start_accel_power_up_disable_str:
+            start_accel_power_up_disable = int(start_accel_power_up_disable_str)
+            if start_accel_power_up_disable == 0:
+              a_desired_mul = 1 #臨時でロックオン非表示ならスタート加速増なし
+    if a_desired_mul == 1.0:
+      cruise_info_power_up = False
+    else:
+      cruise_info_power_up = True
+
     with open('./debug_out_v','w') as fp:
       fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
