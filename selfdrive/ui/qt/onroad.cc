@@ -203,11 +203,17 @@ const static char *btn_style = "font-size: 90px; border-radius: 20px; border-col
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
+  QWidget *btns_wrapper00 = new QWidget;
+  QHBoxLayout *btns_layout00  = new QHBoxLayout(btns_wrapper00);
+  btns_layout00->setSpacing(0);
+  btns_layout00->setContentsMargins(0, 0, 0, 30);
+  main_layout->addWidget(btns_wrapper00, 0, Qt::AlignTop | Qt::AlignCenter);
+
   QWidget *btns_wrapper0 = new QWidget;
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
-  btns_layout0->setContentsMargins(0, 0, 0, 30);
-  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignRight);
+  btns_layout0->setContentsMargins(0, 0, 0, 0);
+  btns_wrapper00->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignRight);
 
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
