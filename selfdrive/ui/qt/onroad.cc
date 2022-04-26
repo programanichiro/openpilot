@@ -218,7 +218,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapperLL = new QWidget;
   QVBoxLayout *btns_layoutLL  = new QVBoxLayout(btns_wrapperLL);
   btns_layoutLL->setSpacing(0);
-  btns_layoutLL->setContentsMargins(30+15, 430-100, 15, 30);
+  btns_layoutLL->setContentsMargins(30+15, 430-150, 15, 30);
 
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
   {
@@ -228,7 +228,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QObject::connect(startAccelPowerUpButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
-    startAccelPowerUpButton->setFixedWidth(150);
+    startAccelPowerUpButton->setFixedWidth(150*0.9);
     startAccelPowerUpButton->setFixedHeight(150*1.7);
     //lockOnButton->setWindowOpacity(all_opac);
     btns_layoutLL->addSpacing(0);
