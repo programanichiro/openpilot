@@ -404,13 +404,15 @@ class Planner:
         vd = 1 - vd #1〜0
         a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.6に達すると1になる。
 
-      if os.path.isfile('./lockon_disp_disable.txt'):
-        with open('./lockon_disp_disable.txt','r') as fp:
-          start_accel_power_up_disable_str = fp.read()
-          if start_accel_power_up_disable_str:
-            start_accel_power_up_disable = int(start_accel_power_up_disable_str)
-            if start_accel_power_up_disable == 1:
-              a_desired_mul = 1 #臨時でロックオン非表示ならスタート加速増なし
+      if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
+        with open('./start_accel_power_up_disp_enable.txt','r') as fp:
+          start_accel_power_up_disp_enable_str = fp.read()
+          if start_accel_power_up_disp_enable_str:
+            start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+            if start_accel_power_up_disp_enable == 0:
+              a_desired_mul = 1 #スタート加速増なし
+      else:
+        a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
     if a_desired_mul == 1.0 or v_ego < 1/3.6:
       cruise_info_power_up = False
     else:
