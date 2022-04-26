@@ -228,8 +228,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QObject::connect(startAccelPowerUpButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
-    startAccelPowerUpButton->setFixedWidth(150);
-    startAccelPowerUpButton->setFixedHeight(150);
+    startAccelPowerUpButton->setFixedWidth(150*0.9);
+    startAccelPowerUpButton->setFixedHeight(150*1.7);
     //lockOnButton->setWindowOpacity(all_opac);
     btns_layoutLL->addSpacing(0);
     btns_layoutLL->addWidget(startAccelPowerUpButton);
