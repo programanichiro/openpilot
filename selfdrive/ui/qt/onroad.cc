@@ -250,7 +250,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
 
   //const float all_opac = 0.2;
-  if{
+  {
     // Handle Ctrl button
     uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
     handleCtrlButton = new QPushButton("↔︎");
