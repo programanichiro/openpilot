@@ -213,7 +213,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QHBoxLayout *btns_layout0L  = new QHBoxLayout(btns_wrapper0L);
   btns_layout0L->setSpacing(0);
   btns_layout0L->setContentsMargins(0, 0, 0, 0);
-  btns_layout00->addWidget(btns_wrapper0L, 0, Qt::AlignVCenter | Qt::AlignLeft);
+  btns_layout00->addWidget(btns_wrapper0L, 0, /*Qt::AlignVCenter |*/ Qt::AlignLeft);
 
   QWidget *btns_wrapperLL = new QWidget;
   QVBoxLayout *btns_layoutLL  = new QVBoxLayout(btns_wrapperLL);
@@ -231,7 +231,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     startAccelPowerUpButton->setFixedWidth(150);
     startAccelPowerUpButton->setFixedHeight(150);
     //lockOnButton->setWindowOpacity(all_opac);
-    //btns_layoutL->addSpacing(15);
+    btns_layoutLL->addSpacing(0);
     btns_layoutLL->addWidget(startAccelPowerUpButton);
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
   }
@@ -240,7 +240,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
   btns_layout0->setContentsMargins(0, 0, 0, 0);
-  btns_layout00->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignRight);
+  btns_layout00->addWidget(btns_wrapper0, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
 
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
@@ -250,7 +250,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
 
   //const float all_opac = 0.2;
-  if(0){
+  if{
     // Handle Ctrl button
     uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
     handleCtrlButton = new QPushButton("↔︎");
