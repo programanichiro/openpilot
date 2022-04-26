@@ -224,7 +224,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // LockOn button
     uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt");
-    startAccelPowerUpButton = new QPushButton("⬆︎");
+    startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
     QObject::connect(startAccelPowerUpButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
