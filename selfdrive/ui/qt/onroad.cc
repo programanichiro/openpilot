@@ -218,7 +218,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapperLL = new QWidget;
   QVBoxLayout *btns_layoutLL  = new QVBoxLayout(btns_wrapperLL);
   btns_layoutLL->setSpacing(0);
-  btns_layoutLL->setContentsMargins(0, 430, 15, 30);
+  btns_layoutLL->setContentsMargins(30, 430, 15, 30);
 
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
   {
@@ -303,7 +303,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
   }
 
-  {
+  if(0){
     // Decel Ctrl button
     uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
     decelCtrlButton = new QPushButton("↓");
@@ -318,7 +318,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
-  {
+  if(0){
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt" , 0);
     if(mAccelEngagedButton == 3){
