@@ -48,8 +48,8 @@ OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
 
-START_DASH_K      = [0, 19, 26, 30, 40, 50, 60, 70, 80]
-START_DASH_SPEEDS = [0, 31, 41, 51, 61, 70, 80, 90, 100]
+START_DASH_CUT    = [0, 19/3.6, 26/3.6, 30/3.6, 40/3.6, 50/3.6, 60/3.6, 70/3.6, 80/3.6]
+START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6]
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -399,7 +399,7 @@ class Planner:
       if vl > 100/3.6:
         vl = 100/3.6
       #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
-      vl = interp(vl, START_DASH_SPEEDS, START_DASH_K) #定数倍ではなく、表で考えてみる。
+      vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
       vd = v_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
