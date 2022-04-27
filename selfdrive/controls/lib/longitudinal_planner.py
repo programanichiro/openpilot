@@ -48,6 +48,9 @@ OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
 
+START_DASH_K      = [0, 19, 26, 30, 40, 50, 60, 70, 80]
+START_DASH_SPEEDS = [0, 31, 41, 51, 61, 70, 80, 90, 100]
+
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
 A_CRUISE_MIN = -1.2
@@ -395,14 +398,15 @@ class Planner:
       vl = v_cruise
       if vl > 100/3.6:
         vl = 100/3.6
-      vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      vl = interp(vl, START_DASH_SPEEDS, START_DASH_K) #定数倍ではなく、表で考えてみる。
       vd = v_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。
+        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
 
       if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
         with open('./start_accel_power_up_disp_enable.txt','r') as fp:
