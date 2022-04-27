@@ -139,18 +139,12 @@ bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"な
   }
 }
 
-int getButtonInt(const char*fn){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。あとは0〜3までの数字を返す
+int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    if ( txt == "1" ) {
-      return 1;
-    } else if ( txt == "2" ) {
-      return 2;
-    } else if ( txt == "3" ) {
-      return 3;
-    }
+    return std::stoi(txt);
   }
-  return 0;
+  return defaultNum; //ファイルがない場合はこれを返す。
 }
 
 bool fp_error = false;
@@ -209,11 +203,44 @@ const static char *btn_style = "font-size: 90px; border-radius: 20px; border-col
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
+  QWidget *btns_wrapper00 = new QWidget;
+  QHBoxLayout *btns_layout00  = new QHBoxLayout(btns_wrapper00);
+  btns_layout00->setSpacing(0);
+  btns_layout00->setContentsMargins(0, 0, 0, 0);
+  main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
+
+  QWidget *btns_wrapper0L = new QWidget;
+  QHBoxLayout *btns_layout0L  = new QHBoxLayout(btns_wrapper0L);
+  btns_layout0L->setSpacing(0);
+  btns_layout0L->setContentsMargins(0, 0, 0, 0);
+  btns_layout00->addWidget(btns_wrapper0L, 0, /*Qt::AlignVCenter |*/ Qt::AlignLeft);
+
+  QWidget *btns_wrapperLL = new QWidget;
+  QVBoxLayout *btns_layoutLL  = new QVBoxLayout(btns_wrapperLL);
+  btns_layoutLL->setSpacing(0);
+  btns_layoutLL->setContentsMargins(30+15, 430-172, 15, 30);
+
+  btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
+  {
+    // LockOn button
+    uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt");
+    startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
+    QObject::connect(startAccelPowerUpButton, &QPushButton::clicked, [=]() {
+      uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
+    });
+    startAccelPowerUpButton->setFixedWidth(150*0.9);
+    startAccelPowerUpButton->setFixedHeight(150*1.7);
+    //lockOnButton->setWindowOpacity(all_opac);
+    btns_layoutLL->addSpacing(0);
+    btns_layoutLL->addWidget(startAccelPowerUpButton);
+    startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
+  }
+
   QWidget *btns_wrapper0 = new QWidget;
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
-  btns_layout0->setContentsMargins(0, 0, 0, 30);
-  main_layout->addWidget(btns_wrapper0, 0, Qt::AlignTop | Qt::AlignRight);
+  btns_layout0->setContentsMargins(0, 0, 0, 0);
+  btns_layout00->addWidget(btns_wrapper0, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
 
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
@@ -293,7 +320,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Engage button
-    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt");
+    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt" , 0);
     if(mAccelEngagedButton == 3){
       accelEngagedButton = new QPushButton("O"); //3ならワンペダルモード(O)
     } else if(mAccelEngagedButton == 2){
@@ -368,6 +395,13 @@ void ButtonsWindow::updateState(const UIState &s) {
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/handle_ctrl_disable.txt" , mHandleCtrlButton);
   }
+  
+  if (mStartAccelPowerUpButton != s.scene.mStartAccelPowerUpButton) {  // update mStartAccelPowerUpButton
+    mStartAccelPowerUpButton = s.scene.mStartAccelPowerUpButton;
+    startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton && fp_error==false)));
+    setButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt" , mStartAccelPowerUpButton);
+  }
+  
 }
 
 // OnroadAlerts
