@@ -45,6 +45,8 @@ OP_ENABLE_PREV = False
 OP_ENABLE_v_cruise_kph = 0
 OP_ENABLE_gas_speed = 0
 OP_ACCEL_PUSH = False
+on_onepedal_ct = -1
+cruise_info_power_up = False
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -91,8 +93,9 @@ class Planner:
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
-
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up
+    #with open('./debug_out_v','w') as fp:
+    #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -118,8 +121,15 @@ class Planner:
             if int(accel_engaged_str) == 3: #ワンペダルモード
               one_pedal = True
               if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
-                on_accel0 = True
-    if on_accel0: #オートパイロット中にアクセルを操作したら押した瞬間にワンペダルモード有効
+                if on_onepedal_ct < 0:
+                  on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
+    if on_onepedal_ct >= 0:
+      on_onepedal_ct += 1
+      if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
+        if sm['carState'].gas < 0.15: #アクセルが弱いかチョン押しなら
+          on_accel0 = True #ワンペダルに変更
+        on_onepedal_ct = -1 #アクセル判定消去
+    if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
 
@@ -265,15 +275,24 @@ class Planner:
       with open('./cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
         if v_cruise_kph == limit_vc:
-          fp.write('%d.' % (v_cruise_kph))
+          if cruise_info_power_up:
+            fp.write('%d;' % (v_cruise_kph))
+          else:
+            fp.write('%d.' % (v_cruise_kph))
         else:
           if add_v_by_lead == True:
-            fp.write(',%d' % (v_cruise_kph_org))
+            if cruise_info_power_up:
+              fp.write('%d;' % (v_cruise_kph_org))
+            else:
+              fp.write(',%d' % (v_cruise_kph_org))
           else:
             vo = v_cruise_kph_org
             if int(vo) == 59 or int(vo) == 61:
               vo += 0.5 #メーター表示誤差補正
-            fp.write('%d' % (vo))
+            if cruise_info_power_up:
+              fp.write('%d;' % (vo))
+            else:
+              fp.write('%d' % (vo))
     #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and v_ego * 3.6 > 20: # over 20km/h
     #  with open('./ml_data.csv','a') as fp:
     #    fp.write('%s%0.2f\n' % (ml_csv , limit_vc))
@@ -357,10 +376,54 @@ class Planner:
       accel_limits_turns[1] = min(accel_limits_turns[1], AWARENESS_DECEL)
       accel_limits_turns[0] = min(accel_limits_turns[0], accel_limits_turns[1])
     # clip limits, cannot init MPC outside of bounds
-    accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
-    accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
+    a_desired_mul = 1.0
+    vl = 0
+    vd = 0
+    lcd = 0
+    if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+      leadOne = sm['radarState'].leadOne
+      to_lead_distance = 35 #35m以上空いている
+      if leadOne.dRel > to_lead_distance:
+        lcd = leadOne.dRel #前走者までの距離
+        lcd -= to_lead_distance #0〜
+        lcd /= (70-to_lead_distance) #70m離れていたら1.0
+        if lcd > 1:
+          lcd = 1
+    if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+      if hasLead == False:
+        lcd = 1.0 #前走車がいなければlcd=1扱い。
+      vl = v_cruise
+      if vl > 100/3.6:
+        vl = 100/3.6
+      vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      vd = v_ego
+      if vd > vl:
+        vd = vl #vdの最大値はvl
+      if vl > 0:
+        vd /= vl #0〜1
+        vd = 1 - vd #1〜0
+        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。
+
+      if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
+        with open('./start_accel_power_up_disp_enable.txt','r') as fp:
+          start_accel_power_up_disp_enable_str = fp.read()
+          if start_accel_power_up_disp_enable_str:
+            start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+            if start_accel_power_up_disp_enable == 0:
+              a_desired_mul = 1 #スタート加速増なし
+      else:
+        a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
+    if a_desired_mul == 1.0 or v_ego < 1/3.6:
+      cruise_info_power_up = False
+    else:
+      cruise_info_power_up = True
+
+    #with open('./debug_out_v','w') as fp:
+    #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
+    accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
+    accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-    self.mpc.set_cur_state(self.v_desired_filter.x + v_desired_rand, self.a_desired)
+    self.mpc.set_cur_state(self.v_desired_filter.x + v_desired_rand, self.a_desired*a_desired_mul)
     self.mpc.update(sm['carState'], sm['radarState'], v_cruise, prev_accel_constraint=prev_accel_constraint)
     self.v_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(T_IDXS[:CONTROL_N], T_IDXS_MPC, self.mpc.a_solution)
