@@ -382,11 +382,11 @@ class Planner:
     lcd = 0
     if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
-      to_lead_distance = 40 #40m以上空いている
+      to_lead_distance = 35 #35m以上空いている
       if leadOne.dRel > to_lead_distance:
         lcd = leadOne.dRel #前走者までの距離
         lcd -= to_lead_distance #0〜
-        lcd /= (80-to_lead_distance) #80m離れていたら1.0
+        lcd /= (70-to_lead_distance) #70m離れていたら1.0
         if lcd > 1:
           lcd = 1
     if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
@@ -395,14 +395,14 @@ class Planner:
       vl = v_cruise
       if vl > 100/3.6:
         vl = 100/3.6
-      vl *= 0.6 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      vl *= 0.65 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
       vd = v_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.6に達すると1になる。
+        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.65に達すると1になる。
 
       if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
         with open('./start_accel_power_up_disp_enable.txt','r') as fp:
