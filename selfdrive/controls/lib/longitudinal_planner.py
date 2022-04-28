@@ -48,7 +48,7 @@ OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
 
-START_DASH_CUT    = [0, 19/3.6, 26/3.6, 30/3.6, 40/3.6, 50/3.6, 60/3.6, 70/3.6, 80/3.6]
+START_DASH_CUT    = [0, 18/3.6, 26/3.6, 30/3.6, 40/3.6, 50/3.6, 60/3.6, 70/3.6, 80/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6]
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
@@ -407,16 +407,16 @@ class Planner:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
         a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
+        if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
+          with open('./start_accel_power_up_disp_enable.txt','r') as fp:
+            start_accel_power_up_disp_enable_str = fp.read()
+            if start_accel_power_up_disp_enable_str:
+              start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+              if start_accel_power_up_disp_enable == 0:
+                a_desired_mul = 1 #スタート加速増なし
+        else:
+          a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
 
-      if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
-        with open('./start_accel_power_up_disp_enable.txt','r') as fp:
-          start_accel_power_up_disp_enable_str = fp.read()
-          if start_accel_power_up_disp_enable_str:
-            start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
-            if start_accel_power_up_disp_enable == 0:
-              a_desired_mul = 1 #スタート加速増なし
-      else:
-        a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
     if a_desired_mul == 1.0 or v_ego < 1/3.6:
       cruise_info_power_up = False
     else:
