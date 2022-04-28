@@ -386,10 +386,13 @@ class Planner:
     if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       to_lead_distance = 35 #35m以上空いている
+      add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
+      add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
+      to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
       if leadOne.dRel > to_lead_distance:
         lcd = leadOne.dRel #前走者までの距離
         lcd -= to_lead_distance #0〜
-        lcd /= (70-to_lead_distance) #70m離れていたら1.0
+        lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
         if lcd > 1:
           lcd = 1
     if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
