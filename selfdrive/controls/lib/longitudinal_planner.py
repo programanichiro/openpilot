@@ -48,7 +48,7 @@ OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
 
-START_DASH_CUT    = [0, 18/3.6, 26/3.6, 34/3.6, 43/3.6, 52/3.6, 61/3.6, 70/3.6, 80/3.6,  90/3.6]
+START_DASH_CUT    = [0, 17/3.6, 26/3.6, 36/3.6, 45/3.6, 55/3.6, 64/3.6, 74/3.6, 83/3.6,  93/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
