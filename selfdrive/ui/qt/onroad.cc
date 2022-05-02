@@ -947,7 +947,7 @@ void NvgWindow::knightScanner(QPainter &p) {
   configFont(p, "Open Sans", 44, "SemiBold");
   p.setPen(QColor(0xdf, 0xdf, 0x00 , 200));
   {
-    float vegostopping = (*s->sm)["carState"].getCarState().getVEgoStopping();
+    float vegostopping = (*s->sm)["carParams"].getCarParams().getVEgoStopping();
     QString debug_disp = QString("Stop:") + QString::number(vegostopping,'f',0);
     //QString debug_disp = QString("Slow:") + QString::number(cv,'f',0);
     p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
