@@ -605,8 +605,8 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   drawText(p, rect().center().x(), 210+y_ofs-5, speed);
   configFont(p, "Open Sans", 66, "Regular");
   UIState *s = uiState();
-  bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed();
-  if(brakePressed == false){
+  //bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed(); //これは実際のブレーキペダルを踏んだかどうか。車体のブレーキランプでは無い。
+  if(true /*brakePressed == false*/){
     drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
   } else {
     drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, QColor(0xC9, 0x22, 0x31, 200));
