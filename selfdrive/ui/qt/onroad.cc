@@ -604,6 +604,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   drawText(p, rect().center().x(), +7+210+y_ofs-5, speed,bg_colors[status]);
   drawText(p, rect().center().x(), 210+y_ofs-5, speed);
   configFont(p, "Open Sans", 66, "Regular");
+  UIState *s = uiState();
   bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed();
   if(brakePressed == false){
     drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
@@ -613,7 +614,6 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
 
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
-  UIState *s = uiState();
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
   int temp = (int)deviceState.getAmbientTempC();
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
