@@ -604,8 +604,12 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   drawText(p, rect().center().x(), +7+210+y_ofs-5, speed,bg_colors[status]);
   drawText(p, rect().center().x(), 210+y_ofs-5, speed);
   configFont(p, "Open Sans", 66, "Regular");
-  drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
-
+  bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed();
+  if(brakePressed == false){
+    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
+  } else {
+    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, QColor(0xC9, 0x22, 0x31, 200));
+  }
 
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
