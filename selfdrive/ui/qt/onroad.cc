@@ -958,7 +958,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
-    QString debug_disp = QString(",Dist:") + QString::number(distance_traveled / 1000,'f',1) + QString("km");
+    QString debug_disp = QString(",Trip:") + QString::number(distance_traveled / 1000,'f',1) + QString("km");
     p.drawText(QRect(0+20 + 200 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
