@@ -528,6 +528,7 @@ static int global_status;
 static float curve_value;
 static float handle_center = -100;
 static int handle_calibct = 0;
+static float distance_traveled;
 
 void OnroadHud::paintEvent(QPaintEvent *event) {
   int y_ofs = 150;
@@ -956,6 +957,10 @@ void NvgWindow::knightScanner(QPainter &p) {
     QString debug_disp = QString(",Ang:") + QString::number(ang,'f',1);
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
+  {
+    QString debug_disp = QString(",Dist:") + QString::number(distance_traveled / 1000,'f',1) + QString("km");
+    p.drawText(QRect(0+20 + 200 + 210, rect_h - 46, 250, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  }
 #endif
 }
 
@@ -1300,6 +1305,7 @@ void NvgWindow::paintGL() {
     LOGW("slow frame time: %.2f", dt);
   }
   prev_draw_t = cur_draw_t;
+  distance_traveled += (*s->sm)["carState"].getCarState().getVEgo() * dt / 1000;
 }
 
 void NvgWindow::showEvent(QShowEvent *event) {
