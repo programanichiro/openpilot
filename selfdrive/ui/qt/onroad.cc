@@ -619,9 +619,9 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   int temp = (int)deviceState.getAmbientTempC();
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
   configFont(p, "Open Sans", 44, "SemiBold");
-  if(temp < 48){ //警告色の変化はサイドバーと違う。もっと早く警告される。
+  if(temp < 50){ //警告色の変化はサイドバーと違う。もっと早く警告される。
     p.setPen(QColor(0xff, 0xff, 0xff , 200));
-  } else if(temp < 55){
+  } else if(temp < 58){
     p.setPen(QColor(0xff, 0xff, 0 , 255));
   } else {
     p.setPen(QColor(0xff, 0, 0 , 255));
