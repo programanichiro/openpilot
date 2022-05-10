@@ -38,7 +38,7 @@ def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
 #LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,65-4      ,49-4      )
 LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,62.5-4      ,47.5-4      )
 #LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(8.7,13.0,25.0 , 112,93,81)
-LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(9.5,13.0,25.0 , 116,98,87)
+LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(9.5,13.0,25.0 , 115,96,85)
 
 OP_ENABLE_ACCEL_RELEASE = False
 OP_ENABLE_PREV = False
@@ -47,6 +47,9 @@ OP_ENABLE_gas_speed = 0
 OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
+
+START_DASH_CUT    = [0, 17/3.6, 26/3.6, 36/3.6, 45/3.6, 55/3.6, 64/3.6, 74/3.6, 83/3.6,  93/3.6]
+START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
 AWARENESS_DECEL = -0.2  # car smoothly decel at .2m/s^2 when user is distracted
@@ -126,7 +129,7 @@ class Planner:
     if on_onepedal_ct >= 0:
       on_onepedal_ct += 1
       if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
-        if sm['carState'].gas < 0.15: #アクセルが弱いかチョン押しなら
+        if sm['carState'].gas < 0.2: #アクセルが弱いかチョン押しなら
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
@@ -216,9 +219,13 @@ class Planner:
       if v_ego * 3.6 * 0.8 < d_rel / 0.98 and a_rel >= 0: #例、時速50kmの時前走車までの距離が50m以上離れている&&相手が減速していない。×0.8はd_relの値と実際の距離感との調整。
         if v_ego * 3.6 >= v_cruise_kph * 0.98: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
+          org_v_cruise_kph = v_cruise_kph
           v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
           if v_cruise_kph > 105:
             v_cruise_kph = 105 #危ないのでひとまず時速105kmまで。
+            if v_cruise_kph < org_v_cruise_kph:
+              v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
+              add_v_by_lead = False
 
     steerAng = sm['carState'].steeringAngleDeg - handle_center
     orgSteerAng = steerAng
@@ -383,10 +390,13 @@ class Planner:
     if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       to_lead_distance = 35 #35m以上空いている
+      add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
+      add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
+      to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
       if leadOne.dRel > to_lead_distance:
         lcd = leadOne.dRel #前走者までの距離
         lcd -= to_lead_distance #0〜
-        lcd /= (70-to_lead_distance) #70m離れていたら1.0
+        lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
         if lcd > 1:
           lcd = 1
     if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
@@ -395,24 +405,26 @@ class Planner:
       vl = v_cruise
       if vl > 100/3.6:
         vl = 100/3.6
-      vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
       vd = v_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        a_desired_mul = 1 + 0.2*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。
+        add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
+        a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
+        if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
+          with open('./start_accel_power_up_disp_enable.txt','r') as fp:
+            start_accel_power_up_disp_enable_str = fp.read()
+            if start_accel_power_up_disp_enable_str:
+              start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+              if start_accel_power_up_disp_enable == 0:
+                a_desired_mul = 1 #スタート加速増なし
+        else:
+          a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
 
-      if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
-        with open('./start_accel_power_up_disp_enable.txt','r') as fp:
-          start_accel_power_up_disp_enable_str = fp.read()
-          if start_accel_power_up_disp_enable_str:
-            start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
-            if start_accel_power_up_disp_enable == 0:
-              a_desired_mul = 1 #スタート加速増なし
-      else:
-        a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
     if a_desired_mul == 1.0 or v_ego < 1/3.6:
       cruise_info_power_up = False
     else:

@@ -528,6 +528,7 @@ static int global_status;
 static float curve_value;
 static float handle_center = -100;
 static int handle_calibct = 0;
+static float distance_traveled;
 
 void OnroadHud::paintEvent(QPaintEvent *event) {
   int y_ofs = 150;
@@ -604,19 +605,23 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   drawText(p, rect().center().x(), +7+210+y_ofs-5, speed,bg_colors[status]);
   drawText(p, rect().center().x(), 210+y_ofs-5, speed);
   configFont(p, "Open Sans", 66, "Regular");
-  drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
-
+  UIState *s = uiState();
+  //bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed(); //これは実際のブレーキペダルを踏んだかどうか。車体のブレーキランプでは無い。
+  if(true /*brakePressed == false*/){
+    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
+  } else {
+    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, QColor(0xC9, 0x22, 0x31, 200));
+  }
 
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
-  UIState *s = uiState();
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
   int temp = (int)deviceState.getAmbientTempC();
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
   configFont(p, "Open Sans", 44, "SemiBold");
-  if(temp < 48){ //警告色の変化はサイドバーと違う。もっと早く警告される。
+  if(temp < 50){ //警告色の変化はサイドバーと違う。もっと早く警告される。
     p.setPen(QColor(0xff, 0xff, 0xff , 200));
-  } else if(temp < 55){
+  } else if(temp < 58){
     p.setPen(QColor(0xff, 0xff, 0 , 255));
   } else {
     p.setPen(QColor(0xff, 0, 0 , 255));
@@ -943,12 +948,18 @@ void NvgWindow::knightScanner(QPainter &p) {
   configFont(p, "Open Sans", 44, "SemiBold");
   p.setPen(QColor(0xdf, 0xdf, 0x00 , 200));
   {
+    //float vegostopping = (*s->sm)["carParams"].getCarParams().getVEgoStopping();
+    //QString debug_disp = QString("Stop:") + QString::number(vegostopping,'f',0);
     QString debug_disp = QString("Slow:") + QString::number(cv,'f',0);
     p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
     QString debug_disp = QString(",Ang:") + QString::number(ang,'f',1);
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  }
+  {
+    QString debug_disp = QString(",Trip:") + QString::number(distance_traveled / 1000,'f',1) + QString("km");
+    p.drawText(QRect(0+20 + 200 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
 }
@@ -1294,6 +1305,7 @@ void NvgWindow::paintGL() {
     LOGW("slow frame time: %.2f", dt);
   }
   prev_draw_t = cur_draw_t;
+  distance_traveled += (*s->sm)["carState"].getCarState().getVEgo() * dt / 1000;
 }
 
 void NvgWindow::showEvent(QShowEvent *event) {
