@@ -475,7 +475,7 @@ OnroadHud::OnroadHud(QWidget *parent) : QWidget(parent) {
 static float vc_speed;
 static int tss_type = 0;
 void OnroadHud::updateState(const UIState &s) {
-  const int SET_SPEED_NA = 557; //255;
+  int SET_SPEED_NA = 557; //255;
   const SubMaster &sm = *(s.sm);
   const auto cs = sm["controlsState"].getControlsState();
 
@@ -496,7 +496,10 @@ void OnroadHud::updateState(const UIState &s) {
     //これまでと互換。tss_type_infoがなければTSSP
     maxspeed = maxspeed < (55 - 4) ? (55 - (55 - (maxspeed+4)) * 2 - 4) : maxspeed;
     maxspeed = maxspeed > (110 - 6) ? (110 + ((maxspeed+6) - 110) * 3 - 6) : maxspeed;
+  } else if(tss_type == 2){
+    SET_SPEED_NA = 255; //TSS2では戻す。
   }
+
   bool cruise_set = maxspeed > 0 && (int)maxspeed != SET_SPEED_NA;
   if (cruise_set && !s.scene.is_metric) {
     maxspeed *= KM_TO_MILE;
