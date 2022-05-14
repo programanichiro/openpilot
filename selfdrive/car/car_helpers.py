@@ -117,7 +117,8 @@ def fingerprint(logcan, sendcan):
   if os.environ['DONGLE_ID'] in ('252ef8652ee6c9d3' , 'cdcb457f7528673b' , 'b7e555498879d5ad'):
     frame_fingerprint = 120  # 1.2s , 一部のsmartDSUで起動が間に合わないのにスペシャル対応。
   else:
-    frame_fingerprint = 10  # 0.1s
+    #frame_fingerprint = 10  # 0.1s
+    frame_fingerprint = 20  # たまに初期化エラーが出るので、オリジナルも少し遅らせてみる。
   car_fingerprint = None
   done = False
 
