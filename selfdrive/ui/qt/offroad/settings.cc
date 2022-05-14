@@ -54,6 +54,18 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/offroad/icon_metric.png",
     },
     {
+      "UploadRaw",
+      "Upload Raw Logs",
+      "Upload full logs and full resolution video by default while on Wi-Fi. If not enabled, individual logs can be marked for upload at useradmin.comma.ai.",
+      "../assets/offroad/icon_network.png",
+    },
+    {
+      "EnableGasOnCruise",
+      "Enable Gas on Cruise",
+      "Pressing the gas pedal will NOT disengage openpilot, while this is the default design for Toyota, this is NOT enabled by default for OpenPilot.  Use at your own risk!!",
+      "../assets/offroad/icon_gas.png",
+    },
+    {
       "RecordFront",
       "Record and Upload Driver Camera",
       "Upload data from the driver facing camera and help improve the driver monitoring algorithm.",
@@ -371,7 +383,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     }
   )");
   close_btn->setFixedSize(200, 200);
-  sidebar_layout->addSpacing(0); //45
+  sidebar_layout->addSpacing(45);
   sidebar_layout->addWidget(close_btn, 0, Qt::AlignCenter);
   QObject::connect(close_btn, &QPushButton::clicked, this, &SettingsWindow::closeSettings);
 
