@@ -527,7 +527,7 @@ class Controls:
       handle_center_ct += 1
       if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
         STEER_CTRL_Y = (-max_yp / 2.5)
-      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
+      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo, #STEER_CTRL_Y, bigmodel動作検証作業中
                                                                              lat_plan.psis,
                                                                              lat_plan.curvatures,
                                                                              lat_plan.curvatureRates)
