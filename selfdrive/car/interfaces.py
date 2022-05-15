@@ -5,6 +5,7 @@ from typing import Dict, Tuple, List
 
 from cereal import car
 from common.kalman.simple_kalman import KF1D
+from common.params import Params
 from common.realtime import DT_CTRL
 from selfdrive.car import gen_empty_fingerprint
 from selfdrive.config import Conversions as CV
@@ -22,7 +23,6 @@ ACCEL_MIN = -3.5
 
 # generic car and radar interfaces
 
-ACCEL_PUSH_COUNT = 0
 
 class CarInterfaceBase(ABC):
   def __init__(self, CP, CarController, CarState):
@@ -44,6 +44,10 @@ class CarInterfaceBase(ABC):
     self.CC = None
     if CarController is not None:
       self.CC = CarController(self.cp.dbc_name, CP, self.VM)
+
+    # KRKeegan Option to Enable Gas on Cruise
+    params = Params()
+    self.enable_gas_on_cruise = params.get_bool("EnableGasOnCruise")
 
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
@@ -74,6 +78,9 @@ class CarInterfaceBase(ABC):
     ret = car.CarParams.new_message()
     ret.carFingerprint = candidate
     ret.unsafeMode = 0  # see panda/board/safety_declarations.h for allowed values
+    params = Params()
+    if params.get_bool("EnableGasOnCruise"):
+      ret.unsafeMode = ret.unsafeMode | 1
 
     # standard ALC params
     ret.steerControlType = car.CarParams.SteerControlType.torque
@@ -93,10 +100,12 @@ class CarInterfaceBase(ABC):
     ret.stoppingControl = True
     ret.longitudinalTuning.deadzoneBP = [0.]
     ret.longitudinalTuning.deadzoneV = [0.]
+    ret.longitudinalTuning.kf = 1.
     ret.longitudinalTuning.kpBP = [0.]
     ret.longitudinalTuning.kpV = [1.]
     ret.longitudinalTuning.kiBP = [0.]
     ret.longitudinalTuning.kiV = [1.]
+    # TODO estimate car specific lag, use .15s for now
     ret.longitudinalActuatorDelayLowerBound = 0.15
     ret.longitudinalActuatorDelayUpperBound = 0.15
     ret.steerLimitTimer = 1.0
@@ -126,8 +135,8 @@ class CarInterfaceBase(ABC):
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
       events.add(EventName.espDisabled)
-    #if cs_out.gasPressed:
-    #  events.add(EventName.gasPressed)
+    if cs_out.gasPressed and not self.enable_gas_on_cruise:
+      events.add(EventName.gasPressed)
     if cs_out.stockFcw:
       events.add(EventName.stockFcw)
     if cs_out.stockAeb:
@@ -154,30 +163,8 @@ class CarInterfaceBase(ABC):
     if cs_out.steerError:
       events.add(EventName.steerUnavailable)
 
-    global ACCEL_PUSH_COUNT
-    engage_disable = False
-    if cs_out.gasPressed:
-      accel_engaged = False
-      if os.path.isfile('./accel_engaged.txt'):
-        with open('./accel_engaged.txt','r') as fp:
-          accel_engaged_str = fp.read()
-          if accel_engaged_str:
-            if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
-              accel_engaged = True
-            if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
-              accel_engaged = True
-              ACCEL_PUSH_COUNT = 100
-      if accel_engaged == False and cs_out.gasPressed and not self.CS.out.gasPressed:
-        engage_disable = True
-      ACCEL_PUSH_COUNT += 1
-    else:
-      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
-        engage_disable = True
-      ACCEL_PUSH_COUNT = 0
-
     # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
-    #if (cs_out.gasPressed and not self.CS.out.gasPressed) or \
-    if (cs_out.vEgo * 3.6 > 1 and engage_disable == True) or \
+    if (not self.enable_gas_on_cruise and cs_out.gasPressed and not self.CS.out.gasPressed) or \
        (cs_out.brakePressed and (not self.CS.out.brakePressed or not cs_out.standstill)):
       events.add(EventName.pedalPressed)
 
