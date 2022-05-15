@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 import os
 import math
-import numpy as np
 from numbers import Number
 
 from cereal import car, log
@@ -11,11 +10,10 @@ from common.profiler import Profiler
 from common.params import Params, put_nonblocking
 import cereal.messaging as messaging
 from selfdrive.config import Conversions as CV
-from selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
 from selfdrive.swaglog import cloudlog
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
-from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET, STEERING_CENTER, TRAJECTORY_SIZE
+from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET
 from selfdrive.controls.lib.drive_helpers import update_v_cruise, initialize_v_cruise
 from selfdrive.controls.lib.drive_helpers import get_lag_adjusted_curvature
 from selfdrive.controls.lib.longcontrol import LongControl
@@ -29,9 +27,6 @@ from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.locationd.calibrationd import Calibration
 from selfdrive.hardware import HARDWARE, TICI, EON
 from selfdrive.manager.process_config import managed_processes
-
-handle_center = STEERING_CENTER # キャリブレーション前の手抜き
-handle_center_ct = 0
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -71,7 +66,7 @@ class Controls:
                                      'carControl', 'carEvents', 'carParams'])
 
     self.camera_packets = ["roadCameraState", "driverCameraState"]
-    if TICI: #とりあえずここを無効にしてもcomma 2に影響はない。
+    if TICI:
       self.camera_packets.append("wideRoadCameraState")
 
     params = Params()
@@ -158,10 +153,6 @@ class Controls:
     self.logged_comm_issue = False
     self.button_timers = {ButtonEvent.Type.decelCruise: 0, ButtonEvent.Type.accelCruise: 0}
     self.last_actuators = car.CarControl.Actuators.new_message()
-
-    self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
-    self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
-    self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
@@ -262,7 +253,7 @@ class Controls:
       if i < len(self.CP.safetyConfigs):
         safety_mismatch = pandaState.safetyModel != self.CP.safetyConfigs[i].safetyModel or \
                           pandaState.safetyParam != self.CP.safetyConfigs[i].safetyParam or \
-                          False #pandaState.unsafeMode != self.CP.unsafeMode
+                          pandaState.unsafeMode != self.CP.unsafeMode
       else:
         safety_mismatch = pandaState.safetyModel not in IGNORED_SAFETY_MODES
 
@@ -327,8 +318,8 @@ class Controls:
 
     # TODO: fix simulator
     if not SIMULATION:
-      if not NOSENSOR and os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID:
-        if not self.sm['liveLocationKalman'].gpsOK and (self.distance_traveled > 1000 and self.distance_traveled < 3000):
+      if not NOSENSOR:
+        if not self.sm['liveLocationKalman'].gpsOK and (self.distance_traveled > 1000):
           # Not show in first 1 km to allow for driving out of garage. This event shows after 5 minutes
           self.events.add(EventName.noGps)
       if not self.sm.all_alive(self.camera_packets):
@@ -349,9 +340,9 @@ class Controls:
       v_future = speeds[-1]
     else:
       v_future = 100.0
-    #if CS.brakePressed and v_future >= self.CP.vEgoStarting \
-    #  and self.CP.openpilotLongitudinalControl and CS.vEgo < 0.3:
-    #  self.events.add(EventName.noTarget)
+    if CS.brakePressed and v_future >= self.CP.vEgoStarting \
+      and self.CP.openpilotLongitudinalControl and CS.vEgo < 0.3:
+      self.events.add(EventName.noTarget)
 
   def data_sample(self):
     """Receive data from sockets and update carState"""
@@ -501,33 +492,12 @@ class Controls:
     if not self.joystick_mode:
       # accel PID loop
       pid_accel_limits = self.CI.get_pid_accel_limits(self.CP, CS.vEgo, self.v_cruise_kph * CV.KPH_TO_MS)
-      actuators.accel = self.LoC.update(self.active, CS, self.CP, long_plan, pid_accel_limits)
+      t_since_plan = (self.sm.frame - self.sm.rcv_frame['longitudinalPlan']) * DT_CTRL
+      actuators.accel = self.LoC.update(self.active, CS, self.CP, long_plan, pid_accel_limits, t_since_plan)
 
       # Steering PID loop and lateral MPC
       lat_active = self.active and not CS.steerWarning and not CS.steerError and CS.vEgo > self.CP.minSteerSpeed
-      md = self.sm['modelV2']
-      if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
-        self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
-        self.t_idxs = np.array(md.position.t)
-        self.plan_yaw = list(md.orientation.z)
-      if len(md.position.xStd) == TRAJECTORY_SIZE:
-        self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
-
-      STEER_CTRL_Y = CS.steeringAngleDeg
-      max_yp = 0
-      for yp in self.path_xyz[:,1]:
-        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
-      global handle_center,handle_center_ct
-      if handle_center_ct % 5 == 3 and os.path.isfile('./handle_center_info.txt'):
-        with open('./handle_center_info.txt','r') as fp:
-          handle_center_info_str = fp.read()
-          if handle_center_info_str:
-            handle_center = float(handle_center_info_str)
-      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
-      handle_center_ct += 1
-      if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
-        STEER_CTRL_Y = (-max_yp / 2.5)
-      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
+      desired_curvature, desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,
                                                                              lat_plan.psis,
                                                                              lat_plan.curvatures,
                                                                              lat_plan.curvatureRates)
