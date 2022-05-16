@@ -17,11 +17,11 @@ from selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N
 from selfdrive.swaglog import cloudlog
 
 from selfdrive.car.toyota.values import TSS2_CAR
-from selfdrive.controls.lib.lane_planner import LanePlanner, TRAJECTORY_SIZE , STEERING_CENTER
+from selfdrive.controls.lib.lane_planner import LanePlanner, TRAJECTORY_SIZE
 from common.params import Params
 PARAMS = Params()
 CVS_FRAME = 0
-handle_center = STEERING_CENTER
+handle_center = 0
 accel_lead_ctrl = True
 decel_lead_ctrl = True
 
