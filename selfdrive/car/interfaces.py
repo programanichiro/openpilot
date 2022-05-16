@@ -78,9 +78,9 @@ class CarInterfaceBase(ABC):
     ret = car.CarParams.new_message()
     ret.carFingerprint = candidate
     ret.unsafeMode = 1 # 0  # see panda/board/safety_declarations.h for allowed values
-    #params = Params()
-    #if params.get_bool("EnableGasOnCruise"):
-    #  ret.unsafeMode = ret.unsafeMode | 1
+    params = Params()
+    if params.get_bool("EnableGasOnCruise"):
+      ret.unsafeMode = ret.unsafeMode | 1
 
     # standard ALC params
     ret.steerControlType = car.CarParams.SteerControlType.torque
@@ -135,8 +135,8 @@ class CarInterfaceBase(ABC):
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
       events.add(EventName.espDisabled)
-    #if cs_out.gasPressed and not self.enable_gas_on_cruise:
-    #  events.add(EventName.gasPressed)
+    if cs_out.gasPressed and not self.enable_gas_on_cruise:
+      events.add(EventName.gasPressed)
     if cs_out.stockFcw:
       events.add(EventName.stockFcw)
     if cs_out.stockAeb:
