@@ -5,7 +5,7 @@ from typing import Dict, Tuple, List
 
 from cereal import car
 from common.kalman.simple_kalman import KF1D
-#from common.params import Params
+from common.params import Params
 from common.realtime import DT_CTRL
 from selfdrive.car import gen_empty_fingerprint
 from selfdrive.config import Conversions as CV
@@ -46,8 +46,8 @@ class CarInterfaceBase(ABC):
       self.CC = CarController(self.cp.dbc_name, CP, self.VM)
 
     # KRKeegan Option to Enable Gas on Cruise
-#    params = Params()
-    self.enable_gas_on_cruise = True #params.get_bool("EnableGasOnCruise")
+    params = Params()
+    self.enable_gas_on_cruise = params.get_bool("EnableGasOnCruise")
 
   @staticmethod
   def get_pid_accel_limits(CP, current_speed, cruise_speed):
