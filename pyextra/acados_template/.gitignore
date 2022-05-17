@@ -1,5 +1,0 @@
-__pycache__/
-
-# Cython intermediates
-*_pyx.c
-*_pyx.o
