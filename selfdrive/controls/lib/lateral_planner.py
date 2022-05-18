@@ -138,11 +138,11 @@ class LateralPlanner:
     # Calculate final driving path and set MPC costs
     if self.use_lanelines:
       #d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
-      d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , v_ego, self.t_idxs, self.path_xyz)
+      d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , v_ego, self.t_idxs, self.path_xyz)
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
     else:
       d_path_xyz = self.path_xyz
-      dcm = self.LP.calc_dcm(STEER_CTRL_Y, v_ego,2.5,-1,-1) #2.5はレーンを消すダミー,-1,-1はカメラオフセット反映に必要
+      dcm = self.LP.calc_dcm(STEER_CTRL_Y, (-max_yp / 2.5) , v_ego,2.5,-1,-1) #2.5はレーンを消すダミー,-1,-1はカメラオフセット反映に必要
       d_path_xyz[:,1] -= dcm #CAMERA_OFFSETが反映されている。->実はcalc_dcmの中で無視している。無い方が走りが良い？
       path_cost = np.clip(abs(self.path_xyz[0, 1] / self.path_xyz_stds[0, 1]), 0.5, 1.5) * MPC_COST_LAT.PATH
       # Heading cost is useful at low speed, otherwise end of plan can be off-heading
