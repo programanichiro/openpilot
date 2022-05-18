@@ -604,12 +604,16 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   drawText(p, rect().center().x(), +7+210+y_ofs-5, speed,bg_colors[status]);
   drawText(p, rect().center().x(), 210+y_ofs-5, speed);
   configFont(p, "Open Sans", 66, "Regular");
-  drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
-
+  UIState *s = uiState();
+  //bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed(); //これは実際のブレーキペダルを踏んだかどうか。車体のブレーキランプでは無い。
+  if(true /*brakePressed == false*/){
+    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
+  } else {
+    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, QColor(0xC9, 0x22, 0x31, 200));
+  }
 
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
-  UIState *s = uiState();
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
   int temp = (int)deviceState.getAmbientTempC();
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
@@ -943,6 +947,8 @@ void NvgWindow::knightScanner(QPainter &p) {
   configFont(p, "Open Sans", 44, "SemiBold");
   p.setPen(QColor(0xdf, 0xdf, 0x00 , 200));
   {
+    //float vegostopping = (*s->sm)["carParams"].getCarParams().getVEgoStopping();
+    //QString debug_disp = QString("Stop:") + QString::number(vegostopping,'f',0);
     QString debug_disp = QString("Slow:") + QString::number(cv,'f',0);
     p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
