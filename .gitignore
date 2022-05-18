@@ -59,7 +59,6 @@ flycheck_*
 cppcheck_report.txt
 comma*.sh
 
-models/*.thneed
 
 *.bz2
 
