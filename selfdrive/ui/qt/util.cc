@@ -18,7 +18,7 @@ QString getBrand() {
 }
 
 QString getBrandVersion() {
-  return getBrand() + " v" + getVersion().left(14+4).trimmed();
+  return getBrand() + " v" + getVersion().left(18).trimmed();
 }
 
 QString getUserAgent() {

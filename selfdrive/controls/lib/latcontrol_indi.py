@@ -89,8 +89,12 @@ class LatControlINDI(LatControl):
       output_steer = 0
     else:
       # Expected actuator value
-      self.steer_filter.update_alpha(self.RC)
+      if CS.vEgo*3.6 < 56:
+        self.steer_filter.alpha = (1 - CS.vEgo*3.6 / 56)
+      else:
+        self.steer_filter.update_alpha(self.RC)
       self.steer_filter.update(last_actuators.steer)
+      #div_steer = 1.0
 
       # Compute acceleration error
       rate_sp = self.outer_loop_gain * (steers_des - self.x[0]) + rate_des
@@ -100,6 +104,9 @@ class LatControlINDI(LatControl):
       # Compute change in actuator
       g_inv = 1. / self.G
       delta_u = g_inv * accel_error
+
+      #with open('./debug_out_y','w') as fp:
+      #  fp.write('d(x):%.2f(%.2f) , alp:%.2f,cv:(%.6f/%.6f)' % (delta_u ,self.steer_filter.x, self.steer_filter.alpha , curvature, curvature_rate))
 
       # If steering pressed, only allow wind down
       if CS.steeringPressed and (delta_u * last_actuators.steer > 0):
@@ -118,5 +125,10 @@ class LatControlINDI(LatControl):
       indi_log.delta = float(delta_u)
       indi_log.output = float(output_steer)
       indi_log.saturated = self._check_saturation(steers_max - abs(output_steer) < 1e-3, CS)
+
+      #with open('./debug_out_y','a') as fp:
+      #  curvature = 0. if curvature_rate == 0 else curvature
+      #  curvature_rate = 1. if curvature_rate == 0 else curvature_rate
+      #  fp.write('\nsat:[%d] , smx:%.2f,sd:[%d],c/c:%.3f' % (check_saturation ,steers_max, indi_log.saturated,curvature/curvature_rate))
 
     return float(output_steer), float(steers_des), indi_log
