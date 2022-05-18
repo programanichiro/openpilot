@@ -2,47 +2,12 @@
 
 #include <QStackedLayout>
 #include <QWidget>
-#include <QPushButton>
 
 #include "selfdrive/ui/qt/widgets/cameraview.h"
 #include "selfdrive/ui/ui.h"
 
 
 // ***** onroad widgets *****
-
-class ButtonsWindow : public QWidget {
-  Q_OBJECT
-
-public:
-  ButtonsWindow(QWidget* parent = 0);
-
-private:
-  QPushButton *lockOnButton;
-  QPushButton *accelCtrlButton;
-  QPushButton *decelCtrlButton;
-  QPushButton *accelEngagedButton;
-  QPushButton *handleCtrlButton;
-  QPushButton *startAccelPowerUpButton;
-
-  // int dfStatus = -1;  // always initialize style sheet and send msg
-  // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
-
-  // int lsStatus = -1;  // always initialize style sheet and send msg
-  // const QStringList lsButtonColors = {"#ff3737", "#37b868", "#044389"};
-
-  const QStringList mButtonColors = {"#909090", "#37b868"};
-
-  // model long button
-  bool mLockOnButton = true;  // triggers initialization
-  bool mAccelCtrlButton = true;  // triggers initialization
-  bool mDecelCtrlButton = true;  // triggers initialization
-  int mAccelEngagedButton = 0;  // triggers initialization
-  bool mHandleCtrlButton = true;  // triggers initialization
-  bool mStartAccelPowerUpButton = false;  // triggers initialization
-
-public slots:
-  void updateState(const UIState &s);
-};
 
 class OnroadHud : public QWidget {
   Q_OBJECT
@@ -60,9 +25,8 @@ public:
   void updateState(const UIState &s);
 
 private:
-  void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity , float ang);
+  void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
-  void drawText(QPainter &p, int x, int y, const QString &text, const QColor &col);
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap engage_img;
@@ -103,7 +67,6 @@ class NvgWindow : public CameraViewWidget {
 
 public:
   explicit NvgWindow(VisionStreamType type, QWidget* parent = 0) : CameraViewWidget("camerad", type, true, parent) {}
-  int prev_width = -1;  // initializes ButtonsWindow width and holds prev width to update it
 
 protected:
   void paintGL() override;
@@ -111,14 +74,9 @@ protected:
   void showEvent(QShowEvent *event) override;
   void updateFrameMat(int w, int h) override;
   void drawLaneLines(QPainter &painter, const UIScene &scene);
-  void drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num);
-  void drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num , const cereal::ModelDataV2::LeadDataV3::Reader &lead0 , const cereal::ModelDataV2::LeadDataV3::Reader &lead1);
+  void drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd);
   inline QColor redColor(int alpha = 255) { return QColor(201, 34, 49, alpha); }
   double prev_draw_t = 0;
-  void knightScanner(QPainter &p);
-
-signals:
-  void resizeSignal(int w);
 };
 
 // container for all onroad widgets
@@ -135,7 +93,6 @@ private:
   OnroadHud *hud;
   OnroadAlerts *alerts;
   NvgWindow *nvg;
-  ButtonsWindow *buttons;
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QWidget *map = nullptr;
   QHBoxLayout* split;

@@ -175,8 +175,7 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
     }
 
     LOGW("panda %d: setting safety model: %d, param: %d, unsafe mode: %d", i, (int)safety_model, safety_param, unsafe_mode);
-    //panda->set_unsafe_mode(unsafe_mode);
-    panda->set_unsafe_mode(1);
+    panda->set_unsafe_mode(unsafe_mode);
     panda->set_safety_model(safety_model, safety_param);
   }
 
@@ -611,10 +610,19 @@ void pigeon_thread(Panda *panda) {
 }
 
 void boardd_main_thread(std::vector<std::string> serials) {
-  if (serials.size() == 0) serials.push_back("");
-
   PubMaster pm({"pandaStates", "peripheralState"});
   LOGW("attempting to connect");
+
+  if (serials.size() == 0) {
+    // connect to all
+    serials = Panda::list();
+
+    // exit if no pandas are connected
+    if (serials.size() == 0) {
+      LOGW("no pandas found, exiting");
+      return;
+    }
+  }
 
   // connect to all provided serials
   std::vector<Panda *> pandas;

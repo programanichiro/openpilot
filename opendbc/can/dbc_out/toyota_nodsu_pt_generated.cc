@@ -823,6 +823,17 @@ const Signal sigs_608[] = {
       .type = SignalType::DEFAULT,
     },
     {
+      .name = "STEER_ANGLE_INITIALIZING",
+      .b1 = 4,
+      .b2 = 1,
+      .bo = 59,
+      .is_signed = false,
+      .factor = 1,
+      .offset = 0,
+      .is_little_endian = false,
+      .type = SignalType::DEFAULT,
+    },
+    {
       .name = "STEER_TORQUE_DRIVER",
       .b1 = 8,
       .b2 = 16,
