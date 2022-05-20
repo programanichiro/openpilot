@@ -166,11 +166,13 @@ class LanePlanner:
       if STEER_SAME_DIRECTION_CT > 70 and clipped_lane_width - 2.5 >= 0:  #2.5 <- 1.9=prius width
         w_add = (clipped_lane_width - 2.5)  * 0.8 / 2.0
     if st_angle > handle_margin:
-      dcm = 0.01 - CAMERA_OFFSET + camera_margin
+      #dcm = 0.01 - self.camera_offset + camera_margin
+      dcm = 0.07 + camera_margin
       dcm += w_add * 1.1 / 1.2
       dcm *= min((st_angle -(handle_margin)) / handle_over,1.2)
     if st_angle < -handle_margin:
-      dcm = -0.11 - CAMERA_OFFSET - camera_margin
+      #dcm = -0.11 - self.camera_offset - camera_margin
+      dcm = -0.07 - camera_margin
       dcm -= w_add * 0.8 / 1.2 #減速と合わせると相当寄りすぎなので小さく
       dcm *= min(-(st_angle +(handle_margin)) / handle_over,1.2)
 #🟥🟥🟥🟥🟥🟥🟥
@@ -189,12 +191,12 @@ class LanePlanner:
         ms+= ">"
       ms += "W:%.2f" % (clipped_lane_width)
       ms += ",ct:%d;%.2f,%.2f" % (min(STEER_SAME_DIRECTION_CT,99),l_prob,r_prob)
-      #with open('./debug_out_2','w') as fp:
-      #  #fp.write('l:{0}\n'.format(['%0.2f' % i for i in path_from_left_lane]))
-      #  #fp.write('r:{0}\n'.format(['%0.2f' % i for i in path_from_right_lane]))
-      #  #fp.write('ofst:%0.2f[m] , lane_w:%0.2f[m], ct:%d' % (dcm , clipped_lane_width,STEER_SAME_DIRECTION_CT))
-      #  #fp.write('OFS:%+.2f,w:%.2f[m],ct:%d' % (dcm , clipped_lane_width,min(STEER_SAME_DIRECTION_CT,99)))
-      #  fp.write(ms)
+      with open('./debug_out_2','w') as fp:
+        #fp.write('l:{0}\n'.format(['%0.2f' % i for i in path_from_left_lane]))
+        #fp.write('r:{0}\n'.format(['%0.2f' % i for i in path_from_right_lane]))
+        #fp.write('ofst:%0.2f[m] , lane_w:%0.2f[m], ct:%d' % (dcm , clipped_lane_width,STEER_SAME_DIRECTION_CT))
+        #fp.write('OFS:%+.2f,w:%.2f[m],ct:%d' % (dcm , clipped_lane_width,min(STEER_SAME_DIRECTION_CT,99)))
+        fp.write(ms)
     #if self.camera_offset * CAMERA_OFFSET < 0: #Consider wide_cameraこれ不要。ワイドカメラがメインカメラの反対についているだけで、方向が反対になるわけではない。
     #  dcm = -dcm
 #    if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
