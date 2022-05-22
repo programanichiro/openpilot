@@ -167,12 +167,12 @@ class LanePlanner:
         w_add = (clipped_lane_width - 2.5)  * 0.8 / 2.0
     if st_angle > handle_margin:
       #dcm = 0.01 - self.camera_offset + camera_margin
-      dcm = 0.07 + camera_margin
+      dcm = 0.03 + camera_margin
       dcm += w_add * 1.1 / 1.2
       dcm *= min((st_angle -(handle_margin)) / handle_over,1.2)
     if st_angle < -handle_margin:
       #dcm = -0.11 - self.camera_offset - camera_margin
-      dcm = -0.07 - camera_margin
+      dcm = -0.03 - camera_margin
       dcm -= w_add * 0.8 / 1.2 #減速と合わせると相当寄りすぎなので小さく
       dcm *= min(-(st_angle +(handle_margin)) / handle_over,1.2)
 #🟥🟥🟥🟥🟥🟥🟥
