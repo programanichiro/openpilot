@@ -979,7 +979,7 @@ void NvgWindow::knightScanner(QPainter &p) {
 #endif
 }
 
-void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num {
+void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num) {
   painter.save();
   const float speedBuff = 10.;
   const float leadBuff = 40.;
