@@ -51,6 +51,7 @@ class LanePlanner:
     self.r_lane_change_prob = 0.
 
     self.camera_offset = -CAMERA_OFFSET if wide_camera else CAMERA_OFFSET
+    self.camera_offset += 0.15 # 車体を15cm右に寄せる
     self.path_offset = -PATH_OFFSET if wide_camera else PATH_OFFSET
 
   def parse_model(self, md):
