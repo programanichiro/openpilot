@@ -103,6 +103,8 @@ class Planner:
     #with open('./debug_out_v','w') as fp:
     #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
+    with open('./debug_out_2','w') as fp:
+      fp.write('%d' % (1))
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
@@ -119,23 +121,37 @@ class Planner:
       v_cruise_kph = min_acc_speed #念のため
     one_pedal = False
     on_accel0 = False #押した瞬間
+    with open('./debug_out_2','w') as fp:
+      fp.write('%d' % (2))
     if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
       if os.path.isfile('./accel_engaged.txt'):
         with open('./accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
             if int(accel_engaged_str) == 3: #ワンペダルモード
+              with open('./debug_out_2','w') as fp:
+                fp.write('%d' % (3))
               one_pedal = True
               if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
                 if on_onepedal_ct < 0:
+                  with open('./debug_out_2','w') as fp:
+                    fp.write('%d' % (4))
                   on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
     if on_onepedal_ct >= 0:
+      with open('./debug_out_2','w') as fp:
+        fp.write('%d' % (5))
       on_onepedal_ct += 1
       if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
+        with open('./debug_out_2','w') as fp:
+          fp.write('%d' % (6))
         if sm['carState'].gas < 0.2: #アクセルが弱いかチョン押しなら
+          with open('./debug_out_2','w') as fp:
+            fp.write('%d' % (7))
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
+      with open('./debug_out_2','w') as fp:
+        fp.write('%d' % (8))
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
 
@@ -144,23 +160,31 @@ class Planner:
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
+      with open('./debug_out_2','w') as fp:
+        fp.write('%d' % (9))
       OP_ENABLE_gas_speed = v_ego
       if os.path.isfile('./accel_engaged.txt'):
         with open('./accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
             if int(accel_engaged_str) == 3: #ワンペダルモード
+              with open('./debug_out_2','w') as fp:
+                fp.write('%d' % (10))
               OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
     if sm['controlsState'].longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
+        with open('./debug_out_2','w') as fp:
+          fp.write('%d' % (11))
         OP_ENABLE_gas_speed = v_ego
         if os.path.isfile('./accel_engaged.txt'):
           with open('./accel_engaged.txt','r') as fp:
             accel_engaged_str = fp.read()
             if accel_engaged_str:
               if int(accel_engaged_str) == 3: #ワンペダルモード
+                with open('./debug_out_2','w') as fp:
+                  fp.write('%d' % (12))
                 OP_ENABLE_gas_speed = 1.0 / 3.6
     else:
       OP_ENABLE_PREV = False
@@ -172,7 +196,11 @@ class Planner:
       OP_ACCEL_PUSH = True #アクセル押した
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
+    with open('./debug_out_3','w') as fp:
+      fp.write('OP_ENABLE_v_cruise_kph:%d' % (OP_ENABLE_v_cruise_kph))
     if OP_ENABLE_v_cruise_kph != 0:
+      with open('./debug_out_2','w') as fp:
+        fp.write('%d,OP_ENABLE_v_cruise_kph:%d' % (13,OP_ENABLE_v_cruise_kph))
       v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う
     if CVS_FRAME % 5 == 4 and os.path.isfile('./handle_center_info.txt'):
       with open('./handle_center_info.txt','r') as fp:
