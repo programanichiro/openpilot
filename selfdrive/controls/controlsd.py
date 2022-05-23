@@ -253,9 +253,9 @@ class Controls:
 #      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
 #      self.events.add(EventName.pedalPressed)
 
-#    if CS.gasPressed:
-#      self.events.add(EventName.pedalPressedPreEnable if self.disengage_on_accelerator else
-#                      EventName.gasPressedOverride)
+    if CS.gasPressed:
+      self.events.add(EventName.pedalPressedPreEnable if (CS.vEgo * 3.6 > 1 and engage_disable == True) else
+                      EventName.gasPressedOverride)
 
     if not self.CP.notCar:
       self.events.add_from_msg(self.sm['driverMonitoringState'].events)
@@ -319,7 +319,7 @@ class Controls:
       if i < len(self.CP.safetyConfigs):
         safety_mismatch = pandaState.safetyModel != self.CP.safetyConfigs[i].safetyModel or \
                           pandaState.safetyParam != self.CP.safetyConfigs[i].safetyParam or \
-                          False #pandaState.alternativeExperience != self.CP.alternativeExperience
+                          pandaState.alternativeExperience != self.CP.alternativeExperience
       else:
         safety_mismatch = pandaState.safetyModel not in IGNORED_SAFETY_MODES
 

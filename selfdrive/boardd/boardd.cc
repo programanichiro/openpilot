@@ -178,8 +178,8 @@ bool safety_setter_thread(std::vector<Panda *> pandas) {
     }
 
     LOGW("panda %d: setting safety model: %d, param: %d, alternative experience: %d", i, (int)safety_model, safety_param, alternative_experience);
-//    panda->set_alternative_experience(alternative_experience);
-    panda->set_alternative_experience(0); //set_unsafe_modeと意味が一緒か？意味が逆になってる？
+    panda->set_alternative_experience(alternative_experience);
+//    panda->set_alternative_experience(0); //set_unsafe_modeと意味が一緒か？意味が逆になってる？
 //    LOGW("panda %d: setting safety model: %d, param: %d, unsafe mode: %d", i, (int)safety_model, safety_param, unsafe_mode);
 //    //panda->set_unsafe_mode(unsafe_mode);
 //    panda->set_unsafe_mode(1);
