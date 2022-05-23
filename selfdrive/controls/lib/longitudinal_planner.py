@@ -146,7 +146,8 @@ class Planner:
       debug_out_2 += "8"
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
-
+    if sm['carState'].gasPressed:
+      debug_out_2 += "a"
     if OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
        #速度が時速３km以上かつ31km未満かつsm['controlsState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
@@ -163,6 +164,7 @@ class Planner:
               OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
     if sm['controlsState'].longControlState != LongCtrlState.off:
+      debug_out_2 += "b"
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         debug_out_2 += "11"
@@ -175,14 +177,18 @@ class Planner:
                 debug_out_2 += "12"
                 OP_ENABLE_gas_speed = 1.0 / 3.6
     else:
+      debug_out_2 += "c"
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
     if sm['carState'].gasPressed == False: #一旦アクセルを離したら、クルーズ速度は変更しない。変更を許すと、ACC速度とMAX速度の乖離が大きくなり過ぎる可能性があるから。
+      debug_out_2 += "d"
       OP_ENABLE_ACCEL_RELEASE = True
       OP_ACCEL_PUSH = False #アクセル離した
     else:
+      debug_out_2 += "e"
       OP_ACCEL_PUSH = True #アクセル押した
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
+      debug_out_2 += "f"
       OP_ENABLE_v_cruise_kph = 0
     with open('./debug_out_3','w') as fp:
       fp.write('OP_ENABLE_v_cruise_kph:%d' % (OP_ENABLE_v_cruise_kph))
