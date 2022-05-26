@@ -630,7 +630,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
     th_tmp2 = 64;
   }
 
-  QRect temp_rc(rect().left()+65-28, rect().top()+110+4, 235+28*2, 56);
+  QRect temp_rc(rect().left()+65-27, rect().top()+110+6, 233+27*2, 54);
   p.setPen(Qt::NoPen);
   if(temp < th_tmp1){ //警告色の変化はサイドバーと違う。もっと早く警告される。
     p.setBrush(bg_colors[status]);
