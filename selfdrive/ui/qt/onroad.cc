@@ -622,12 +622,32 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   int temp = (int)deviceState.getAmbientTempC();
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
   configFont(p, "Open Sans", 44, "SemiBold");
-  if(temp < 50){ //警告色の変化はサイドバーと違う。もっと早く警告される。
-    p.setPen(QColor(0xff, 0xff, 0xff , 200));
-  } else if(temp < 58){
-    p.setPen(QColor(0xff, 0xff, 0 , 255));
+
+  int th_tmp1 = 47;
+  int th_tmp2 = 55;
+  if(Hardware::TICI()){
+    th_tmp1 = 58;
+    th_tmp2 = 64;
+  }
+
+  QRect temp_rc(rect().left()+65-28, rect().top()+110+4, 235+28*2, 56);
+  p.setPen(Qt::NoPen);
+  if(temp < th_tmp1){ //警告色の変化はサイドバーと違う。もっと早く警告される。
+    p.setBrush(bg_colors[status]);
+  } else if(temp < th_tmp2){
+    p.setBrush(QColor(240, 240, 0, 200));
   } else {
-    p.setPen(QColor(0xff, 0, 0 , 255));
+    p.setBrush(QColor(240, 0, 0, 200));
+  }
+  p.drawRoundedRect(temp_rc, 30, 30);
+
+  if(temp < th_tmp1){ //警告色の変化はサイドバーと違う。もっと早く警告される。
+    p.setPen(QColor(0xff, 0xff, 0xff , 200));
+  } else if(temp < th_tmp2){
+    //p.setPen(QColor(0xff, 0xff, 0 , 255));
+    p.setPen(QColor(10, 10, 10 , 255));
+  } else {
+    p.setPen(QColor(0xff, 0xff, 0 , 255));
   }
   p.drawText(QRect(rect().left()+65, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp);
 
@@ -994,13 +1014,13 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
 
   //QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo}};
   float homebase_h = 12;
-  QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h},{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo},{x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h}};
+  QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h},{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo},{x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h}, {x, y + sz + homebase_h + g_yo + 10}};
   painter.setBrush(QColor(218, 202, 37, 255));
   painter.drawPolygon(glow, std::size(glow));
 
   // chevron
   //QPointF chevron[] = {{x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz}};
-  QPointF chevron[] = {{x + (sz * 1.25), y + sz + homebase_h},{x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz},{x - (sz * 1.25), y + sz + homebase_h}};
+  QPointF chevron[] = {{x + (sz * 1.25), y + sz + homebase_h},{x + (sz * 1.25), y + sz}, {x, y}, {x - (sz * 1.25), y + sz},{x - (sz * 1.25), y + sz + homebase_h}, {x, y + sz + homebase_h - 7}};
   painter.setBrush(redColor(fillAlpha));
   painter.drawPolygon(chevron, std::size(chevron));
 
