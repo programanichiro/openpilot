@@ -112,10 +112,11 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
 
   v_ego = max(v_ego, 0.1)
   max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2)
-  safe_desired_curvature_rate = clip(desired_curvature_rate,
+  k_v = 1.40 #controls障害まだ出る？検証。1.39 #0.8.14では、これが固定でないとcontrolsが障害起こすようだ。
+  safe_desired_curvature_rate = clip(desired_curvature_rate*k_v,
                                           -max_curvature_rate,
                                           max_curvature_rate)
-  safe_desired_curvature = clip(desired_curvature,
+  safe_desired_curvature = clip(desired_curvature*k_v,
                                      current_curvature - max_curvature_rate * DT_MDL,
                                      current_curvature + max_curvature_rate * DT_MDL)
 
