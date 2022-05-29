@@ -11,6 +11,8 @@
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #endif
 
+#define PI0_DEBUG true
+
 OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setMargin(bdr_s);
@@ -486,11 +488,11 @@ void NvgWindow::updateState(const UIState &s) {
       }
     }
   }
-  if(false && tss_type <= 1){
+  if(PI0_DEBUG == false && tss_type <= 1){
     //これまでと互換。tss_type_infoがなければTSSP
     maxspeed = maxspeed < (55 - 4) ? (55 - (55 - (maxspeed+4)) * 2 - 4) : maxspeed;
     maxspeed = maxspeed > (110 - 6) ? (110 + ((maxspeed+6) - 110) * 3 - 6) : maxspeed;
-  } else if(tss_type == 2){
+  } else if(PI0_DEBUG == false && tss_type == 2){
     SET_SPEED_NA = 255; //TSS2では戻す。
   }
 
