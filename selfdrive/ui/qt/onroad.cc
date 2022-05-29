@@ -486,7 +486,7 @@ void NvgWindow::updateState(const UIState &s) {
       }
     }
   }
-  if(tss_type <= 1){
+  if(false && tss_type <= 1){
     //これまでと互換。tss_type_infoがなければTSSP
     maxspeed = maxspeed < (55 - 4) ? (55 - (55 - (maxspeed+4)) * 2 - 4) : maxspeed;
     maxspeed = maxspeed > (110 - 6) ? (110 + ((maxspeed+6) - 110) * 3 - 6) : maxspeed;
