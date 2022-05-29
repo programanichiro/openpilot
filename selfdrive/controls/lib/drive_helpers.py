@@ -18,7 +18,9 @@ CONTROL_N = 17
 CAR_ROTATION_RADIUS = 0.0
 
 # EU guidelines
-MAX_LATERAL_JERK = 5.0
+#MAX_LATERAL_JERK = 5.0
+MAX_CURVATURE_RATES_0 = [0.03762194918267951, 0.03762194918267951 * 0.8] #最初の係数を機械推論反映値として計算する（1〜2.7）
+MAX_CURVATURE_RATE_SPEEDS = [0, 35]
 
 ButtonType = car.CarState.ButtonEvent.Type
 CRUISE_LONG_PRESS = 50
@@ -110,8 +112,11 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
   curvature_diff_from_psi = psi / (max(v_ego, 1e-1) * delay) - current_curvature
   desired_curvature = current_curvature + 2 * curvature_diff_from_psi
 
-  v_ego = max(v_ego, 0.1)
-  max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2)
+#  v_ego = max(v_ego, 0.1)
+#  max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2)
+  MAX_CURVATURE_RATES_k = 1.1 + (2.7 - 1) * 1 #1.1〜2.7+0.1
+  MAX_CURVATURE_RATES = [MAX_CURVATURE_RATES_0[0]*MAX_CURVATURE_RATES_k , MAX_CURVATURE_RATES_0[1]]
+  max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
   k_v = 1.40 #controls障害まだ出る？検証。1.39 #0.8.14では、これが固定でないとcontrolsが障害起こすようだ。
   safe_desired_curvature_rate = clip(desired_curvature_rate*k_v,
                                           -max_curvature_rate,
