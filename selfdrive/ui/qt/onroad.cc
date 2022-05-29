@@ -940,11 +940,21 @@ void NvgWindow::knightScanner(QPainter &p) {
   hha = hha * rect_h;
   float wp = 35;
   if(vc_accel > 0){
+#if 0
     QRect ra = QRect(rect_w - wp , rect_h/2 - hha/2 , wp , hha/2);
     p.drawRect(ra);
+#else //メーターを斜めに切る
+    QPointF meter[] = {{rect_w - wp/2 - wp/2 * hha / rect_h , (float)rect_h/2 - hha/2},{(float)rect_w , rect_h/2 - hha/2}, {(float)rect_w , (float)rect_h/2}, {rect_w - wp + wp/2 , (float)rect_h/2}};
+    p.drawPolygon(meter, std::size(meter));
+#endif
   } else {
+#if 0
     QRect ra = QRect(rect_w - wp , rect_h/2         , wp , hha/2);
     p.drawRect(ra);
+#else //メーターを斜めに切る
+    QPointF meter[] = {{rect_w - wp + wp/2 , (float)rect_h/2},{(float)rect_w , (float)rect_h/2}, {(float)rect_w , rect_h/2 + hha/2}, {rect_w - wp/2 - wp/2 * hha / rect_h, rect_h/2 + hha/2}};
+    p.drawPolygon(meter, std::size(meter));
+#endif
   }
 #endif
   p.setCompositionMode(QPainter::CompositionMode_SourceOver);
