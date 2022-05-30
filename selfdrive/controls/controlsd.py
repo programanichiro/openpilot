@@ -2,6 +2,7 @@
 import os
 import math
 from typing import SupportsFloat
+import numpy as np
 
 from cereal import car, log
 from common.numpy_fast import clip
@@ -15,7 +16,7 @@ from selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
 from selfdrive.swaglog import cloudlog
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
-from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET
+from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET, STEERING_CENTER, TRAJECTORY_SIZE
 from selfdrive.controls.lib.drive_helpers import update_v_cruise, initialize_v_cruise
 from selfdrive.controls.lib.drive_helpers import get_lag_adjusted_curvature
 from selfdrive.controls.lib.latcontrol import LatControl
@@ -31,6 +32,10 @@ from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.locationd.calibrationd import Calibration
 from selfdrive.hardware import HARDWARE, TICI
 from selfdrive.manager.process_config import managed_processes
+
+handle_center = STEERING_CENTER # キャリブレーション前の手抜き
+handle_center_ct = 0
+ACCEL_PUSH_COUNT = 0
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -71,7 +76,7 @@ class Controls:
                                      'carControl', 'carEvents', 'carParams'])
 
     self.camera_packets = ["roadCameraState", "driverCameraState"]
-    if TICI:
+    if TICI: #とりあえずここを無効にしてもcomma 2に影響はない。
       self.camera_packets.append("wideRoadCameraState")
 
     self.can_sock = can_sock
@@ -212,13 +217,42 @@ class Controls:
       self.events.add(EventName.controlsInitializing)
       return
 
-    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    global ACCEL_PUSH_COUNT
+    engage_disable = False
+    if CS.gasPressed:
+      accel_engaged = False
+      try:
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+              accel_engaged = True
+            if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+              accel_engaged = True
+              ACCEL_PUSH_COUNT = 100
+      except Exception as e:
+        pass
+      if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
+        engage_disable = True
+      ACCEL_PUSH_COUNT += 1
+    else:
+      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+        engage_disable = True
+      ACCEL_PUSH_COUNT = 0
+
+    # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
+    #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
       (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
       self.events.add(EventName.pedalPressed)
 
+    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
+#    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+#      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
+#      self.events.add(EventName.pedalPressed)
+
     if CS.gasPressed:
-      self.events.add(EventName.pedalPressedPreEnable if self.disengage_on_accelerator else
+      self.events.add(EventName.pedalPressedPreEnable if (CS.vEgo * 3.6 > 1 and engage_disable == True) else
                       EventName.gasPressedOverride)
 
     if not self.CP.notCar:
