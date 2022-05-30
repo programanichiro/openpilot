@@ -11,7 +11,7 @@
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #endif
 
-#define PI0_DEBUG true
+#define PI0_DEBUG false
 
 OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
