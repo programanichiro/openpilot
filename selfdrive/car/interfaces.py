@@ -22,7 +22,6 @@ ACCEL_MIN = -3.5
 
 # generic car and radar interfaces
 
-
 class CarInterfaceBase(ABC):
   def __init__(self, CP, CarController, CarState):
     self.CP = CP
