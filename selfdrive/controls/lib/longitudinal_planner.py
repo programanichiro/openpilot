@@ -117,6 +117,42 @@ class Planner:
           fp.write('%d' % (2))
     if v_cruise_kph < min_acc_speed:
       v_cruise_kph = min_acc_speed #念のため
+    one_pedal = False
+    on_accel0 = False #押した瞬間
+
+    sm_longControlState = sm['controlsState'].longControlState
+    if sm_longControlState == LongCtrlState.off:
+      if sm['carState'].gasPressed and sm['controlsState'].enabled: #アクセル踏んでエンゲージ中なら
+        sm_longControlState = LongCtrlState.pid #0.8.14からアクセルONでLongCtrlState.offとなるため、従来動作をシミュレート
+    if OP_ENABLE_PREV == False and sm_longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
+       #速度が時速３km以上かつ31km未満かつsm['controlsState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
+    #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
+      #アクセル踏みながらのOP有効化の瞬間
+      OP_ENABLE_v_cruise_kph = v_cruise_kph
+      OP_ENABLE_gas_speed = v_ego
+      OP_ENABLE_ACCEL_RELEASE = False
+    if sm_longControlState != LongCtrlState.off:
+      OP_ENABLE_PREV = True
+    else:
+      OP_ENABLE_PREV = False
+      OP_ENABLE_v_cruise_kph = 0
+    if sm['carState'].gasPressed == False: #一旦アクセルを離したら、クルーズ速度は変更しない。変更を許すと、ACC速度とMAX速度の乖離が大きくなり過ぎる可能性があるから。
+      OP_ENABLE_ACCEL_RELEASE = True
+      OP_ACCEL_PUSH = False #アクセル離した
+    else:
+      OP_ACCEL_PUSH = True #アクセル押した
+    if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
+      OP_ENABLE_v_cruise_kph = 0
+    if OP_ENABLE_v_cruise_kph != 0:
+      v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う
+    if CVS_FRAME % 5 == 4:
+      try:
+        with open('./handle_center_info.txt','r') as fp:
+          handle_center_info_str = fp.read()
+          if handle_center_info_str:
+            handle_center = float(handle_center_info_str)
+      except Exception as e:
+        pass
 
     hasLead = sm['radarState'].leadOne.status
     add_v_by_lead = False #前走車に追いつくための増速処理
@@ -124,6 +160,43 @@ class Planner:
     steerAng = sm['carState'].steeringAngleDeg - handle_center
     orgSteerAng = steerAng
 
+    limit_vc = V_CRUISE_MAX
+    limit_vc_h = V_CRUISE_MAX
+    md = sm['modelV2']
+    ml_csv = ""
+
+    v_cruise_kph_org = v_cruise_kph
+
+    if True: #CVS_FRAME % 5 == 1:
+      #os.environ['steer_ang_info'] = '%f' % (steerAng)
+      with open('./steer_ang_info.txt','w') as fp:
+       fp.write('%f' % (steerAng))
+       #fp.write('%f' % (-max_yp / 2.5))
+    if CVS_FRAME % 5 == 0:
+      with open('./cruise_info.txt','w') as fp:
+        #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
+        if v_cruise_kph == limit_vc:
+          if cruise_info_power_up:
+            fp.write('%d;' % (v_cruise_kph))
+          else:
+            fp.write('%d.' % (v_cruise_kph))
+        else:
+          if add_v_by_lead == True:
+            if cruise_info_power_up:
+              fp.write('%d;' % (v_cruise_kph_org))
+            else:
+              fp.write(',%d' % (v_cruise_kph_org))
+          else:
+            vo = v_cruise_kph_org
+            if int(vo) == 59 or int(vo) == 61:
+              vo += 0.5 #メーター表示誤差補正
+            if cruise_info_power_up:
+              fp.write('%d;' % (vo))
+            else:
+              fp.write('%d' % (vo))
+    #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and v_ego * 3.6 > 20: # over 20km/h
+    #  with open('./ml_data.csv','a') as fp:
+    #    fp.write('%s%0.2f\n' % (ml_csv , limit_vc))
     CVS_FRAME += 1
 
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
