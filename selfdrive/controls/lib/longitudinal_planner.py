@@ -133,6 +133,8 @@ class Planner:
       OP_ENABLE_ACCEL_RELEASE = False
     if sm_longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
+      if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
+        OP_ENABLE_gas_speed = v_ego
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
