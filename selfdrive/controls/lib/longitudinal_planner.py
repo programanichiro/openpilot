@@ -119,7 +119,27 @@ class Planner:
       v_cruise_kph = min_acc_speed #念のため
     one_pedal = False
     on_accel0 = False #押した瞬間
-
+    if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
+      try:
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 3: #ワンペダルモード
+              one_pedal = True
+              if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
+                if on_onepedal_ct < 0:
+                  on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
+      except Exception as e:
+        pass
+    if on_onepedal_ct >= 0:
+      on_onepedal_ct += 1
+      if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
+        if sm['carState'].gas < 0.2: #アクセルが弱いかチョン押しなら
+          on_accel0 = True #ワンペダルに変更
+        on_onepedal_ct = -1 #アクセル判定消去
+    if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
+      OP_ENABLE_v_cruise_kph = v_cruise_kph
+      OP_ENABLE_gas_speed = 1.0 / 3.6
     sm_longControlState = sm['controlsState'].longControlState
     if sm_longControlState == LongCtrlState.off:
       if sm['carState'].gasPressed and sm['controlsState'].enabled: #アクセル踏んでエンゲージ中なら
@@ -130,11 +150,27 @@ class Planner:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = v_ego
+      try:
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 3: #ワンペダルモード
+              OP_ENABLE_gas_speed = 1.0 / 3.6
+      except Exception as e:
+        pass
       OP_ENABLE_ACCEL_RELEASE = False
     if sm_longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         OP_ENABLE_gas_speed = v_ego
+        try:
+          with open('./accel_engaged.txt','r') as fp:
+            accel_engaged_str = fp.read()
+            if accel_engaged_str:
+              if int(accel_engaged_str) == 3: #ワンペダルモード
+                OP_ENABLE_gas_speed = 1.0 / 3.6
+        except Exception as e:
+          pass
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
