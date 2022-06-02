@@ -249,7 +249,46 @@ class Planner:
     md = sm['modelV2']
     ml_csv = ""
 
+    global decel_lead_ctrl
+    if CVS_FRAME % 30 == 29:
+      try:
+        with open('./decel_ctrl_disable.txt','r') as fp:
+          decel_lead_ctrl_disable_str = fp.read()
+          if decel_lead_ctrl_disable_str:
+            decel_lead_ctrl_disable = int(decel_lead_ctrl_disable_str)
+            if decel_lead_ctrl_disable == 0:
+              decel_lead_ctrl = True
+            else:
+              decel_lead_ctrl = False
+      except Exception as e:
+        decel_lead_ctrl = True
+
+    if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE and decel_lead_ctrl == True:
+      path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+      path_y = path_xyz[:,1]
+      max_yp = 0
+      for yp in path_y:
+        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+        if abs(steerAng) < abs(max_yp) / 2.5:
+          steerAng = (-max_yp / 2.5)
+      limit_vc = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_B else LIMIT_VC_A / (abs(steerAng) - LIMIT_VC_B) + LIMIT_VC_C
+      limit_vc_h = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_BH else LIMIT_VC_AH / (abs(steerAng) - LIMIT_VC_BH) + LIMIT_VC_CH
+      #前方カーブ機械学習用ファイルデータ生成処理。ひとまず保留
+      #if CVS_FRAME % 10 == 0 and v_ego * 3.6 > 20: # over 20km/h
+      #  ml_csv = '%0.2f,' % v_cruise_kph
+      #  for i in path_y:
+      #    ml_csv += '%0.2f,' % i
     v_cruise_kph_org = v_cruise_kph
+    limit_vc_th = 95-5 #85-5 #80-4
+    limit_vc_tl = 60-4 #50-4 #65-4 #70-4
+    if v_cruise_kph_org > limit_vc_th:
+      limit_vc = limit_vc_h
+    elif v_cruise_kph_org >= limit_vc_tl:
+      limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
+    v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
+    if CVS_FRAME % 5 == 2:
+      with open('./limit_vc_info.txt','w') as fp:
+        fp.write('%d' % (limit_vc))
     if True: #CVS_FRAME % 5 == 1:
       #os.environ['steer_ang_info'] = '%f' % (steerAng)
       with open('./steer_ang_info.txt','w') as fp:
