@@ -192,19 +192,64 @@ class Planner:
       except Exception as e:
         pass
 
+#  struct LeadData {
+#    dRel @0 :Float32;
+#    yRel @1 :Float32;
+#    vRel @2 :Float32;
+#    aRel @3 :Float32;
+#    vLead @4 :Float32;
+#    dPath @6 :Float32;
+#    vLat @7 :Float32;
+#    vLeadK @8 :Float32;
+#    aLeadK @9 :Float32;
+#    fcw @10 :Bool;
+#    status @11 :Bool;
+#    aLeadTau @12 :Float32;
+#    modelProb @13 :Float32;
+#    radar @14 :Bool;
+#
+#    aLeadDEPRECATED @5 :Float32;
+#  }
     hasLead = sm['radarState'].leadOne.status
     add_v_by_lead = False #前走車に追いつくための増速処理
 
+    global accel_lead_ctrl
+    if CVS_FRAME % 30 == 13:
+      try:
+        with open('./accel_ctrl_disable.txt','r') as fp:
+          accel_lead_ctrl_disable_str = fp.read()
+          if accel_lead_ctrl_disable_str:
+            accel_lead_ctrl_disable = int(accel_lead_ctrl_disable_str)
+            if accel_lead_ctrl_disable == 0:
+              accel_lead_ctrl = True
+            else:
+              accel_lead_ctrl = False
+      except Exception as e:
+        accel_lead_ctrl = True
+
+    if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+      leadOne = sm['radarState'].leadOne
+      d_rel = leadOne.dRel #前走者までの距離
+      a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス
+      if v_ego * 3.6 * 0.8 < d_rel / 0.98 and a_rel >= 0: #例、時速50kmの時前走車までの距離が50m以上離れている&&相手が減速していない。×0.8はd_relの値と実際の距離感との調整。
+        if v_ego * 3.6 >= v_cruise_kph * 0.98: #ACC設定速度がすでに出ている。
+          add_v_by_lead = True #前走車に追いつくための増速処理が有効
+          org_v_cruise_kph = v_cruise_kph
+          v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
+          if v_cruise_kph > 105:
+            v_cruise_kph = 105 #危ないのでひとまず時速105kmまで。
+            if v_cruise_kph < org_v_cruise_kph:
+              v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
+              add_v_by_lead = False
+
     steerAng = sm['carState'].steeringAngleDeg - handle_center
     orgSteerAng = steerAng
-
     limit_vc = V_CRUISE_MAX
     limit_vc_h = V_CRUISE_MAX
     md = sm['modelV2']
     ml_csv = ""
 
     v_cruise_kph_org = v_cruise_kph
-
     if True: #CVS_FRAME % 5 == 1:
       #os.environ['steer_ang_info'] = '%f' % (steerAng)
       with open('./steer_ang_info.txt','w') as fp:
