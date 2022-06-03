@@ -53,7 +53,7 @@ class LanePlanner:
     self.r_lane_change_prob = 0.
 
     self.camera_offset = -CAMERA_OFFSET if wide_camera else CAMERA_OFFSET
-    self.camera_offset += 0.10 # 車体を10cm右に寄せる
+#    self.camera_offset += 0.10 # 車体を10cm右に寄せる
     self.path_offset = -PATH_OFFSET if wide_camera else PATH_OFFSET
 
   def parse_model(self, md):
@@ -202,8 +202,8 @@ class LanePlanner:
         fp.write(ms)
     #if self.camera_offset * CAMERA_OFFSET < 0: #Consider wide_cameraこれ不要。ワイドカメラがメインカメラの反対についているだけで、方向が反対になるわけではない。
     #  dcm = -dcm
-    if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
-      dcm -= (-0.10) #この数字は結構いい感じ。
+#    if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
+#      dcm -= (-0.10) #この数字は結構いい感じ。
 #      dcm -= self.camera_offset #レーンレスモデル用のカメラオフセット反映値
     dcm_k = abs(pred_angle)
     if dcm_k > 10:
