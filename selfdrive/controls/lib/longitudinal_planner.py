@@ -411,6 +411,51 @@ class Planner:
 #    self.mpc.update(sm['carState'], sm['radarState'], v_cruise)
 
     a_desired_mul = 1.0
+    vl = 0
+    vd = 0
+    lcd = 0
+    if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+      leadOne = sm['radarState'].leadOne
+      to_lead_distance = 35 #35m以上空いている
+      add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
+      add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
+      to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
+      if leadOne.dRel > to_lead_distance:
+        lcd = leadOne.dRel #前走者までの距離
+        lcd -= to_lead_distance #0〜
+        lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
+        if lcd > 1:
+          lcd = 1
+    if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+      if hasLead == False:
+        lcd = 1.0 #前走車がいなければlcd=1扱い。
+      vl = v_cruise
+      if vl > 100/3.6:
+        vl = 100/3.6
+      #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
+      vd = v_ego
+      if vd > vl:
+        vd = vl #vdの最大値はvl
+      if vl > 0:
+        vd /= vl #0〜1
+        vd = 1 - vd #1〜0
+        add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
+        a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
+        try:
+          with open('./start_accel_power_up_disp_enable.txt','r') as fp:
+            start_accel_power_up_disp_enable_str = fp.read()
+            if start_accel_power_up_disp_enable_str:
+              start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+              if start_accel_power_up_disp_enable == 0:
+                a_desired_mul = 1 #スタート加速増なし
+        except Exception as e:
+          a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
+
+    if a_desired_mul == 1.0 or v_ego < 1/3.6:
+      cruise_info_power_up = False
+    else:
+      cruise_info_power_up = True
 
     #with open('./debug_out_v','w') as fp:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
