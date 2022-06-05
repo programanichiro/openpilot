@@ -179,6 +179,10 @@ class Controls:
     self.desired_curvature = 0.0
     self.desired_curvature_rate = 0.0
 
+    self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
+    self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
+    self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
+
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
 
@@ -613,7 +617,32 @@ class Controls:
       actuators.accel = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan)
 
       # Steering PID loop and lateral MPC
-      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,
+      md = self.sm['modelV2']
+      if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+        self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+        self.t_idxs = np.array(md.position.t)
+        self.plan_yaw = list(md.orientation.z)
+      if len(md.position.xStd) == TRAJECTORY_SIZE:
+        self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
+
+      STEER_CTRL_Y = CS.steeringAngleDeg
+      max_yp = 0
+      for yp in self.path_xyz[:,1]:
+        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+      global handle_center,handle_center_ct
+      if handle_center_ct % 5 == 3:
+        try:
+          with open('./handle_center_info.txt','r') as fp:
+            handle_center_info_str = fp.read()
+            if handle_center_info_str:
+              handle_center = float(handle_center_info_str)
+        except Exception as e:
+          pass
+      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      handle_center_ct += 1
+      if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
+        STEER_CTRL_Y = (-max_yp / 2.5)
+      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
                                                                                        lat_plan.psis,
                                                                                        lat_plan.curvatures,
                                                                                        lat_plan.curvatureRates)
