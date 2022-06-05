@@ -129,7 +129,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
   abs_sta = abs(steerAng) / 10
   if abs_sta > 1:
     abs_sta = 1 # abs_sta:0〜1
-  MAX_CURVATURE_RATES_k = 1.1 + (2.7 - 1) * abs_sta #1.1〜2.7+0.1
+  MAX_CURVATURE_RATES_k = 1.1 + (2.7 - 1) * 1 #1.1〜2.7+0.1 , ここの可変がcontrols unresponsiveの原因か？
   MAX_CURVATURE_RATES = [MAX_CURVATURE_RATES_0[0]*MAX_CURVATURE_RATES_k , MAX_CURVATURE_RATES_0[1]]
   max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
   # vv2 = v_ego if v_ego >= 31/3.6 else 31/3.6 #この速度(31km/h)以下はk_vが上がらないようにする
