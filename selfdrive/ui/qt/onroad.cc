@@ -238,7 +238,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     uiState()->scene.mUseLaneButton = mUseLaneButton = !Params().getBool("EndToEndToggle");
     useLaneButton = new QPushButton("/ \\"); //⬆︎
     QObject::connect(useLaneButton, &QPushButton::clicked, [=]() {
-      Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"))
+      Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
       uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
       uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
     });
@@ -246,7 +246,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     useLaneButton->setFixedHeight(150*9);
     btns_layoutLL->addSpacing(10);
     btns_layoutLL->addWidget(useLaneButton);
-    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(useLaneButton)));
+    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton)));
   }
 
   QWidget *btns_wrapper0 = new QWidget;
