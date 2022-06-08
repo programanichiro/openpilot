@@ -219,18 +219,34 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
   {
-    // LockOn button
+    // turbo boost button
     uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt");
     startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
     QObject::connect(startAccelPowerUpButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
-    startAccelPowerUpButton->setFixedWidth(150*0.9);
-    startAccelPowerUpButton->setFixedHeight(150*1.7);
+    startAccelPowerUpButton->setFixedWidth(150);
+    startAccelPowerUpButton->setFixedHeight(150*9);
     //lockOnButton->setWindowOpacity(all_opac);
     btns_layoutLL->addSpacing(0);
     btns_layoutLL->addWidget(startAccelPowerUpButton);
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
+  }
+
+  {
+    // use lane button
+    uiState()->scene.mUseLaneButton = mUseLaneButton = !Params().getBool("EndToEndToggle");
+    useLaneButton = new QPushButton("/ \\"); //⬆︎
+    QObject::connect(useLaneButton, &QPushButton::clicked, [=]() {
+      Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"))
+      uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
+      uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
+    });
+    useLaneButton->setFixedWidth(150);
+    useLaneButton->setFixedHeight(150*9);
+    btns_layoutLL->addSpacing(10);
+    btns_layoutLL->addWidget(useLaneButton);
+    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(useLaneButton)));
   }
 
   QWidget *btns_wrapper0 = new QWidget;
@@ -397,6 +413,11 @@ void ButtonsWindow::updateState(const UIState &s) {
     mStartAccelPowerUpButton = s.scene.mStartAccelPowerUpButton;
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton && fp_error==false)));
     setButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt" , mStartAccelPowerUpButton);
+  }
+  
+  if (mUseLaneButton != s.scene.mUseLaneButton) {  // update mUseLaneButton
+    mUseLaneButton = s.scene.mUseLaneButton;
+    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton)));
   }
   
 }
