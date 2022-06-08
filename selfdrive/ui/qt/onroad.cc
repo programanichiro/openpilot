@@ -244,7 +244,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     });
     useLaneButton->setFixedWidth(150);
     useLaneButton->setFixedHeight(150*0.9);
-    btns_layoutLL->addSpacing(10);
+    btns_layoutLL->addSpacing(15);
     btns_layoutLL->addWidget(useLaneButton);
     useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton)));
   }
