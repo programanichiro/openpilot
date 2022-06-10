@@ -12,7 +12,7 @@ from cereal import log
 
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
-params = Params() #外でもいい？
+params = Params()
 
 class LateralPlanner:
   def __init__(self, CP, use_lanelines=True, wide_camera=False):
@@ -143,6 +143,8 @@ class LateralPlanner:
       #d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , v_ego, self.t_idxs, self.path_xyz)
       self.lat_mpc.set_weights(MPC_COST_LAT.PATH, MPC_COST_LAT.HEADING, self.steer_rate_cost)
+      with open('./debug_out_y','w') as fp:
+        fp.write('lane:use')
     else:
       d_path_xyz = self.path_xyz
       dcm = self.LP.calc_dcm(STEER_CTRL_Y, (-max_yp / 2.5) , v_ego,2.5,-1,-1) #2.5はレーンを消すダミー,-1,-1はカメラオフセット反映に必要
@@ -151,6 +153,8 @@ class LateralPlanner:
       # Heading cost is useful at low speed, otherwise end of plan can be off-heading
       heading_cost = interp(v_ego, [5.0, 10.0], [MPC_COST_LAT.HEADING, 0.0])
       self.lat_mpc.set_weights(path_cost, heading_cost, self.steer_rate_cost)
+      with open('./debug_out_y','w') as fp:
+        fp.write('lane:none')
 
     y_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
     heading_pts = np.interp(v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
