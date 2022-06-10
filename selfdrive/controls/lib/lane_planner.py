@@ -152,7 +152,7 @@ class LanePlanner:
       return 0 #車体寄せを行わない
 
     handle_margin = 1 #1.5
-    handle_over = 10
+    handle_over = 20
     camera_margin = 0.1 #0.05 -> 0.1
     dcm = 0
     mdcm = 1.2
@@ -177,7 +177,7 @@ class LanePlanner:
       #dcm = -0.11 - self.camera_offset - camera_margin
       dcm = -0.03 - camera_margin
       dcm -= w_add * 0.8 / 1.2 #減速と合わせると相当寄りすぎなので小さく
-      dcm *= min(-(st_angle +(handle_margin)) / handle_over,1.2)
+      dcm *= min(-(st_angle +(handle_margin)) / handle_over,1.0)
 #🟥🟥🟥🟥🟥🟥🟥
     if False: #デバッグ表示なし。
       ms = "O:%+.2f" % (dcm)
