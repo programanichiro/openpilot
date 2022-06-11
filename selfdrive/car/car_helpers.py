@@ -142,7 +142,7 @@ def fingerprint(logcan, sendcan):
       if can.src < 128:
         if can.src not in finger:
           finger[can.src] = {}
-        finger[can.src][can.address] = len(can.dat)
+        finger[can.src][can.address] = len(can.dat) #この辺で0x2FFのsmartDSU情報も取得される？
 
       for b in candidate_cars:
         # Ignore extended messages and VIN query response.
@@ -154,7 +154,7 @@ def fingerprint(logcan, sendcan):
     for b in candidate_cars:
       if len(candidate_cars[b]) == 1 and frame > frame_fingerprint:
         # fingerprint done
-        car_fingerprint = candidate_cars[b][0]
+        car_fingerprint = candidate_cars[b][0] #ここでは取れない。
 
     # bail if no cars left or we've been waiting for more than 2s
     failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or frame > 200
@@ -165,7 +165,7 @@ def fingerprint(logcan, sendcan):
         fp.write('car_fingerprint:succeeded')
     if failed:
       with open('./debug_out_k','w') as fp:
-        fp.write('car_fingerprint:failed')
+        fp.write('car_fingerprint:failed') #必ず失敗する。
 
     frame += 1
 
@@ -174,7 +174,7 @@ def fingerprint(logcan, sendcan):
 
   # If FW query returns exactly 1 candidate, use it
   if len(fw_candidates) == 1:
-    car_fingerprint = list(fw_candidates)[0]
+    car_fingerprint = list(fw_candidates)[0] #ここで"TOYOTA PRIUS 2017"を取得できる。
     with open('./debug_out_v','w') as fp:
       fp.write(car_fingerprint)
     source = car.CarParams.FingerprintSource.fw
@@ -187,7 +187,7 @@ def fingerprint(logcan, sendcan):
   cloudlog.event("fingerprinted", car_fingerprint=car_fingerprint,
                  source=source, fuzzy=not exact_match, fw_count=len(car_fw))
   with open('./debug_out_x','w') as fp:
-    fp.write(pprint.pformat(finger))
+    fp.write(pprint.pformat(finger)) #この中に0x2FF(767)が含まれている。
   return car_fingerprint, finger, vin, car_fw, source, exact_match
 
 
