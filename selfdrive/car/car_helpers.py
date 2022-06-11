@@ -159,6 +159,12 @@ def fingerprint(logcan, sendcan):
     failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or frame > 200
     succeeded = car_fingerprint is not None
     done = failed or succeeded
+    if succeeded:
+      with open('./debug_out_y','w') as fp:
+        fp.write('car_fingerprint:succeeded')
+    if failed:
+      with open('./debug_out_k','w') as fp:
+        fp.write('car_fingerprint:failed')
 
     frame += 1
 
