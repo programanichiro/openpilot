@@ -187,7 +187,7 @@ def fingerprint(logcan, sendcan):
   cloudlog.event("fingerprinted", car_fingerprint=car_fingerprint,
                  source=source, fuzzy=not exact_match, fw_count=len(car_fw))
   with open('./debug_out_x','w') as fp:
-    fp.write(pprint.pformat(vars(finger)))
+    fp.write(pprint.pformat(finger))
   return car_fingerprint, finger, vin, car_fw, source, exact_match
 
 
