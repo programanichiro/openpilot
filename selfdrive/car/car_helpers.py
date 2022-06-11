@@ -174,11 +174,15 @@ def fingerprint(logcan, sendcan):
   # If FW query returns exactly 1 candidate, use it
   if len(fw_candidates) == 1:
     car_fingerprint = list(fw_candidates)[0]
+    with open('./debug_out_v','w') as fp:
+      fp.write('{0}\n'.format(['%0.2f' % i for i in car_fingerprint]))
     source = car.CarParams.FingerprintSource.fw
     exact_match = exact_fw_match
 
   if fixed_fingerprint:
     car_fingerprint = fixed_fingerprint
+    with open('./debug_out_x','w') as fp:
+      fp.write('{0}\n'.format(['%0.2f' % i for i in car_fingerprint]))
     source = car.CarParams.FingerprintSource.fixed
 
   cloudlog.event("fingerprinted", car_fingerprint=car_fingerprint,
