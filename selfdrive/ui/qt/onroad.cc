@@ -719,11 +719,13 @@ void NvgWindow::drawHud(QPainter &p) {
       curve_value = std::stof(limit_vc_txt);
     }
   }
-  drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0);
-  drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1);
+  
+  bool brake_light = (*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
+  drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2);
-  //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2);
-  drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3);
+  //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
 
   // engage-ability icon
   if (engageable) {
@@ -775,13 +777,21 @@ void NvgWindow::drawHud(QPainter &p) {
   p.restore();
 }
 
-void NvgWindow::drawText(QPainter &p, int x, int y, const QString &text, int alpha) {
+void NvgWindow::drawText(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
   QFontMetrics fm(p.font());
   QRect init_rect = fm.boundingRect(text);
   QRect real_rect = fm.boundingRect(init_rect, 0, text);
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
-  p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  if(brakeLight == false){
+    p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  } else {
+    alpha += 50;
+    if(alpha > 255){
+      alpha = 255;
+    }
+    p.setPen(QColor(0xff, 0, 0, alpha));
+  }
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
