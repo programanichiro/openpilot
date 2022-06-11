@@ -720,10 +720,10 @@ void NvgWindow::drawHud(QPainter &p) {
     }
   }
   
-  bool brake_light = (*(uiState()->sm))["carState"].getCarState().getSeatbeltUnlatched();
+  bool brake_light = (*(uiState()->sm))["carState"].getCarState().getBrakeHoldActive();
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
-  drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2);
+  drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2 , brake_light);
   //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
 
