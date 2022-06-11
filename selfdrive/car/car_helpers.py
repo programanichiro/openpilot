@@ -1,5 +1,6 @@
 import os
 from typing import Any, Dict, List
+import pprint
 
 from common.params import Params
 from common.basedir import BASEDIR
@@ -181,12 +182,12 @@ def fingerprint(logcan, sendcan):
 
   if fixed_fingerprint:
     car_fingerprint = fixed_fingerprint
-    with open('./debug_out_x','w') as fp:
-      fp.write(car_fingerprint)
     source = car.CarParams.FingerprintSource.fixed
 
   cloudlog.event("fingerprinted", car_fingerprint=car_fingerprint,
                  source=source, fuzzy=not exact_match, fw_count=len(car_fw))
+  with open('./debug_out_x','w') as fp:
+    fp.write(pprint.pformat(vars(finger)))
   return car_fingerprint, finger, vin, car_fw, source, exact_match
 
 
