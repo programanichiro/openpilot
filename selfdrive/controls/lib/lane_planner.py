@@ -152,7 +152,7 @@ class LanePlanner:
       return 0 #車体寄せを行わない
 
     handle_margin = 1 #1.5
-    handle_over = 20
+    handle_over = 30
     camera_margin = 0.1 #0.05 -> 0.1
     dcm = 0
     mdcm = 1.2
