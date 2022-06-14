@@ -235,18 +235,23 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // use lane button
-    uiState()->scene.mUseLaneButton = mUseLaneButton = !Params().getBool("EndToEndToggle");
-    useLaneButton = new QPushButton("/ \\"); //⬆︎
+    uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("../manager/lane_sw_mode.txt" , 1);
+    if(mUseLaneButton == 2){
+      useLaneButton = new QPushButton("LA"); //レーンレス自動選択
+    } else {
+      useLaneButton = new QPushButton("/ \\");
+    }
     QObject::connect(useLaneButton, &QPushButton::clicked, [=]() {
-      Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
-      uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
-      uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
+      // Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
+      // uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
+      // uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
+      uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 3; //0->1->2->0
     });
     useLaneButton->setFixedWidth(150);
     useLaneButton->setFixedHeight(150*0.9);
     btns_layoutLL->addSpacing(15);
     btns_layoutLL->addWidget(useLaneButton);
-    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton)));
+    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0)));
   }
 
   QWidget *btns_wrapper0 = new QWidget;
@@ -417,7 +422,13 @@ void ButtonsWindow::updateState(const UIState &s) {
   
   if (mUseLaneButton != s.scene.mUseLaneButton) {  // update mUseLaneButton
     mUseLaneButton = s.scene.mUseLaneButton;
-    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton)));
+    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0 && fp_error==false)));
+    if(mUseLaneButton == 2){
+      useLaneButton->setText("LA");
+    } else {
+      useLaneButton->setText("/ \\");
+    }
+    setButtonInt("../manager/lane_sw_mode.txt" , mUseLaneButton);
   }
   
 }
@@ -858,6 +869,7 @@ void NvgWindow::updateFrameMat(int w, int h) {
 void NvgWindow::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.save();
 
+  uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
   const UIScene &scene = s->scene;
   // lanelines
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {

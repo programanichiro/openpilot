@@ -55,7 +55,7 @@ private:
   int mAccelEngagedButton = 0;  // triggers initialization
   bool mHandleCtrlButton = true;  // triggers initialization
   bool mStartAccelPowerUpButton = false;  // triggers initialization
-  bool mUseLaneButton = false;  // triggers initialization
+  int mUseLaneButton = 0;  // triggers initialization
 
 public slots:
   void updateState(const UIState &s);
