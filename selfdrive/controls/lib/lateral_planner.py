@@ -1,4 +1,5 @@
 import numpy as np
+from common.params import Params
 from common.realtime import sec_since_boot, DT_MDL
 from common.numpy_fast import interp
 from selfdrive.swaglog import cloudlog
@@ -11,6 +12,7 @@ from cereal import log
 
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
+params = Params()
 
 class LateralPlanner:
   def __init__(self, CP, use_lanelines=True, wide_camera=False):
@@ -136,6 +138,7 @@ class LateralPlanner:
       self.LP.rll_prob *= self.DH.lane_change_ll_prob
 
     # Calculate final driving path and set MPC costs
+    self.use_lanelines = not params.get_bool('EndToEndToggle')
     if self.use_lanelines:
       #d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , v_ego, self.t_idxs, self.path_xyz)
