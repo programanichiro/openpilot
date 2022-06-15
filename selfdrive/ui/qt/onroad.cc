@@ -1246,17 +1246,25 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
       if(a_rel > 0){
         hha = 1 - 0.1 / a_rel;
         painter.setBrush(QColor(0, 245, 0, prob_alpha*0.9));
+
+        if(hha < 0){
+          hha = 0;
+        }
+        hha = hha * hh;
+        QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
+        painter.drawRect(ra);
       }
       if(a_rel < 0){
         hha = 1 + 0.1 / a_rel;
         painter.setBrush(QColor(245, 0, 0, prob_alpha));
+        //減速は上から下へ変更。
+        if(hha < 0){
+          hha = 0;
+        }
+        hha = hha * hh;
+        QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh , wwa, hha);
+        painter.drawRect(ra);
       }
-      if(hha < 0){
-        hha = 0;
-      }
-      hha = hha * hh;
-      QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
-      painter.drawRect(ra);
     }
 
     if(//lead0.getX()[0] > lead1.getX()[0] //lead1がlead0より後ろ
