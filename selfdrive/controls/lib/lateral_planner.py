@@ -138,7 +138,35 @@ class LateralPlanner:
       self.LP.rll_prob *= self.DH.lane_change_ll_prob
 
     # Calculate final driving path and set MPC costs
-    self.use_lanelines = not params.get_bool('EndToEndToggle')
+    try:
+      # with open('./debug_out_y','w') as fp:
+      #   fp.write('prob:%0.2f , %0.2f' % (self.LP.lll_prob , self.LP.rll_prob))
+      with open('./lane_sw_mode.txt','r') as fp:
+        lane_sw_mode_str = fp.read()
+        if lane_sw_mode_str:
+          lane_sw_mode = int(lane_sw_mode_str)
+          if lane_sw_mode == 0:
+            if self.use_lanelines == True:
+              params.put_bool('EndToEndToggle',True)
+              self.use_lanelines = not params.get_bool('EndToEndToggle')
+          elif lane_sw_mode == 1:
+            if self.use_lanelines == False:
+              params.put_bool('EndToEndToggle',False)
+              self.use_lanelines = not params.get_bool('EndToEndToggle')
+          else: #lane_sw_mode == 2
+            if ((self.LP.lll_prob < 0.65 and self.LP.rll_prob < 0.65)
+              or (self.LP.lll_prob < 0.80 and self.LP.rll_prob < 0.15)
+              or (self.LP.lll_prob < 0.15 and self.LP.rll_prob < 0.80)
+              ):
+              if self.use_lanelines == True:
+                params.put_bool('EndToEndToggle',True)
+                self.use_lanelines = not params.get_bool('EndToEndToggle')
+            else:
+              if self.use_lanelines == False:
+                params.put_bool('EndToEndToggle',False)
+                self.use_lanelines = not params.get_bool('EndToEndToggle')
+    except Exception as e:
+      pass
     if self.use_lanelines:
       #d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , v_ego, self.t_idxs, self.path_xyz)
