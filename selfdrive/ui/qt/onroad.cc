@@ -222,18 +222,39 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
   {
-    // LockOn button
+    // turbo boost button
     uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt");
     startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
     QObject::connect(startAccelPowerUpButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
-    startAccelPowerUpButton->setFixedWidth(150*0.9);
-    startAccelPowerUpButton->setFixedHeight(150*1.7);
+    startAccelPowerUpButton->setFixedWidth(150);
+    startAccelPowerUpButton->setFixedHeight(150*0.9);
     //lockOnButton->setWindowOpacity(all_opac);
     btns_layoutLL->addSpacing(0);
     btns_layoutLL->addWidget(startAccelPowerUpButton);
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
+  }
+
+  {
+    // use lane button
+    uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("../manager/lane_sw_mode.txt" , Params().getBool("EndToEndToggle") ? 0 : 1);
+    if(mUseLaneButton == 2){
+      useLaneButton = new QPushButton("LA"); //レーンレス自動選択
+    } else {
+      useLaneButton = new QPushButton("/ \\");
+    }
+    QObject::connect(useLaneButton, &QPushButton::clicked, [=]() {
+      // Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
+      // uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
+      // uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
+      uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 3; //0->1->2->0
+    });
+    useLaneButton->setFixedWidth(150);
+    useLaneButton->setFixedHeight(150*0.9);
+    btns_layoutLL->addSpacing(15);
+    btns_layoutLL->addWidget(useLaneButton);
+    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0)));
   }
 
   QWidget *btns_wrapper0 = new QWidget;
@@ -400,6 +421,17 @@ void ButtonsWindow::updateState(const UIState &s) {
     mStartAccelPowerUpButton = s.scene.mStartAccelPowerUpButton;
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton && fp_error==false)));
     setButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt" , mStartAccelPowerUpButton);
+  }
+  
+  if (mUseLaneButton != s.scene.mUseLaneButton) {  // update mUseLaneButton
+    mUseLaneButton = s.scene.mUseLaneButton;
+    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0 && fp_error==false)));
+    if(mUseLaneButton == 2){
+      useLaneButton->setText("LA");
+    } else {
+      useLaneButton->setText("/ \\");
+    }
+    setButtonInt("../manager/lane_sw_mode.txt" , mUseLaneButton);
   }
   
 }
@@ -697,11 +729,13 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
       curve_value = std::stof(limit_vc_txt);
     }
   }
-  drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0);
-  drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1);
-  drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2);
-  //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2);
-  drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3);
+  
+  bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
+  drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2 , brake_light);
+  //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
 
   // engage-ability icon
   if (engageable) {
@@ -753,13 +787,21 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
 
 }
 
-void OnroadHud::drawText(QPainter &p, int x, int y, const QString &text, int alpha) {
+void OnroadHud::drawText(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
   QFontMetrics fm(p.font());
   QRect init_rect = fm.boundingRect(text);
   QRect real_rect = fm.boundingRect(init_rect, 0, text);
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
-  p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  if(brakeLight == false){
+    p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  } else {
+    alpha += 50;
+    if(alpha > 255){
+      alpha = 255;
+    }
+    p.setPen(QColor(0xff, 0, 0, alpha));
+  }
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
@@ -1184,17 +1226,25 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
       if(a_rel > 0){
         hha = 1 - 0.1 / a_rel;
         painter.setBrush(QColor(0, 245, 0, prob_alpha*0.9));
+
+        if(hha < 0){
+          hha = 0;
+        }
+        hha = hha * hh;
+        QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
+        painter.drawRect(ra);
       }
       if(a_rel < 0){
         hha = 1 + 0.1 / a_rel;
         painter.setBrush(QColor(245, 0, 0, prob_alpha));
+        //減速は上から下へ変更。
+        if(hha < 0){
+          hha = 0;
+        }
+        hha = hha * hh;
+        QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh , wwa, hha);
+        painter.drawRect(ra);
       }
-      if(hha < 0){
-        hha = 0;
-      }
-      hha = hha * hh;
-      QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
-      painter.drawRect(ra);
     }
 
     if(//lead0.getX()[0] > lead1.getX()[0] //lead1がlead0より後ろ
@@ -1309,6 +1359,7 @@ void NvgWindow::paintGL() {
 
   CameraViewWidget::paintGL();
 
+  uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
   UIState *s = uiState();
   if (s->worldObjectsVisible()) {
     QPainter painter(this);

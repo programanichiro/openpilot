@@ -23,6 +23,7 @@ private:
   QPushButton *accelEngagedButton;
   QPushButton *handleCtrlButton;
   QPushButton *startAccelPowerUpButton;
+  QPushButton *useLaneButton;
 
   // int dfStatus = -1;  // always initialize style sheet and send msg
   // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
@@ -39,6 +40,7 @@ private:
   int mAccelEngagedButton = 0;  // triggers initialization
   bool mHandleCtrlButton = true;  // triggers initialization
   bool mStartAccelPowerUpButton = false;  // triggers initialization
+  int mUseLaneButton = 0;  // triggers initialization
 
 public slots:
   void updateState(const UIState &s);
@@ -61,7 +63,7 @@ public:
 
 private:
   void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity , float ang);
-  void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255);
+  void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false);
   void drawText(QPainter &p, int x, int y, const QString &text, const QColor &col);
   void paintEvent(QPaintEvent *event) override;
 
