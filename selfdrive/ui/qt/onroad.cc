@@ -235,7 +235,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // use lane button
-    uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("../manager/lane_sw_mode.txt" , 1);
+    uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("../manager/lane_sw_mode.txt" , Params().getBool("EndToEndToggle") ? 0 : 1;
     if(mUseLaneButton == 2){
       useLaneButton = new QPushButton("LA"); //レーンレス自動選択
     } else {
