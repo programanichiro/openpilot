@@ -163,14 +163,14 @@ class Planner:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         OP_ENABLE_gas_speed = v_ego
-        # try:
-        #   with open('./accel_engaged.txt','r') as fp:
-        #     accel_engaged_str = fp.read()
-        #     if accel_engaged_str:
-        #       if int(accel_engaged_str) == 3: #ワンペダルモード
-        #         OP_ENABLE_gas_speed = 1.0 / 3.6
-        # except Exception as e:
-        #   pass
+        try:
+          with open('./accel_engaged.txt','r') as fp:
+            accel_engaged_str = fp.read()
+            if accel_engaged_str:
+              if int(accel_engaged_str) == 3: #ワンペダルモード
+                OP_ENABLE_gas_speed = 1.0 / 3.6
+        except Exception as e:
+          pass
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
