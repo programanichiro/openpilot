@@ -154,7 +154,7 @@ class Planner:
         with open('./accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
-            if int(accel_engaged_str) == 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
+            if int(accel_engaged_str) == 3: #ワンペダルモード
               OP_ENABLE_gas_speed = 1.0 / 3.6
       except Exception as e:
         pass
