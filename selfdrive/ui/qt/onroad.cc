@@ -941,6 +941,11 @@ void NvgWindow::knightScanner(QPainter &p) {
   //int h_pos = 0;
   int h_pos = rect_h - hh;
 
+  UIState *s = uiState();
+  bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
+  bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
+  bool hazard_flashers = left_blinker && right_blinker;
+
   //ct ++;
   //ct %= n * ct_n;
   ct += dir;
@@ -948,6 +953,15 @@ void NvgWindow::knightScanner(QPainter &p) {
     if(ct < 0 && dir < 0)ct = 0;
     if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
     dir0 = -dir0;
+    if(hazard_flashers == false){
+      if(left_blinker == true){
+        dir0 = -fabs(dir0);
+        ct = n*ct_n-1;
+      } else if(right_blinker == true){
+        dir0 = fabs(dir0);
+        ct = 0;
+      }
+    }
     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
       std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
       if(limit_vc_txt.empty() == false){
@@ -972,7 +986,10 @@ void NvgWindow::knightScanner(QPainter &p) {
     //QRect rc(0, h_pos, ww, hh);
     if(t[i] > 0.01){
       //p.drawRoundedRect(rc, 0, 0);
-      if(handle_center > -99){
+      if(left_blinker || right_blinker){
+        //流れるウインカー
+        p.setBrush(QColor(240, 175, 0, 255 * t[i]));
+      } else if(handle_center > -99){
         p.setBrush(QColor(200, 0, 0, 255 * t[i]));
       } else {
         p.setBrush(QColor(200, 200, 0, 255 * t[i])); //ハンドルセンターキャリブレーション中は色を緑に。
@@ -983,7 +1000,6 @@ void NvgWindow::knightScanner(QPainter &p) {
   }
 
 #if 1 //加速減速表示テスト
-  UIState *s = uiState();
   //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
   static float vc_accel;
