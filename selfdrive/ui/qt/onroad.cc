@@ -1008,7 +1008,7 @@ void NvgWindow::knightScanner(QPainter &p) {
 #else
       float sx = rect_w * i / (n-1) - rect_w / 2;
       sx /= (rect_w / 2); // -1〜1
-      p.drawRect(rect_w * i / (n-1), h_pos, ww, hh/2 * (1 + sx*sx));
+      p.drawRect(rect_w * i / (n-1), h_pos + hh/2 * (1 - sx*sx), ww, hh/2 * (1 + sx*sx));
 #endif
     }
     t[i] *= 0.9;
