@@ -938,13 +938,24 @@ void NvgWindow::knightScanner(QPainter &p) {
     hh = hh * 2 / 3;
   }
 
-  //int h_pos = 0;
-  int h_pos = rect_h - hh;
-
   UIState *s = uiState();
   bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
-  bool hazard_flashers = left_blinker && right_blinker;
+  if(left_blinker == true){
+    dir0 = -fabs(dir0);
+    dir = dir0 * 1.0;
+    hh = ww;
+    hh = hh * 2 / 3;
+  } else if(right_blinker == true){
+    dir0 = fabs(dir0);
+    dir = dir0 * 1.0;
+    hh = ww;
+    hh = hh * 2 / 3;
+  }
+  //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
+
+  //int h_pos = 0;
+  int h_pos = rect_h - hh;
 
   //ct ++;
   //ct %= n * ct_n;
@@ -953,12 +964,13 @@ void NvgWindow::knightScanner(QPainter &p) {
     if(ct < 0 && dir < 0)ct = 0;
     if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
     dir0 = -dir0;
-    if(hazard_flashers == false){
+    //if(hazard_flashers == false)
+    {
       if(left_blinker == true){
-        dir0 = -fabs(dir0);
+        //dir0 = -fabs(dir0);
         ct = n*ct_n-1;
       } else if(right_blinker == true){
-        dir0 = fabs(dir0);
+        //dir0 = fabs(dir0);
         ct = 0;
       }
     }
@@ -988,7 +1000,7 @@ void NvgWindow::knightScanner(QPainter &p) {
       //p.drawRoundedRect(rc, 0, 0);
       if(left_blinker || right_blinker){
         //流れるウインカー
-        p.setBrush(QColor(240, 175, 0, 255 * t[i]));
+        p.setBrush(QColor(188, 138, 0, 255 * t[i]));
       } else if(handle_center > -99){
         p.setBrush(QColor(200, 0, 0, 255 * t[i]));
       } else {
