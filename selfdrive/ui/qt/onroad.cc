@@ -1005,7 +1005,7 @@ void NvgWindow::knightScanner(QPainter &p) {
       }
 #if 0
       p.drawRect(rect_w * i / (n-1), h_pos, ww, hh);
-#elif 1
+#elif 0
     //ポリゴンで表示。
     float x0 = rect_w * i / (n-1);
     float x1 = x0 + ww;
@@ -1013,11 +1013,25 @@ void NvgWindow::knightScanner(QPainter &p) {
     float y1 = y0 + hh;
     QPointF scaner[] = {{x0,y0},{x1,y0}, {x1,y1}, {x0,y1}};
     p.drawPolygon(scaner, std::size(scaner));
-#else
+#elif 0
       //雰囲気。ポリゴンでやらないとダメだな。ガタガタになる。
       float sx = rect_w * i / (n-1) - rect_w / 2;
       sx /= (rect_w / 2); // -1〜1
       p.drawRect(rect_w * i / (n-1), h_pos + hh/2 * (1 - sx*sx), ww, hh/2 * (1 + sx*sx));
+#else
+      //ポリゴンで表示。
+      float sx_a = rect_w * i / (n-1) - rect_w / 2;
+      sx_a /= (rect_w / 2); // -1〜1
+      float sx_b = rect_w * (i+1) / (n-1) - rect_w / 2;
+      sx_b /= (rect_w / 2); // -1〜1
+      float x0 = rect_w * i / (n-1);
+      float x1 = x0 + ww;
+      float y0 = h_pos;
+      float y1 = y0 + hh;
+      float y0_a = h_pos + hh/2 * (1 - sx_a*sx_a);
+      float y0_b = h_pos + hh/2 * (1 - sx_b*sx_b);
+      QPointF scaner[] = {{x0,y0_a},{x1,y0_b}, {x1,y1}, {x0,y1}};
+      p.drawPolygon(scaner, std::size(scaner));
 #endif
     }
     t[i] *= 0.9;
