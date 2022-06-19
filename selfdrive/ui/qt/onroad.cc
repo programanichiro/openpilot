@@ -960,16 +960,16 @@ void NvgWindow::knightScanner(QPainter &p) {
   //ct %= n * ct_n;
   ct += dir;
   if(ct <= 0 || ct >= n*ct_n-1){
-    if(ct < 0 && dir < 0)ct = 0;
-    if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
-    dir0 = -dir0;
-    //if(hazard_flashers == false)
-    {
+    if(left_blinker || right_blinker){
       if(left_blinker == true && ct < 0){
         ct = n*ct_n-1;
       } else if(right_blinker == true && ct > n*ct_n-1){
         ct = 0;
       }
+    } else {
+      if(ct < 0 && dir < 0)ct = 0;
+      if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
+      dir0 = -dir0;
     }
     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
       std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
