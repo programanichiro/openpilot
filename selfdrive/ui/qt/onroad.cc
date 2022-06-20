@@ -956,7 +956,9 @@ void NvgWindow::knightScanner(QPainter &p) {
       lane_change_height = 270;
     }
 #else
-    if((*s->sm)["lateralPlan"].getLateralPlan().getLaneChangeState() != 0){ //レーンチェンジの表示で判定
+    auto lp = (*s->sm)["lateralPlan"].getLateralPlan();
+    if( lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::PRE_LANE_CHANGE ||
+        lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定
       lane_change_height = 270;
     }
 #endif
