@@ -929,9 +929,17 @@ void NvgWindow::knightScanner(QPainter &p) {
     dir = dir0 * 1.0;
     hh = ww;
     hh = hh * 2 / 3;
-    if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //これをレーンチェンジの表示で判定したい。
-      lane_change_height = 275;
+#if 0
+    if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //
+      lane_change_height = 270;
     }
+#else
+    auto lp = (*s->sm)["lateralPlan"].getLateralPlan();
+    if( lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::PRE_LANE_CHANGE ||
+        lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定
+      lane_change_height = 270;
+    }
+#endif
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
 
@@ -997,8 +1005,9 @@ void NvgWindow::knightScanner(QPainter &p) {
         float x1 = x0 + ww;
         float y0 = h_pos;
         float y1 = y0 + hh;
-        float y0_a = h_pos + hh/2 * (1 - sx_a*sx_a); //関数の高さ計算に加減速を反省させればビヨビヨするはず。
-        float y0_b = h_pos + hh/2 * (1 - sx_b*sx_b);
+        y0 -= ww/4; //少し持ち上げる。
+        float y0_a = y0 + hh/2 * (1 - sx_a*sx_a); //関数の高さ計算に加減速を反省させればビヨビヨするはず。
+        float y0_b = y0 + hh/2 * (1 - sx_b*sx_b);
         QPointF scaner[] = {{x0,y0_a},{x1,y0_b}, {x1,y1}, {x0,y1}};
         p.drawPolygon(scaner, std::size(scaner));
       }
