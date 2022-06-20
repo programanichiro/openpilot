@@ -146,19 +146,19 @@ class Planner:
         with open('./accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
-            if int(accel_engaged_str) == 3: #ワンペダルモード
+            if int(accel_engaged_str) == 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
               OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
     if sm['controlsState'].longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         OP_ENABLE_gas_speed = v_ego
-        if os.path.isfile('./accel_engaged.txt'):
-          with open('./accel_engaged.txt','r') as fp:
-            accel_engaged_str = fp.read()
-            if accel_engaged_str:
-              if int(accel_engaged_str) == 3: #ワンペダルモード
-                OP_ENABLE_gas_speed = 1.0 / 3.6
+        # if os.path.isfile('./accel_engaged.txt'):
+        #   with open('./accel_engaged.txt','r') as fp:
+        #     accel_engaged_str = fp.read()
+        #     if accel_engaged_str:
+        #       if int(accel_engaged_str) == 3: #ワンペダルモード
+        #         OP_ENABLE_gas_speed = 1.0 / 3.6
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
