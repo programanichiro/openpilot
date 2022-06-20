@@ -941,6 +941,7 @@ void NvgWindow::knightScanner(QPainter &p) {
   UIState *s = uiState();
   bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
+  int lane_change_height = 800; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker){
     if(left_blinker == true){
       dir0 = -fabs(dir0);
@@ -950,6 +951,9 @@ void NvgWindow::knightScanner(QPainter &p) {
     dir = dir0 * 1.0;
     hh = ww;
     hh = hh * 2 / 3;
+    if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){
+      lane_change_height = 800;
+    }
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
 
@@ -1004,7 +1008,7 @@ void NvgWindow::knightScanner(QPainter &p) {
         p.setBrush(QColor(200, 200, 0, 255 * t[i])); //ハンドルセンターキャリブレーション中は色を緑に。
       }
       if(left_blinker || right_blinker){
-        p.drawRect(rect_w * i / (n-1), h_pos, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
+        p.drawRect(rect_w * i / (n-1), h_pos - lane_change_height, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
       } else {
         //ポリゴンで表示。
         float sx_a = rect_w * i / (n-1) - rect_w / 2;
