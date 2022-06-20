@@ -941,7 +941,7 @@ void NvgWindow::knightScanner(QPainter &p) {
   UIState *s = uiState();
   bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
-  int lane_change_height = 280; //↓の下の尖りがウインカーの底辺になるように調整。
+  int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker){
     if(left_blinker == true){
       dir0 = -fabs(dir0);
@@ -952,7 +952,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     hh = ww;
     hh = hh * 2 / 3;
     if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //これをレーンチェンジの表示で判定したい。
-      lane_change_height = 280;
+      lane_change_height = 275;
     }
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
