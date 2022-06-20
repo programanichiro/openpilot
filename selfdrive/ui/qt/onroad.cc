@@ -916,6 +916,25 @@ void NvgWindow::knightScanner(QPainter &p) {
     hh = hh * 2 / 3;
   }
 
+  UIState *s = uiState();
+  bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
+  bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
+  int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
+  if(left_blinker || right_blinker){
+    if(left_blinker == true){
+      dir0 = -fabs(dir0);
+    } else if(right_blinker == true){
+      dir0 = fabs(dir0);
+    }
+    dir = dir0 * 1.0;
+    hh = ww;
+    hh = hh * 2 / 3;
+    if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //これをレーンチェンジの表示で判定したい。
+      lane_change_height = 275;
+    }
+  }
+  //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
+
   //int h_pos = 0;
   int h_pos = rect_h - hh;
 
@@ -923,9 +942,17 @@ void NvgWindow::knightScanner(QPainter &p) {
   //ct %= n * ct_n;
   ct += dir;
   if(ct <= 0 || ct >= n*ct_n-1){
-    if(ct < 0 && dir < 0)ct = 0;
-    if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
-    dir0 = -dir0;
+    if(left_blinker || right_blinker){
+      if(left_blinker == true && ct < 0){
+        ct = n*ct_n-1;
+      } else if(right_blinker == true && ct > n*ct_n-1){
+        ct = 0;
+      }
+    } else {
+      if(ct < 0 && dir < 0)ct = 0;
+      if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
+      dir0 = -dir0;
+    }
     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
       std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
       if(limit_vc_txt.empty() == false){
@@ -950,18 +977,36 @@ void NvgWindow::knightScanner(QPainter &p) {
     //QRect rc(0, h_pos, ww, hh);
     if(t[i] > 0.01){
       //p.drawRoundedRect(rc, 0, 0);
-      if(handle_center > -99){
+      if(left_blinker || right_blinker){
+        //流れるウインカー
+        p.setBrush(QColor(192, 102, 0, 255 * t[i]));
+      } else if(handle_center > -99){
         p.setBrush(QColor(200, 0, 0, 255 * t[i]));
       } else {
         p.setBrush(QColor(200, 200, 0, 255 * t[i])); //ハンドルセンターキャリブレーション中は色を緑に。
       }
-      p.drawRect(rect_w * i / (n-1), h_pos, ww, hh);
+      if(left_blinker || right_blinker){
+        p.drawRect(rect_w * i / (n-1), h_pos - lane_change_height, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
+      } else {
+        //ポリゴンで表示。
+        float sx_a = rect_w * i / (n-1) - rect_w / 2;
+        sx_a /= (rect_w / 2); // -1〜1
+        float sx_b = rect_w * (i+1) / (n-1) - rect_w / 2;
+        sx_b /= (rect_w / 2); // -1〜1
+        float x0 = rect_w * i / (n-1);
+        float x1 = x0 + ww;
+        float y0 = h_pos;
+        float y1 = y0 + hh;
+        float y0_a = h_pos + hh/2 * (1 - sx_a*sx_a); //関数の高さ計算に加減速を反省させればビヨビヨするはず。
+        float y0_b = h_pos + hh/2 * (1 - sx_b*sx_b);
+        QPointF scaner[] = {{x0,y0_a},{x1,y0_b}, {x1,y1}, {x0,y1}};
+        p.drawPolygon(scaner, std::size(scaner));
+      }
     }
     t[i] *= 0.9;
   }
 
 #if 1 //加速減速表示テスト
-  UIState *s = uiState();
   //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
   static float vc_accel;
