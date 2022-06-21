@@ -343,7 +343,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt" , 0);
     if(mAccelEngagedButton == 3){
-      accelEngagedButton = new QPushButton("O"); //3ならワンペダルモード(O)
+      accelEngagedButton = new QPushButton("OP"); //3ならワンペダルモード(O)
     } else if(mAccelEngagedButton == 2){
       accelEngagedButton = new QPushButton("AA"); //2ならAA(ALL ACCEL)
     } else {
@@ -402,7 +402,7 @@ void ButtonsWindow::updateState(const UIState &s) {
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0 && fp_error==false)));
     //ここでボタンのラベルを変えられないかな？mAccelEngagedButton == 2でAAとかにしたい。
     if(mAccelEngagedButton == 3){
-      accelEngagedButton->setText("O");
+      accelEngagedButton->setText("OP");
     } else if(mAccelEngagedButton == 2){
       accelEngagedButton->setText("AA");
     } else {
@@ -916,6 +916,33 @@ void NvgWindow::knightScanner(QPainter &p) {
     hh = hh * 2 / 3;
   }
 
+  UIState *s = uiState();
+  bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
+  bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
+  int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
+  if(left_blinker || right_blinker){
+    if(left_blinker == true){
+      dir0 = -fabs(dir0);
+    } else if(right_blinker == true){
+      dir0 = fabs(dir0);
+    }
+    dir = dir0 * 1.0;
+    hh = ww;
+    hh = hh * 2 / 3;
+#if 0
+    if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //
+      lane_change_height = 270;
+    }
+#else
+    auto lp = (*s->sm)["lateralPlan"].getLateralPlan();
+    if( lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::PRE_LANE_CHANGE ||
+        lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定
+      lane_change_height = 270;
+    }
+#endif
+  }
+  //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
+
   //int h_pos = 0;
   int h_pos = rect_h - hh;
 
@@ -923,9 +950,17 @@ void NvgWindow::knightScanner(QPainter &p) {
   //ct %= n * ct_n;
   ct += dir;
   if(ct <= 0 || ct >= n*ct_n-1){
-    if(ct < 0 && dir < 0)ct = 0;
-    if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
-    dir0 = -dir0;
+    if(left_blinker || right_blinker){
+      if(left_blinker == true && ct < 0){
+        ct = n*ct_n-1;
+      } else if(right_blinker == true && ct > n*ct_n-1){
+        ct = 0;
+      }
+    } else {
+      if(ct < 0 && dir < 0)ct = 0;
+      if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
+      dir0 = -dir0;
+    }
     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
       std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
       if(limit_vc_txt.empty() == false){
@@ -950,18 +985,37 @@ void NvgWindow::knightScanner(QPainter &p) {
     //QRect rc(0, h_pos, ww, hh);
     if(t[i] > 0.01){
       //p.drawRoundedRect(rc, 0, 0);
-      if(handle_center > -99){
+      if(left_blinker || right_blinker){
+        //流れるウインカー
+        p.setBrush(QColor(192, 102, 0, 255 * t[i]));
+      } else if(handle_center > -99){
         p.setBrush(QColor(200, 0, 0, 255 * t[i]));
       } else {
         p.setBrush(QColor(200, 200, 0, 255 * t[i])); //ハンドルセンターキャリブレーション中は色を緑に。
       }
-      p.drawRect(rect_w * i / (n-1), h_pos, ww, hh);
+      if(left_blinker || right_blinker){
+        p.drawRect(rect_w * i / (n-1), h_pos - lane_change_height, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
+      } else {
+        //ポリゴンで表示。
+        float sx_a = rect_w * i / (n-1) - rect_w / 2;
+        sx_a /= (rect_w / 2); // -1〜1
+        float sx_b = rect_w * (i+1) / (n-1) - rect_w / 2;
+        sx_b /= (rect_w / 2); // -1〜1
+        float x0 = rect_w * i / (n-1);
+        float x1 = x0 + ww;
+        float y0 = h_pos;
+        float y1 = y0 + hh;
+        y0 -= ww/6; //少し持ち上げる。
+        float y0_a = y0 + hh/2 * (1 - sx_a*sx_a); //関数の高さ計算に加減速を反省させればビヨビヨするはず。
+        float y0_b = y0 + hh/2 * (1 - sx_b*sx_b);
+        QPointF scaner[] = {{x0,y0_a},{x1,y0_b}, {x1,y1}, {x0,y1}};
+        p.drawPolygon(scaner, std::size(scaner));
+      }
     }
     t[i] *= 0.9;
   }
 
 #if 1 //加速減速表示テスト
-  UIState *s = uiState();
   //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
   static float vc_accel;
@@ -1231,8 +1285,13 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
           hha = 0;
         }
         hha = hha * hh;
+#if 0
         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
         painter.drawRect(ra);
+#else //メーターを斜めに切る
+        QPointF meter[] = {{(float)x + ww/2 - wwa/2 - wwa/2 * hha / hh , (float)y /*- g_yo*/ - hh - dh + (hh-hha)},{(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + (hh-hha)}, {(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + hh}, {(float)x + ww/2 - wwa/2 , (float)y /*- g_yo*/ - hh - dh + hh}};
+        painter.drawPolygon(meter, std::size(meter));
+#endif
       }
       if(a_rel < 0){
         hha = 1 + 0.1 / a_rel;
@@ -1242,8 +1301,13 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
           hha = 0;
         }
         hha = hha * hh;
+#if 0
         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh , wwa, hha);
         painter.drawRect(ra);
+#else //メーターを斜めに切る
+        QPointF meter[] = {{(float)x + ww/2 - wwa/2 , (float)y /*- g_yo*/ - hh - dh},{(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh}, {(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + hha}, {(float)x + ww/2 - wwa/2 - wwa/2 * hha / hh, (float)y /*- g_yo*/ - hh - dh + hha}};
+        painter.drawPolygon(meter, std::size(meter));
+#endif
       }
     }
 

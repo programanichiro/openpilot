@@ -154,10 +154,13 @@ class LateralPlanner:
               params.put_bool('EndToEndToggle',False)
               self.use_lanelines = not params.get_bool('EndToEndToggle')
           else: #lane_sw_mode == 2
-            if ((self.LP.lll_prob < 0.55 and self.LP.rll_prob < 0.55)
+            if self.use_lanelines == True and ((self.LP.lll_prob < 0.55 and self.LP.rll_prob < 0.55)
               or (self.LP.lll_prob < 0.70 and self.LP.rll_prob < 0.10)
               or (self.LP.lll_prob < 0.10 and self.LP.rll_prob < 0.70)
-              ):
+              ) or self.use_lanelines == False and ((self.LP.lll_prob < 0.58 and self.LP.rll_prob < 0.58)
+              or (self.LP.lll_prob < 0.73 and self.LP.rll_prob < 0.13)
+              or (self.LP.lll_prob < 0.13 and self.LP.rll_prob < 0.73)
+              ): #切り替えのバタつき防止
               if self.use_lanelines == True:
                 params.put_bool('EndToEndToggle',True)
                 self.use_lanelines = not params.get_bool('EndToEndToggle')
