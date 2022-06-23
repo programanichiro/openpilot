@@ -183,8 +183,6 @@ class Planner:
       OP_ENABLE_v_cruise_kph = 0
     if OP_ENABLE_v_cruise_kph != 0:
       v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う
-      if v_cruise_kph <= 1.1: #km/h
-        v_cruise_kph = 0 #ワンペダル停止処理
     if CVS_FRAME % 5 == 4:
       try:
         with open('./handle_center_info.txt','r') as fp:
@@ -325,6 +323,8 @@ class Planner:
 
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS
+    if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.1: #km/h
+      v_cruise = 0 #ワンペダル停止処理
 
     long_control_state = sm['controlsState'].longControlState
     force_slow_decel = sm['controlsState'].forceDecel
