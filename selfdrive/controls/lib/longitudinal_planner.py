@@ -183,7 +183,7 @@ class Planner:
       OP_ENABLE_v_cruise_kph = 0
     if OP_ENABLE_v_cruise_kph != 0:
       v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う
-      if v_cruise_kph <= 1.0/3.6:
+      if v_cruise_kph <= 1.1: #km/h
         v_cruise_kph = 0 #ワンペダル停止処理
     if CVS_FRAME % 5 == 4:
       try:
