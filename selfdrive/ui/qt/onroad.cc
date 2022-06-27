@@ -682,7 +682,7 @@ void NvgWindow::drawHud(QPainter &p) {
     configFont(p, "Open Sans", 44, "SemiBold");
     drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
     configFont(p, "Open Sans", 55, "SemiBold");
-    drawText(p, rect().right()-260, 60, "for prius PHV TSSP", 150);
+    drawText(p, rect().right()-260, 60, "for prius PHV 2017", 150);
   }
   configFont(p, "Open Sans", 33, "SemiBold");
   drawText(p, rect().right()-275, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
