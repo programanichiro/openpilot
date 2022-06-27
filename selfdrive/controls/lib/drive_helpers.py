@@ -117,6 +117,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
   curvature_diff_from_psi = psi / (max(v_ego, 1e-1) * delay) - current_curvature
   desired_curvature = current_curvature + 2 * curvature_diff_from_psi
 
+  global tss_type
   if tss_type == 0:
     try:
       with open('./tss_type_info.txt','r') as fp:
