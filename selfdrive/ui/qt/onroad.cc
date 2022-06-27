@@ -610,8 +610,8 @@ void NvgWindow::drawHud(QPainter &p) {
   p.setPen(Qt::NoPen);
 
   configFont(p, "Open Sans", 48*max_disp_k, "Regular");
-  const char *max_str = (tss_type == 0 ? "MA+" : (tss_type <= 1 ? "MAX" : "MAX2"));
-  drawText(p, rc.center().x(), 118+y_ofs+max_disp_a, max_str, is_cruise_set ? 200 : 100);
+  //const char *max_str = (tss_type == 0 ? "MA+" : (tss_type <= 1 ? "MAX" : "MAX2"));
+  drawText(p, rc.center().x(), 118+y_ofs+max_disp_a, "MAX", is_cruise_set ? 200 : 100);
   if (is_cruise_set) {
 #if 0
     float mm = maxSpeed.length() < 4 ? 1.1 : 1.0;
@@ -682,7 +682,11 @@ void NvgWindow::drawHud(QPainter &p) {
     configFont(p, "Open Sans", 44, "SemiBold");
     drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
     configFont(p, "Open Sans", 55, "SemiBold");
-    drawText(p, rect().right()-260, 60, "for prius PHV 2017", 150);
+    if(tss_type <= 1){
+      drawText(p, rect().right()-260, 60, "for prius PHV 2017", 150);
+    } else {
+      drawText(p, rect().right()-260, 60, "for prius PHV 2021", 150);
+    }
   }
   configFont(p, "Open Sans", 33, "SemiBold");
   drawText(p, rect().right()-275, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
