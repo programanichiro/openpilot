@@ -656,7 +656,8 @@ void NvgWindow::drawHud(QPainter &p) {
   if (last_ping != 0) {
     okConnect = nanos_since_boot() - last_ping < 80e9 ? true : false;
   }
-  QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
+  QString temp_disp = QString(okConnect ? "● " : "○ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
+  //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
 #endif
   configFont(p, "Open Sans", 44, "SemiBold");
 
