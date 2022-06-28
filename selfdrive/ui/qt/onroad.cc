@@ -652,7 +652,6 @@ void NvgWindow::drawHud(QPainter &p) {
 #else
   bool okGps = (*s->sm)["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
   bool okOnline = false;
-  ItemStatus connectStatus;
   auto last_ping = deviceState.getLastAthenaPingTime();
   if (last_ping != 0) {
     okOnline = nanos_since_boot() - last_ping < 80e9 ? true : false;
