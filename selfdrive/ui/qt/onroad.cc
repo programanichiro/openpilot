@@ -696,8 +696,8 @@ void NvgWindow::drawHud(QPainter &p) {
   p.drawText(QRect(rect().left()+65+120, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
   configFont(p, "Open Sans", 54, "SemiBold");
   p.drawText(QRect(rect().left()+65+55+5, rect().top()+110-8, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
-  configFont(p, "Open Sans", 50, "SemiBold");
-  p.drawText(QRect(rect().left()+65+5, rect().top()+110-8, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
+  configFont(p, "Open Sans", 48, "SemiBold");
+  p.drawText(QRect(rect().left()+65+5, rect().top()+110-9, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
 
   if((float)rect_w / rect_h > 1.4f){
     configFont(p, "Open Sans", 44, "SemiBold");
