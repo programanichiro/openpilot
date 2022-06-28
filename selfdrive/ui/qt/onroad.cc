@@ -647,7 +647,19 @@ void NvgWindow::drawHud(QPainter &p) {
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
   int temp = (int)deviceState.getAmbientTempC();
+#if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
+#else
+  UIState *s = uiState();
+  bool okGps = (*s->sm)["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
+  bool okOnline = false;
+  ItemStatus connectStatus;
+  auto last_ping = deviceState.getLastAthenaPingTime();
+  if (last_ping != 0) {
+    okOnline = nanos_since_boot() - last_ping < 80e9 ? true : false;
+  }
+  QString temp_disp = QString(okGps ? "★ " : "☆ ") + QString(okOnline ? "● " : "○ ") + QString::number(temp) + "°C";
+#endif
   configFont(p, "Open Sans", 44, "SemiBold");
 
   int th_tmp1 = 47;
