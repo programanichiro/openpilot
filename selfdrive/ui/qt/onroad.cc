@@ -658,7 +658,8 @@ void NvgWindow::drawHud(QPainter &p) {
   }
   //下の方がマシかQString temp_disp = QString(okConnect ? "● " : "○ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
   //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
-  QString temp_disp1 = QString(okConnect ? "⚫︎" : "⚪︎");
+  //QString temp_disp1 = QString(okConnect ? "⚫︎" : "⚪︎");
+  QString temp_disp1 = QString(okConnect ? "●" : "○");
   QString temp_disp2 = QString(okGps ? "★ " : "☆ ");
   QString temp_disp3 = QString::number(temp) + "°C";
   //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "◆ " : "◇ ") + QString::number(temp) + "°C";
@@ -695,7 +696,7 @@ void NvgWindow::drawHud(QPainter &p) {
   p.drawText(QRect(rect().left()+65+120, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
   configFont(p, "Open Sans", 54, "SemiBold");
   p.drawText(QRect(rect().left()+65+55+5, rect().top()+110-8, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
-  configFont(p, "Open Sans", 70, "SemiBold");
+  configFont(p, "Open Sans", 62, "SemiBold");
   p.drawText(QRect(rect().left()+65+5, rect().top()+110-18, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
 
   if((float)rect_w / rect_h > 1.4f){
