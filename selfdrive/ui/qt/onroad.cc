@@ -650,7 +650,6 @@ void NvgWindow::drawHud(QPainter &p) {
 #if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
 #else
-  UIState *s = uiState();
   bool okGps = (*s->sm)["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
   bool okOnline = false;
   ItemStatus connectStatus;
