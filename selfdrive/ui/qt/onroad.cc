@@ -651,12 +651,12 @@ void NvgWindow::drawHud(QPainter &p) {
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
 #else
   bool okGps = (*s->sm)["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
-  bool okOnline = false;
+  bool okConnect = false;
   auto last_ping = deviceState.getLastAthenaPingTime();
   if (last_ping != 0) {
-    okOnline = nanos_since_boot() - last_ping < 80e9 ? true : false;
+    okConnect = nanos_since_boot() - last_ping < 80e9 ? true : false;
   }
-  QString temp_disp = QString(okGps ? "★ " : "☆ ") + QString(okOnline ? "● " : "○ ") + QString::number(temp) + "°C";
+  QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
 #endif
   configFont(p, "Open Sans", 44, "SemiBold");
 
