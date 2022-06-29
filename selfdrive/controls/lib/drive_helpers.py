@@ -130,7 +130,22 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
     except Exception as e:
       pass
 
-  if tss_type == 2:
+  dc = True
+  if tss_type < 2:
+    try:
+      #毎度は重いがひとまず。
+      with open('./handle_ctrl_disable.txt','r') as fp:
+        dcm_handle_ctrl_disable_str = fp.read()
+        if dcm_handle_ctrl_disable_str:
+          dcm_handle_ctrl_disable = int(dcm_handle_ctrl_disable_str)
+          if dcm_handle_ctrl_disable == 0:
+            dc = False
+          else:
+            dc = True
+    except Exception as e:
+      dc = False
+
+  if dc == True:
     #新処理をTSS2で使用。
     v_ego = max(v_ego, 0.1)
     max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2)

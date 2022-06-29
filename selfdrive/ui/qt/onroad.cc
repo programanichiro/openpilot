@@ -271,7 +271,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // Handle Ctrl button
     uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
-    handleCtrlButton = new QPushButton("↔︎");
+    handleCtrlButton = new QPushButton("⇔"); //↔︎は⇔に変更。drive_helpers.pyのtss_type == 2を手動切り替えできるよう転用。
     QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
       uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
     });
@@ -738,7 +738,7 @@ void NvgWindow::drawHud(QPainter &p) {
     angle_steer = global_angle_steer0;
     if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){ //低速では1.0だが、一緒くたにする
       if(uiState()->scene.mHandleCtrlButton == true){
-        a2 = 200; //↔︎ボタンOFFで濃くしない。
+//        a2 = 200; //↔︎ボタンOFFで濃くしない。ひとまずmake curve inner offsetのメッセージは無効化。
       }
     }
     if ( maxSpeed.contains(".", Qt::CaseInsensitive) == true ) {

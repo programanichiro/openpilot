@@ -11,7 +11,7 @@ STEER_SAME_DIRECTION_CT = 0
 STEER_OLD_ANGLE = 0
 STEERING_CENTER = -4.3
 DCM_FRAME = 0
-dcm_handle_ctrl = True
+dcm_handle_ctrl = False
 try:
   with open('./handle_center_info.txt','r') as fp:
     handle_center_info_str = fp.read()
@@ -102,17 +102,17 @@ class LanePlanner:
     self.lane_width = self.lane_width_certainty.x * self.lane_width_estimate.x + \
                       (1 - self.lane_width_certainty.x) * speed_lane_width
 
-    clipped_lane_width = min(3.5, self.lane_width) #4.0
+    clipped_lane_width = min(4.0, self.lane_width)
     path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
     path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
 
-    prob_limit_angle = 6 #これよりハンドル角が大きい時で、カーブのアウト側がインより薄い認識だと、アウト側を無視してみる
-    if st_angle < -prob_limit_angle:
-      if r_prob > 0.5 and r_prob*0.8 > l_prob:
-        l_prob = 0
-    elif st_angle > prob_limit_angle:
-      if l_prob > 0.5 and l_prob*0.8 > r_prob:
-        r_prob = 0
+    # prob_limit_angle = 6 #これよりハンドル角が大きい時で、カーブのアウト側がインより薄い認識だと、アウト側を無視してみる
+    # if st_angle < -prob_limit_angle:
+    #   if r_prob > 0.5 and r_prob*0.8 > l_prob:
+    #     l_prob = 0
+    # elif st_angle > prob_limit_angle:
+    #   if l_prob > 0.5 and l_prob*0.8 > r_prob:
+    #     r_prob = 0
     dcm = self.calc_dcm(st_angle, pred_angle , v_ego,clipped_lane_width,l_prob,r_prob)
     path_from_left_lane -= dcm
     path_from_right_lane -= dcm
@@ -132,18 +132,18 @@ class LanePlanner:
   def calc_dcm(self, st_angle, pred_angle , v_ego,clipped_lane_width,l_prob,r_prob):
     #数値を実際に取得して、調整してみる。UIスイッチで車体寄せをやめるなら、ここでゼロを返せばいい。
     global DCM_FRAME , dcm_handle_ctrl
-    if DCM_FRAME % 30 == 1:
-      try:
-        with open('./handle_ctrl_disable.txt','r') as fp:
-          dcm_handle_ctrl_disable_str = fp.read()
-          if dcm_handle_ctrl_disable_str:
-            dcm_handle_ctrl_disable = int(dcm_handle_ctrl_disable_str)
-            if dcm_handle_ctrl_disable == 0:
-              dcm_handle_ctrl = True
-            else:
-              dcm_handle_ctrl = False
-      except Exception as e:
-        dcm_handle_ctrl = True
+    # if DCM_FRAME % 30 == 1:
+    #   try:
+    #     with open('./handle_ctrl_disable.txt','r') as fp:
+    #       dcm_handle_ctrl_disable_str = fp.read()
+    #       if dcm_handle_ctrl_disable_str:
+    #         dcm_handle_ctrl_disable = int(dcm_handle_ctrl_disable_str)
+    #         if dcm_handle_ctrl_disable == 0:
+    #           dcm_handle_ctrl = True
+    #         else:
+    #           dcm_handle_ctrl = False
+    #   except Exception as e:
+    #     dcm_handle_ctrl = True
     DCM_FRAME += 1
     if dcm_handle_ctrl == False:
       # if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
