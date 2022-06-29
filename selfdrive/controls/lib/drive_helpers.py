@@ -20,6 +20,8 @@ CAR_ROTATION_RADIUS = 0.0
 #新処理をTSS2で使用
 # EU guidelines
 tss_type = 0
+dc_get_lag_adjusted_curvature = False
+CT_get_lag_adjusted_curvature = 0
 MAX_LATERAL_JERK = 5.0
 # this corresponds to 80deg/s and 20deg/s steering angle in a toyota corolla
 #MAX_CURVATURE_RATES = [0.03762194918267951, 0.003441203371932992]
@@ -117,7 +119,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
   curvature_diff_from_psi = psi / (max(v_ego, 1e-1) * delay) - current_curvature
   desired_curvature = current_curvature + 2 * curvature_diff_from_psi
 
-  global tss_type
+  global tss_type,CT_get_lag_adjusted_curvature,dc_get_lag_adjusted_curvature
   if tss_type == 0:
     try:
       with open('./tss_type_info.txt','r') as fp:
@@ -125,27 +127,29 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
         if tss_type_str:
           if int(tss_type_str) == 2: #TSS2
             tss_type = 2
+            dc_get_lag_adjusted_curvature = True
           elif int(tss_type_str) == 1: #TSSP
             tss_type = 1
     except Exception as e:
       pass
 
-  dc = True
-  if tss_type < 2:
+  if tss_type < 2 and CT_get_lag_adjusted_curvature % 30 == 7:
     try:
-      #毎度は重いがひとまず。
       with open('./handle_ctrl_disable.txt','r') as fp:
         dcm_handle_ctrl_disable_str = fp.read()
         if dcm_handle_ctrl_disable_str:
           dcm_handle_ctrl_disable = int(dcm_handle_ctrl_disable_str)
           if dcm_handle_ctrl_disable == 0:
-            dc = False
+            dc_get_lag_adjusted_curvature = False
           else:
-            dc = True
+            dc_get_lag_adjusted_curvature = True
     except Exception as e:
-      dc = False
+      dc_get_lag_adjusted_curvature = False
+  CT_get_lag_adjusted_curvature += 1
+  with open('./debug_out_y','w') as fp:
+    fp.write('desired_curvature:%d' % (dc_get_lag_adjusted_curvature))
 
-  if dc == True:
+  if dc_get_lag_adjusted_curvature == True:
     #新処理をTSS2で使用。
     v_ego = max(v_ego, 0.1)
     max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2)
