@@ -114,8 +114,10 @@ def fingerprint(logcan, sendcan):
   finger = gen_empty_fingerprint()
   candidate_cars = {i: all_legacy_fingerprint_cars() for i in [0, 1]}  # attempt fingerprint on both bus 0 and 1
   frame = 0
-  if os.environ['DONGLE_ID'] in ('252ef8652ee6c9d3','cdcb457f7528673b'):
+  if os.environ['DONGLE_ID'] in ('252ef8652ee6c9d3'):
     frame_fingerprint = 120  # 1.2s , 一部のsmartDSUで起動が間に合わないのにスペシャル対応。
+  elif os.environ['DONGLE_ID'] in ('cdcb457f7528673b'):
+    frame_fingerprint = 500  # 1.2s , 一部のsmartDSUで起動が間に合わないのにスペシャル対応。
   else:
     #frame_fingerprint = 10  # 0.1s
     frame_fingerprint = 20  # たまに初期化エラーが出るので、オリジナルも少し遅らせてみる。
@@ -146,7 +148,7 @@ def fingerprint(logcan, sendcan):
         car_fingerprint = candidate_cars[b][0]
 
     # bail if no cars left or we've been waiting for more than 2s
-    failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or frame > 200
+    failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or (frame > (200 if os.environ['DONGLE_ID'] not in ('cdcb457f7528673b') else 500))
     succeeded = car_fingerprint is not None
     done = failed or succeeded
 
