@@ -146,8 +146,6 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
     except Exception as e:
       dc_get_lag_adjusted_curvature = False
   CT_get_lag_adjusted_curvature += 1
-  with open('./debug_out_y','w') as fp:
-    fp.write('desired_curvature:%d' % (dc_get_lag_adjusted_curvature))
 
   if dc_get_lag_adjusted_curvature == True:
     #新処理をTSS2で使用。
