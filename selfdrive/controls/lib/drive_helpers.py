@@ -133,7 +133,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
     except Exception as e:
       pass
 
-  if tss_type < 2 and CT_get_lag_adjusted_curvature % 30 == 7:
+  if tss_type < 2 and CT_get_lag_adjusted_curvature % 100 == 51:
     try:
       with open('./handle_ctrl_disable.txt','r') as fp:
         dcm_handle_ctrl_disable_str = fp.read()
