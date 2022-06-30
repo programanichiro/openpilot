@@ -736,9 +736,9 @@ void NvgWindow::drawHud(QPainter &p) {
       a3 = 200;
     }
     angle_steer = global_angle_steer0;
-    if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){ //低速では1.0だが、一緒くたにする
-      if(uiState()->scene.mHandleCtrlButton == true){
-//        a2 = 200; //↔︎ボタンOFFで濃くしない。ひとまずmake curve inner offsetのメッセージは無効化。
+    if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){
+      if(uiState()->scene.mHandleCtrlButton == true && tss_type < 2){
+        a2 = 200;
       }
     }
     if ( maxSpeed.contains(".", Qt::CaseInsensitive) == true ) {
@@ -759,7 +759,8 @@ void NvgWindow::drawHud(QPainter &p) {
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
-  drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2 , brake_light);
+  //drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*2 , "curvature reinforcement", a2 , brake_light);
   //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
 
