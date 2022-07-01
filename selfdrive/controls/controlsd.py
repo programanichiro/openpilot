@@ -105,7 +105,7 @@ class Controls:
       ignore = ['driverCameraState', 'managerState'] if SIMULATION else None
       self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                      'driverMonitoringState', 'longitudinalPlan', 'lateralPlan', 'liveLocationKalman',
-                                     'managerState', 'liveParameters', 'radarState', 'controlsState'] + self.camera_packets + joystick_packet,
+                                     'managerState', 'liveParameters', 'radarState'] + self.camera_packets + joystick_packet,
                                     ignore_alive=ignore, ignore_avg_freq=['radarState', 'longitudinalPlan'])
 
     # set alternative experiences from parameters
@@ -642,7 +642,7 @@ class Controls:
       handle_center_ct += 1
       if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
         STEER_CTRL_Y = (-max_yp / 2.5)
-      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,self.sm['controlsState'].enabled,
+      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
                                                                                        lat_plan.psis,
                                                                                        lat_plan.curvatures,
                                                                                        lat_plan.curvatureRates)
