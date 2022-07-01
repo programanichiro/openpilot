@@ -640,8 +640,6 @@ class Controls:
           pass
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       handle_center_ct += 1
-      with open('./debug_out_y','w') as fp:
-        fp.write('STEER_CTRL_Y:%.2f , max_yp:%.2f' % (STEER_CTRL_Y , max_yp))
       if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
         STEER_CTRL_Y = (-max_yp / 2.5)
       self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,self.sm['controlsState'].enabled,
