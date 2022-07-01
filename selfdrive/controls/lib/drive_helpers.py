@@ -102,8 +102,6 @@ def initialize_v_cruise(v_ego, buttonEvents, v_cruise_last):
 
 
 def get_lag_adjusted_curvature(CP, v_ego, steerAng , isEngaged, psis, curvatures, curvature_rates):
-  with open('./debug_out_y','w') as fp:
-    fp.write('steerAng:%.2f , isEngaged:%d' % (steerAng , isEngaged))
   if len(psis) != CONTROL_N:
     psis = [0.0]*CONTROL_N
     curvatures = [0.0]*CONTROL_N
@@ -149,6 +147,9 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , isEngaged, psis, curvatures
       dc_get_lag_adjusted_curvature = False
   CT_get_lag_adjusted_curvature += 1
 
+  with open('./debug_out_y','w') as fp:
+    fp.write('steerAng:%.2f , dc_get_lag_adjusted_curvature:%d' % (steerAng , dc_get_lag_adjusted_curvature))
+    
   if dc_get_lag_adjusted_curvature == True:
     #新処理をTSS2で使用。
     v_ego = max(v_ego, 0.1)
