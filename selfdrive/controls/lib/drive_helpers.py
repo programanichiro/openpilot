@@ -172,8 +172,8 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , isEngaged, psis, curvatures
       k_v = 1.0 if vv2 >= 75/3.6 else 1+ (1 - vv2 / (75/3.6))*(max_k_v-1) # 1〜0 -> 1〜max_k_v(75km/h以上はk_v=1)
     else:
       k_v = 1.65 #controls障害まだ出る？検証。1.39 #0.8.14では、これが固定でないとcontrolsが障害起こすようだ。
-  #  with open('./debug_out_k','w') as fp:
-  #    fp.write('k_v:%.2f , steerAng:%.2f' % (k_v , steerAng))
+    with open('./debug_out_y','w') as fp:
+      fp.write('k_v:%.2f , steerAng:%.2f' % (k_v , steerAng))
     safe_desired_curvature_rate = clip(desired_curvature_rate *k_v,
                                             -max_curvature_rate,
                                             max_curvature_rate)
