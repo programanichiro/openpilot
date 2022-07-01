@@ -701,7 +701,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   p.drawText(QRect(rect().left()+65+120, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
   configFont(p, "Open Sans", 54, "Bold");
   p.drawText(QRect(rect().left()+65+55+5, rect().top()+110-8, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
-  configFont(p, "Open Sans", 48, "SemiBold");
+  configFont(p, "Open Sans", 48, "Regular");
   p.drawText(QRect(rect().left()+65+5+5, rect().top()+110-8, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
 
   if((float)rect_w / rect_h > 1.4f){
