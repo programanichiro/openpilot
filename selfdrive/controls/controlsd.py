@@ -629,6 +629,8 @@ class Controls:
       max_yp = 0
       for yp in self.path_xyz[:,1]:
         max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+      with open('./debug_out_y','w') as fp:
+        fp.write('STEER_CTRL_Y:%.2f , max_yp:%.2f' % (STEER_CTRL_Y , max_yp))
       global handle_center,handle_center_ct
       if handle_center_ct % 5 == 3:
         try:
