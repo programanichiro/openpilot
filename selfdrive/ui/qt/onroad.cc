@@ -615,8 +615,8 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
 
   configFont(p, "Open Sans", 48*max_disp_k, "Regular");
-  const char *max_str = (tss_type == 0 ? "MA+" : (tss_type <= 1 ? "MAX" : "MAX2"));
-  drawText(p, rc.center().x(), 118+y_ofs+max_disp_a, max_str, is_cruise_set ? 200 : 100);
+  //const char *max_str = (tss_type == 0 ? "MA+" : (tss_type <= 1 ? "MAX" : "MAX2"));
+  drawText(p, rc.center().x(), 118+y_ofs+max_disp_a, "MAX", is_cruise_set ? 200 : 100);
   if (is_cruise_set) {
 #if 0
     float mm = maxSpeed.length() < 4 ? 1.1 : 1.0;
@@ -652,7 +652,23 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
   int temp = (int)deviceState.getAmbientTempC();
+#if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
+#else
+  bool okGps = (*s->sm)["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
+  bool okConnect = false;
+  auto last_ping = deviceState.getLastAthenaPingTime();
+  if (last_ping != 0) {
+    okConnect = nanos_since_boot() - last_ping < 80e9 ? true : false;
+  }
+  //下の方がマシかQString temp_disp = QString(okConnect ? "● " : "○ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
+  //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
+  //QString temp_disp1 = QString(okConnect ? "⚫︎" : "⚪︎");
+  QString temp_disp1 = QString(okConnect ? "●" : "○");
+  QString temp_disp2 = QString(okGps ? "★ " : "☆ ");
+  QString temp_disp3 = QString::number(temp) + "°C";
+  //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "◆ " : "◇ ") + QString::number(temp) + "°C";
+#endif
   configFont(p, "Open Sans", 44, "SemiBold");
 
   int th_tmp1 = 47;
@@ -681,13 +697,22 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   } else {
     p.setPen(QColor(0xff, 0xff, 0 , 255));
   }
-  p.drawText(QRect(rect().left()+65, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp);
+  //p.drawText(QRect(rect().left()+65, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp);
+  p.drawText(QRect(rect().left()+65+120, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
+  configFont(p, "Open Sans", 54, "Bold");
+  p.drawText(QRect(rect().left()+65+55+5, rect().top()+110-8, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
+  configFont(p, "Open Sans", 48, "Regular");
+  p.drawText(QRect(rect().left()+65+5+5, rect().top()+110-8, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
 
   if((float)rect_w / rect_h > 1.4f){
     configFont(p, "Open Sans", 44, "SemiBold");
     drawText(p, rect().left()+250, 55, "Powered by COMMA.AI", 150);
     configFont(p, "Open Sans", 55, "SemiBold");
-    drawText(p, rect().right()-260, 60, "for prius PHV TSSP", 150);
+    if(tss_type <= 1){
+      drawText(p, rect().right()-260, 60, "for prius PHV 2017", 150);
+    } else {
+      drawText(p, rect().right()-260, 60, "for prius PHV 2021", 150);
+    }
   }
   configFont(p, "Open Sans", 33, "SemiBold");
   drawText(p, rect().right()-275, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
