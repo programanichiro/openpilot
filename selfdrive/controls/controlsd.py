@@ -2,6 +2,7 @@
 import os
 import math
 from typing import SupportsFloat
+import numpy as np
 
 from cereal import car, log
 from common.numpy_fast import clip
@@ -16,7 +17,7 @@ from system.swaglog import cloudlog
 from system.version import get_short_branch
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
-from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET
+from selfdrive.controls.lib.lane_planner import CAMERA_OFFSET, STEERING_CENTER, TRAJECTORY_SIZE
 from selfdrive.controls.lib.drive_helpers import update_v_cruise, initialize_v_cruise
 from selfdrive.controls.lib.drive_helpers import get_lag_adjusted_curvature
 from selfdrive.controls.lib.latcontrol import LatControl
@@ -31,6 +32,10 @@ from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.locationd.calibrationd import Calibration
 from system.hardware import HARDWARE
 from selfdrive.manager.process_config import managed_processes
+
+handle_center = STEERING_CENTER # キャリブレーション前の手抜き
+handle_center_ct = 0
+ACCEL_PUSH_COUNT = 0
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -179,6 +184,10 @@ class Controls:
     self.desired_curvature = 0.0
     self.desired_curvature_rate = 0.0
 
+    self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
+    self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
+    self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
+
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
 
@@ -217,13 +226,42 @@ class Controls:
       self.events.add(EventName.controlsInitializing)
       return
 
-    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    global ACCEL_PUSH_COUNT
+    engage_disable = False
+    if CS.gasPressed:
+      accel_engaged = False
+      try:
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+              accel_engaged = True
+            if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+              accel_engaged = True
+              ACCEL_PUSH_COUNT = 100
+      except Exception as e:
+        pass
+      if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
+        engage_disable = True
+      ACCEL_PUSH_COUNT += 1
+    else:
+      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+        engage_disable = True
+      ACCEL_PUSH_COUNT = 0
+
+    # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
+    #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
       (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
       self.events.add(EventName.pedalPressed)
 
+    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
+#    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+#      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
+#      self.events.add(EventName.pedalPressed)
+
     if CS.gasPressed:
-      self.events.add(EventName.pedalPressedPreEnable if self.disengage_on_accelerator else
+      self.events.add(EventName.pedalPressedPreEnable if (CS.vEgo * 3.6 > 1 and engage_disable == True) else
                       EventName.gasPressedOverride)
 
     if not self.CP.notCar:
@@ -378,7 +416,7 @@ class Controls:
             self.events.add(evt)
       except UnicodeDecodeError:
         pass
-
+    
     # TODO: fix simulator
     if not SIMULATION:
       if not NOSENSOR and os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID:
@@ -585,7 +623,32 @@ class Controls:
       actuators.accel = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan)
 
       # Steering PID loop and lateral MPC
-      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,
+      md = self.sm['modelV2']
+      if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+        self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+        self.t_idxs = np.array(md.position.t)
+        self.plan_yaw = list(md.orientation.z)
+      if len(md.position.xStd) == TRAJECTORY_SIZE:
+        self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
+
+      STEER_CTRL_Y = CS.steeringAngleDeg
+      max_yp = 0
+      for yp in self.path_xyz[:,1]:
+        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+      global handle_center,handle_center_ct
+      if handle_center_ct % 5 == 3:
+        try:
+          with open('./handle_center_info.txt','r') as fp:
+            handle_center_info_str = fp.read()
+            if handle_center_info_str:
+              handle_center = float(handle_center_info_str)
+        except Exception as e:
+          pass
+      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      handle_center_ct += 1
+      if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
+        STEER_CTRL_Y = (-max_yp / 2.5)
+      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
                                                                                        lat_plan.psis,
                                                                                        lat_plan.curvatures,
                                                                                        lat_plan.curvatureRates)

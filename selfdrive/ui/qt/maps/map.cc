@@ -85,7 +85,12 @@ void MapWindow::initLayers() {
   }
   if (!m_map->layerExists("carPosLayer")) {
     qDebug() << "Initializing carPosLayer";
-    m_map->addImage("label-arrow", QImage("../assets/images/triangle.svg"));
+    std::string my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
+    if(my_mapbox_triangle.empty() == false){
+      m_map->addImage("label-arrow", QImage("../../../mb_triangle.svg"));
+    } else {
+      m_map->addImage("label-arrow", QImage("../assets/images/triangle.svg"));
+    }    
 
     QVariantMap carPos;
     carPos["id"] = "carPosLayer";
@@ -255,7 +260,16 @@ void MapWindow::initializeGL() {
 
   m_map->setMargins({0, 350, 0, 50});
   m_map->setPitch(MIN_PITCH);
-  m_map->setStyleUrl("mapbox://styles/commaai/ckr64tlwp0azb17nqvr9fj13s");
+
+  std::string my_mapbox_style = util::read_file("../../../mb_style.txt");
+  if(my_mapbox_style.empty() == false){
+    while(my_mapbox_style.c_str()[my_mapbox_style.length()-1] == 0x0a){
+      my_mapbox_style = my_mapbox_style.substr(0,my_mapbox_style.length()-1);
+    }
+    m_map->setStyleUrl(my_mapbox_style.c_str());
+  } else {
+    m_map->setStyleUrl("mapbox://styles/commaai/ckr64tlwp0azb17nqvr9fj13s");
+  }
 
   QObject::connect(m_map.data(), &QMapboxGL::mapChanged, [=](QMapboxGL::MapChange change) {
     if (change == QMapboxGL::MapChange::MapChangeDidFinishLoadingMap) {
