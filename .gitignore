@@ -26,7 +26,6 @@ a.out
 *.o-*
 *.os
 *.os-*
-*.so
 *.a
 *.clb
 *.class
@@ -38,19 +37,6 @@ compile_commands.json
 
 persist
 board/obj/
-selfdrive/boardd/boardd
-selfdrive/logcatd/logcatd
-selfdrive/mapd/default_speeds_by_region.json
-system/proclogd/proclogd
-selfdrive/ui/_ui
-selfdrive/test/longitudinal_maneuvers/out
-selfdrive/visiond/visiond
-selfdrive/sensord/_gpsd
-selfdrive/sensord/_sensord
-system/camerad/camerad
-system/camerad/test/ae_gray_test
-selfdrive/modeld/_modeld
-selfdrive/modeld/_dmonitoringmodeld
 /src/
 
 one
@@ -74,8 +60,12 @@ flycheck_*
 cppcheck_report.txt
 comma*.sh
 
-selfdrive/modeld/thneed/compile
-selfdrive/modeld/models/*.thneed
+selfdrive/manager/*.txt
+vv*
+selfdrive/manager/debug_out*
+
+
+opendbc/can/dbc_out/*.cc
 
 *.bz2
 
