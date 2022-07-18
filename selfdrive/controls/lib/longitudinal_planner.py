@@ -141,6 +141,9 @@ class Planner:
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
+      if sm['controlsState'].enabled and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6):
+        with open('./signal_start_prompt_info.txt','w') as fp:
+          fp.write('%d' % (1)) #prompt音を鳴らしてみる。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
     sm_longControlState = sm['controlsState'].longControlState
@@ -183,7 +186,7 @@ class Planner:
     else:
       OP_ACCEL_PUSH = True #アクセル押した
     global signal_scan_ct
-    if v_ego <= 0.01/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and sm['radarState'].leadOne.status == False:
+    if v_ego <= 0.01/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and sm['radarState'].leadOne.status == False:
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
       md = sm['modelV2']
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
@@ -195,7 +198,9 @@ class Planner:
         #   fp.write('x:%.2f' % (path_x[TRAJECTORY_SIZE -1]))
         if path_x[TRAJECTORY_SIZE -1] > 60.0: #青信号判定の瞬間
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
-          if signal_scan_ct > 8:
+          if signal_scan_ct > 8 and signal_scan_ct < 100:
+            if one_pedal == False:
+              signal_scan_ct = 100 #ワンペダル以外で2回鳴るのを防止
             OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
             with open('./signal_start_prompt_info.txt','w') as fp:
               fp.write('%d' % (1))
@@ -492,7 +497,7 @@ class Planner:
         self.a_desired = 0 #アクセル離して加速ならゼロに。
       if self.a_desired < 0:
         #ワンペダル停止の減速を強めてみる。
-        a_desired_mul = interp(v_ego,[0,30/3.6,40/3.6],[1.0,1.0,1.22]) #30km/hあたりから減速が強くなり始める
+        a_desired_mul = interp(v_ego,[0,20/3.6,40/3.6],[1.0,1.0,1.17]) #30km/hあたりから減速が強くなり始める
 
     #with open('./debug_out_v','w') as fp:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))

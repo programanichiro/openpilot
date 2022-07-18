@@ -774,7 +774,22 @@ void NvgWindow::drawHud(QPainter &p) {
   drawText(p, rect().center().x(), 210 + y_ofs-5, speedStr);
 
   configFont(p, "Inter", 66, "Regular");
-  drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
+  static int smart_dsu_detect = 0;
+  if(smart_dsu_detect == 0 && tss_type < 2){
+    std::string txt = util::read_file("../manager/smart_dsu_disable.txt");
+    if(txt.empty() == false){
+      if(getButtonEnabled("../manager/smart_dsu_disable.txt") == false){
+        smart_dsu_detect = -1;
+      } else {
+        smart_dsu_detect = 1;
+      }
+    }
+  }
+  if(smart_dsu_detect == -1){
+    drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, bg_colors[STATUS_WARNING]); //smartDSUの認識失敗でkm/hを警告色に。
+  } else {
+    drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
+  }
   
 #if 0 //一旦移植保留
 
@@ -963,8 +978,12 @@ void NvgWindow::drawHud(QPainter &p) {
 
   // engage-ability icon
   if (engageable) {
+    QBrush bg_color = bg_colors[status];
+    if(uiState()->scene.mAccelEngagedButton == 3 && fabs(global_angle_steer0) >= 15 && (*(uiState()->sm))["carState"].getCarState().getVEgo() <= 0.01/3.6){
+      bg_color = bg_colors[STATUS_WARNING]; //ワンペダル時に信号スタート可能角度でなければ警告色。
+    }
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5)+y_ofs,
-             engage_img, bg_colors[status], 1.0 , -global_angle_steer0);
+             engage_img, bg_color, 1.0 , -global_angle_steer0);
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
