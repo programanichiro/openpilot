@@ -151,38 +151,47 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
   CT_get_lag_adjusted_curvature += 1
 
   if dc_get_lag_adjusted_curvature == True:
-    #⇔ボタンOFF
-    #公式状態。
-    pass
+    #⇔ボタンOFF、公式状態。
+    if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
+      try:
+        with open('./curvature_info.txt','w') as fp:
+          fp.write('%.9f/%.3f' % (desired_curvature , 1.0))
+      except Exception as e:
+        pass
+    max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
+    safe_desired_curvature_rate = clip(desired_curvature_rate,
+                                            -max_curvature_rate,
+                                            max_curvature_rate)
+    safe_desired_curvature = clip(desired_curvature,
+                                      current_curvature - max_curvature_rate * DT_MDL,
+                                      current_curvature + max_curvature_rate * DT_MDL)
   else:
     #⇔ボタンON
-    pass
+    abs_sta = abs(steerAng) / 10
+    if abs_sta > 1:
+      abs_sta = 1 # abs_sta:0〜1
+    MAX_CURVATURE_RATES_k = 1.1 + (2.7 - 1) * abs_sta #1.1〜2.7+0.1
+    MAX_CURVATURE_RATES = [MAX_CURVATURE_RATES_0[0]*MAX_CURVATURE_RATES_k , MAX_CURVATURE_RATES_0[1]]
+    max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
+    vv2 = v_ego if v_ego >= 31/3.6 else 31/3.6 #この速度(31km/h)以下はk_vが上がらないようにする
+    #abs(steerAng):0〜10→1〜1.9
+    max_k_v = 2.0
+    max_k_v = 1.0 + (max_k_v - 1) * abs_sta #max_k_v = 1.0〜max_k_v , ひとまずハンドル（前方カーブ予測含む）が10度で最大値になる。
+    k_v = 1.0 if vv2 >= 75/3.6 else 1+ (1 - vv2 / (75/3.6))*(max_k_v-1) # 1〜0 -> 1〜max_k_v(75km/h以上はk_v=1)
 
-  abs_sta = abs(steerAng) / 10
-  if abs_sta > 1:
-    abs_sta = 1 # abs_sta:0〜1
-  MAX_CURVATURE_RATES_k = 1.1 + (2.7 - 1) * abs_sta #1.1〜2.7+0.1
-  MAX_CURVATURE_RATES = [MAX_CURVATURE_RATES_0[0]*MAX_CURVATURE_RATES_k , MAX_CURVATURE_RATES_0[1]]
-  max_curvature_rate = interp(v_ego, MAX_CURVATURE_RATE_SPEEDS, MAX_CURVATURE_RATES)
-  vv2 = v_ego if v_ego >= 31/3.6 else 31/3.6 #この速度(31km/h)以下はk_vが上がらないようにする
-  #abs(steerAng):0〜10→1〜1.9
-  max_k_v = 2.0
-  max_k_v = 1.0 + (max_k_v - 1) * abs_sta #max_k_v = 1.0〜max_k_v , ひとまずハンドル（前方カーブ予測含む）が10度で最大値になる。
-  k_v = 1.0 if vv2 >= 75/3.6 else 1+ (1 - vv2 / (75/3.6))*(max_k_v-1) # 1〜0 -> 1〜max_k_v(75km/h以上はk_v=1)
-
-  if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
-    try:
-      with open('./curvature_info.txt','w') as fp:
-        fp.write('%.9f/%.3f' % (desired_curvature , k_v))
-    except Exception as e:
-      pass
-  
-  #with open('./debug_out_k','w') as fp:
-  #  fp.write('k_v:%.2f , steerAng:%.2f' % (k_v , steerAng))
-  safe_desired_curvature_rate = clip(desired_curvature_rate *k_v,
-                                          -max_curvature_rate,
-                                          max_curvature_rate)
-  safe_desired_curvature = clip(desired_curvature *k_v,
-                                     current_curvature - max_curvature_rate / DT_MDL, #0.8.13で掛けられていたが、ハンドルが甘くなった気がするので悪に戻す。
-                                     current_curvature + max_curvature_rate / DT_MDL)
+    if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
+      try:
+        with open('./curvature_info.txt','w') as fp:
+          fp.write('%.9f/%.3f' % (desired_curvature , k_v))
+      except Exception as e:
+        pass
+    
+    #with open('./debug_out_k','w') as fp:
+    #  fp.write('k_v:%.2f , steerAng:%.2f' % (k_v , steerAng))
+    safe_desired_curvature_rate = clip(desired_curvature_rate *k_v,
+                                            -max_curvature_rate,
+                                            max_curvature_rate)
+    safe_desired_curvature = clip(desired_curvature *k_v,
+                                      current_curvature - max_curvature_rate / DT_MDL, #0.8.13で掛けられていたが、ハンドルが甘くなった気がするので悪に戻す。
+                                      current_curvature + max_curvature_rate / DT_MDL)
   return safe_desired_curvature, safe_desired_curvature_rate
