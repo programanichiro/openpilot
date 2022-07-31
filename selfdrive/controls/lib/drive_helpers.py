@@ -150,8 +150,8 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
       dc_get_lag_adjusted_curvature = False if tss_type < 2 else True #tss2ならデフォがTrue
   CT_get_lag_adjusted_curvature += 1
 
-  if dc_get_lag_adjusted_curvature == True:
-    #⇔ボタンOFF、公式状態。
+  if dc_get_lag_adjusted_curvature == True and tss_type < 2:
+    #TSSPで公式状態。TSS2はここには来ない。
     if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
       try:
         with open('./curvature_info.txt','w') as fp:
