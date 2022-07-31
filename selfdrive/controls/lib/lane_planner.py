@@ -132,7 +132,7 @@ class LanePlanner:
   def calc_dcm(self, st_angle, pred_angle , v_ego,clipped_lane_width,l_prob,r_prob):
     #数値を実際に取得して、調整してみる。UIスイッチで車体寄せをやめるなら、ここでゼロを返せばいい。
     global DCM_FRAME , dcm_handle_ctrl
-    if DCM_FRAME % 30 == 1:
+    if DCM_FRAME % 30 == 1 and (st_angle != 0 or pred_angle != 0):
       if os.path.isfile('./handle_ctrl_disable.txt'):
         with open('./handle_ctrl_disable.txt','r') as fp:
           dcm_handle_ctrl_disable_str = fp.read()

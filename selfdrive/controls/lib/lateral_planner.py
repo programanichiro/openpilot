@@ -10,6 +10,7 @@ from selfdrive.controls.lib.desire_helper import DesireHelper
 import cereal.messaging as messaging
 from cereal import log
 
+tss_type = 0
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
 params = Params()
@@ -170,6 +171,25 @@ class LateralPlanner:
                 self.use_lanelines = not params.get_bool('EndToEndToggle')
     except Exception as e:
       pass
+
+    global tss_type
+    if tss_type == 0:
+      try:
+        with open('./tss_type_info.txt','r') as fp:
+          tss_type_str = fp.read()
+          if tss_type_str:
+            if int(tss_type_str) == 2: #TSS2
+              tss_type = 2
+              dc_get_lag_adjusted_curvature = True
+            elif int(tss_type_str) == 1: #TSSP
+              tss_type = 1
+      except Exception as e:
+        pass
+
+    if tss_type >= 2:
+      STEER_CTRL_Y = 0
+      max_yp = 0
+
     if self.use_lanelines:
       #d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
       d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , v_ego, self.t_idxs, self.path_xyz)
