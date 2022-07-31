@@ -2,6 +2,7 @@
 
 #include <cmath>
 
+#include <QSoundEffect>
 #include <QDebug>
 
 #include "selfdrive/common/timing.h"
@@ -918,6 +919,22 @@ void NvgWindow::knightScanner(QPainter &p) {
   static const int ct_n = 1;
   static float ct;
 
+#if 1
+  static QSoundEffect effect;
+  std::string signal_start_prompt_info_txt = util::read_file("../manager/signal_start_prompt_info.txt");
+  if(signal_start_prompt_info_txt.empty() == false){
+    int pr = std::stoi(signal_start_prompt_info_txt);
+    if(pr > 0){
+      effect.setSource(QUrl::fromLocalFile("../assets/sounds/prompt.wav"));
+      //effect.setLoopCount(QSoundEffect::Infinite);
+      effect.setLoopCount(0);
+      effect.setVolume(1.0);
+      effect.play();
+      setButtonEnabled0("../manager/signal_start_prompt_info.txt" , false);
+    }
+  }
+#endif
+
   int rect_w = rect().width();
   int rect_h = rect().height();
 
@@ -1209,7 +1226,7 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
 
   if(num == 0){ //0番のリードカーまでの距離を表示
     //float dist = d_rel; //lead_data.getT()[0];
-    QString dist = QString::number(d_rel,'f',1) + "m";
+    QString dist = QString::number(d_rel,'f',0) + "m";
     int str_w = 200;
     QString kmph = QString::number(v_rel*3.6,'f',0) + "k";
     int str_w2 = 200;
