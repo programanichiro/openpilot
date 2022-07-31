@@ -1078,6 +1078,56 @@ void NvgWindow::knightScanner(QPainter &p) {
 #endif
   }
 #endif
+
+
+#if 1 //曲率、k_v表示テスト
+  static float curvature = 0;
+  static float k_v = 1.0;
+  std::string curvature_info = util::read_file("../manager/curvature_info.txt");
+  if(curvature_info.empty() == false && engageable && (status == STATUS_ENGAGED)) {
+    auto separator = std::string("/");         // 区切り文字
+    //auto separator_length = separator.length(); // 区切り文字の長さ
+    auto pos = curvature_info.find(separator, 0);
+    if(pos != std::string::npos){
+      std::string curvature_str = curvature_info.substr(0,pos);
+      std::string k_v_str = curvature_info.substr(pos+1,curvature_info.length() - pos - 1);
+      curvature = std::stod(curvature_str); //0〜0.02(30度) , 0.05(70度)
+      curvature = fabs(curvature);
+      k_v = std::stod(k_v_str); //倍率。1未満もあり得る
+    }
+  }
+  if(engageable && (status == STATUS_ENGAGED)){
+    float h = rect_h * curvature / (tss_type < 2 ? 0.03 : 0.05);
+    float wp1 = 25;
+    //float wpa = 10;
+    p.setBrush(QColor(245, 245, 0, 200));
+
+    float h2 = h * k_v;
+    if(h2 > h){
+      //増加
+      p.drawRect(QRect(0 , rect_h - h , wp1 , h));
+      p.setBrush(QColor(0, 245, 0, 200));
+      //p.drawRect(QRect(wp1 , rect_h - h2 , wpa , h2-h));
+      p.drawRect(QRect(0 , rect_h - h2 , wp1 , h2-h));
+    } else if(h2 <= h){ // == も含める
+      //減衰
+      p.drawRect(QRect(0 , rect_h - h2 , wp1 , h2));
+      if(h2 < h){
+        p.setBrush(QColor(245, 0, 0, 200));
+        //p.drawRect(QRect(wp1 , rect_h - h , wpa , h-h2));
+        p.drawRect(QRect(0 , rect_h - h , wp1 , h-h2));
+      }
+    }
+
+    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    for(float yy=0.01; yy<0.05; yy+=0.01){
+      float hhy = rect_h * yy / (tss_type < 2 ? 0.03 : 0.05);
+      p.setBrush(QColor(245, 0, 0, 200));
+      p.drawRect(QRect(0 , rect_h - hhy , wp1 , 5));
+    }
+  }
+#endif
+
   p.setCompositionMode(QPainter::CompositionMode_SourceOver);
 
 #if 1 //減速度と舵角を表示
