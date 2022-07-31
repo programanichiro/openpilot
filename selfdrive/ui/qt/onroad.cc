@@ -1101,7 +1101,7 @@ void NvgWindow::knightScanner(QPainter &p) {
   static float curvature = 0;
   static float k_v = 1.0;
   std::string curvature_info = util::read_file("../manager/curvature_info.txt");
-  if(curvature_info.empty() == false && engageable && (status == STATUS_ENGAGED)) {
+  if(curvature_info.empty() == false && global_engageable && (global_status == STATUS_ENGAGED)) {
     auto separator = std::string("/");         // 区切り文字
     //auto separator_length = separator.length(); // 区切り文字の長さ
     auto pos = curvature_info.find(separator, 0);
@@ -1113,7 +1113,7 @@ void NvgWindow::knightScanner(QPainter &p) {
       k_v = std::stod(k_v_str); //倍率。1未満もあり得る
     }
   }
-  if(engageable && (status == STATUS_ENGAGED)){
+  if(global_engageable && (global_status == STATUS_ENGAGED)){
     float h = rect_h * curvature / (tss_type < 2 ? 0.03 : 0.05);
     float wp1 = 25;
     //float wpa = 10;
