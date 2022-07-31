@@ -212,7 +212,8 @@ class CarInterfaceBase(ABC):
         self.silent_steer_warning = True
         events.add(EventName.steerTempUnavailableSilent)
       else:
-        events.add(EventName.steerTempUnavailable)
+        if (not cs_out.steeringPressed) or (cs_out.vEgo > 20/3.6):
+          events.add(EventName.steerTempUnavailable)
     else:
       self.silent_steer_warning = False
     if cs_out.steerFaultPermanent:

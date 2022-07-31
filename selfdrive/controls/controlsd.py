@@ -36,6 +36,7 @@ from selfdrive.manager.process_config import managed_processes
 handle_center = STEERING_CENTER # キャリブレーション前の手抜き
 handle_center_ct = 0
 ACCEL_PUSH_COUNT = 0
+accel_engaged_str = '0'
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -226,21 +227,22 @@ class Controls:
       self.events.add(EventName.controlsInitializing)
       return
 
-    global ACCEL_PUSH_COUNT
+    global ACCEL_PUSH_COUNT,accel_engaged_str
     engage_disable = False
     if CS.gasPressed:
       accel_engaged = False
-      try:
-        with open('./accel_engaged.txt','r') as fp:
-          accel_engaged_str = fp.read()
-          if accel_engaged_str:
-            if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
-              accel_engaged = True
-            if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
-              accel_engaged = True
-              ACCEL_PUSH_COUNT = 100
-      except Exception as e:
-        pass
+      if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
+        try:
+          with open('./accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
+            accel_engaged_str = fp.read()
+        except Exception as e:
+          pass
+      if accel_engaged_str:
+        if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+          accel_engaged = True
+        if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+          accel_engaged = True
+          ACCEL_PUSH_COUNT = 100
       if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
         engage_disable = True
       ACCEL_PUSH_COUNT += 1
@@ -420,7 +422,7 @@ class Controls:
     # TODO: fix simulator
     if not SIMULATION:
       if not NOSENSOR and os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID:
-        if not self.sm['liveLocationKalman'].gpsOK and (self.distance_traveled > 1000 and self.distance_traveled < 10000):
+        if not self.sm['liveLocationKalman'].gpsOK and (self.distance_traveled > 1000 and self.distance_traveled < 3000):
           # Not show in first 1 km to allow for driving out of garage. This event shows after 5 minutes
           self.events.add(EventName.noGps)
 
@@ -623,32 +625,7 @@ class Controls:
       actuators.accel = self.LoC.update(CC.longActive, CS, long_plan, pid_accel_limits, t_since_plan)
 
       # Steering PID loop and lateral MPC
-      md = self.sm['modelV2']
-      if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
-        self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
-        self.t_idxs = np.array(md.position.t)
-        self.plan_yaw = list(md.orientation.z)
-      if len(md.position.xStd) == TRAJECTORY_SIZE:
-        self.path_xyz_stds = np.column_stack([md.position.xStd, md.position.yStd, md.position.zStd])
-
-      STEER_CTRL_Y = CS.steeringAngleDeg
-      max_yp = 0
-      for yp in self.path_xyz[:,1]:
-        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
-      global handle_center,handle_center_ct
-      if handle_center_ct % 5 == 3:
-        try:
-          with open('./handle_center_info.txt','r') as fp:
-            handle_center_info_str = fp.read()
-            if handle_center_info_str:
-              handle_center = float(handle_center_info_str)
-        except Exception as e:
-          pass
-      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
-      handle_center_ct += 1
-      if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
-        STEER_CTRL_Y = (-max_yp / 2.5)
-      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,STEER_CTRL_Y,
+      self.desired_curvature, self.desired_curvature_rate = get_lag_adjusted_curvature(self.CP, CS.vEgo,
                                                                                        lat_plan.psis,
                                                                                        lat_plan.curvatures,
                                                                                        lat_plan.curvatureRates)

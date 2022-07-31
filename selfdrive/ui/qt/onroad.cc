@@ -1356,11 +1356,13 @@ void NvgWindow::knightScanner(QPainter &p) {
     auto separator = std::string("/");         // 区切り文字
     //auto separator_length = separator.length(); // 区切り文字の長さ
     auto pos = curvature_info.find(separator, 0);
-    std::string curvature_str = curvature_info.substr(0,pos);
-    std::string k_v_str = curvature_info.substr(pos+1,curvature_info.length() - pos - 1);
-    curvature = std::stod(curvature_str); //0〜0.02(30度) , 0.05(70度)
-    curvature = fabs(curvature);
-    k_v = std::stod(k_v_str); //倍率。1未満もあり得る
+    if(pos != std::string::npos){
+      std::string curvature_str = curvature_info.substr(0,pos);
+      std::string k_v_str = curvature_info.substr(pos+1,curvature_info.length() - pos - 1);
+      curvature = std::stod(curvature_str); //0〜0.02(30度) , 0.05(70度)
+      curvature = fabs(curvature);
+      k_v = std::stod(k_v_str); //倍率。1未満もあり得る
+    }
   }
   if(engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)){
     float h = rect_h * curvature / (tss_type < 2 ? 0.03 : 0.05);
@@ -1428,6 +1430,8 @@ void NvgWindow::knightScanner(QPainter &p) {
 #endif
 }
 
+static float global_a_rel;
+static float global_a_rel_col;
 void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num) {
   painter.save();
   const float speedBuff = 10.;
@@ -1468,8 +1472,10 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
 
   if(num == 0){ //0番のリードカーまでの距離を表示
     //float dist = d_rel; //lead_data.getT()[0];
-    QString dist = QString::number(d_rel,'f',1) + "m";
+    QString dist = QString::number(d_rel,'f',0) + "m";
     int str_w = 200;
+    QString kmph = QString::number(v_rel*3.6,'f',0) + "k";
+    int str_w2 = 200;
 //    dist += "<" + QString::number(rect().height()) + ">"; str_w += 500;画面の高さはc2,c3共に1020だった。
 //    dist += "<" + QString::number(leads_num) + ">";
 //   int str_w = 600; //200;
@@ -1481,8 +1487,17 @@ void NvgWindow::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV
     painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
     float lock_indicator_dx = 2; //下向きの十字照準を避ける。
     painter.drawText(QRect(x+2+lock_indicator_dx, y-50+2, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
+    painter.drawText(QRect(x+2-lock_indicator_dx-str_w2-2, y-50+2, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
     painter.setPen(QColor(0xff, 0xff, 0xff));
     painter.drawText(QRect(x+lock_indicator_dx, y-50, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
+    if(global_a_rel >= global_a_rel_col){
+      global_a_rel_col = -0.1; //散らつきを抑えるバッファ。
+      painter.setPen(QColor(0, 245, 0, 255));
+    } else {
+      global_a_rel_col = 0;
+      painter.setPen(QColor(245, 0, 0, 255));
+    }
+    painter.drawText(QRect(x-lock_indicator_dx-str_w2-2, y-50, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
     painter.setPen(Qt::NoPen);
   }
 
@@ -1504,6 +1519,7 @@ void NvgWindow::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDat
   //const float t_rel = lead_data.getT()[0];
   //const float y_rel = lead_data.getY()[0];
   float a_rel = lead_data.getA()[0];
+  global_a_rel = a_rel;
 
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
   float x = std::clamp((float)vd.x(), 0.f, width() - sz / 2);

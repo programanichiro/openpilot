@@ -137,7 +137,7 @@ class Planner:
     if on_onepedal_ct >= 0:
       on_onepedal_ct += 1
       if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
-        if sm['carState'].gas < 0.2: #アクセルが弱いかチョン押しなら
+        if sm['carState'].gas < 0.35: #アクセルが弱いかチョン押しなら
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
@@ -186,16 +186,17 @@ class Planner:
     else:
       OP_ACCEL_PUSH = True #アクセル押した
     global signal_scan_ct
-    if v_ego <= 0.01/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and sm['radarState'].leadOne.status == False:
+    if v_ego <= 0.01/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and (sm['radarState'].leadOne.status == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
       md = sm['modelV2']
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE and (abs(steer_ang) < 15 or one_pedal == False): #ワンペダルならある程度ハンドルが正面を向いていること。
         path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
         path_x = path_xyz[:,0]
-        # with open('./debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
-        #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_xyz[:,0]]))
-        #   fp.write('x:%.2f' % (path_x[TRAJECTORY_SIZE -1]))
+        with open('./debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
+          #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
+          hasLead = sm['radarState'].leadOne.status
+          fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
         if path_x[TRAJECTORY_SIZE -1] > 60.0: #青信号判定の瞬間
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
           if signal_scan_ct > 8 and signal_scan_ct < 100:
@@ -208,6 +209,11 @@ class Planner:
           signal_scan_ct = 0
     else:
       signal_scan_ct = 0
+
+    if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.35: #アクセル強押しでワンペダルからオートパイロットへ
+      OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
+      with open('./signal_start_prompt_info.txt','w') as fp:
+        fp.write('%d' % (1)) #音鳴らしてお知らせ。
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
@@ -260,8 +266,11 @@ class Planner:
     if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       d_rel = leadOne.dRel #前走者までの距離
-      a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス
-      if v_ego * 3.6 * 0.8 < d_rel / 0.98 and a_rel >= 0: #例、時速50kmの時前走車までの距離が50m以上離れている&&相手が減速していない。×0.8はd_relの値と実際の距離感との調整。
+      #a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス,常にゼロ？UIで使ってるgetAEgoと違うようだ。
+      v_abs = leadOne.vRel + v_ego #前走者の速度。vRelは相対速度のもよう。
+      with open('./debug_out_x','w') as fp:
+        fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
+      if v_ego * 3.6 * 0.8 < d_rel / 0.98 and v_abs >= v_ego * 0.9: #例、時速50kmの時前走車までの距離が50m以上離れている。×0.8はd_relの値と実際の距離感との調整。&&相手が自分より速い。
         if v_ego * 3.6 >= v_cruise_kph * 0.98: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph

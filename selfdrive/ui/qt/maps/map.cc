@@ -18,18 +18,35 @@
 const int PAN_TIMEOUT = 100;
 const float MANEUVER_TRANSITION_THRESHOLD = 10;
 
-const float MAX_ZOOM = 17;
+const float MAX_ZOOM0 = 17;
+float MAX_ZOOM;
 const float MIN_ZOOM = 14;
 const float MAX_PITCH = 50;
-const float MIN_PITCH = 0;
+float MIN_PITCH = 0;
 const float MAP_SCALE = 2;
 
 const float VALID_POS_STD = 50.0; // m
 
 const QString ICON_SUFFIX = ".png";
+std::string my_mapbox_triangle;
+std::string my_mapbox_style;
+std::string my_mapbox_style_night;
+int night_mode = -1;
 
 MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
+
+  MAX_ZOOM = MAX_ZOOM0;
+  my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
+  std::string my_mapbox_pitch = util::read_file("../../../mb_pitch.txt");
+  if(my_mapbox_pitch.empty() == false){
+    MIN_PITCH = std::stof(my_mapbox_pitch);
+
+    MAX_ZOOM += sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+    if(MAX_ZOOM > 22){
+      MAX_ZOOM = 22;
+    }
+  }
 
   // Instructions
   map_instructions = new MapInstructions(this);
@@ -85,7 +102,6 @@ void MapWindow::initLayers() {
   }
   if (!m_map->layerExists("carPosLayer")) {
     qDebug() << "Initializing carPosLayer";
-    std::string my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
     if(my_mapbox_triangle.empty() == false){
       m_map->addImage("label-arrow", QImage("../../../mb_triangle.svg"));
     } else {
@@ -103,6 +119,39 @@ void MapWindow::initLayers() {
     m_map->setLayoutProperty("carPosLayer", "icon-ignore-placement", true);
     m_map->setLayoutProperty("carPosLayer", "icon-allow-overlap", true);
     m_map->setLayoutProperty("carPosLayer", "symbol-sort-key", 0);
+  }
+
+  if(night_mode >= 0 && my_mapbox_style_night.empty() == false){
+#if 1
+    auto q_time = QDateTime::currentDateTime(); //.addSecs(9*3600); //UTCなので9時間足す
+    QString g_hour = q_time.toString("HH:mm");
+    //bool night = (QString::compare(g_hour,"17:00") >= 0 || QString::compare(g_hour,"06:00") < 0);
+    bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
+
+    if(night){
+      if(night_mode != 1 /*&& my_mapbox_style_night.empty() == false*/){
+        night_mode = 1;
+        m_map->setStyleUrl(my_mapbox_style_night.c_str());
+      }
+    } else {
+      if(night_mode != 0 && my_mapbox_style.empty() == false){
+        night_mode = 0;
+        m_map->setStyleUrl(my_mapbox_style.c_str());
+      }
+    }
+#else
+    //切り替えテスト
+    static long long int test_counter = 0;
+    test_counter ++;
+    if(test_counter % 10 == 5){
+      MIN_PITCH = 60;
+      m_map->setStyleUrl(my_mapbox_style_night.c_str());
+    }
+    if(test_counter % 10 == 0){
+      MIN_PITCH = 0;
+      m_map->setStyleUrl(my_mapbox_style.c_str());
+    }
+#endif
   }
 }
 
@@ -261,11 +310,29 @@ void MapWindow::initializeGL() {
   m_map->setMargins({0, 350, 0, 50});
   m_map->setPitch(MIN_PITCH);
 
-  std::string my_mapbox_style = util::read_file("../../../mb_style.txt");
+  my_mapbox_style = util::read_file("../../../mb_style.txt");
   if(my_mapbox_style.empty() == false){
     while(my_mapbox_style.c_str()[my_mapbox_style.length()-1] == 0x0a){
       my_mapbox_style = my_mapbox_style.substr(0,my_mapbox_style.length()-1);
     }
+  }
+  my_mapbox_style_night = util::read_file("../../../mb_style_night.txt");
+  if(my_mapbox_style_night.empty() == false){
+    while(my_mapbox_style_night.c_str()[my_mapbox_style_night.length()-1] == 0x0a){
+      my_mapbox_style_night = my_mapbox_style_night.substr(0,my_mapbox_style_night.length()-1);
+    }
+  }
+
+  auto q_time = QDateTime::currentDateTime(); //.addSecs(9*3600); //UTCなので9時間足す
+  QString g_hour = q_time.toString("HH:mm");
+  //QString g_hour = QString("06:56");
+  bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
+
+  if(night && my_mapbox_style_night.empty() == false){ //夜だったら
+    night_mode = 1;
+    m_map->setStyleUrl(my_mapbox_style_night.c_str());
+  } else if(my_mapbox_style.empty() == false){ //昼だったら
+    night_mode = 0;
     m_map->setStyleUrl(my_mapbox_style.c_str());
   } else {
     m_map->setStyleUrl("mapbox://styles/commaai/ckr64tlwp0azb17nqvr9fj13s");

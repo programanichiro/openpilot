@@ -88,12 +88,8 @@ class LatControlINDI(LatControl):
       output_steer = 0
     else:
       # Expected actuator value
-      if CS.vEgo*3.6 < 56:
-        self.steer_filter.alpha = (1 - CS.vEgo*3.6 / 56)
-      else:
-        self.steer_filter.update_alpha(self.RC)
+      self.steer_filter.update_alpha(self.RC)
       self.steer_filter.update(last_actuators.steer)
-      #div_steer = 1.0
 
       # Compute acceleration error
       rate_sp = self.outer_loop_gain * (steers_des - self.x[0]) + rate_des

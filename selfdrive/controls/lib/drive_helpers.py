@@ -118,7 +118,7 @@ def initialize_v_cruise(v_ego, buttonEvents, v_cruise_last):
   return int(round(clip(v_ego * CV.MS_TO_KPH, V_CRUISE_ENABLE_MIN, V_CRUISE_MAX)))
 
 
-def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature_rates):
+def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
   if len(psis) != CONTROL_N:
     psis = [0.0]*CONTROL_N
     curvatures = [0.0]*CONTROL_N
@@ -168,8 +168,12 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
   if dc_get_lag_adjusted_curvature == True:
     #新処理をTSS2で使用。公式状態。
     # This is the "desired rate of the setpoint" not an actual desired rate
-    with open('./curvature_info.txt','w') as fp:
-      fp.write('%.9f/%.3f' % (desired_curvature , 1.0))
+    if CT_get_lag_adjusted_curvature % 10 == 3: #書き出し頻度を1/10に
+      try:
+        with open('./curvature_info.txt','w') as fp:
+          fp.write('%.9f/%.3f' % (desired_curvature , 1.0))
+      except Exception as e:
+        pass
     max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
     safe_desired_curvature_rate = clip(desired_curvature_rate,
                                             -max_curvature_rate,
@@ -180,12 +184,16 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
   else:
     # k_v_tss = interp(abs(desired_curvature) , k_vs_org , k_vs)
     # k_v_tss2 = interp(abs(desired_curvature) , k2_vs_org , k2_vs)
-    #k_v = interp(abs(desired_curvature) , k_vs_org , k_vs) if tss_type < 2 else interp(abs(desired_curvature) , k2_vs_org , k2_vs)
-    k_v = 1.15 if tss_type < 2 else interp(abs(desired_curvature) , k2_vs_org , k2_vs)
+    k_v = interp(abs(desired_curvature) , k_vs_org , k_vs) if tss_type < 2 else interp(abs(desired_curvature) , k2_vs_org , k2_vs)
+    #k_v = 1.15 if tss_type < 2 else interp(abs(desired_curvature) , k2_vs_org , k2_vs)
     # with open('./debug_out_y','w') as fp:
     #   fp.write('kv:%.2f , dc:%.5f' % (k_v , desired_curvature*100))
-    with open('./curvature_info.txt','w') as fp:
-      fp.write('%.9f/%.3f' % (desired_curvature , k_v))
+    if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
+      try:
+        with open('./curvature_info.txt','w') as fp:
+          fp.write('%.9f/%.3f' % (desired_curvature , k_v))
+      except Exception as e:
+        pass
     k_v2 = 4 if tss_type < 2 else 2 #tss2なら2,tsspでは試行中。
     max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) *k_v2 # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
     safe_desired_curvature_rate = clip(desired_curvature_rate*k_v,
