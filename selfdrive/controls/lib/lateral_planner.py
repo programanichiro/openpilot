@@ -172,23 +172,23 @@ class LateralPlanner:
     except Exception as e:
       pass
 
-    global tss_type
-    if tss_type == 0:
-      try:
-        with open('./tss_type_info.txt','r') as fp:
-          tss_type_str = fp.read()
-          if tss_type_str:
-            if int(tss_type_str) == 2: #TSS2
-              tss_type = 2
-              dc_get_lag_adjusted_curvature = True
-            elif int(tss_type_str) == 1: #TSSP
-              tss_type = 1
-      except Exception as e:
-        pass
+    # global tss_type
+    # if tss_type == 0:
+    #   try:
+    #     with open('./tss_type_info.txt','r') as fp:
+    #       tss_type_str = fp.read()
+    #       if tss_type_str:
+    #         if int(tss_type_str) == 2: #TSS2
+    #           tss_type = 2
+    #           dc_get_lag_adjusted_curvature = True
+    #         elif int(tss_type_str) == 1: #TSSP
+    #           tss_type = 1
+    #   except Exception as e:
+    #     pass
 
-    if tss_type >= 2:
-      STEER_CTRL_Y = 0
-      max_yp = 0
+    # if tss_type >= 2:
+    #   STEER_CTRL_Y = 0
+    #   max_yp = 0
 
     if self.use_lanelines:
       #d_path_xyz = self.LP.get_d_path(v_ego, self.t_idxs, self.path_xyz)
