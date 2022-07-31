@@ -440,6 +440,13 @@ class Planner:
     else:
       cruise_info_power_up = True
 
+    if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
+      if sm['carState'].gasPressed == False and self.a_desired > 0:
+        self.a_desired = 0 #アクセル離して加速ならゼロに。
+      if self.a_desired < 0:
+        #ワンペダル停止の減速を強めてみる。
+        a_desired_mul = interp(v_ego,[0,20/3.6,40/3.6],[1.0,1.0,1.17]) #30km/hあたりから減速が強くなり始める
+        
     #with open('./debug_out_v','w') as fp:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
