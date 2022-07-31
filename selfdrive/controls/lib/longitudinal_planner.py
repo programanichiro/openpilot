@@ -224,8 +224,9 @@ class Planner:
     if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       d_rel = leadOne.dRel #前走者までの距離
-      a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス
-      if v_ego * 3.6 * 0.8 < d_rel / 0.98 and a_rel >= 0: #例、時速50kmの時前走車までの距離が50m以上離れている&&相手が減速していない。×0.8はd_relの値と実際の距離感との調整。
+      #a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス
+      v_abs = leadOne.vRel + v_ego #前走者の速度。vRelは相対速度のもよう。
+      if v_ego * 3.6 * 0.8 < d_rel / 0.98 and v_abs >= v_ego * 0.9: #例、時速50kmの時前走車までの距離が50m以上離れている。×0.8はd_relの値と実際の距離感との調整。&&相手が自分より速い。
         if v_ego * 3.6 >= v_cruise_kph * 0.98: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
