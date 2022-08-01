@@ -47,6 +47,7 @@ OP_ENABLE_gas_speed = 0
 OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
+one_pedal_chenge_restrict_time = 0
 
 START_DASH_CUT    = [0, 17/3.6, 26/3.6, 36/3.6, 45/3.6, 55/3.6, 64/3.6, 74/3.6, 83/3.6,  93/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
@@ -96,7 +97,7 @@ class Planner:
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time
     #with open('./debug_out_v','w') as fp:
     #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
@@ -138,13 +139,17 @@ class Planner:
           fp.write('%d' % (1)) #prompt音を鳴らしてみる。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
+      one_pedal_chenge_restrict_time = 5
+    if one_pedal_chenge_restrict_time > 0:
+      one_pedal_chenge_restrict_time -= 1
 
     if OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
        #速度が時速３km以上かつ31km未満かつsm['controlsState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
-      OP_ENABLE_gas_speed = v_ego
+      if one_pedal_chenge_restrict_time == 0:
+        OP_ENABLE_gas_speed = v_ego
       if os.path.isfile('./accel_engaged.txt'):
         with open('./accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
@@ -155,7 +160,8 @@ class Planner:
     if sm['controlsState'].longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
-        OP_ENABLE_gas_speed = v_ego
+        if one_pedal_chenge_restrict_time == 0:
+          OP_ENABLE_gas_speed = v_ego
         # if os.path.isfile('./accel_engaged.txt'):
         #   with open('./accel_engaged.txt','r') as fp:
         #     accel_engaged_str = fp.read()
