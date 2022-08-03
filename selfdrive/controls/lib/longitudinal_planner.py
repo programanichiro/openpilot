@@ -180,7 +180,7 @@ class Planner:
     if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.35: #アクセル強押しでワンペダルからオートパイロットへ
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       with open('./signal_start_prompt_info.txt','w') as fp:
-        fp.write('%d' % (1)) #音鳴らしてお知らせ。
+        fp.write('%d' % (2)) #engage.wavを鳴らす。
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0

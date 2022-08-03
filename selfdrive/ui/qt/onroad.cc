@@ -924,8 +924,15 @@ void NvgWindow::knightScanner(QPainter &p) {
   std::string signal_start_prompt_info_txt = util::read_file("../manager/signal_start_prompt_info.txt");
   if(signal_start_prompt_info_txt.empty() == false){
     int pr = std::stoi(signal_start_prompt_info_txt);
-    if(pr > 0){
+    if(pr == 1){
       effect.setSource(QUrl::fromLocalFile("../assets/sounds/prompt.wav"));
+      //effect.setLoopCount(QSoundEffect::Infinite);
+      effect.setLoopCount(0);
+      effect.setVolume(1.0);
+      effect.play();
+      setButtonEnabled0("../manager/signal_start_prompt_info.txt" , false);
+    } else if(pr == 2){ //自動発進とワンペダル->オートパイロットはこちら。
+      effect.setSource(QUrl::fromLocalFile("../assets/sounds/engage.wav"));
       //effect.setLoopCount(QSoundEffect::Infinite);
       effect.setLoopCount(0);
       effect.setVolume(1.0);
