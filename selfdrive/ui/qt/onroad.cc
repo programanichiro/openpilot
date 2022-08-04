@@ -548,9 +548,15 @@ void NvgWindow::updateState(const UIState &s) {
 
   QString maxspeed_str = cruise_set ? QString::number(std::nearbyint(maxspeed)) : "N/A";
   std::string stdstr_txt = util::read_file("../manager/cruise_info.txt");
+  static std::string stdstr_txt_save;
   if(cruise_set && stdstr_txt.empty() == false){
     QString qstr = QString::fromStdString(stdstr_txt);
     maxspeed_str = qstr;
+    stdstr_txt_save = stdstr_txt;
+  } else if(cruise_set && stdstr_txt_save.empty() == false){
+    QString qstr = QString::fromStdString(stdstr_txt_save);
+    maxspeed_str = qstr;
+    stdstr_txt_save.clear(); //過去数字の使用は一度限定。
   }
   float cur_speed = cs_alive ? std::max<float>(0.0, vc_speed) : 0.0;
   cur_speed  *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
@@ -774,19 +780,8 @@ void NvgWindow::drawHud(QPainter &p) {
   drawText(p, rect().center().x(), 210 + y_ofs-5, speedStr);
 
   configFont(p, "Inter", 66, "Regular");
-  static int smart_dsu_detect = 0;
-  if(smart_dsu_detect == 0 && tss_type < 2){
-    std::string txt = util::read_file("../manager/smart_dsu_disable.txt");
-    if(txt.empty() == false){
-      if(getButtonEnabled("../manager/smart_dsu_disable.txt") == false){
-        smart_dsu_detect = -1;
-      } else {
-        smart_dsu_detect = 1;
-      }
-    }
-  }
-  if(smart_dsu_detect == -1){
-    drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, bg_colors[STATUS_WARNING]); //smartDSUの認識失敗でkm/hを警告色に。
+  if (uiState()->scene.longitudinal_control == false) {
+    drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, bg_colors[STATUS_WARNING]); //縦制御無効状態でkm/hを警告色に。
   } else {
     drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
   }
@@ -1171,12 +1166,28 @@ void NvgWindow::knightScanner(QPainter &p) {
   static float ct;
 
 #if 1
-  static QSoundEffect effect;
   std::string signal_start_prompt_info_txt = util::read_file("../manager/signal_start_prompt_info.txt");
   if(signal_start_prompt_info_txt.empty() == false){
     int pr = std::stoi(signal_start_prompt_info_txt);
-    if(pr > 0){
-      effect.setSource(QUrl::fromLocalFile("../assets/sounds/prompt.wav"));
+    if(pr == 1){
+      static QSoundEffect effect;
+      static bool once = false;
+      if(once == false){
+        once = true;
+        effect.setSource(QUrl::fromLocalFile("../assets/sounds/prompt.wav"));
+      }
+      //effect.setLoopCount(QSoundEffect::Infinite);
+      effect.setLoopCount(0);
+      effect.setVolume(1.0);
+      effect.play();
+      setButtonEnabled0("../manager/signal_start_prompt_info.txt" , false);
+    } else if(pr == 2){ //自動発進とワンペダル->オートパイロットはこちら。
+      static QSoundEffect effect;
+      static bool once = false;
+      if(once == false){
+        once = true;
+        effect.setSource(QUrl::fromLocalFile("../assets/sounds/engage.wav"));
+      }
       //effect.setLoopCount(QSoundEffect::Infinite);
       effect.setLoopCount(0);
       effect.setVolume(1.0);

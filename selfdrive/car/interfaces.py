@@ -212,7 +212,7 @@ class CarInterfaceBase(ABC):
         self.silent_steer_warning = True
         events.add(EventName.steerTempUnavailableSilent)
       else:
-        if (not cs_out.steeringPressed) or (cs_out.vEgo > 20/3.6):
+        if (self.steering_unpressed >= int(1.0 / DT_CTRL) and cs_out.vEgo > 24/3.6) or cs_out.vEgo > 37/3.6: #ハンドル手放しが１秒以上かつ時速24km/h以上, または時速37km/h以上に限定。
           events.add(EventName.steerTempUnavailable)
     else:
       self.silent_steer_warning = False

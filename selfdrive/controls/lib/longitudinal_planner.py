@@ -50,6 +50,7 @@ OP_ENABLE_gas_speed = 0
 OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
+one_pedal_chenge_restrict_time = 0
 
 START_DASH_CUT    = [0, 17/3.6, 26/3.6, 36/3.6, 45/3.6, 55/3.6, 64/3.6, 74/3.6, 83/3.6,  93/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
@@ -102,7 +103,7 @@ class Planner:
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time
     #with open('./debug_out_v','w') as fp:
     #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
@@ -146,6 +147,9 @@ class Planner:
           fp.write('%d' % (1)) #prompt音を鳴らしてみる。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
+      one_pedal_chenge_restrict_time = 5
+    if one_pedal_chenge_restrict_time > 0:
+      one_pedal_chenge_restrict_time -= 1
     sm_longControlState = sm['controlsState'].longControlState
     if sm_longControlState == LongCtrlState.off:
       if sm['carState'].gasPressed and sm['controlsState'].enabled: #アクセル踏んでエンゲージ中なら
@@ -155,7 +159,8 @@ class Planner:
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
-      OP_ENABLE_gas_speed = v_ego
+      if one_pedal_chenge_restrict_time == 0:
+        OP_ENABLE_gas_speed = v_ego
       try:
         with open('./accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
@@ -168,7 +173,8 @@ class Planner:
     if sm_longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
-        OP_ENABLE_gas_speed = v_ego
+        if one_pedal_chenge_restrict_time == 0:
+          OP_ENABLE_gas_speed = v_ego
         # try:
         #   with open('./accel_engaged.txt','r') as fp:
         #     accel_engaged_str = fp.read()
@@ -185,26 +191,32 @@ class Planner:
       OP_ACCEL_PUSH = False #アクセル離した
     else:
       OP_ACCEL_PUSH = True #アクセル押した
+
+    md = sm['modelV2']
     global signal_scan_ct
     if v_ego <= 0.01/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and (sm['radarState'].leadOne.status == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
-      md = sm['modelV2']
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
-      if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE and (abs(steer_ang) < 15 or one_pedal == False): #ワンペダルならある程度ハンドルが正面を向いていること。
-        path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
-        path_x = path_xyz[:,0]
-        with open('./debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
-          #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
-          hasLead = sm['radarState'].leadOne.status
-          fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
+      if (abs(steer_ang) < 15 or one_pedal == False) and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
+        #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+        path_x = md.position.x #path_xyz[:,0]
+        # with open('./debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
+        #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
+        #   hasLead = sm['radarState'].leadOne.status
+        #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
         if path_x[TRAJECTORY_SIZE -1] > 60.0: #青信号判定の瞬間
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
           if signal_scan_ct > 8 and signal_scan_ct < 100:
             if one_pedal == False:
               signal_scan_ct = 100 #ワンペダル以外で2回鳴るのを防止
-            OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
-            with open('./signal_start_prompt_info.txt','w') as fp:
-              fp.write('%d' % (1))
+            if sm['driverMonitoringState'].isActiveMode == True: #よそ見をしていたら発進しない。
+              OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
+              with open('./signal_start_prompt_info.txt','w') as fp:
+                fp.write('%d' % (2)) #engage.wavを鳴らす。
+            else:
+              signal_scan_ct = 100 #2回鳴るのを防止
+              with open('./signal_start_prompt_info.txt','w') as fp:
+                fp.write('%d' % (1)) #よそ見してたらprompt.wavを鳴らす。
         else:
           signal_scan_ct = 0
     else:
@@ -213,7 +225,7 @@ class Planner:
     if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.35: #アクセル強押しでワンペダルからオートパイロットへ
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       with open('./signal_start_prompt_info.txt','w') as fp:
-        fp.write('%d' % (1)) #音鳴らしてお知らせ。
+        fp.write('%d' % (2)) #engage.wavを鳴らす。
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
@@ -268,8 +280,8 @@ class Planner:
       d_rel = leadOne.dRel #前走者までの距離
       #a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス,常にゼロ？UIで使ってるgetAEgoと違うようだ。
       v_abs = leadOne.vRel + v_ego #前走者の速度。vRelは相対速度のもよう。
-      with open('./debug_out_x','w') as fp:
-        fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
+      # with open('./debug_out_x','w') as fp:
+      #   fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
       if v_ego * 3.6 * 0.8 < d_rel / 0.98 and v_abs >= v_ego * 0.9: #例、時速50kmの時前走車までの距離が50m以上離れている。×0.8はd_relの値と実際の距離感との調整。&&相手が自分より速い。
         if v_ego * 3.6 >= v_cruise_kph * 0.98: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
@@ -285,8 +297,7 @@ class Planner:
     orgSteerAng = steerAng
     limit_vc = V_CRUISE_MAX
     limit_vc_h = V_CRUISE_MAX
-    md = sm['modelV2']
-    ml_csv = ""
+    #ml_csv = ""
 
     global decel_lead_ctrl
     if CVS_FRAME % 30 == 29:
@@ -302,11 +313,10 @@ class Planner:
       except Exception as e:
         decel_lead_ctrl = True
 
-    if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE and decel_lead_ctrl == True:
-      path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
-      path_y = path_xyz[:,1]
+    if decel_lead_ctrl == True and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+      #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       max_yp = 0
-      for yp in path_y:
+      for yp in md.position.y: #path_y
         max_yp = yp if abs(yp) > abs(max_yp) else max_yp
         if abs(steerAng) < abs(max_yp) / 2.5:
           steerAng = (-max_yp / 2.5)
@@ -506,7 +516,7 @@ class Planner:
         self.a_desired = 0 #アクセル離して加速ならゼロに。
       if self.a_desired < 0:
         #ワンペダル停止の減速を強めてみる。
-        a_desired_mul = interp(v_ego,[0,20/3.6,40/3.6],[1.0,1.0,1.17]) #30km/hあたりから減速が強くなり始める
+        a_desired_mul = interp(v_ego,[0,20/3.6,40/3.6],[1.00,1.08,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
     #with open('./debug_out_v','w') as fp:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))

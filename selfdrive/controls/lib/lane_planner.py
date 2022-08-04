@@ -146,7 +146,7 @@ class LanePlanner:
       return 0 #車体寄せを行わない
 
     handle_margin = 1 #1.5
-    handle_over = 10
+    handle_over = 5
     camera_margin = 0.1 #0.05 -> 0.1
     dcm = 0
     mdcm = 1.2
@@ -164,12 +164,12 @@ class LanePlanner:
         w_add = (clipped_lane_width - 2.5)  * 0.8 / 2.0
     if st_angle > handle_margin:
       #dcm = 0.01 - self.camera_offset + camera_margin
-      dcm = 0.03 + camera_margin
+      dcm = 0.05 + camera_margin
       #dcm += w_add * 1.1 / 1.2
       dcm *= min((st_angle -(handle_margin)) / handle_over,1.0)
     if st_angle < -handle_margin:
       #dcm = -0.11 - self.camera_offset - camera_margin
-      dcm = -0.03 - camera_margin
+      dcm = -0.05 - camera_margin
       #dcm -= w_add * 0.8 / 1.2 #減速と合わせると相当寄りすぎなので小さく
       dcm *= min(-(st_angle +(handle_margin)) / handle_over,1.0)
 #🟥🟥🟥🟥🟥🟥🟥
@@ -177,7 +177,7 @@ class LanePlanner:
     if dcm_k > 10:
       dcm_k = 10
     dcm_k /= 10
-    if True: #デバッグ表示なし。
+    if False: #デバッグ表示なし。
       ms = "O:%+.2fx%.2f" % (dcm,dcm_k)
       if dcm >= 0.01:
         ms+= "<"

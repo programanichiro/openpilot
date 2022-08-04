@@ -218,9 +218,6 @@ class CarInterface(CarInterfaceBase):
     ret.enableBsm = 0x3F6 in fingerprint[0] and candidate in TSS2_CAR
     # Detect smartDSU, which intercepts ACC_CMD from the DSU allowing openpilot to send it
     smartDsu = 0x2FF in fingerprint[0]
-    if not (candidate in TSS2_CAR):
-      with open('./smart_dsu_disable.txt','w') as fp:
-        fp.write('%d' % (1 if smartDsu == False else 0))
 
     # In TSS2 cars the camera does long control
     found_ecus = [fw.ecu for fw in car_fw]

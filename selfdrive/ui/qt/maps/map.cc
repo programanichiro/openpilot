@@ -76,6 +76,49 @@ MapWindow::~MapWindow() {
   makeCurrent();
 }
 
+bool check_night_mode(){
+#if 0
+  auto q_time = QDateTime::currentDateTime(); //.addSecs(9*3600); //UTCなので9時間足す
+  QString g_hour = q_time.toString("HH:mm");
+  //bool night = (QString::compare(g_hour,"17:00") >= 0 || QString::compare(g_hour,"06:00") < 0);
+  bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
+#else
+  //時間ではなく、カメラ輝度で判定する
+  bool night = false;
+  UIState *s = uiState();
+  if (s->scene.started) {
+    // Scale to 0% to 100%
+    float clipped_brightness = 100.0 * s->scene.light_sensor;
+
+    // CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+    if (clipped_brightness <= 8) {
+      clipped_brightness = (clipped_brightness / 903.3);
+    } else {
+      clipped_brightness = std::pow((clipped_brightness + 16.0) / 116.0, 3.0);
+    }
+
+    // Scale back to 10% to 100%
+    clipped_brightness = std::clamp(100.0f * clipped_brightness, 10.0f, 100.0f);
+
+    //night = clipped_brightness < 50; //どのくらいが妥当？
+    night = clipped_brightness < (night_mode == -1 ? 50 : (night_mode == 1 ? 60 : 40)); //ばたつかないようにする。
+#if 0 //昼間で97以上。多少影に入っても関係ない。トンネルで一気に10まで下がった。上の制御で十分だが、夕方の切り替わるタイミングはlight_sensorの挙動依存となる。
+    if(1 || (night == true && night_mode != 1) || (night == false && night_mode != 0)){
+      //切り替わるなら書き出し。
+      FILE *fp = fopen("../manager/brightness_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
+      if(fp != NULL){
+        char buf[32];
+        sprintf(buf,"brightness:%.1f",clipped_brightness);
+        fwrite(buf,strlen(buf),1,fp);
+        fclose(fp);
+      }
+    }
+#endif
+  }
+#endif
+  return night;
+}
+
 void MapWindow::initLayers() {
   // This doesn't work from initializeGL
   if (!m_map->layerExists("modelPathLayer")) {
@@ -123,12 +166,7 @@ void MapWindow::initLayers() {
 
   if(night_mode >= 0 && my_mapbox_style_night.empty() == false){
 #if 1
-    auto q_time = QDateTime::currentDateTime(); //.addSecs(9*3600); //UTCなので9時間足す
-    QString g_hour = q_time.toString("HH:mm");
-    //bool night = (QString::compare(g_hour,"17:00") >= 0 || QString::compare(g_hour,"06:00") < 0);
-    bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
-
-    if(night){
+    if(check_night_mode()){
       if(night_mode != 1 /*&& my_mapbox_style_night.empty() == false*/){
         night_mode = 1;
         m_map->setStyleUrl(my_mapbox_style_night.c_str());
@@ -323,12 +361,7 @@ void MapWindow::initializeGL() {
     }
   }
 
-  auto q_time = QDateTime::currentDateTime(); //.addSecs(9*3600); //UTCなので9時間足す
-  QString g_hour = q_time.toString("HH:mm");
-  //QString g_hour = QString("06:56");
-  bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
-
-  if(night && my_mapbox_style_night.empty() == false){ //夜だったら
+  if(my_mapbox_style_night.empty() == false && check_night_mode()){ //夜だったら
     night_mode = 1;
     m_map->setStyleUrl(my_mapbox_style_night.c_str());
   } else if(my_mapbox_style.empty() == false){ //昼だったら
