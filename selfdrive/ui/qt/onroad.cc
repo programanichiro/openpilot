@@ -539,9 +539,15 @@ void OnroadHud::updateState(const UIState &s) {
   }
   QString maxspeed_str = cruise_set ? QString::number(std::nearbyint(maxspeed)) : "N/A";
   std::string stdstr_txt = util::read_file("../manager/cruise_info.txt");
+  static std::string stdstr_txt_save;
   if(cruise_set && stdstr_txt.empty() == false){
     QString qstr = QString::fromStdString(stdstr_txt);
     maxspeed_str = qstr;
+    stdstr_txt_save = stdstr_txt;
+  } else if(cruise_set && stdstr_txt_save.empty() == false){
+    QString qstr = QString::fromStdString(stdstr_txt_save);
+    maxspeed_str = qstr;
+    stdstr_txt_save.clear(); //過去数字の使用は一度限定。
   }
   float cur_speed = std::max(0.0, sm["carState"].getCarState().getVEgo() * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH));
 
