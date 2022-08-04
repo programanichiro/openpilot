@@ -643,7 +643,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   configFont(p, "Open Sans", 66, "Regular");
   UIState *s = uiState();
   //bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed(); //これは実際のブレーキペダルを踏んだかどうか。車体のブレーキランプでは無い。
-  if (uiState()->scene.longitudinal_control == false) {
+  if (s->scene.longitudinal_control == false) {
     drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, bg_colors[STATUS_WARNING]); //縦制御無効状態でkm/hを警告色に。
   } else if(true /*brakePressed == false*/){
     drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
