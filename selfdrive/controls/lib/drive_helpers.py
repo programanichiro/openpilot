@@ -31,10 +31,14 @@ MAX_CURVATURE_RATE_SPEEDS = [0, 35]
 
 k_vs =     [1.02, 1.029, 1.06 , 1.10  , 1.14  , 1.19 , 1.24 ] #desired_curvatureでinterpする。1.15定数倍で保土ヶ谷出口32度回ってる。
 k_vs_org = [0   , 0.004, 0.006, 0.0085, 0.0095, 0.014, 0.021]
-k2_vs =     [1.0, 1.0  , 0.85] #TSS2用減少補正。
+k2_vs =     [1.0, 1.0  , 0.92] #TSS2用減少補正。
 k2_vs_org = [0  , 0.033, 0.05]
 with open('./curvature_info.txt','w') as fp:
   fp.write('%.9f/%.3f' % (0 , 1.0))
+
+skip_curvature_info = False
+if os.environ['DONGLE_ID'] in ('cdcb457f7528673b'):
+  skip_curvature_info = True #curvature_infoを送るとエラーが起きる人対策。
 
 ButtonType = car.CarState.ButtonEvent.Type
 CRUISE_LONG_PRESS = 50
@@ -168,7 +172,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
   if dc_get_lag_adjusted_curvature == True:
     #新処理をTSS2で使用。公式状態。
     # This is the "desired rate of the setpoint" not an actual desired rate
-    if CT_get_lag_adjusted_curvature % 10 == 3: #書き出し頻度を1/10に
+    if CT_get_lag_adjusted_curvature % 10 == 3 and skip_curvature_info == False: #書き出し頻度を1/10に
       try:
         with open('./curvature_info.txt','w') as fp:
           fp.write('%.9f/%.3f' % (desired_curvature , 1.0))
@@ -188,7 +192,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
     #k_v = 1.15 if tss_type < 2 else interp(abs(desired_curvature) , k2_vs_org , k2_vs)
     # with open('./debug_out_y','w') as fp:
     #   fp.write('kv:%.2f , dc:%.5f' % (k_v , desired_curvature*100))
-    if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
+    if CT_get_lag_adjusted_curvature % 10 == 7 and skip_curvature_info == False: #書き出し頻度を1/10に
       try:
         with open('./curvature_info.txt','w') as fp:
           fp.write('%.9f/%.3f' % (desired_curvature , k_v))

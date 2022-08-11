@@ -27,6 +27,10 @@ decel_lead_ctrl = True
 v_cruise = 0
 v_cruise_old = 0
 signal_scan_ct = 0
+red_signal_scan_ct = 0
+red_signal_scan_flag = 0 #0:何もしない, 1:赤信号センシング, 2:赤信号検出, 3:赤信号停止動作中
+with open('./red_signal_scan_flag.txt','w') as fp:
+  fp.write('%d' % (0))
 
 def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
   Z1 = (X2-X1)/(Y1-Y2) - (X3-X2)/(Y2-Y3)
@@ -100,6 +104,12 @@ class Planner:
     self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
 
+    self.red_signals = np.zeros(10)
+    self.red_signal_path_xs = np.zeros(5)
+    self.old_red_signal_path_xs = 0
+    self.night_time = 100 #変数名がわかりにくいが環境光の強さが0〜100で取得できる。
+    self.night_time_refresh_ct = 0
+
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
@@ -147,7 +157,7 @@ class Planner:
           fp.write('%d' % (1)) #prompt音を鳴らしてみる。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
-      one_pedal_chenge_restrict_time = 5
+      one_pedal_chenge_restrict_time = 20
     if one_pedal_chenge_restrict_time > 0:
       one_pedal_chenge_restrict_time -= 1
     sm_longControlState = sm['controlsState'].longControlState
@@ -226,6 +236,112 @@ class Planner:
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       with open('./signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
+
+    global red_signal_scan_ct , red_signal_scan_flag
+    red_signal_scan_flag_1 = red_signal_scan_flag
+    red_signal_speed_down = 1.0
+    if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+      path_x = md.position.x #path_xyz[:,0]
+      hasLead = sm['radarState'].leadOne.status
+      red_signal_v_ego = 4/3.6 #この速度超で赤信号認識。
+      if hasLead == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego):
+        if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
+          red_signal_scan_flag_1 = 1 #赤信号センシング
+
+      # path_x[TRAJECTORY_SIZE -1]が増加方向の時は弾きたい。
+      self.red_signal_path_xs = np.append(self.red_signal_path_xs,path_x[TRAJECTORY_SIZE -1])
+      self.red_signal_path_xs = np.delete(self.red_signal_path_xs , [0])
+      sum_red_signal_path_xs = np.sum(self.red_signal_path_xs)
+
+      if hasLead == False and path_x[TRAJECTORY_SIZE -1] < interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
+        red_signal = "●"
+        self.red_signals = np.append(self.red_signals,1)
+      else:
+        red_signal = "◯"
+        self.red_signals = np.append(self.red_signals,0)
+      self.red_signals = np.delete(self.red_signals , [0])
+      red_signals_sum = np.sum(self.red_signals)
+      if red_signals_sum > self.red_signals.size * 0.7:
+        red_signals_mark = "■"
+        if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
+          red_signal_scan_flag_1 = 2 #赤信号検出
+          #この信号認識状態 and sum_red_signal_path_xs < self.old_red_signal_path_xsなら速度を落とし始めてもいい？ 473行のv_cruiseを1割落とすとか
+          if v_ego > 20/3.6 and sum_red_signal_path_xs < self.old_red_signal_path_xs:
+            red_signal_speed_down = interp(v_ego*3.6 , [10,20,30,40,50,55,60] , [0.97,0.96,0.95,0.94,0.93,0.92,0.91])
+      else:
+        red_signals_mark = "□"
+
+      with open('./debug_out_k','w') as fp:
+        #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
+        lead_mark = "▲"
+        if hasLead == False:
+          lead_mark = "△"
+        fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
+      red_signal_scan_ct += 1
+      set_red_signal_scan_flag_3 = False
+
+      self.night_time_refresh_ct += 1
+      if (self.night_time_refresh_ct % 11 == 6 and red_signal == "●") or self.night_time_refresh_ct % 200 == 100:
+        try:
+          with open('./night_time_info.txt','r') as fp:
+            night_time_info_str = fp.read()
+            if night_time_info_str:
+              self.night_time = int(night_time_info_str)
+        except Exception as e:
+          pass
+      if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
+        stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
+      else: #夜
+        stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
+      if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and path_x[TRAJECTORY_SIZE -1] < stop_threshold:
+        #赤信号検出でワンペダル発動
+        if red_signal_scan_ct < 10000:
+          red_signal_scan_ct = 10000
+          #まずは音を鳴らす。
+          try:
+            with open('./accel_engaged.txt','r') as fp:
+              accel_engaged_str = fp.read()
+              if accel_engaged_str:
+                if int(accel_engaged_str) == 3: #ワンペダルモード
+                  with open('./signal_start_prompt_info.txt','w') as fp:
+                    fp.write('%d' % (1)) #prompt音を鳴らしてみる。
+                  lock_off = False
+                  if os.path.isfile('./lockon_disp_disable.txt'):
+                    with open('./lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
+                      lockon_disp_disable_str = fp.read()
+                      if lockon_disp_disable_str:
+                        lockon_disp_disable = int(lockon_disp_disable_str)
+                        if lockon_disp_disable != 0:
+                          lock_off = True #ロックオンOFFで停車コードOFF
+                  if lock_off == False:
+                    OP_ENABLE_v_cruise_kph = v_cruise_kph
+                    OP_ENABLE_gas_speed = 1.0 / 3.6
+                    #one_pedal_chenge_restrict_time = 10 , ここは意味的に要らないか。
+                    red_signal_scan_flag_1 = 3 #赤信号停止状態
+                    set_red_signal_scan_flag_3 = True #セットした瞬間
+          except Exception as e:
+            pass
+      else:
+        red_signal_scan_ct = 0 if red_signal_scan_ct < 1000 else red_signal_scan_ct - 1000
+      self.old_red_signal_path_xs = sum_red_signal_path_xs
+
+      if hasLead == True or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+        if set_red_signal_scan_flag_3 != 3:
+          red_signal_scan_flag_1 = 0
+
+    if red_signal_scan_flag_1 != red_signal_scan_flag:
+      red_signal_scan_flag = red_signal_scan_flag_1
+      rssf = red_signal_scan_flag
+      try:
+        with open('./accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) != 3: #ワンペダルモード以外
+              rssf = 0
+      except Exception as e:
+        pass
+      with open('./red_signal_scan_flag.txt','w') as fp:
+        fp.write('%d' % (rssf))
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
@@ -373,7 +489,7 @@ class Planner:
     v_cruise_old = v_cruise
 
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
-    v_cruise = v_cruise_kph * CV.KPH_TO_MS
+    v_cruise = v_cruise_kph * CV.KPH_TO_MS * red_signal_speed_down
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
       v_cruise = 0 #ワンペダル停止処理
       #保留v_cruise = v_cruise_old + (v_cruise - v_cruise_old) * 0.333 #緩衝処理
@@ -516,7 +632,7 @@ class Planner:
         self.a_desired = 0 #アクセル離して加速ならゼロに。
       if self.a_desired < 0:
         #ワンペダル停止の減速を強めてみる。
-        a_desired_mul = interp(v_ego,[0,20/3.6,40/3.6],[1.00,1.08,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
+        a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
     #with open('./debug_out_v','w') as fp:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))

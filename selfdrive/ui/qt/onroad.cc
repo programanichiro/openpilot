@@ -187,6 +187,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
+#if 0
     if(num == 1){
       fwrite("1",1,1,fp);
     } else if(num == 2){
@@ -196,6 +197,11 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
     } else {
       fwrite("0",1,1,fp);
     }
+#else
+    char buf[32];
+    sprintf(buf,"%d",num);
+    fwrite(buf,strlen(buf),1,fp);
+#endif
     fclose(fp);
   } else {
     fp_error = true;
@@ -598,6 +604,7 @@ static float handle_center = -100;
 static int handle_calibct = 0;
 static float distance_traveled;
 static float global_angle_steer0 = 0;
+static float clipped_brightness0 = 101; //初回ファイルアクセスさせるため、わざと101
 void NvgWindow::drawHud(QPainter &p) {
   p.save();
   int y_ofs = 150;
@@ -703,6 +710,53 @@ void NvgWindow::drawHud(QPainter &p) {
   QRect speed_rect = getTextRect(p, Qt::AlignCenter, setSpeedStr);
   speed_rect.moveCenter({set_speed_rect.center().x(), 0});
   speed_rect.moveTop(set_speed_rect.top() + 77*max_disp_k);
+
+  static int red_signal_scan_flag = 0;
+  static unsigned int red_signal_scan_flag_txt_ct = 0;
+  if(red_signal_scan_flag_txt_ct % 7 == 0){
+    std::string red_signal_scan_flag_txt = util::read_file("../manager/red_signal_scan_flag.txt");
+    if(red_signal_scan_flag_txt.empty() == false){
+      if(uiState()->scene.mAccelEngagedButton == 3){
+        red_signal_scan_flag = std::stoi(red_signal_scan_flag_txt);
+      } else {
+        red_signal_scan_flag = 0;
+      }
+    }
+  }
+  red_signal_scan_flag_txt_ct ++;
+
+  static long long int night_mode_ct;
+  if((red_signal_scan_flag >= 2 && (night_mode_ct ++) % 11 == 0) || red_signal_scan_flag_txt_ct % 200 == 1 /*10秒に一回は更新*/){
+    //static int night_mode = -1;
+    if (uiState()->scene.started) {
+      // Scale to 0% to 100%
+      float clipped_brightness = 100.0 * uiState()->scene.light_sensor;
+
+      // CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+      if (clipped_brightness <= 8) {
+        clipped_brightness = (clipped_brightness / 903.3);
+      } else {
+        clipped_brightness = std::pow((clipped_brightness + 16.0) / 116.0, 3.0);
+      }
+
+      // Scale back to 0% to 100%
+      clipped_brightness = std::clamp(100.0f * clipped_brightness, 0.0f, 100.0f);
+
+      if(clipped_brightness0 != clipped_brightness){
+        clipped_brightness0 = clipped_brightness;
+        //bool night = clipped_brightness < 50; //どのくらいが妥当？
+        //bool night = clipped_brightness < (night_mode == -1 ? 50 : (night_mode == 1 ? 60 : 40)); //ばたつかないようにする。
+        //setButtonEnabled0("../manager/night_time_info.txt" , night);
+        setButtonInt("../manager/night_time_info.txt" , (int)clipped_brightness);
+      }
+    }
+  }
+
+  if(red_signal_scan_flag >= 3){
+    QColor speed_max;
+    speed_max = QColor(0xff, 0, 0 , 255);
+    p.setPen(speed_max);
+  }
   p.drawText(speed_rect, Qt::AlignCenter, setSpeedStr);
 
   // US/Canada (MUTCD style) sign
@@ -771,13 +825,32 @@ void NvgWindow::drawHud(QPainter &p) {
     p.drawText(speed_limit_rect, Qt::AlignCenter, speedLimitStr);
   }
 
+  QColor speed_waku;
+  if(red_signal_scan_flag >= 1/*== 1*/){
+    if(speed > 45 && clipped_brightness0 >= 90 //昼は45超を信頼度低いとする。
+      || speed > 65 && clipped_brightness0 < 90){ //夜は65超を信頼度低いとする。
+      speed_waku = QColor(171, 171, 0 , 255);
+    } else {
+      speed_waku = QColor(0xff, 0, 0 , 255);
+    }
+  // } else if(red_signal_scan_flag >= 2){
+  //   speed_waku = QColor(0xff, 0xff, 0 , 255);
+  } else {
+    speed_waku = bg_colors[status];
+  }
   // current speed
   configFont(p, "Inter", 176, "Bold");
-  drawText(p, rect().center().x()-7, 210+y_ofs-5, speedStr,bg_colors[status]);
-  drawText(p, rect().center().x()+7, 210+y_ofs-5, speedStr,bg_colors[status]);
-  drawText(p, rect().center().x(), -7+210+y_ofs-5, speedStr,bg_colors[status]);
-  drawText(p, rect().center().x(), +7+210+y_ofs-5, speedStr,bg_colors[status]);
-  drawText(p, rect().center().x(), 210 + y_ofs-5, speedStr);
+  drawText(p, rect().center().x()-7, 210+y_ofs-5, speedStr,speed_waku);
+  drawText(p, rect().center().x()+7, 210+y_ofs-5, speedStr,speed_waku);
+  drawText(p, rect().center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
+  drawText(p, rect().center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
+  QColor speed_num;
+  if(red_signal_scan_flag >= 2 && red_signal_scan_flag_txt_ct %6 < 3){
+    speed_num = QColor(0xff, 100, 100 , 255); //赤信号認識中は点滅。
+  } else {
+    speed_num = QColor(0xff, 0xff, 0xff , 255);
+  }
+  drawText(p, rect().center().x(), 210 + y_ofs-5, speedStr , speed_num);
 
   configFont(p, "Inter", 66, "Regular");
   if (uiState()->scene.longitudinal_control == false) {
@@ -785,69 +858,6 @@ void NvgWindow::drawHud(QPainter &p) {
   } else {
     drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
   }
-  
-#if 0 //一旦移植保留
-
-  QRect rc(bdr_s * 2, bdr_s * 1.5+y_ofs, 184*max_disp_k, 202*max_disp_k);
-#if 0
-  p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
-#else
-  QString ms = QString(maxSpeed);
-  if(ms.length() > 1){
-    if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
-      ms = maxSpeed.mid(1,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0, 0xff, 0, 200), 10)); //加速時は緑
-    } else if(maxSpeed.mid(maxSpeed.length()-1,1) == "."){ //末尾ピリオドで減速
-      ms = maxSpeed.mid(0,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0xff, 0, 0, 200), 10)); //減速時は赤
-    } else if(maxSpeed.mid(maxSpeed.length()-1,1) == ";"){ //末尾セミコロンで黄色
-      ms = maxSpeed.mid(0,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0xff, 0xff, 0, 200), 10)); //黄色
-    } else {
-      p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
-    }
-  } else {
-    p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
-  }
-#endif
-  p.setBrush(QColor(0, 0, 0, 100));
-  p.drawRoundedRect(rc, 20, 20);
-  p.setPen(Qt::NoPen);
-
-  configFont(p, FONT_OPEN_SANS, 48*max_disp_k, "Regular");
-  //const char *max_str = (tss_type == 0 ? "MA+" : (tss_type <= 1 ? "MAX" : "MAX2"));
-  drawText(p, rc.center().x(), 118+y_ofs+max_disp_a, "MAX", is_cruise_set ? 200 : 100);
-  if (is_cruise_set) {
-#if 0
-    float mm = maxSpeed.length() < 4 ? 1.1 : 1.0;
-    configFont(p, FONT_OPEN_SANS, 88*max_disp_k*mm, is_cruise_set ? "Bold" : "SemiBold");
-    drawText(p, rc.center().x(), 212-(212-118)+(212-118)*max_disp_k+y_ofs+max_disp_a, maxSpeed, 255);
-#else
-    float mm = ms.length() < 4 ? 1.1 : 1.0; //カンマピリオド以外の状況で4桁になってるケースをケアする。セミコロンとかあり得る
-    configFont(p, FONT_OPEN_SANS, 88*max_disp_k*mm, is_cruise_set ? "Bold" : "SemiBold");
-    drawText(p, rc.center().x(), 212-(212-118)+(212-118)*max_disp_k+y_ofs+max_disp_a, ms, 255);
-#endif
-  } else {
-    configFont(p, FONT_OPEN_SANS, 80*max_disp_k*1.1, "SemiBold");
-    drawText(p, rc.center().x(), 212-(212-118)+(212-118)*max_disp_k+y_ofs+max_disp_a, maxSpeed, 100);
-  }
-
-  // current speed
-  configFont(p, FONT_OPEN_SANS, 176, "Bold");
-  drawText(p, rect().center().x()-7, 210+y_ofs-5, speed,bg_colors[status]);
-  drawText(p, rect().center().x()+7, 210+y_ofs-5, speed,bg_colors[status]);
-  drawText(p, rect().center().x(), -7+210+y_ofs-5, speed,bg_colors[status]);
-  drawText(p, rect().center().x(), +7+210+y_ofs-5, speed,bg_colors[status]);
-  drawText(p, rect().center().x(), 210+y_ofs-5, speed);
-  configFont(p, FONT_OPEN_SANS, 66, "Regular");
-  //UIState *s = uiState();
-  //bool brakePressed = (*s->sm)["carState"].getCarState().getBrakePressed(); //これは実際のブレーキペダルを踏んだかどうか。車体のブレーキランプでは無い。
-  if(true /*brakePressed == false*/){
-    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, 200);
-  } else {
-    drawText(p, rect().center().x(), 290+y_ofs-5, speedUnit, QColor(0xC9, 0x22, 0x31, 200));
-  }
-#endif
 
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
