@@ -451,7 +451,7 @@ class Planner:
         self.a_desired = 0 #アクセル離して加速ならゼロに。
       if self.a_desired < 0:
         #ワンペダル停止の減速を強めてみる。
-        a_desired_mul = interp(v_ego,[0,20/3.6,40/3.6],[1.00,1.08,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
+        a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
         
     #with open('./debug_out_v','w') as fp:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
