@@ -323,6 +323,10 @@ class Planner:
 
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS
+    if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
+      #v_cruise = 0 #ワンペダル停止処理
+      #保留v_cruise = v_cruise_old + (v_cruise - v_cruise_old) * 0.333 #緩衝処理
+      v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す
 
     long_control_state = sm['controlsState'].longControlState
     force_slow_decel = sm['controlsState'].forceDecel
