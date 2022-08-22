@@ -788,7 +788,22 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
         handle_center = std::stof(handle_center_txt);
     }
   }
-  if(/*engageable ||*/ handle_center > -99){
+
+  if(fabs(global_angle_steer0) > 5 && handle_center > -99){
+    //ハンドル角度を表示
+    p.setBrush(bg_colors[status]);
+    QRect rc3(rc2.x()+20,rc2.y()-30,rc2.width()-40,rc2.height()+30);
+    p.drawRoundedRect(rc3, 30, 30);
+    p.setPen(Qt::NoPen);
+
+    char h_ang[16];
+    int h_ang_i = (int)global_angle_steer0;
+    if(h_ang_i > 99)h_ang_i=99; else if(h_ang_i < -99)h_ang_i=-99;
+    sprintf(h_ang,"%+d°",h_ang_i); //99カンスト
+
+    configFont(p, "Open Sans", 60, "Bold");
+    drawText(p, rc3.x()+rc3.width()/2 , rc3.y() + rc3.height() - 12, h_ang , 200);
+  } else if(/*engageable ||*/ handle_center > -99){
     //ハンドルセンター値を表示
     p.setBrush(bg_colors[status]);
     p.drawRoundedRect(rc2, 18, 18);
