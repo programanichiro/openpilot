@@ -538,7 +538,7 @@ void OnroadHud::updateState(const UIState &s) {
     maxspeed *= KM_TO_MILE;
   }
   QString maxspeed_str = cruise_set ? QString::number(std::nearbyint(maxspeed)) : "N/A";
-  std::string stdstr_txt = util::read_file("../manager/cruise_info.txt");
+  std::string stdstr_txt = util::read_file("/storage/cruise_info.txt");
   static std::string stdstr_txt_save;
   if(cruise_set && stdstr_txt.empty() == false){
     QString qstr = QString::fromStdString(stdstr_txt);
@@ -728,7 +728,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   configFont(p, "Open Sans", 33, "Bold");
   float angle_steer = 0;
   float angle_steer0 = 0;
-  std::string angle_steer0_txt = util::read_file("../manager/steer_ang_info.txt");
+  std::string angle_steer0_txt = util::read_file("/storage/steer_ang_info.txt");
   if(angle_steer0_txt.empty() == false){
     angle_steer0 = std::stof(angle_steer0_txt);
   }
@@ -758,7 +758,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
         a0 = 200;
       }
     }
-    std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
+    std::string limit_vc_txt = util::read_file("/storage/limit_vc_info.txt");
     if(limit_vc_txt.empty() == false && vc_speed >= 1/3.6){
       curve_value = std::stof(limit_vc_txt);
     }
@@ -943,7 +943,7 @@ void NvgWindow::knightScanner(QPainter &p) {
   static float ct;
 
 #if 1
-  std::string signal_start_prompt_info_txt = util::read_file("../manager/signal_start_prompt_info.txt");
+  std::string signal_start_prompt_info_txt = util::read_file("/storage/signal_start_prompt_info.txt");
   if(signal_start_prompt_info_txt.empty() == false){
     int pr = std::stoi(signal_start_prompt_info_txt);
     if(pr == 1){
@@ -957,7 +957,7 @@ void NvgWindow::knightScanner(QPainter &p) {
       effect.setLoopCount(0);
       effect.setVolume(1.0);
       effect.play();
-      setButtonEnabled0("../manager/signal_start_prompt_info.txt" , false);
+      setButtonEnabled0("/storage/signal_start_prompt_info.txt" , false);
     } else if(pr == 2){ //自動発進とワンペダル->オートパイロットはこちら。
       static QSoundEffect effect;
       static bool once = false;
@@ -969,7 +969,7 @@ void NvgWindow::knightScanner(QPainter &p) {
       effect.setLoopCount(0);
       effect.setVolume(1.0);
       effect.play();
-      setButtonEnabled0("../manager/signal_start_prompt_info.txt" , false);
+      setButtonEnabled0("/storage/signal_start_prompt_info.txt" , false);
     }
   }
 #endif
@@ -1043,7 +1043,7 @@ void NvgWindow::knightScanner(QPainter &p) {
       dir0 = -dir0;
     }
     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
-      std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
+      std::string limit_vc_txt = util::read_file("/storage/limit_vc_info.txt");
       if(limit_vc_txt.empty() == false){
         float cv = std::stof(limit_vc_txt);
         if(cv > 0){
@@ -1139,7 +1139,7 @@ void NvgWindow::knightScanner(QPainter &p) {
 #if 1 //曲率、k_v表示テスト
   static float curvature = 0;
   static float k_v = 1.0;
-  std::string curvature_info = util::read_file("../manager/curvature_info.txt");
+  std::string curvature_info = util::read_file("/storage/curvature_info.txt");
   if(curvature_info.empty() == false && global_engageable && (global_status == STATUS_ENGAGED)) {
     auto separator = std::string("/");         // 区切り文字
     //auto separator_length = separator.length(); // 区切り文字の長さ
@@ -1192,13 +1192,13 @@ void NvgWindow::knightScanner(QPainter &p) {
 #if 1
   static unsigned int debug_ct;
   if(debug_ct % 10 == 0){
-    std::string limit_vc_txt = util::read_file("../manager/limit_vc_info.txt");
+    std::string limit_vc_txt = util::read_file("/storage/limit_vc_info.txt");
     if(limit_vc_txt.empty() == false){
       cv = std::stof(limit_vc_txt);
     }
   }
   if(debug_ct % 10 == 5){
-    std::string angle_steer0_txt = util::read_file("../manager/steer_ang_info.txt");
+    std::string angle_steer0_txt = util::read_file("/storage/steer_ang_info.txt");
     if(angle_steer0_txt.empty() == false){
       ang = std::stof(angle_steer0_txt);
     }

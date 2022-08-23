@@ -135,7 +135,7 @@ class Planner:
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
       if sm['controlsState'].enabled and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6):
-        with open('./signal_start_prompt_info.txt','w') as fp:
+        with open('/storage/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (1)) #prompt音を鳴らしてみる。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
@@ -179,7 +179,7 @@ class Planner:
 
     if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.35: #アクセル強押しでワンペダルからオートパイロットへ
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
-      with open('./signal_start_prompt_info.txt','w') as fp:
+      with open('/storage/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
@@ -288,14 +288,14 @@ class Planner:
       limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
     v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
     if CVS_FRAME % 5 == 2:
-      with open('./limit_vc_info.txt','w') as fp:
+      with open('/storage/limit_vc_info.txt','w') as fp:
         fp.write('%d' % (limit_vc))
     if CVS_FRAME % 5 == 1:
-      with open('./steer_ang_info.txt','w') as fp:
+      with open('/storage/steer_ang_info.txt','w') as fp:
         fp.write('%f' % (steerAng))
         #fp.write('%f' % (-max_yp / 2.5))
     if CVS_FRAME % 5 == 0:
-      with open('./cruise_info.txt','w') as fp:
+      with open('/storage/cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
         if v_cruise_kph == limit_vc:
           if cruise_info_power_up:
@@ -390,7 +390,7 @@ class Planner:
       new_vd = self.v_desired_filter.x / rate #30度切って最高半分。
       if new_vd < v_cruise and new_vd < self.v_desired_filter.x:
         v_desired_rand = new_vd - self.v_desired_filter.x
-        with open('./cruise_info.txt','w') as fp:
+        with open('/storage/cruise_info.txt','w') as fp:
           fp.write('%d.' % (int(new_vd * 3.6)))
     #with open('./debug_out_vd','w') as fp:
     #  fp.write('vc:%.2f[km/h] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired_filter.x* 3.6,steerAng , v_ego * 3.6) )

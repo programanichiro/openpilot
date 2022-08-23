@@ -25,7 +25,7 @@ CT_get_lag_adjusted_curvature = 0
 MAX_CURVATURE_RATES_0 = [0.03762194918267951, 0.03762194918267951 * 0.8] #最初の係数を機械推論反映値として計算する（1〜2.7）
 MAX_CURVATURE_RATE_SPEEDS = [0, 35]
 
-with open('./curvature_info.txt','w') as fp:
+with open('/storage/curvature_info.txt','w') as fp:
   fp.write('%.9f/%.3f' % (0 , 1.0))
 
 CRUISE_LONG_PRESS = 50
@@ -154,7 +154,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
     #TSSPで公式状態。TSS2はここには来ない。
     if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
       try:
-        with open('./curvature_info.txt','w') as fp:
+        with open('/storage/curvature_info.txt','w') as fp:
           fp.write('%.9f/%.3f' % (desired_curvature , 1.0))
       except Exception as e:
         pass
@@ -181,7 +181,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
 
     if CT_get_lag_adjusted_curvature % 10 == 7: #書き出し頻度を1/10に
       try:
-        with open('./curvature_info.txt','w') as fp:
+        with open('/storage/curvature_info.txt','w') as fp:
           fp.write('%.9f/%.3f' % (desired_curvature , k_v))
       except Exception as e:
         pass
