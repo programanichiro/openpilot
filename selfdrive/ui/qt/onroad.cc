@@ -597,6 +597,7 @@ static float curve_value;
 static float handle_center = -100;
 static int handle_calibct = 0;
 static float distance_traveled;
+static float global_angle_steer0 = 0;
 
 void OnroadHud::paintEvent(QPaintEvent *event) {
   int y_ofs = 150;
@@ -757,6 +758,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   std::string angle_steer0_txt = util::read_file("/storage/steer_ang_info.txt");
   if(angle_steer0_txt.empty() == false){
     angle_steer0 = std::stof(angle_steer0_txt);
+    global_angle_steer0 = angle_steer0;
   }
   float a0 = 150,a1 = 150,a2 = 150,a3 = 150;
   curve_value = 0;
