@@ -598,7 +598,7 @@ static float handle_center = -100;
 static int handle_calibct = 0;
 static float distance_traveled;
 static float global_angle_steer0 = 0;
-
+static float global_fps;
 void OnroadHud::paintEvent(QPaintEvent *event) {
   int y_ofs = 150;
   QPainter p(this);
@@ -1216,7 +1216,7 @@ void NvgWindow::knightScanner(QPainter &p) {
 
 #if 1 //減速度と舵角を表示
   static float cv = 0;
-  static float ang = 0;
+  // static float ang = 0;
 #if 1
   static unsigned int debug_ct;
   if(debug_ct % 10 == 0){
@@ -1225,12 +1225,12 @@ void NvgWindow::knightScanner(QPainter &p) {
       cv = std::stof(limit_vc_txt);
     }
   }
-  if(debug_ct % 10 == 5){
-    std::string angle_steer0_txt = util::read_file("/storage/steer_ang_info.txt");
-    if(angle_steer0_txt.empty() == false){
-      ang = std::stof(angle_steer0_txt);
-    }
-  }
+  // if(debug_ct % 10 == 5){
+  //   std::string angle_steer0_txt = util::read_file("/storage/steer_ang_info.txt");
+  //   if(angle_steer0_txt.empty() == false){
+  //     ang = std::stof(angle_steer0_txt);
+  //   }
+  // }
   debug_ct ++;
 #endif
   configFont(p, "Open Sans", 44, "SemiBold");
@@ -1242,7 +1242,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
-    QString debug_disp = QString(",Ang:") + QString::number(ang,'f',1);
+    QString debug_disp = QString(",Fps:") + QString::number(global_fps,'f',1);
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
@@ -1624,6 +1624,9 @@ void NvgWindow::paintGL() {
 
   double cur_draw_t = millis_since_boot();
   double dt = cur_draw_t - prev_draw_t;
+  if(dt > 0){
+    global_fps = 1000/dt;
+  }
   if (dt > 66) {
     // warn on sub 15fps
     LOGW("slow frame time: %.2f", dt);
