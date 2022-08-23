@@ -105,7 +105,7 @@ class LatControlINDI(LatControl):
       g_inv = 1. / self.G
       delta_u = g_inv * accel_error
 
-      #with open('./debug_out_y','w') as fp:
+      #with open('/storage/debug_out_y','w') as fp:
       #  fp.write('d(x):%.2f(%.2f) , alp:%.2f,cv:(%.6f/%.6f)' % (delta_u ,self.steer_filter.x, self.steer_filter.alpha , curvature, curvature_rate))
 
       # If steering pressed, only allow wind down
@@ -126,7 +126,7 @@ class LatControlINDI(LatControl):
       indi_log.output = float(output_steer)
       indi_log.saturated = self._check_saturation(steers_max - abs(output_steer) < 1e-3, CS)
 
-      #with open('./debug_out_y','a') as fp:
+      #with open('/storage/debug_out_y','a') as fp:
       #  curvature = 0. if curvature_rate == 0 else curvature
       #  curvature_rate = 1. if curvature_rate == 0 else curvature_rate
       #  fp.write('\nsat:[%d] , smx:%.2f,sd:[%d],c/c:%.3f' % (check_saturation ,steers_max, indi_log.saturated,curvature/curvature_rate))

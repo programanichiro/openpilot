@@ -84,7 +84,7 @@ def apply_toyota_steer_torque_limits(apply_torque, apply_torque_last, motor_torq
                         apply_torque_last - LIMITS.STEER_DELTA_UP,
                         min(apply_torque_last + LIMITS.STEER_DELTA_DOWN, LIMITS.STEER_DELTA_UP))
 
-#  with open('./debug_out_y','w') as fp:
+#  with open('/storage/debug_out_y','w') as fp:
 #    fp.write('apply:%.2f/%0.2f(max:%.2f,min:%.2f) ; applyLast:%.2f ; motor:%.2f' % (apply_torque ,new_steer , max_lim,min_lim, apply_torque_last, motor_torque))
 
   return int(round(float(apply_torque)))

@@ -186,7 +186,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
       except Exception as e:
         pass
     
-    #with open('./debug_out_k','w') as fp:
+    #with open('/storage/debug_out_k','w') as fp:
     #  fp.write('k_v:%.2f , steerAng:%.2f' % (k_v , steerAng))
     safe_desired_curvature_rate = clip(desired_curvature_rate *k_v,
                                             -max_curvature_rate,

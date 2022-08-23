@@ -77,7 +77,7 @@ class LateralPlanner:
     else:
       with open('./handle_calibct_info.txt','w') as fp:
         fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
-    #with open('./debug_out_y','w') as fp:
+    #with open('/storage/debug_out_y','w') as fp:
     #  path_y_sum = -sum(path_y)
     #  #fp.write('{0}\n'.format(['%0.2f' % i for i in self.path_xyz[:,1]]))
     #  fp.write('calibration:%0.2f/%d ; max:%0.2f ; sum:%0.2f ; avg:%0.2f' % (value_STEERING_CENTER_calibration,len(STEERING_CENTER_calibration),-max_yp , path_y_sum, path_y_sum / len(path_y)) )
@@ -117,7 +117,7 @@ class LateralPlanner:
       if 30 - len(mssa) - len(mssao) > 0:
         for vml in range(int(30 - len(mssa) - len(mssao))):
           mssas+= " "
-      with open('./debug_out_1','w') as fp:
+      with open('/storage/debug_out_1','w') as fp:
         #fp.write('strAng:%0.1f->%0.1f[deg] , speed:%0.1f[km/h]' % (ypf , STEER_CTRL_Y - ypf, v_ego * 3.6))
         #fp.write('steerAngY:%0.1f[deg] , speed:%0.1f[km/h]' % (STEER_CTRL_Y, v_ego * 3.6))
         #fp.write('steerAng:%0.1f[deg] , speed:%0.1f[km/h]' % (STEER_CTRL_Y + handle_center, v_ego * 3.6)) #ハンドルセンターなしの素のSTEER_CTRL_Yを表示
@@ -140,7 +140,7 @@ class LateralPlanner:
 
     # Calculate final driving path and set MPC costs
     try:
-      # with open('./debug_out_y','w') as fp:
+      # with open('/storage/debug_out_y','w') as fp:
       #   fp.write('prob:%0.2f , %0.2f' % (self.LP.lll_prob , self.LP.rll_prob))
       with open('/storage/lane_sw_mode.txt','r') as fp:
         lane_sw_mode_str = fp.read()
