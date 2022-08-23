@@ -128,7 +128,7 @@ void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //tx
     }
     FILE *dst = fopen(tmpfn,"w");
     if(dst){
-      fwrite(txt_mng,strlen(txt_mng),1,fp);
+      fwrite(txt_mng,strlen(txt_mng),1,dst);
       fclose(dst);
     }
   }
