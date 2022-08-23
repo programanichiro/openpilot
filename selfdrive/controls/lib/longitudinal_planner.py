@@ -186,8 +186,8 @@ class Planner:
       OP_ENABLE_v_cruise_kph = 0
     if OP_ENABLE_v_cruise_kph != 0:
       v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う
-    if CVS_FRAME % 5 == 4 and os.path.isfile('./handle_center_info.txt'):
-      with open('./handle_center_info.txt','r') as fp:
+    if CVS_FRAME % 5 == 4 and os.path.isfile('/storage/handle_center_info.txt'):
+      with open('/storage/handle_center_info.txt','r') as fp:
         handle_center_info_str = fp.read()
         if handle_center_info_str:
           handle_center = float(handle_center_info_str)
