@@ -214,15 +214,9 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
-    if(num == 1){
-      fwrite("1",1,1,fp);
-    } else if(num == 2){
-      fwrite("2",1,1,fp);
-    } else if(num == 3){
-      fwrite("3",1,1,fp);
-    } else {
-      fwrite("0",1,1,fp);
-    }
+    char buf[32];
+    sprintf(buf,"%d",num);
+    fwrite(buf,strlen(buf),1,fp);
     fclose(fp);
     // ../manager/abc.txtを/storage/abc.txtにコピーする
     copy_manager2tmp(fn,buf,false);
