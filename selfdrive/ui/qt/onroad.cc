@@ -630,22 +630,22 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   if(ms.length() > 1){
     if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0, 0xff, 0, 200), 10)); //加速時は緑
+      p.setPen(QPen(QColor(0, 0xff, 0, 200), 6)); //加速時は緑
     } else if(maxSpeed.mid(maxSpeed.length()-1,1) == "."){ //末尾ピリオドで減速
       ms = maxSpeed.mid(0,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0xff, 0, 0, 200), 10)); //減速時は赤
+      p.setPen(QPen(QColor(0xff, 0, 0, 200), 6)); //減速時は赤
     } else if(maxSpeed.mid(maxSpeed.length()-1,1) == ";"){ //末尾セミコロンで黄色
       ms = maxSpeed.mid(0,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0xff, 0xff, 0, 200), 10)); //黄色
+      p.setPen(QPen(QColor(0xff, 0xff, 0, 200), 6)); //黄色
     } else {
-      p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
+      p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 6));
     }
   } else {
-    p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 10));
+    p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 6));
   }
 #endif
   p.setBrush(QColor(0, 0, 0, 100));
-  p.drawRoundedRect(rc, 20, 20);
+  p.drawRoundedRect(rc, (int)(32*1.3), (int)(32*1.3));
   p.setPen(Qt::NoPen);
 
   configFont(p, "Open Sans", 48*max_disp_k, "Regular");
