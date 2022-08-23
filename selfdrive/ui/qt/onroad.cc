@@ -563,7 +563,7 @@ void OnroadHud::updateState(const UIState &s) {
   if (cruise_set && !s.scene.is_metric) {
     maxspeed *= KM_TO_MILE;
   }
-  QString maxspeed_str = cruise_set ? QString::number(std::nearbyint(maxspeed)) : "N/A";
+  QString maxspeed_str = cruise_set ? QString::number(std::nearbyint(maxspeed)) : "–"; //"N/A";
   std::string stdstr_txt = util::read_file("/storage/cruise_info.txt");
   static std::string stdstr_txt_save;
   if(cruise_set && stdstr_txt.empty() == false){
