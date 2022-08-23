@@ -193,7 +193,7 @@ class LanePlanner:
         ms+= ">"
       ms += "W:%.2f" % (clipped_lane_width)
       ms += ",ct:%d;%.2f,%.2f" % (min(STEER_SAME_DIRECTION_CT,99),l_prob,r_prob)
-      with open('./debug_out_2','w') as fp:
+      with open('/storage/debug_out_2','w') as fp:
         #fp.write('l:{0}\n'.format(['%0.2f' % i for i in path_from_left_lane]))
         #fp.write('r:{0}\n'.format(['%0.2f' % i for i in path_from_right_lane]))
         #fp.write('ofst:%0.2f[m] , lane_w:%0.2f[m], ct:%d' % (dcm , clipped_lane_width,STEER_SAME_DIRECTION_CT))

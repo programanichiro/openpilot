@@ -518,8 +518,8 @@ class Controls:
       for yp in self.path_xyz[:,1]:
         max_yp = yp if abs(yp) > abs(max_yp) else max_yp
       global handle_center,handle_center_ct
-      if handle_center_ct % 5 == 3 and os.path.isfile('./handle_center_info.txt'):
-        with open('./handle_center_info.txt','r') as fp:
+      if handle_center_ct % 5 == 3 and os.path.isfile('/storage/handle_center_info.txt'):
+        with open('/storage/handle_center_info.txt','r') as fp:
           handle_center_info_str = fp.read()
           if handle_center_info_str:
             handle_center = float(handle_center_info_str)
