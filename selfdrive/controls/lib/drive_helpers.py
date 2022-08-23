@@ -138,7 +138,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
 
   if CT_get_lag_adjusted_curvature % 100 == 51:
     try:
-      with open('./handle_ctrl_disable.txt','r') as fp:
+      with open('/storage/handle_ctrl_disable.txt','r') as fp:
         dcm_handle_ctrl_disable_str = fp.read()
         if dcm_handle_ctrl_disable_str:
           dcm_handle_ctrl_disable = int(dcm_handle_ctrl_disable_str)

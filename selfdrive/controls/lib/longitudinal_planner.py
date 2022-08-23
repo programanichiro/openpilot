@@ -118,8 +118,8 @@ class Planner:
     one_pedal = False
     on_accel0 = False #押した瞬間
     if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
-      if os.path.isfile('./accel_engaged.txt'):
-        with open('./accel_engaged.txt','r') as fp:
+      if os.path.isfile('/storage/accel_engaged.txt'):
+        with open('/storage/accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
             if int(accel_engaged_str) == 3: #ワンペダルモード
@@ -150,8 +150,8 @@ class Planner:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       if one_pedal_chenge_restrict_time == 0:
         OP_ENABLE_gas_speed = v_ego
-      if os.path.isfile('./accel_engaged.txt'):
-        with open('./accel_engaged.txt','r') as fp:
+      if os.path.isfile('/storage/accel_engaged.txt'):
+        with open('/storage/accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
             if int(accel_engaged_str) == 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
@@ -162,8 +162,8 @@ class Planner:
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         if one_pedal_chenge_restrict_time == 0:
           OP_ENABLE_gas_speed = v_ego
-        # if os.path.isfile('./accel_engaged.txt'):
-        #   with open('./accel_engaged.txt','r') as fp:
+        # if os.path.isfile('/storage/accel_engaged.txt'):
+        #   with open('/storage/accel_engaged.txt','r') as fp:
         #     accel_engaged_str = fp.read()
         #     if accel_engaged_str:
         #       if int(accel_engaged_str) == 3: #ワンペダルモード
@@ -215,8 +215,8 @@ class Planner:
 
     global accel_lead_ctrl
     if CVS_FRAME % 30 == 13:
-      if os.path.isfile('./accel_ctrl_disable.txt'):
-        with open('./accel_ctrl_disable.txt','r') as fp:
+      if os.path.isfile('/storage/accel_ctrl_disable.txt'):
+        with open('/storage/accel_ctrl_disable.txt','r') as fp:
           accel_lead_ctrl_disable_str = fp.read()
           if accel_lead_ctrl_disable_str:
             accel_lead_ctrl_disable = int(accel_lead_ctrl_disable_str)
@@ -252,8 +252,8 @@ class Planner:
 
     global decel_lead_ctrl
     if CVS_FRAME % 30 == 29:
-      if os.path.isfile('./decel_ctrl_disable.txt'):
-        with open('./decel_ctrl_disable.txt','r') as fp:
+      if os.path.isfile('/storage/decel_ctrl_disable.txt'):
+        with open('/storage/decel_ctrl_disable.txt','r') as fp:
           decel_lead_ctrl_disable_str = fp.read()
           if decel_lead_ctrl_disable_str:
             decel_lead_ctrl_disable = int(decel_lead_ctrl_disable_str)
@@ -435,8 +435,8 @@ class Planner:
         vd = 1 - vd #1〜0
         add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
         a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
-        if os.path.isfile('./start_accel_power_up_disp_enable.txt'):
-          with open('./start_accel_power_up_disp_enable.txt','r') as fp:
+        if os.path.isfile('/storage/start_accel_power_up_disp_enable.txt'):
+          with open('/storage/start_accel_power_up_disp_enable.txt','r') as fp:
             start_accel_power_up_disp_enable_str = fp.read()
             if start_accel_power_up_disp_enable_str:
               start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)

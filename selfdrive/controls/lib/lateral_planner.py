@@ -142,7 +142,7 @@ class LateralPlanner:
     try:
       # with open('./debug_out_y','w') as fp:
       #   fp.write('prob:%0.2f , %0.2f' % (self.LP.lll_prob , self.LP.rll_prob))
-      with open('./lane_sw_mode.txt','r') as fp:
+      with open('/storage/lane_sw_mode.txt','r') as fp:
         lane_sw_mode_str = fp.read()
         if lane_sw_mode_str:
           lane_sw_mode = int(lane_sw_mode_str)
