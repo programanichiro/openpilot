@@ -114,9 +114,31 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 }
 
 // ***** onroad widgets *****
+void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //txt_mngはtxt.c_str()を渡す。
+  if(strstr(fn_mng,"../manager/")){
+    char tmpfn[128];
+    sprintf(tmpfn,"/storage/%s",fn_mng + 11); //11 = strlen("../manager/");
+    if(first == true){
+      FILE *dst_tmp = fopen(tmpfn,"r");
+      if(dst_tmp){
+        //初回以外はコピー不要
+        fclose(dst_tmp);
+        return;
+      }
+    }
+    FILE *dst = fopen(tmpfn,"w");
+    if(dst){
+      fwrite(txt_mng,strlen(txt_mng),1,fp);
+      fclose(dst);
+    }
+  }
+}
+
 bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
+    // ../manager/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
+    copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return true; //ファイルが無効値なのでtrue
     } else {
@@ -130,6 +152,8 @@ bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"�
 bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
+    // ../manager/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
+    copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return false; //ファイルが無効値なのでfalse
     } else {
@@ -143,6 +167,8 @@ bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"な
 int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
+    // ../manager/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
+    copy_manager2tmp(fn,txt.c_str(),true);
     return std::stoi(txt);
   }
   return defaultNum; //ファイルがない場合はこれを返す。
@@ -160,6 +186,8 @@ void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_d
       fwrite("1",1,1,fp);
     }
     fclose(fp);
+    // ../manager/abc.txtを/storage/abc.txtにコピーする
+    copy_manager2tmp(fn,flag ? "0" : "1",false);
   } else {
     fp_error = true;
   }
@@ -175,6 +203,8 @@ void setButtonEnabled0(const char*fn , bool flag){ //旧fn="../manager/accel_eng
       fwrite("0",1,1,fp);
     }
     fclose(fp);
+    // ../manager/abc.txtを/storage/abc.txtにコピーする
+    copy_manager2tmp(fn,flag ? "1" : "0",false);
   } else {
     fp_error = true;
   }
@@ -194,6 +224,8 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
       fwrite("0",1,1,fp);
     }
     fclose(fp);
+    // ../manager/abc.txtを/storage/abc.txtにコピーする
+    copy_manager2tmp(fn,buf,false);
   } else {
     fp_error = true;
   }
