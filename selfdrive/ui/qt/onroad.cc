@@ -644,7 +644,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
     p.setPen(QPen(QColor(0xff, 0xff, 0xff, 100), 6));
   }
 #endif
-  p.setBrush(QColor(0, 0, 0, 100));
+  p.setBrush(QColor(0, 0, 0, 166));
   p.drawRoundedRect(rc, (int)(32*1.3), (int)(32*1.3));
   p.setPen(Qt::NoPen);
 
