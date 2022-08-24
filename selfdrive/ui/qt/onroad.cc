@@ -114,6 +114,59 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
 }
 
 // ***** onroad widgets *****
+const float BUTTON_VOLUME = 0.35; //setVolumeが効いてないかも。
+void soundPo(){
+  static QSoundEffect effect;
+  static bool once = false;
+  if(once == false){
+    once = true;
+    effect.setSource(QUrl::fromLocalFile("../assets/sounds/po.wav"));
+    effect.setLoopCount(0);
+    effect.setVolume(1.0*BUTTON_VOLUME);
+  }
+  effect.play();
+}
+
+void soundPipo(){
+  static QSoundEffect effect;
+  static bool once = false;
+  if(once == false){
+    once = true;
+    effect.setSource(QUrl::fromLocalFile("../assets/sounds/pipo.wav"));
+    effect.setLoopCount(0);
+    effect.setVolume(0.8*BUTTON_VOLUME);
+  }
+  effect.play();
+}
+
+void soundPikiri(){
+  static QSoundEffect effect;
+  static bool once = false;
+  if(once == false){
+    once = true;
+    effect.setSource(QUrl::fromLocalFile("../assets/sounds/pikiri.wav"));
+    effect.setLoopCount(0);
+    effect.setVolume(0.6*BUTTON_VOLUME);
+  }
+  effect.play();
+}
+
+void soundButton(int onOff){
+  if(onOff == 0){
+    soundPo();
+  } else {
+    soundPipo();
+  }
+}
+
+void soundButton2(int onOff){
+  if(onOff == 0){
+    soundPo();
+  } else {
+    soundPikiri();
+  }
+}
+
 void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //txt_mngはtxt.c_str()を渡す。
   if(strstr(fn_mng,"../manager/")){
     char tmpfn[128];
@@ -252,7 +305,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     // turbo boost button
     uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt");
     startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
-    QObject::connect(startAccelPowerUpButton, &QPushButton::clicked, [=]() {
+    QObject::connect(startAccelPowerUpButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
     startAccelPowerUpButton->setFixedWidth(150);
@@ -271,7 +324,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     } else {
       useLaneButton = new QPushButton("/ \\");
     }
-    QObject::connect(useLaneButton, &QPushButton::clicked, [=]() {
+    QObject::connect(useLaneButton, &QPushButton::pressed, [=]() {
       // Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
       // uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
       // uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
@@ -302,7 +355,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     // Handle Ctrl button
     uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
     handleCtrlButton = new QPushButton("↔︎");
-    QObject::connect(handleCtrlButton, &QPushButton::clicked, [=]() {
+    QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
     });
     handleCtrlButton->setFixedWidth(150);
@@ -318,7 +371,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     // LockOn button
     uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
-    QObject::connect(lockOnButton, &QPushButton::clicked, [=]() {
+    QObject::connect(lockOnButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mLockOnButton = !mLockOnButton;
     });
     lockOnButton->setFixedWidth(150);
@@ -340,7 +393,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     // Accel Ctrl button
     uiState()->scene.mAccelCtrlButton = mAccelCtrlButton = getButtonEnabled("../manager/accel_ctrl_disable.txt");
     accelCtrlButton = new QPushButton("↑");
-    QObject::connect(accelCtrlButton, &QPushButton::clicked, [=]() {
+    QObject::connect(accelCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
     });
     accelCtrlButton->setFixedWidth(150);
@@ -355,7 +408,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     // Decel Ctrl button
     uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
     decelCtrlButton = new QPushButton("↓");
-    QObject::connect(decelCtrlButton, &QPushButton::clicked, [=]() {
+    QObject::connect(decelCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
     });
     decelCtrlButton->setFixedWidth(150);
@@ -376,7 +429,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     } else {
       accelEngagedButton = new QPushButton("A");
     }
-    QObject::connect(accelEngagedButton, &QPushButton::clicked, [=]() {
+    QObject::connect(accelEngagedButton, &QPushButton::pressed, [=]() {
       //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2・・・にすれば良い
       uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0
     });
@@ -410,18 +463,21 @@ void ButtonsWindow::updateState(const UIState &s) {
     mLockOnButton = s.scene.mLockOnButton;
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
     setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
+    soundButton(mLockOnButton);
   }
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update mAccelCtrlButton
     mAccelCtrlButton = s.scene.mAccelCtrlButton;
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/accel_ctrl_disable.txt" , mAccelCtrlButton);
+    soundButton(mAccelCtrlButton);
   }
 
   if (mDecelCtrlButton != s.scene.mDecelCtrlButton) {  // update mDecelCtrlButton
     mDecelCtrlButton = s.scene.mDecelCtrlButton;
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/decel_ctrl_disable.txt" , mDecelCtrlButton);
+    soundButton(mDecelCtrlButton);
   }
 
   if (mAccelEngagedButton != s.scene.mAccelEngagedButton) {  // update mAccelEngagedButton
@@ -436,18 +492,21 @@ void ButtonsWindow::updateState(const UIState &s) {
       accelEngagedButton->setText("A");
     }
     setButtonInt("../manager/accel_engaged.txt" , mAccelEngagedButton);
+    soundButton(mAccelEngagedButton);
   }
 
   if (mHandleCtrlButton != s.scene.mHandleCtrlButton) {  // update mHandleCtrlButton
     mHandleCtrlButton = s.scene.mHandleCtrlButton;
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton && fp_error==false)));
     setButtonEnabled("../manager/handle_ctrl_disable.txt" , mHandleCtrlButton);
+    soundButton(mHandleCtrlButton);
   }
   
   if (mStartAccelPowerUpButton != s.scene.mStartAccelPowerUpButton) {  // update mStartAccelPowerUpButton
     mStartAccelPowerUpButton = s.scene.mStartAccelPowerUpButton;
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton && fp_error==false)));
     setButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt" , mStartAccelPowerUpButton);
+    soundButton(mStartAccelPowerUpButton);
   }
   
   if (mUseLaneButton != s.scene.mUseLaneButton) {  // update mUseLaneButton
@@ -459,6 +518,7 @@ void ButtonsWindow::updateState(const UIState &s) {
       useLaneButton->setText("/ \\");
     }
     setButtonInt("../manager/lane_sw_mode.txt" , mUseLaneButton);
+    soundButton(mUseLaneButton);
   }
   
 }
@@ -980,10 +1040,10 @@ void NvgWindow::knightScanner(QPainter &p) {
       if(once == false){
         once = true;
         effect.setSource(QUrl::fromLocalFile("../assets/sounds/prompt.wav"));
+        //effect.setLoopCount(QSoundEffect::Infinite);
+        effect.setLoopCount(0);
+        effect.setVolume(1.0);
       }
-      //effect.setLoopCount(QSoundEffect::Infinite);
-      effect.setLoopCount(0);
-      effect.setVolume(1.0);
       effect.play();
       setButtonEnabled0("/storage/signal_start_prompt_info.txt" , false);
     } else if(pr == 2){ //自動発進とワンペダル->オートパイロットはこちら。
@@ -992,10 +1052,10 @@ void NvgWindow::knightScanner(QPainter &p) {
       if(once == false){
         once = true;
         effect.setSource(QUrl::fromLocalFile("../assets/sounds/engage.wav"));
+        //effect.setLoopCount(QSoundEffect::Infinite);
+        effect.setLoopCount(0);
+        effect.setVolume(1.0);
       }
-      //effect.setLoopCount(QSoundEffect::Infinite);
-      effect.setLoopCount(0);
-      effect.setVolume(1.0);
       effect.play();
       setButtonEnabled0("/storage/signal_start_prompt_info.txt" , false);
     }
