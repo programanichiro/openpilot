@@ -222,9 +222,11 @@ class CarInterfaceBase(ABC):
       # if the user overrode recently, show a less harsh alert
       if self.silent_steer_warning or cs_out.standstill or self.steering_unpressed < int(1.5 / DT_CTRL):
         self.silent_steer_warning = True
-        events.add(EventName.steerTempUnavailableSilent)
+        if (cs_out.gasPressed == False and cs_out.vEgo > 18/3.6) or cs_out.vEgo > 24/3.6:
+          events.add(EventName.steerTempUnavailableSilent)
       else:
-        events.add(EventName.steerTempUnavailable)
+        if (self.steering_unpressed >= int(1.0 / DT_CTRL) and cs_out.vEgo > 24/3.6) or cs_out.vEgo > 37/3.6: #ハンドル手放しが１秒以上かつ時速24km/h以上, または時速37km/h以上に限定。
+          events.add(EventName.steerTempUnavailable)
     else:
       self.silent_steer_warning = False
     if cs_out.steerFaultPermanent:
