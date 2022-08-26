@@ -423,7 +423,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt" , 0);
     if(mAccelEngagedButton == 3){
-      accelEngagedButton = new QPushButton("OP"); //3ならワンペダルモード(O)
+      accelEngagedButton = new QPushButton("IP"); //3ならイチロウペダル（インテリジェントペダルモード）
     } else if(mAccelEngagedButton == 2){
       accelEngagedButton = new QPushButton("AA"); //2ならAA(ALL ACCEL)
     } else {
@@ -485,7 +485,7 @@ void ButtonsWindow::updateState(const UIState &s) {
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0 && fp_error==false)));
     //ここでボタンのラベルを変えられないかな？mAccelEngagedButton == 2でAAとかにしたい。
     if(mAccelEngagedButton == 3){
-      accelEngagedButton->setText("OP");
+      accelEngagedButton->setText("IP");
     } else if(mAccelEngagedButton == 2){
       accelEngagedButton->setText("AA");
     } else {
