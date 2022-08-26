@@ -121,7 +121,19 @@ class CarInterfaceBase(ABC):
        cs_out.gearShifter not in extra_gears):
       events.add(EventName.wrongGear)
     if cs_out.gearShifter == GearShifter.reverse:
-      events.add(EventName.reverseGear)
+      one_pedal = False
+      try:
+        with open('/storage/accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 3: #ワンペダルモード
+              one_pedal = True
+      except Exception as e:
+        pass
+      if one_pedal == True and cs_out.vEgo < 0.1/3.6:
+        events.add(EventName.pedalPressed) #ワンペダルでは停車時にバックに入れたらディスエンゲージ
+      else:
+        events.add(EventName.reverseGear)
     if not cs_out.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
