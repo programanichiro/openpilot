@@ -853,7 +853,7 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   }
   
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
-  std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
+  std::string brake_light_txt = util::read_file("/storage/brake_light_state.txt");
   if(engageable && brake_light_txt.empty() == false){
     if(std::stoi(brake_light_txt) != 0){
       brake_light = true;

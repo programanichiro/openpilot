@@ -89,7 +89,7 @@ class CarState(CarStateBase):
     new_brake_state = bool(cp.vl["ESP_CONTROL"]['BRAKE_LIGHTS_ACC'] or cp.vl["BRAKE_MODULE"]["BRAKE_PRESSED"] != 0)
     if self.brake_state != new_brake_state:
       self.brake_state = new_brake_state
-      with open('/tmp/brake_light_state.txt','w') as fp:
+      with open('/storage/brake_light_state.txt','w') as fp:
         fp.write('%d' % (new_brake_state))
 
     if self.CP.carFingerprint in (CAR.LEXUS_IS, CAR.LEXUS_RC):
