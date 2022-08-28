@@ -853,6 +853,12 @@ void OnroadHud::paintEvent(QPaintEvent *event) {
   }
   
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
+  std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
+  if(engageable && brake_light_txt.empty() == false){
+    if(std::stoi(brake_light_txt) != 0){
+      brake_light = true;
+    }
+  }
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2 , brake_light);
