@@ -2,6 +2,7 @@
 import os
 import math
 from typing import SupportsFloat
+import numpy as np
 
 from cereal import car, log
 from common.numpy_fast import clip
@@ -16,7 +17,7 @@ from system.swaglog import cloudlog
 from system.version import get_short_branch
 from selfdrive.boardd.boardd import can_list_to_can_capnp
 from selfdrive.car.car_helpers import get_car, get_startup_event, get_one_can
-from selfdrive.controls.lib.lateral_planner import CAMERA_OFFSET
+from selfdrive.controls.lib.lateral_planner import CAMERA_OFFSET, TRAJECTORY_SIZE
 from selfdrive.controls.lib.drive_helpers import V_CRUISE_INITIAL, update_v_cruise, initialize_v_cruise
 from selfdrive.controls.lib.drive_helpers import get_lag_adjusted_curvature
 from selfdrive.controls.lib.latcontrol import LatControl
@@ -31,6 +32,11 @@ from selfdrive.controls.lib.vehicle_model import VehicleModel
 from selfdrive.locationd.calibrationd import Calibration
 from system.hardware import HARDWARE
 from selfdrive.manager.process_config import managed_processes
+
+handle_center = 0 #STEERING_CENTER # キャリブレーション前の手抜き
+handle_center_ct = 0
+ACCEL_PUSH_COUNT = 0
+accel_engaged_str = '0'
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -182,6 +188,10 @@ class Controls:
     self.desired_curvature = 0.0
     self.desired_curvature_rate = 0.0
 
+    self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
+    self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
+    self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
+
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
 
@@ -235,13 +245,43 @@ class Controls:
     if not self.CP.pcmCruise and self.v_cruise_kph == V_CRUISE_INITIAL and resume_pressed:
       self.events.add(EventName.resumeBlocked)
 
-    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    global ACCEL_PUSH_COUNT,accel_engaged_str
+    engage_disable = False
+    if CS.gasPressed:
+      accel_engaged = False
+      if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
+        try:
+          with open('/tmp/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
+            accel_engaged_str = fp.read()
+        except Exception as e:
+          pass
+      if accel_engaged_str:
+        if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+          accel_engaged = True
+        if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+          accel_engaged = True
+          ACCEL_PUSH_COUNT = 100
+      if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
+        engage_disable = True
+      ACCEL_PUSH_COUNT += 1
+    else:
+      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+        engage_disable = True
+      ACCEL_PUSH_COUNT = 0
+
+    # Disable on rising edge of gas or brake. Also disable on brake when speed > 0.
+    #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
       (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
       self.events.add(EventName.pedalPressed)
 
+    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
+#    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+#      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
+#      self.events.add(EventName.pedalPressed)
+
     if CS.gasPressed:
-      self.events.add(EventName.pedalPressedPreEnable if self.disengage_on_accelerator else
+      self.events.add(EventName.pedalPressedPreEnable if (CS.vEgo * 3.6 > 1 and engage_disable == True) else
                       EventName.gasPressedOverride)
 
     if not self.CP.notCar:
@@ -258,6 +298,9 @@ class Controls:
       # under 7% of space free no enable allowed
       self.events.add(EventName.outOfSpace)
     # TODO: make tici threshold the same
+    if self.sm['deviceState'].memoryUsagePercent > 75:
+      with open('/tmp/debug_out_m','w') as fp:
+        fp.write('MEM:%d' % (self.sm['deviceState'].memoryUsagePercent)) #メモリオーバー監視
     if self.sm['deviceState'].memoryUsagePercent > 90 and not SIMULATION:
       self.events.add(EventName.lowMemory)
 
@@ -396,11 +439,11 @@ class Controls:
             self.events.add(evt)
       except UnicodeDecodeError:
         pass
-
+    
     # TODO: fix simulator
     if not SIMULATION:
       if not NOSENSOR and os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID:
-        if not self.sm['liveLocationKalman'].gpsOK and (self.distance_traveled > 1000 and self.distance_traveled < 10000):
+        if not self.sm['liveLocationKalman'].gpsOK and (self.distance_traveled > 1000 and self.distance_traveled < 3000):
           # Not show in first 1 km to allow for driving out of garage. This event shows after 5 minutes
           self.events.add(EventName.noGps)
 

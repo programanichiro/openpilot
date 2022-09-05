@@ -47,6 +47,9 @@ class RouteEngine:
 
     self.ui_pid = None
 
+    # if os.environ['DONGLE_ID'] == 'xxxxxxxxxx':
+    #   os.environ["MAPBOX_TOKEN"] = "XXXXXXXXXXXXXXXXXXX"
+      
     if "MAPBOX_TOKEN" in os.environ:
       self.mapbox_token = os.environ["MAPBOX_TOKEN"]
       self.mapbox_host = "https://api.mapbox.com"
