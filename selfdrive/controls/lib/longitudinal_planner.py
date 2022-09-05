@@ -353,7 +353,7 @@ class Planner:
       self.desired_path_x_rates = np.append(self.desired_path_x_rates,desired_path_x_rate)
       self.desired_path_x_rates = np.delete(self.desired_path_x_rates , [0])
       desired_path_x_rate = np.sum(self.desired_path_x_rates) / self.desired_path_x_rates.size
-      if CVS_FRAME % 2 == 0:
+      if True: #CVS_FRAME % 2 == 0:
         with open('/tmp/desired_path_x_rate.txt','w') as fp:
           fp.write('%0.2f' % (desired_path_x_rate))
       with open('/tmp/debug_out_k','w') as fp:
