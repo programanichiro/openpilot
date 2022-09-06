@@ -410,21 +410,29 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QHBoxLayout *btns_layout0U  = new QHBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
   btns_layout0U->setContentsMargins(0, 430-200, 0, 0);
-  btns_layout00->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignTop);
+  btns_layout00->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignVCenter);
 
   {
-    // Long enable 透明button
-    QPushButton *LongEnablrButton = new QPushButton("L"); //表示文字も無し。
-    QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
-    });
-    int rect_width = 200;
-    int rect_height = 200;
-    LongEnablrButton->setFixedWidth(rect_width);
-    LongEnablrButton->setFixedHeight(rect_height);
-    btns_layout0U->addSpacing(0);
-    btns_layout0U->addWidget(LongEnablrButton , 0 , Qt::AlignTop);
-    //forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
-    LongEnablrButton->setStyleSheet(QString(btn_style).arg("#909090")); //線の色はダミー。
+    QWidget *btns_wrapperUU = new QWidget;
+    QHBoxLayout *btns_layoutUU  = new QHBoxLayout(btns_wrapperUU);
+    btns_layoutUU->setSpacing(0);
+    btns_layoutUU->setContentsMargins(0, 0, 0, 0);
+    btns_layout0U->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
+
+    {
+      // Long enable 透明button
+      QPushButton *LongEnablrButton = new QPushButton("L"); //表示文字も無し。
+      QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
+      });
+      int rect_width = 200;
+      int rect_height = 200;
+      LongEnablrButton->setFixedWidth(rect_width);
+      LongEnablrButton->setFixedHeight(rect_height);
+      btns_layoutUU->addSpacing(0);
+      btns_layoutUU->addWidget(LongEnablrButton);
+      //forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
+      LongEnablrButton->setStyleSheet(QString(btn_style).arg("#909090")); //線の色はダミー。
+    }
   }
 
   QWidget *btns_wrapper0 = new QWidget;
