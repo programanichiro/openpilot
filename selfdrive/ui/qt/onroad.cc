@@ -427,6 +427,11 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
         Long_enable = !getButtonEnabled("../manager/long_speeddown_disable.txt");
         setButtonEnabled("../manager/long_speeddown_disable.txt",Long_enable);
+        if(Long_enable){
+          soundPipo();
+        } else {
+          soundPo();
+        }
       });
       int rect_width = 200;
       int rect_height = 200;
@@ -1240,7 +1245,7 @@ void NvgWindow::drawHud(QPainter &p) {
   if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが)
     float x = rect().right() - radius / 2 - bdr_s * 2; //冗長だが面倒なので仕方がない。
     float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
-    int long_base_angle = 45-2; //下中央から左右に何度か指定する。
+    int long_base_angle = 45-4; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
     p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w_base)));
