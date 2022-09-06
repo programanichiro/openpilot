@@ -1177,7 +1177,7 @@ void NvgWindow::drawHud(QPainter &p) {
     float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
     static float desired_path_x_rate = 0 , desired_path_x_rate0 = 0;
     static unsigned int desired_path_x_rate_ct = 0;
-    if(desired_path_x_rate_ct ++ % 2 == 0){
+    if(true || desired_path_x_rate_ct ++ % 2 == 0){
       std::string desired_path_x_rate_txt = util::read_file("/tmp/desired_path_x_rate.txt");
       if(desired_path_x_rate_txt.empty() == false){
         desired_path_x_rate0 = std::stof(desired_path_x_rate_txt);
