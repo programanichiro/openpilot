@@ -406,24 +406,18 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0)));
   }
 
-  QWidget *btns_wrapper0UU = new QWidget;
-  QHBoxLayout *btns_layout0UU  = new QHBoxLayout(btns_wrapper0UU);
-  btns_layout0UU->setSpacing(0);
-  btns_layout0UU->setContentsMargins(0, 430-200, 0, 0);
-  btns_layout00->addWidget(btns_wrapper0UU, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
-
   QWidget *btns_wrapper0U = new QWidget;
-  QHBoxLayout *btns_layout0U  = new QHBoxLayout(btns_wrapper0U);
+  QHBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
-  btns_layout0U->setContentsMargins(0, 0, 0, 0);
-  btns_layout0UU->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignVCenter);
+  btns_layout0U->setContentsMargins(0, 430-200, 0, 0);
+  btns_layout00->addWidget(btns_wrapper0U, 0, Qt::AlignTop);
 
   {
     QWidget *btns_wrapperUU = new QWidget;
     QHBoxLayout *btns_layoutUU  = new QHBoxLayout(btns_wrapperUU);
     btns_layoutUU->setSpacing(0);
     btns_layoutUU->setContentsMargins(0, 0, 0, 0);
-    btns_layout0U->addWidget(btns_wrapperUU);
+    btns_layout0U->addWidget(btns_wrapperUU, 0, Qt::AlignRight);
 
     {
       // Long enable 透明button
@@ -445,7 +439,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
   btns_layout0->setContentsMargins(0, 0, 0, 0);
-  btns_layout0U->addWidget(btns_wrapper0);
+  btns_layout0U->addWidget(btns_wrapper0, 0, Qt::AlignRight);
 
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
