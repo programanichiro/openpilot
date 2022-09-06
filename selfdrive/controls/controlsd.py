@@ -188,9 +188,11 @@ class Controls:
     self.desired_curvature = 0.0
     self.desired_curvature_rate = 0.0
 
-    self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
-    self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
-    self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
+    # self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
+    # self.path_xyz_stds = np.ones((TRAJECTORY_SIZE, 3))
+    # self.plan_yaw = np.zeros((TRAJECTORY_SIZE,))
+    with open('/tmp/red_signal_scan_flag.txt','w') as fp:
+      fp.write('%d' % (0))
 
     # TODO: no longer necessary, aside from process replay
     self.sm['liveParameters'].valid = True
