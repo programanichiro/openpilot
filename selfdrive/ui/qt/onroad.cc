@@ -1234,12 +1234,13 @@ void NvgWindow::drawHud(QPainter &p) {
         desired_path_x_rate = desired_path_x_rate0;
       }
     }
-    p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, (-90-60)*16, -(360-60*2)*16*desired_path_x_rate);
+    int long_base_angle = 30; //下中央から左右に何度か指定する。
+    p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
 
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
     p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w_base)));
-    p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-58)*16, (58*2)*16);
+    p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-(long_base_angle-2))*16, ((long_base_angle-2)*2)*16);
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
