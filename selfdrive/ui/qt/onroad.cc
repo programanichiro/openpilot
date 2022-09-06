@@ -416,7 +416,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QHBoxLayout *btns_layout0U  = new QHBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
   btns_layout0U->setContentsMargins(0, 0, 0, 0);
-  btns_wrapper0UU->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignVCenter);
+  btns_layout0UU->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignVCenter);
 
   {
     QWidget *btns_wrapperUU = new QWidget;
