@@ -423,10 +423,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     {
       // Long enable 透明button
       QPushButton *LongEnablrButton = new QPushButton("L"); //表示文字も無し。
-      Long_enable = getButtonEnabled0("../manager/long_speeddown_disable.txt");
+      Long_enable = getButtonEnabled("../manager/long_speeddown_disable.txt");
       QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
-        Long_enable = !getButtonEnabled0("../manager/long_speeddown_disable.txt");
-        setButtonEnabled0("../manager/long_speeddown_disable.txt",Long_enable);
+        Long_enable = !getButtonEnabled("../manager/long_speeddown_disable.txt");
+        setButtonEnabled("../manager/long_speeddown_disable.txt",Long_enable);
       });
       int rect_width = 200;
       int rect_height = 200;
@@ -434,8 +434,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       LongEnablrButton->setFixedHeight(rect_height);
       btns_layoutUU->addSpacing(0);
       btns_layoutUU->addWidget(LongEnablrButton);
-      //forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
-      LongEnablrButton->setStyleSheet(QString(btn_style).arg("#909090")); //線の色はダミー。
+      LongEnablrButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
+      //LongEnablrButton->setStyleSheet(QString(btn_style).arg("#909090")); //線の色はダミー。
     }
   }
 
