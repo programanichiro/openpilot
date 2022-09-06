@@ -406,16 +406,23 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0)));
   }
 
+  QWidget *btns_wrapper0U = new QWidget;
+  QHBoxLayout *btns_layout0U  = new QHBoxLayout(btns_wrapper0U);
+  btns_layout0U->setSpacing(0);
+  btns_layout0U->setContentsMargins(0, 430, 0, 0);
+  btns_layout00->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignTop);
+
+
   QWidget *btns_wrapper0 = new QWidget;
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
   btns_layout0->setContentsMargins(0, 0, 0, 0);
-  btns_layout00->addWidget(btns_wrapper0, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
+  btns_layout0U->addWidget(btns_wrapper0, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
 
   QWidget *btns_wrapperL = new QWidget;
   QVBoxLayout *btns_layoutL  = new QVBoxLayout(btns_wrapperL);
   btns_layoutL->setSpacing(0);
-  btns_layoutL->setContentsMargins(15, 430, 0, 30);
+  btns_layoutL->setContentsMargins(15, 0, 0, 30);
 
   btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
 
@@ -454,7 +461,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(15, 430, 30, 30);
+  btns_layout->setContentsMargins(15, 0, 30, 30);
 
   btns_layout0->addWidget(btns_wrapper,0,Qt::AlignVCenter);
 
