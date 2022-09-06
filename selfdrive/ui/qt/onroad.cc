@@ -320,6 +320,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
 // ButtonsWindow
 const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1";
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
+bool Long_enable = true;
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
 
@@ -409,20 +410,23 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0U = new QWidget;
   QVBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
-  btns_layout0U->setContentsMargins(0, 430-200-40, 0, 0);
+  btns_layout0U->setContentsMargins(0, 430-200-45, 0, 0);
   btns_layout00->addWidget(btns_wrapper0U, 0, Qt::AlignTop);
 
   {
     QWidget *btns_wrapperUU = new QWidget;
     QHBoxLayout *btns_layoutUU  = new QHBoxLayout(btns_wrapperUU);
     btns_layoutUU->setSpacing(0);
-    btns_layoutUU->setContentsMargins(0, 0, 45, 0);
+    btns_layoutUU->setContentsMargins(0, 0, 50, 0);
     btns_layout0U->addWidget(btns_wrapperUU, 0, Qt::AlignRight);
 
     {
       // Long enable 透明button
       QPushButton *LongEnablrButton = new QPushButton("L"); //表示文字も無し。
+      Long_enable = getButtonEnabled0("../manager/long_speeddown_disable.txt");
       QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
+        Long_enable = !getButtonEnabled0("../manager/long_speeddown_disable.txt");
+        getButtonEnabled0("../manager/long_speeddown_disable.txt",Long_enable);
       });
       int rect_width = 200;
       int rect_height = 200;
@@ -438,7 +442,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0 = new QWidget;
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
-  btns_layout0->setContentsMargins(0, 40, 0, 0);
+  btns_layout0->setContentsMargins(0, 45, 0, 0);
   btns_layout0U->addWidget(btns_wrapper0, 0, Qt::AlignRight);
 
   QWidget *btns_wrapperL = new QWidget;
@@ -1200,6 +1204,8 @@ void NvgWindow::drawHud(QPainter &p) {
     }
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5)+y_ofs,
              engage_img, bg_color, 1.0 , -global_angle_steer0);
+  }
+  if(Long_enable && engageable)
     const int arc_w = -8; //内側に描画
     p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w)));
     float x = rect().right() - radius / 2 - bdr_s * 2;
@@ -1228,7 +1234,12 @@ void NvgWindow::drawHud(QPainter &p) {
         desired_path_x_rate = desired_path_x_rate0;
       }
     }
-    p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, -90*16, -360*16*desired_path_x_rate);
+    p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, (-90-60)*16, -(360-60*2)*16*desired_path_x_rate);
+
+    //ONOFFの状態をこれで視認できる。
+    const int arc_w_base = -14; //内側に描画
+    p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w_base)));
+    p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-58)*16, (58*2)*16);
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
