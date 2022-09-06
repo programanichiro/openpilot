@@ -422,7 +422,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     LongEnablrButton->setFixedWidth(rect_width);
     LongEnablrButton->setFixedHeight(rect_height);
     btns_layout0U->addSpacing(0);
-    btns_layout0U->addWidget(LongEnablrButton , 0 , Qt::AlignRight);
+    btns_layout0U->addWidget(LongEnablrButton , 0 , Qt::AlignTop);
     //forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
     LongEnablrButton->setStyleSheet(QString(btn_style).arg("#909090")); //線の色はダミー。
   }
