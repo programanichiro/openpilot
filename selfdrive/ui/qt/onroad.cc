@@ -422,7 +422,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
     {
       // Long enable 透明button
-      QPushButton *LongEnablrButton = new QPushButton("L"); //表示文字も無し。
+      QPushButton *LongEnablrButton = new QPushButton(""); //表示文字も無し。
       Long_enable = getButtonEnabled("../manager/long_speeddown_disable.txt");
       QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
         Long_enable = !getButtonEnabled("../manager/long_speeddown_disable.txt");
@@ -1234,13 +1234,15 @@ void NvgWindow::drawHud(QPainter &p) {
         desired_path_x_rate = desired_path_x_rate0;
       }
     }
-    int long_base_angle = 30; //下中央から左右に何度か指定する。
+    int long_base_angle = 45; //下中央から左右に何度か指定する。
     p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
-
+  }
+  if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが)
+    int long_base_angle = 45-2; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
     p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w_base)));
-    p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-(long_base_angle-2))*16, ((long_base_angle-2)*2)*16);
+    p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
