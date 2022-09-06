@@ -1218,8 +1218,8 @@ void NvgWindow::drawHud(QPainter &p) {
     const float x = rect().right() - radius / 2 - bdr_s * 2;
     const float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
     static float desired_path_x_rate = 0 , desired_path_x_rate0 = 0;
-    static unsigned int desired_path_x_rate_ct = 0;
-    if(true || desired_path_x_rate_ct ++ % 2 == 0){
+    //static unsigned int desired_path_x_rate_ct = 0;
+    if(true /*|| desired_path_x_rate_ct ++ % 2 == 0*/){
       std::string desired_path_x_rate_txt = util::read_file("/tmp/desired_path_x_rate.txt");
       if(desired_path_x_rate_txt.empty() == false){
         desired_path_x_rate0 = std::stof(desired_path_x_rate_txt);
@@ -1228,15 +1228,17 @@ void NvgWindow::drawHud(QPainter &p) {
         }
       }
     }
+    float max_diff = fabs(desired_path_x_rate0-desired_path_x_rate) / 10; // = 0.1; //これ以上一気にメーターが疎かない。可変式
+    if(max_diff < 0.02)max_diff = 0.02; else if(max_diff > 0.05)max_diff = 0.05;
     if(desired_path_x_rate0 > desired_path_x_rate){
-      if(desired_path_x_rate0 > desired_path_x_rate + 0.1f){
-        desired_path_x_rate += 0.1;
+      if(desired_path_x_rate0 > desired_path_x_rate + max_diff){
+        desired_path_x_rate += max_diff;
       } else {
         desired_path_x_rate = desired_path_x_rate0;
       }
     } else if(desired_path_x_rate0 < desired_path_x_rate){
-      if(desired_path_x_rate0 < desired_path_x_rate - 0.1f){
-        desired_path_x_rate -= 0.1;
+      if(desired_path_x_rate0 < desired_path_x_rate - max_diff){
+        desired_path_x_rate -= max_diff;
       } else {
         desired_path_x_rate = desired_path_x_rate0;
       }
