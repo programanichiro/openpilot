@@ -409,14 +409,14 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0U = new QWidget;
   QVBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
-  btns_layout0U->setContentsMargins(0, 430-200-80, 0, 0);
+  btns_layout0U->setContentsMargins(0, 430-200-40, 0, 0);
   btns_layout00->addWidget(btns_wrapper0U, 0, Qt::AlignTop);
 
   {
     QWidget *btns_wrapperUU = new QWidget;
     QHBoxLayout *btns_layoutUU  = new QHBoxLayout(btns_wrapperUU);
     btns_layoutUU->setSpacing(0);
-    btns_layoutUU->setContentsMargins(0, 0, 40, 0);
+    btns_layoutUU->setContentsMargins(0, 0, 45, 0);
     btns_layout0U->addWidget(btns_wrapperUU, 0, Qt::AlignRight);
 
     {
@@ -438,7 +438,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0 = new QWidget;
   QHBoxLayout *btns_layout0  = new QHBoxLayout(btns_wrapper0);
   btns_layout0->setSpacing(0);
-  btns_layout0->setContentsMargins(0, 80, 0, 0);
+  btns_layout0->setContentsMargins(0, 40, 0, 0);
   btns_layout0U->addWidget(btns_wrapper0, 0, Qt::AlignRight);
 
   QWidget *btns_wrapperL = new QWidget;
