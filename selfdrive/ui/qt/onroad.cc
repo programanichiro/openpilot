@@ -1205,7 +1205,7 @@ void NvgWindow::drawHud(QPainter &p) {
     drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5)+y_ofs,
              engage_img, bg_color, 1.0 , -global_angle_steer0);
   }
-  if(Long_enable && engageable)
+  if(Long_enable && engageable){
     const int arc_w = -8; //内側に描画
     p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w)));
     float x = rect().right() - radius / 2 - bdr_s * 2;
