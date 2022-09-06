@@ -585,7 +585,16 @@ class Planner:
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
     if desired_path_x_rate > 0.1 and desired_path_x_rate < 1.0 and self.type_EndToEndLong == 'acc':
-      v_cruise *= desired_path_x_rate #赤信号やAボタンモード関係なく、path_xの情報を加味してみる。
+      long_speeddown_disable = 0
+      try:
+        with open('/tmp/long_speeddown_disable.txt','r') as fp:
+          long_speeddown_disable_str = fp.read()
+          if long_speeddown_disable_str:
+            long_speeddown_disable = int(long_speeddown_disable_str) #0で有効。
+      except Exception as e:
+        pass
+      if long_speeddown_disable == 0:
+        v_cruise *= desired_path_x_rate #赤信号やAボタンモード関係なく、path_xの情報を加味してみる。
     
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
       #v_cruise = 0 #ワンペダル停止処理
