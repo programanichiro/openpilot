@@ -1212,9 +1212,11 @@ void NvgWindow::drawHud(QPainter &p) {
   }
   if(Long_enable && engageable){
     const int arc_w = -8; //内側に描画
-    p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w)));
-    float x = rect().right() - radius / 2 - bdr_s * 2;
-    float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
+    QPen pen = QPen(QColor(255, 255, 255, 180), abs(arc_w));
+    pen.setCapStyle(Qt::FlatCap); //端をフラットに
+    p.setPen(pen);
+    const float x = rect().right() - radius / 2 - bdr_s * 2;
+    const float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
     static float desired_path_x_rate = 0 , desired_path_x_rate0 = 0;
     static unsigned int desired_path_x_rate_ct = 0;
     if(true || desired_path_x_rate_ct ++ % 2 == 0){
@@ -1243,12 +1245,14 @@ void NvgWindow::drawHud(QPainter &p) {
     p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
   }
   if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが)
-    float x = rect().right() - radius / 2 - bdr_s * 2; //冗長だが面倒なので仕方がない。
-    float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
-    int long_base_angle = 45-4; //下中央から左右に何度か指定する。
+    const float x = rect().right() - radius / 2 - bdr_s * 2; //冗長だが面倒なので仕方がない。
+    const float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
+    const int long_base_angle = 45-3; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
-    p.setPen(QPen(QColor(255, 255, 255, 180), abs(arc_w_base)));
+    QPen pen = QPen(QColor(255, 255, 255, 180), abs(arc_w_base));
+    pen.setCapStyle(Qt::FlatCap); //端をフラットに
+    p.setPen(pen);
     p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
   }
 
