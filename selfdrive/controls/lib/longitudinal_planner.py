@@ -39,6 +39,7 @@ path_x_old_signal = 0
 path_x_old_signal_check = 0
 desired_path_x_speeds    = [0,5 ,10  ,15  ,20  ,30  ,40   ,50   ,60   ,70   ,80   ]
 desired_path_x_by_speeds = [0,15,60-5,65-5,75-5,95-5,125-5,150-5,170-5,190-5,220-5]
+long_speeddown_flag = False
 
 def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
   Z1 = (X2-X1)/(Y1-Y2) - (X3-X2)/(Y2-Y3)
@@ -304,7 +305,7 @@ class Planner:
       with open('/tmp/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
-    global red_signal_scan_ct , red_signal_scan_ct_2 , red_signal_speed_down_before , red_signal_scan_span
+    global red_signal_scan_ct , red_signal_scan_ct_2 , red_signal_speed_down_before , red_signal_scan_span , long_speeddown_flag
     red_signal_scan_flag_1 = red_signal_scan_flag
     red_signal_speed_down = 1.0
     desired_path_x_rate = 1.0 #一般的な減速制御
@@ -379,12 +380,18 @@ class Planner:
               self.night_time = int(night_time_info_str)
         except Exception as e:
           pass
-      # if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
-      #   stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
-      # else: #夜
-      #   stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
-      # if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and path_x[TRAJECTORY_SIZE -1] < stop_threshold:
-      if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and desired_path_x_rate < 0.4:
+      red_stop_immediately = False
+      if long_speeddown_flag == False:
+        if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
+          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
+        else: #夜
+          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
+        if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
+          red_stop_immediately = True #停止せよ。
+      else:
+        if desired_path_x_rate < 0.4:
+          red_stop_immediately = True #停止せよ。
+      if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
         #赤信号検出でワンペダル発動
         if red_signal_scan_ct < 10000:
           red_signal_scan_ct = 10000
@@ -584,6 +591,7 @@ class Planner:
 
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
+    long_speeddown_flag = False
     if desired_path_x_rate > 0.1 and desired_path_x_rate < 1.0 and self.type_EndToEndLong == 'acc':
       long_speeddown_disable = 0
       try:
@@ -594,6 +602,7 @@ class Planner:
       except Exception as e:
         pass
       if long_speeddown_disable == 0:
+        long_speeddown_flag = True #このフラグで信号ストップ条件の切り替えを行っている。
         v_cruise *= desired_path_x_rate #赤信号やAボタンモード関係なく、path_xの情報を加味してみる。
     
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
