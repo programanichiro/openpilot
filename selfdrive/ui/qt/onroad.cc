@@ -426,7 +426,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       Long_enable = getButtonEnabled0("../manager/long_speeddown_disable.txt");
       QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
         Long_enable = !getButtonEnabled0("../manager/long_speeddown_disable.txt");
-        getButtonEnabled0("../manager/long_speeddown_disable.txt",Long_enable);
+        setButtonEnabled0("../manager/long_speeddown_disable.txt",Long_enable);
       });
       int rect_width = 200;
       int rect_height = 200;
