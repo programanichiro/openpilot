@@ -1238,6 +1238,8 @@ void NvgWindow::drawHud(QPainter &p) {
     p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
   }
   if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが)
+    float x = rect().right() - radius / 2 - bdr_s * 2; //冗長だが面倒なので仕方がない。
+    float y = radius / 2 + int(bdr_s * 1.5)+y_ofs;
     int long_base_angle = 45-2; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
