@@ -410,13 +410,13 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QHBoxLayout *btns_layout0UU  = new QHBoxLayout(btns_wrapper0UU);
   btns_layout0UU->setSpacing(0);
   btns_layout0UU->setContentsMargins(0, 430-200, 0, 0);
-  btns_layout00->addWidget(btns_wrapper0UU, 0, /*Qt::AlignTop |*/ Qt::AlignVCenter);
+  btns_layout00->addWidget(btns_wrapper0UU, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
 
   QWidget *btns_wrapper0U = new QWidget;
   QHBoxLayout *btns_layout0U  = new QHBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
   btns_layout0U->setContentsMargins(0, 0, 0, 0);
-  btns_layout0UU->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
+  btns_layout0UU->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignVCenter);
 
   {
     QWidget *btns_wrapperUU = new QWidget;
