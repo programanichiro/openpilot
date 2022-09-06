@@ -417,7 +417,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QHBoxLayout *btns_layoutUU  = new QHBoxLayout(btns_wrapperUU);
     btns_layoutUU->setSpacing(0);
     btns_layoutUU->setContentsMargins(0, 0, 0, 0);
-    btns_layout0U->addWidget(btns_wrapper0U, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
+    btns_layout0U->addWidget(btns_wrapperUU, 0, /*Qt::AlignTop |*/ Qt::AlignRight);
 
     {
       // Long enable 透明button
