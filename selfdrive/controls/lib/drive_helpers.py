@@ -30,8 +30,10 @@ MAX_LATERAL_JERK = 5.0
 MAX_CURVATURE_RATES_0 = [0.03762194918267951, 0.03762194918267951 * 0.8] #最初の係数を機械推論反映値として計算する（1〜2.7）
 MAX_CURVATURE_RATE_SPEEDS = [0, 35]
 
-k_vs =     [1.02, 1.029, 1.06 , 1.10  , 1.14  , 1.19 , 1.24 ] #desired_curvatureでinterpする。1.15定数倍で保土ヶ谷出口32度回ってる。
-k_vs_org = [0   , 0.004, 0.006, 0.0085, 0.0095, 0.014, 0.021]
+# k_vs =     [1.02, 1.029, 1.06 , 1.10  , 1.14  , 1.19 , 1.24 ] #desired_curvatureでinterpする。1.15定数倍で保土ヶ谷出口32度回ってる。
+# k_vs_org = [0   , 0.004, 0.006, 0.0085, 0.0095, 0.014, 0.021]
+k_vs =     [1.0,  1.0] #TSS2と同じ、公式の値に介入しない。
+k_vs_org = [0  , 0.05]
 k2_vs =     [1.0, 1.0  , 1.0] #TSS2用減少補正。 舵力減少させないでテスト。
 k2_vs_org = [0  , 0.033, 0.05]
 with open('/tmp/curvature_info.txt','w') as fp:
@@ -199,7 +201,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
           fp.write('%.9f/%.3f' % (desired_curvature , k_v))
       except Exception as e:
         pass
-    k_v2 = 4 if tss_type < 2 else 2 #tss2なら2,tsspでは試行中。
+    k_v2 = 2 if tss_type < 2 else 2 #tss2なら2,tsspでも4->2で揃えてみる。
     max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) *k_v2 # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
     safe_desired_curvature_rate = clip(desired_curvature_rate*k_v,
                                             -max_curvature_rate,
