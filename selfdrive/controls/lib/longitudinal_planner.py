@@ -365,7 +365,7 @@ class LongitudinalPlanner:
         #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
         #fp.write('@@@%f,%f,%f' % (v_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
         #fp.write('***%.2f,[%.2f],%d' % (np.sum(self.desired_path_x_rates),desired_path_x_rate,self.desired_path_x_rates.size))
-        fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100))
+        fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,OP_ENABLE_v_cruise_kph))
         #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
         #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
         #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
