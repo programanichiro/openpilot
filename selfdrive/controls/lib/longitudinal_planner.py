@@ -390,7 +390,7 @@ class LongitudinalPlanner:
           red_stop_immediately = True #停止せよ。
       else:
         #昼stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,25,30,45,60]) #事前減速で40km/h以下になることを期待している。
-        stop_threshold_r = interp(v_ego*3.6 , [0,10,20,30,40,50] , [0.28,0.32,0.35,0.39,0.42,0.45]) #これでdesired_path_x_rateと比較するという手もあるか
+        stop_threshold_r = interp(v_ego*3.6 , [0,10,20,30,40,50] , [0.33,0.35,0.38,0.40,0.43,0.46]) #これでdesired_path_x_rateと比較するという手もあるか
         if desired_path_x_rate < stop_threshold_r: #0.4:
           red_stop_immediately = True #停止せよ。
       if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
