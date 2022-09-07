@@ -291,11 +291,11 @@ class LongitudinalPlanner:
             signal_scan_ct = 100 #2回鳴るのを防止
             path_x_old_signal_check = 0
         else:
-          signal_scan_ct = 0
+          signal_scan_ct = 0 if signal_scan_ct < 10 else signal_scan_ct - 10
           path_x_old_signal_check = 0
         path_x_old_signal = path_x[TRAJECTORY_SIZE -1]
     else:
-      signal_scan_ct = 0
+      signal_scan_ct = 0 if signal_scan_ct < 10 else signal_scan_ct - 10
     if path_x_old_signal < 30:
       path_x_old_signal_check = 0
 
