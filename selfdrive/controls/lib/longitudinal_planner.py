@@ -390,6 +390,7 @@ class Planner:
           red_stop_immediately = True #停止せよ。
       else:
         #昼stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,25,30,45,60]) #事前減速で40km/h以下になることを期待している。
+        #stop_threshold_r = interp(v_ego*3.6 , [0,10,20,30,40,50] , [0.28,0.32,0.35,0.39,0.42,0.45]) #これでdesired_path_x_rateと比較するという手もあるか
         if desired_path_x_rate < 0.4:
           red_stop_immediately = True #停止せよ。
       if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
@@ -609,8 +610,8 @@ class Planner:
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
       #v_cruise = 0 #ワンペダル停止処理
       v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す
-      if red_signal_scan_span > 0:
-        v_cruise *= interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
+      # if red_signal_scan_span > 0: これでブレーキングの強さが変わったら制御しづらいのでやめる。
+      #   v_cruise *= interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
 
     long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
     force_slow_decel = sm['controlsState'].forceDecel
