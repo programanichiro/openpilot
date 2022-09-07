@@ -389,6 +389,7 @@ class Planner:
         if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
           red_stop_immediately = True #停止せよ。
       else:
+        #昼stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,25,30,45,60]) #事前減速で40km/h以下になることを期待している。
         if desired_path_x_rate < 0.4:
           red_stop_immediately = True #停止せよ。
       if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
