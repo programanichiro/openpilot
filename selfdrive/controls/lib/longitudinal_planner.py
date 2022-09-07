@@ -37,8 +37,8 @@ with open('/tmp/red_signal_scan_flag.txt','w') as fp:
   fp.write('%d' % (0))
 path_x_old_signal = 0
 path_x_old_signal_check = 0
-desired_path_x_speeds    = [0,5 ,10  ,15  ,20  ,30  ,40   ,50   ,60   ,70   ,80   ]
-desired_path_x_by_speeds = [0,15,60-5,65-5,75-5,95-5,125-5,150-5,170-5,190-5,220-5]
+desired_path_x_speeds    = [0,5 ,10  ,15  ,20  ,30  ,40   ,50   ,60   ,70   ,80   ,90   ,100  ]
+desired_path_x_by_speeds = [0,15,60-5,65-5,75-5,95-5,125-5,150-5,170-5,190-5,220-5,240-5,255-5]
 long_speeddown_flag = False
 
 def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
