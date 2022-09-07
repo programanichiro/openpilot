@@ -29,20 +29,12 @@
     <message>
         <location filename="../qt/offroad/networking.cc" line="129"/>
         <source>Enable Tethering</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Ativar Tether</translation>
-=======
         <translation>Tethering Inschakelen</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/offroad/networking.cc" line="134"/>
         <source>Tethering Password</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Senha Tethering</translation>
-=======
         <translation>Tethering Wachtwoord</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/offroad/networking.cc" line="134"/>
@@ -53,20 +45,12 @@
     <message>
         <location filename="../qt/offroad/networking.cc" line="136"/>
         <source>Enter new tethering password</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Insira nova senha tethering</translation>
-=======
         <translation>Voer nieuw tethering wachtwoord in</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/offroad/networking.cc" line="144"/>
         <source>IP Address</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Endereço IP</translation>
-=======
         <translation>IP Adres</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/offroad/networking.cc" line="153"/>
@@ -124,176 +108,152 @@
 <context>
     <name>DevicePanel</name>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="106"/>
+        <location filename="../qt/offroad/settings.cc" line="100"/>
         <source>Dongle ID</source>
         <translation>Dongle ID</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="106"/>
+        <location filename="../qt/offroad/settings.cc" line="100"/>
         <source>N/A</source>
         <translation>Nvt</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="107"/>
+        <location filename="../qt/offroad/settings.cc" line="101"/>
         <source>Serial</source>
         <translation>Serienummer</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="111"/>
+        <location filename="../qt/offroad/settings.cc" line="105"/>
         <source>Driver Camera</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Câmera voltada para o Motorista</translation>
-=======
         <translation>Bestuurders Camera</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="111"/>
+        <location filename="../qt/offroad/settings.cc" line="105"/>
         <source>PREVIEW</source>
         <translation>BEKIJKEN</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="112"/>
+        <location filename="../qt/offroad/settings.cc" line="106"/>
         <source>Preview the driver facing camera to ensure that driver monitoring has good visibility. (vehicle must be off)</source>
         <translation>Bekijk de naar de bestuurder gerichte camera om ervoor te zorgen dat het monitoren van de bestuurder goed zicht heeft. (Voertuig moet uitgschakeld zijn)</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="116"/>
+        <location filename="../qt/offroad/settings.cc" line="110"/>
         <source>Reset Calibration</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Resetar Calibragem</translation>
-=======
         <translation>Kalibratie Resetten</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="116"/>
+        <location filename="../qt/offroad/settings.cc" line="110"/>
         <source>RESET</source>
         <translation>RESET</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="119"/>
+        <location filename="../qt/offroad/settings.cc" line="113"/>
         <source>Are you sure you want to reset calibration?</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Tem certeza que quer resetar a calibragem?</translation>
-=======
         <translation>Weet u zeker dat u de kalibratie wilt resetten?</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="126"/>
+        <location filename="../qt/offroad/settings.cc" line="120"/>
         <source>Review Training Guide</source>
         <translation>Doorloop de Training Opnieuw</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="126"/>
+        <location filename="../qt/offroad/settings.cc" line="120"/>
         <source>REVIEW</source>
         <translation>BEKIJKEN</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="126"/>
+        <location filename="../qt/offroad/settings.cc" line="120"/>
         <source>Review the rules, features, and limitations of openpilot</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Revisar regras, aprimoramentos e limitações do openpilot</translation>
-=======
         <translation>Bekijk de regels, functies en beperkingen van openpilot</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="128"/>
+        <location filename="../qt/offroad/settings.cc" line="122"/>
         <source>Are you sure you want to review the training guide?</source>
         <translation>Weet u zeker dat u de training opnieuw wilt doorlopen?</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="136"/>
+        <location filename="../qt/offroad/settings.cc" line="130"/>
         <source>Regulatory</source>
         <translation>Regelgeving</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="136"/>
+        <location filename="../qt/offroad/settings.cc" line="130"/>
         <source>VIEW</source>
         <translation>BEKIJKEN</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="144"/>
+        <location filename="../qt/offroad/settings.cc" line="138"/>
         <source>Change Language</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Mudar Linguagem</translation>
-=======
         <translation>Taal Wijzigen</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="144"/>
+        <location filename="../qt/offroad/settings.cc" line="138"/>
         <source>CHANGE</source>
         <translation>WIJZIGEN</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="148"/>
+        <location filename="../qt/offroad/settings.cc" line="142"/>
         <source>Select a language</source>
         <translation>Selecteer een taal</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="168"/>
+        <location filename="../qt/offroad/settings.cc" line="162"/>
         <source>Reboot</source>
         <translation>Opnieuw Opstarten</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="173"/>
+        <location filename="../qt/offroad/settings.cc" line="167"/>
         <source>Power Off</source>
         <translation>Uitschakelen</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="193"/>
+        <location filename="../qt/offroad/settings.cc" line="187"/>
         <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or 8° down. openpilot is continuously calibrating, resetting is rarely required.</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>o openpilot requer que o dispositivo seja montado dentro de 4° esquerda ou direita e dentro de 5° para cima ou 8° para baixo. o openpilot está continuamente calibrando, resetar raramente é necessário.</translation>
-=======
         <translation>openpilot vereist dat het apparaat binnen 4° links of rechts en binnen 5° omhoog of 8° omlaag wordt gemonteerd. openpilot kalibreert continu, resetten is zelden nodig.</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="204"/>
+        <location filename="../qt/offroad/settings.cc" line="198"/>
         <source> Your device is pointed %1° %2 and %3° %4.</source>
         <translation> Uw apparaat is gericht op %1° %2 en %3° %4.</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="205"/>
+        <location filename="../qt/offroad/settings.cc" line="199"/>
         <source>down</source>
         <translation>omlaag</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="205"/>
+        <location filename="../qt/offroad/settings.cc" line="199"/>
         <source>up</source>
         <translation>omhoog</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="206"/>
+        <location filename="../qt/offroad/settings.cc" line="200"/>
         <source>left</source>
         <translation>links</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="206"/>
+        <location filename="../qt/offroad/settings.cc" line="200"/>
         <source>right</source>
         <translation>rechts</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="217"/>
+        <location filename="../qt/offroad/settings.cc" line="211"/>
         <source>Are you sure you want to reboot?</source>
         <translation>Weet u zeker dat u opnieuw wilt opstarten?</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="224"/>
+        <location filename="../qt/offroad/settings.cc" line="218"/>
         <source>Disengage to Reboot</source>
         <translation>Deactiveer openpilot om opnieuw op te starten</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="230"/>
+        <location filename="../qt/offroad/settings.cc" line="224"/>
         <source>Are you sure you want to power off?</source>
         <translation>Weet u zeker dat u wilt uitschakelen?</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="237"/>
+        <location filename="../qt/offroad/settings.cc" line="231"/>
         <source>Disengage to Power Off</source>
         <translation>Deactiveer openpilot om uit te schakelen</translation>
     </message>
@@ -336,11 +296,7 @@
     <message>
         <location filename="../qt/offroad/driverview.cc" line="55"/>
         <source>camera starting</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>câmera iniciando</translation>
-=======
         <translation>Camera wordt gestart</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
 </context>
 <context>
@@ -459,13 +415,8 @@
         <location filename="../qt/maps/map_settings.cc" line="107"/>
         <source>Get turn-by-turn directions displayed and more with a comma
 prime subscription. Sign up now: https://connect.comma.ai</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Obtenha instruções passo a passo exibidas e muito mais com 
-uma assinatura prime Inscreva-se agora:  https://connect.comma.ai</translation>
-=======
         <translation>Krijg stapsgewijze routebeschrijving en meer met een comma
 prime abonnement. Meld u nu aan: https://connect.comma.ai</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/maps/map_settings.cc" line="164"/>
@@ -478,13 +429,8 @@ ingesteld</translation>
         <location filename="../qt/maps/map_settings.cc" line="169"/>
         <source>No work
 location set</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Sem local de
-trabalho definido</translation>
-=======
         <translation>Geen werklocatie
 ingesteld</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/maps/map_settings.cc" line="282"/>
@@ -596,11 +542,7 @@ ingesteld</translation>
     <message>
         <location filename="../qt/widgets/prime.cc" line="86"/>
         <source>Pair your device to your comma account</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Pareie seu dispositivo à sua conta comma</translation>
-=======
         <translation>Koppel uw apparaat aan uw comma-account</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/widgets/prime.cc" line="97"/>
@@ -615,11 +557,7 @@ ingesteld</translation>
     <message>
         <location filename="../qt/widgets/prime.cc" line="99"/>
         <source>Bookmark connect.comma.ai to your home screen to use it like an app</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Salve connect.comma.ai como sua página inicial para utilizar como um app</translation>
-=======
         <translation>Voeg connect.comma.ai toe op uw startscherm om het als een app te gebruiken</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
 </context>
 <context>
@@ -637,11 +575,7 @@ ingesteld</translation>
     <message>
         <location filename="../qt/widgets/prime.cc" line="199"/>
         <source>PRIME FEATURES:</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>APRIMORAMENTOS PRIME:</translation>
-=======
         <translation>PRIME BEVAT:</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/widgets/prime.cc" line="204"/>
@@ -788,33 +722,33 @@ ingesteld</translation>
 <context>
     <name>SettingsWindow</name>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="338"/>
+        <location filename="../qt/offroad/settings.cc" line="332"/>
         <source>×</source>
         <translation>×</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="364"/>
+        <location filename="../qt/offroad/settings.cc" line="358"/>
         <source>Device</source>
         <translation>Apparaat</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="365"/>
-        <location filename="../qt/offroad/settings.cc" line="404"/>
+        <location filename="../qt/offroad/settings.cc" line="359"/>
+        <location filename="../qt/offroad/settings.cc" line="398"/>
         <source>Network</source>
         <translation>Netwerk</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="366"/>
+        <location filename="../qt/offroad/settings.cc" line="360"/>
         <source>Toggles</source>
         <translation>Opties</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="367"/>
+        <location filename="../qt/offroad/settings.cc" line="361"/>
         <source>Software</source>
         <translation>Software</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="372"/>
+        <location filename="../qt/offroad/settings.cc" line="366"/>
         <source>Navigation</source>
         <translation>Navigatie</translation>
     </message>
@@ -930,11 +864,7 @@ ingesteld</translation>
     <message>
         <location filename="../qt/widgets/prime.cc" line="233"/>
         <source>Finish Setup</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Concluir</translation>
-=======
         <translation>Installatie voltooien</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/widgets/prime.cc" line="239"/>
@@ -1019,37 +949,37 @@ ingesteld</translation>
         <translation>ZOEKEN</translation>
     </message>
     <message>
-        <location filename="../qt/sidebar.h" line="36"/>
+        <location filename="../qt/sidebar.h" line="37"/>
         <source>--</source>
         <translation>--</translation>
     </message>
     <message>
-        <location filename="../qt/sidebar.h" line="37"/>
+        <location filename="../qt/sidebar.h" line="38"/>
         <source>Wi-Fi</source>
         <translation>Wi-Fi</translation>
     </message>
     <message>
-        <location filename="../qt/sidebar.h" line="38"/>
+        <location filename="../qt/sidebar.h" line="39"/>
         <source>ETH</source>
         <translation>ETH</translation>
     </message>
     <message>
-        <location filename="../qt/sidebar.h" line="39"/>
+        <location filename="../qt/sidebar.h" line="40"/>
         <source>2G</source>
         <translation>2G</translation>
     </message>
     <message>
-        <location filename="../qt/sidebar.h" line="40"/>
+        <location filename="../qt/sidebar.h" line="41"/>
         <source>3G</source>
         <translation>3G</translation>
     </message>
     <message>
-        <location filename="../qt/sidebar.h" line="41"/>
+        <location filename="../qt/sidebar.h" line="42"/>
         <source>LTE</source>
         <translation>4G</translation>
     </message>
     <message>
-        <location filename="../qt/sidebar.h" line="42"/>
+        <location filename="../qt/sidebar.h" line="43"/>
         <source>5G</source>
         <translation>5G</translation>
     </message>
@@ -1057,85 +987,64 @@ ingesteld</translation>
 <context>
     <name>SoftwarePanel</name>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="242"/>
+        <location filename="../qt/offroad/settings.cc" line="236"/>
         <source>Git Branch</source>
         <translation>Git Branch</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="243"/>
+        <location filename="../qt/offroad/settings.cc" line="237"/>
         <source>Git Commit</source>
         <translation>Git Commit</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="244"/>
+        <location filename="../qt/offroad/settings.cc" line="238"/>
         <source>OS Version</source>
         <translation>OS Versie</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="245"/>
+        <location filename="../qt/offroad/settings.cc" line="239"/>
         <source>Version</source>
         <translation>Versie</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="246"/>
+        <location filename="../qt/offroad/settings.cc" line="240"/>
         <source>Last Update Check</source>
         <translation>Laatste Updatecontrole</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="246"/>
+        <location filename="../qt/offroad/settings.cc" line="240"/>
         <source>The last time openpilot successfully checked for an update. The updater only runs while the car is off.</source>
         <translation>De laatste keer dat openpilot met succes heeft gecontroleerd op een update. De updater werkt alleen als de auto is uitgeschakeld.</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="247"/>
+        <location filename="../qt/offroad/settings.cc" line="241"/>
         <source>Check for Update</source>
         <translation>Controleer op Updates</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="252"/>
+        <location filename="../qt/offroad/settings.cc" line="246"/>
         <source>CHECKING</source>
         <translation>CONTROLEER</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="259"/>
+        <location filename="../qt/offroad/settings.cc" line="253"/>
         <source>Switch Branch</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Trocar Branch</translation>
-=======
         <translation>Branch Verwisselen</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="259"/>
+        <location filename="../qt/offroad/settings.cc" line="253"/>
         <source>ENTER</source>
         <translation>INVOEREN</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="259"/>
-        <location filename="../qt/offroad/settings.cc" line="261"/>
+        <location filename="../qt/offroad/settings.cc" line="253"/>
+        <location filename="../qt/offroad/settings.cc" line="255"/>
         <source>The new branch will be pulled the next time the updater runs.</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>A nova branch será aplicada ao verificar atualizações.</translation>
-=======
         <translation>Tijdens de volgende update wordt de nieuwe branch opgehaald.</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="261"/>
+        <location filename="../qt/offroad/settings.cc" line="255"/>
         <source>Enter branch name</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Inserir o nome da branch</translation>
-    </message>
-    <message>
-        <location filename="../qt/offroad/settings.cc" line="272"/>
-        <source>UNINSTALL</source>
-        <translation>DESINSTALAR</translation>
-    </message>
-    <message>
-        <location filename="../qt/offroad/settings.cc" line="272"/>
-        <source>Uninstall %1</source>
-        <translation>Desintalar o %1</translation>
-=======
         <translation>Voer branch naam in</translation>
     </message>
     <message>
@@ -1147,21 +1056,20 @@ ingesteld</translation>
         <location filename="../qt/offroad/settings.cc" line="266"/>
         <source>UNINSTALL</source>
         <translation>VERWIJDER</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="274"/>
+        <location filename="../qt/offroad/settings.cc" line="268"/>
         <source>Are you sure you want to uninstall?</source>
         <translation>Weet u zeker dat u de installatie ongedaan wilt maken?</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="291"/>
+        <location filename="../qt/offroad/settings.cc" line="285"/>
         <source>failed to fetch update</source>
         <translation>ophalen van update mislukt</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="292"/>
-        <location filename="../qt/offroad/settings.cc" line="313"/>
+        <location filename="../qt/offroad/settings.cc" line="286"/>
+        <location filename="../qt/offroad/settings.cc" line="307"/>
         <source>CHECK</source>
         <translation>CONTROLEER</translation>
     </message>
@@ -1238,11 +1146,7 @@ ingesteld</translation>
     <message>
         <location filename="../qt/offroad/onboarding.cc" line="111"/>
         <source>Scroll to accept</source>
-<<<<<<< HEAD:selfdrive/ui/translations/main_pt-BR.ts
-        <translation>Role a tela para aceitar</translation>
-=======
         <translation>Scroll om te accepteren</translation>
->>>>>>> 4618b8f7a (openpilot v0.8.17 release):selfdrive/ui/translations/main_nl.ts
     </message>
     <message>
         <location filename="../qt/offroad/onboarding.cc" line="126"/>
@@ -1293,16 +1197,6 @@ ingesteld</translation>
         <translation>Upload gegevens van de bestuurders camera en help het algoritme voor het monitoren van de bestuurder te verbeteren.</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="64"/>
-        <source>🌮 End-to-end longitudinal (extremely alpha) 🌮</source>
-        <translation>🌮 End-to-end longitudinal (experimental) 🌮</translation>
-    </message>
-    <message>
-        <location filename="../qt/offroad/settings.cc" line="65"/>
-        <source>Let the driving model control the gas and brakes, openpilot will drive as it thinks a human would. Super experimental.</source>
-        <translation>Deixe o modelo de direção controlar o acelerador e o freio, o openpilot dirigirá da maneira como ele entende que um humano o faria. Super experimental.</translation>
-    </message>
-    <message>
         <location filename="../qt/offroad/settings.cc" line="58"/>
         <source>Disengage On Accelerator Pedal</source>
         <translation>Deactiveren Met Gaspedaal</translation>
@@ -1313,32 +1207,32 @@ ingesteld</translation>
         <translation>Indien ingeschakeld, zal het indrukken van het gaspedaal openpilot deactiveren.</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="71"/>
+        <location filename="../qt/offroad/settings.cc" line="65"/>
         <source>Show ETA in 24h Format</source>
         <translation>Toon verwachte aankomsttijd in 24-uurs formaat</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="72"/>
+        <location filename="../qt/offroad/settings.cc" line="66"/>
         <source>Use 24h format instead of am/pm</source>
         <translation>Gebruik 24-uurs formaat in plaats van AM en PM</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="77"/>
+        <location filename="../qt/offroad/settings.cc" line="71"/>
         <source>Show Map on Left Side of UI</source>
         <translation>Toon kaart aan linkerkant van het scherm</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="78"/>
+        <location filename="../qt/offroad/settings.cc" line="72"/>
         <source>Show map on left side when in split screen view.</source>
         <translation>Toon kaart links in gesplitste schermweergave.</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="90"/>
+        <location filename="../qt/offroad/settings.cc" line="84"/>
         <source>openpilot Longitudinal Control</source>
         <translation>openpilot Longitudinale Controle</translation>
     </message>
     <message>
-        <location filename="../qt/offroad/settings.cc" line="91"/>
+        <location filename="../qt/offroad/settings.cc" line="85"/>
         <source>openpilot will disable the car&apos;s radar and will take over control of gas and brakes. Warning: this disables AEB!</source>
         <translation>openpilot zal de radar van de auto uitschakelen en de controle over gas en remmen overnemen. Waarschuwing: hierdoor wordt AEB (automatische noodrem) uitgeschakeld!</translation>
     </message>
