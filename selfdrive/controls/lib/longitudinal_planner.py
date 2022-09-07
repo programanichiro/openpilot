@@ -288,20 +288,20 @@ class LongitudinalPlanner:
                 #   red_signal_scan_flag = 0 #赤ブレーキキャンセルならゼロに戻す。
               else:
                 fp.write('%d' % (1)) #よそ見してたらprompt.wavを鳴らす。
-            signal_scan_ct = 100 #2回鳴るのを防止
+            signal_scan_ct = 200 #2回鳴るのを防止
             path_x_old_signal_check = 0
         else:
-          signal_scan_ct = 0 if signal_scan_ct < 10 else signal_scan_ct - 10
+          signal_scan_ct = 0 if signal_scan_ct < 4 else signal_scan_ct - 4
           path_x_old_signal_check = 0
         path_x_old_signal = path_x[TRAJECTORY_SIZE -1]
     else:
-      signal_scan_ct = 0 if signal_scan_ct < 10 else signal_scan_ct - 10
+      signal_scan_ct = 0 if signal_scan_ct < 4 else signal_scan_ct - 4
     if path_x_old_signal < 30:
       path_x_old_signal_check = 0
 
     if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
-      signal_scan_ct = 100 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
+      signal_scan_ct = 200 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
       with open('/tmp/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
