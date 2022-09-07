@@ -101,10 +101,11 @@ def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
 class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0):
     self.CP = CP
-    params = Params()
-    # TODO read param in the loop for live toggling
-    mode = 'blended' if params.get_bool('EndToEndLong') else 'acc'
-    self.mpc = LongitudinalMpc(mode=mode)
+    self.params = Params()
+    self.param_read_counter = 0
+
+    self.mpc = LongitudinalMpc()
+    self.read_param()
 
     self.fcw = False
 
@@ -123,11 +124,14 @@ class LongitudinalPlanner:
     self.night_time = 100 #変数名がわかりにくいが環境光の強さが0〜100で取得できる。
     self.night_time_refresh_ct = 0
     self.desired_path_x_rates = np.zeros(5)
-    self.type_EndToEndLong = mode
 
     if self.CP.carFingerprint not in TSS2_CAR:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,57.0 , 91-4      ,62.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
       
+  def read_param(self):
+    self.mpc.mode = 'blended' if self.params.get_bool('EndToEndLong') else 'acc'
+    self.type_EndToEndLong = mpc.mode
+
   def parse_model(self, model_msg):
     if (len(model_msg.position.x) == 33 and
        len(model_msg.velocity.x) == 33 and
@@ -147,6 +151,10 @@ class LongitudinalPlanner:
     return x, v, a, j
 
   def update(self, sm):
+    if self.param_read_counter % 50 == 0:
+      self.read_param()
+    self.param_read_counter += 1
+
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time
