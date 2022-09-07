@@ -184,7 +184,7 @@ class Planner:
     if on_onepedal_ct >= 0:
       on_onepedal_ct += 1
       if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
-        if sm['carState'].gas < 0.35: #アクセルが弱いかチョン押しなら
+        if sm['carState'].gas < 0.32: #アクセルが弱いかチョン押しなら
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
@@ -299,7 +299,7 @@ class Planner:
     if path_x_old_signal < 30:
       path_x_old_signal_check = 0
 
-    if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.35: #アクセル強押しでワンペダルからオートパイロットへ
+    if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       signal_scan_ct = 100 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
       with open('/tmp/signal_start_prompt_info.txt','w') as fp:
