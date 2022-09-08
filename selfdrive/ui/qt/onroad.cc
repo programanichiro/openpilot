@@ -1212,7 +1212,7 @@ void NvgWindow::drawHud(QPainter &p) {
   }
   if(Long_enable && engageable){
     const int arc_w = -8; //内側に描画
-    QPen pen = QPen(QColor(255, 255, 255, 180), abs(arc_w));
+    QPen pen = QPen(QColor(255, 255, uiState()->scene.end_to_end_long ? 0 : 255, 180), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     const float x = rect().right() - radius / 2 - bdr_s * 2;
@@ -1252,7 +1252,7 @@ void NvgWindow::drawHud(QPainter &p) {
     const int long_base_angle = 45-3; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
-    QPen pen = QPen(QColor(255, 255, 255, 180), abs(arc_w_base));
+    QPen pen = QPen(QColor(255, 255, uiState()->scene.end_to_end_long ? 0 : 255, 180), abs(arc_w_base));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
