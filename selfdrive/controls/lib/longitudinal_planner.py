@@ -130,7 +130,7 @@ class LongitudinalPlanner:
       
   def read_param(self):
     self.mpc.mode = 'blended' if self.params.get_bool('EndToEndLong') else 'acc'
-    self.type_EndToEndLong = mpc.mode
+    self.type_EndToEndLong = self.mpc.mode
 
   def parse_model(self, model_msg):
     if (len(model_msg.position.x) == 33 and
