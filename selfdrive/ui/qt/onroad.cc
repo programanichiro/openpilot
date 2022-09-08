@@ -1436,7 +1436,10 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIState *s) {
     use_lanelines = scene.mUseLaneButton == 0 ? false : true;
   }
   float start_hue, end_hue;
-  if (use_lanelines == false && scene.end_to_end_long) {
+  if (use_lanelines == false) {
+    bg.setColorAt(0, whiteColor());
+    bg.setColorAt(1, whiteColor(0));
+  } if(scene.end_to_end_long) {
     const auto &acceleration = (*s->sm)["modelV2"].getModelV2().getAcceleration();
     float acceleration_future = 0;
     if (acceleration.getZ().size() > 16) {
@@ -1452,7 +1455,7 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIState *s) {
     bg.setColorAt(0.0, QColor::fromHslF(start_hue / 360., 0.97, 0.56, 0.4));
     bg.setColorAt(0.5, QColor::fromHslF(end_hue / 360., 1.0, 0.68, 0.35));
     bg.setColorAt(1.0, QColor::fromHslF(end_hue / 360., 1.0, 0.68, 0.0));
-  } else if (use_lanelines == false) {
+  } else {
     const auto &orientation = (*s->sm)["modelV2"].getModelV2().getOrientation();
     float orientation_future = 0;
     if (orientation.getZ().size() > 16) {
@@ -1468,9 +1471,6 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIState *s) {
     bg.setColorAt(0.0, QColor::fromHslF(start_hue / 360., 0.94, 0.51, 0.4));
     bg.setColorAt(0.5, QColor::fromHslF(end_hue / 360., 1.0, 0.68, 0.35));
     bg.setColorAt(1.0, QColor::fromHslF(end_hue / 360., 1.0, 0.68, 0.0));
-  } else {
-    bg.setColorAt(0, whiteColor());
-    bg.setColorAt(1, whiteColor(0));
   }
   painter.setBrush(bg);
   painter.drawPolygon(scene.track_vertices);
