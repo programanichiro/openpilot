@@ -129,7 +129,8 @@ class LongitudinalPlanner:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,57.0 , 91-4      ,62.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
       
   def read_param(self):
-    self.mpc.mode = 'blended' if self.params.get_bool('EndToEndLong') else 'acc'
+    e2e = self.params.get_bool('EndToEndLong') and self.CP.openpilotLongitudinalControl
+    self.mpc.mode = 'blended' if e2e else 'acc'
     self.type_EndToEndLong = self.mpc.mode
 
   def parse_model(self, model_msg):
