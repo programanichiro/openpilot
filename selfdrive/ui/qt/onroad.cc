@@ -1436,10 +1436,10 @@ void NvgWindow::drawLaneLines(QPainter &painter, const UIState *s) {
     use_lanelines = scene.mUseLaneButton == 0 ? false : true;
   }
   float start_hue, end_hue;
-  if (use_lanelines == false) {
+  if (use_lanelines == true) {
     bg.setColorAt(0, whiteColor());
     bg.setColorAt(1, whiteColor(0));
-  } if(scene.end_to_end_long) {
+  } else if(scene.end_to_end_long) {
     const auto &acceleration = (*s->sm)["modelV2"].getModelV2().getAcceleration();
     float acceleration_future = 0;
     if (acceleration.getZ().size() > 16) {
