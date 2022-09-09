@@ -374,7 +374,7 @@ class LongitudinalPlanner:
         #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
         #fp.write('@@@%f,%f,%f' % (v_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
         #fp.write('***%.2f,[%.2f],%d' % (np.sum(self.desired_path_x_rates),desired_path_x_rate,self.desired_path_x_rates.size))
-        fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,OP_ENABLE_v_cruise_kph))
+        fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.8f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
         #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
         #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
         #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
@@ -399,7 +399,8 @@ class LongitudinalPlanner:
           red_stop_immediately = True #停止せよ。
       else:
         #昼stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,25,30,45,60]) #事前減速で40km/h以下になることを期待している。
-        stop_threshold_r = interp(v_ego*3.6 , [0,10,20,30,40,50] , [0.33,0.35,0.38,0.40,0.43,0.46]) #これでdesired_path_x_rateと比較するという手もあるか
+        stop_threshold_r = interp(v_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
+                                            , [0.15,0.30,0.35,0.37,0.39,0.41,0.43]) #さらに減速度の強さa_egoを加味。弱ければより小さくできる？
         if desired_path_x_rate < stop_threshold_r: #0.4:
           red_stop_immediately = True #停止せよ。
       if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
