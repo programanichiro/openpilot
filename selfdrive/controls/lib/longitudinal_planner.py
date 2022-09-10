@@ -374,7 +374,7 @@ class LongitudinalPlanner:
         #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
         #fp.write('@@@%f,%f,%f' % (v_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
         #fp.write('***%.2f,[%.2f],%d' % (np.sum(self.desired_path_x_rates),desired_path_x_rate,self.desired_path_x_rates.size))
-        fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.8f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
+        fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
         #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
         #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
         #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
@@ -620,6 +620,8 @@ class LongitudinalPlanner:
         # v_cruise:カーブ減速含むACC設定速度,もしカーブ減速(v_cruise)がイチロウロング減速(v_cruise_org * desired_path_x_rate)より強い時は、カーブ減速をそのまま採用する。
         if v_cruise > v_cruise_org * desired_path_x_rate:
           v_cruise = v_cruise_org * desired_path_x_rate #カーブ減速がなければv_cruise==v_cruise_orgなので、従来のアルゴリズムは保たれる。
+    if long_speeddown_flag == False:
+      v_cruise *= red_signal_speed_down
     
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
       #v_cruise = 0 #ワンペダル停止処理
