@@ -207,7 +207,7 @@ void MapWindow::updateState(const UIState &s) {
   update();
 
   static bool already_vego_over_8 = false;
-  if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 4/3.6){ //8km/h->4km/h
+  if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
   if (sm.updated("liveLocationKalman")) {
