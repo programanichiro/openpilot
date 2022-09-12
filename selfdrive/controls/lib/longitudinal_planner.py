@@ -398,7 +398,10 @@ class LongitudinalPlanner:
         if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
           red_stop_immediately = True #停止せよ。
       else:
-        stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,25,30,45,60]) #事前減速で40km/h以下になることを期待している。昼
+        if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
+          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,25,30,45,60]) #事前減速で40km/h以下になることを期待している。昼
+        else: #夜
+          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
         if path_x[TRAJECTORY_SIZE -1] < stop_threshold or desired_path_x_rate < 0.11:
           red_stop_immediately = True #停止せよ。
         # stop_threshold_r = interp(v_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
