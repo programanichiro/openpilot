@@ -623,8 +623,8 @@ class LongitudinalPlanner:
         # v_cruise *= desired_path_x_rate #赤信号やAボタンモード関係なく、path_xの情報を加味してみる。
         v_cruise_org = min(v_cruise_kph_org, V_CRUISE_MAX) * CV.KPH_TO_MS #ACC設定速度
         # v_cruise:カーブ減速含むACC設定速度,もしカーブ減速(v_cruise)がイチロウロング減速(v_cruise_org * desired_path_x_rate)より強い時は、カーブ減速をそのまま採用する。
-        if v_cruise > v_cruise_org * desired_path_x_rate:
-          v_cruise = v_cruise_org * desired_path_x_rate #カーブ減速がなければv_cruise==v_cruise_orgなので、従来のアルゴリズムは保たれる。
+        if v_cruise > v_cruise_org * (desired_path_x_rate**0.5):
+          v_cruise = v_cruise_org * (desired_path_x_rate**0.5) #カーブ減速がなければv_cruise==v_cruise_orgなので、従来のアルゴリズムは保たれる。
     if long_speeddown_flag == False:
       v_cruise *= red_signal_speed_down
     
