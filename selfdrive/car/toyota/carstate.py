@@ -150,9 +150,9 @@ class CarState(CarStateBase):
       self.distance = 1 if cp_cam.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
     elif True: #self.CP.smartDsu:
       self.distance = 1 if cp.vl["SDSU"]["FD_BUTTON"] == 1 else 0
-    ret.distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
+    distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
     with open('/tmp/debug_out_y','w') as fp:
-      fp.write('distanceLines:%d' % (ret.distanceLines))
+      fp.write('distanceLines:%d' % (distanceLines))
 
     return ret
 
@@ -264,7 +264,7 @@ class CarState(CarStateBase):
 
     # KRKeegan - Add support for toyota distance button
     if True: #CP.smartDsu:
-      signals.append(("FD_BUTTON", "SDSU"))
+      signals.append(("FD_BUTTON", "SDSU", 0))
       checks.append(("SDSU", 33))
       
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 0)
