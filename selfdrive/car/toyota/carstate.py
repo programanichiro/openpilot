@@ -152,7 +152,7 @@ class CarState(CarStateBase):
       self.distance = 1 if cp.vl["SDSU"]["FD_BUTTON"] == 1 else 0
     distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
     with open('/tmp/debug_out_y','w') as fp:
-      fp.write('distanceLines:%d' % (distanceLines))
+      fp.write('distanceLines:%d,%d' % (distanceLines,self.distance)) #3はとれるが、ボタンを押しても変化はなく、MIDの表示もない。
 
     return ret
 
