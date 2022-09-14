@@ -23,6 +23,7 @@ class CarState(CarStateBase):
     self.angle_offset = FirstOrderFilter(None, 60.0, DT_CTRL, initialized=False)
 
     self.brake_state = False
+    self.distance = 0
 
     self.low_speed_lockout = False
     self.acc_type = 1
@@ -144,6 +145,15 @@ class CarState(CarStateBase):
       ret.leftBlindspot = (cp.vl["BSM"]["L_ADJACENT"] == 1) or (cp.vl["BSM"]["L_APPROACHING"] == 1)
       ret.rightBlindspot = (cp.vl["BSM"]["R_ADJACENT"] == 1) or (cp.vl["BSM"]["R_APPROACHING"] == 1)
 
+    # distance button
+    if self.CP.carFingerprint in TSS2_CAR:
+      self.distance = 1 if cp_cam.vl["ACC_CONTROL"]["DISTANCE"] == 1 else 0
+    elif True: #self.CP.smartDsu:
+      self.distance = 1 if cp.vl["SDSU"]["FD_BUTTON"] == 1 else 0
+    ret.distanceLines = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
+    with open('/tmp/debug_out_y','w') as fp:
+      fp.write('distanceLines:%d' % (ret.distanceLines))
+
     return ret
 
   @staticmethod
@@ -180,6 +190,7 @@ class CarState(CarStateBase):
       ("LKA_STATE", "EPS_STATUS"),
       ("AUTO_HIGH_BEAM", "LIGHT_STALK"),
       ("BRAKE_LIGHTS_ACC", "ESP_CONTROL"),
+      ("DISTANCE_LINES", "PCM_CRUISE_SM"),
     ]
 
     checks = [
@@ -251,6 +262,11 @@ class CarState(CarStateBase):
         ("PRE_COLLISION", 33),
       ]
 
+    # KRKeegan - Add support for toyota distance button
+    if True: #CP.smartDsu:
+      signals.append(("FD_BUTTON", "SDSU", 0))
+      checks.append(("SDSU", 33))
+      
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 0)
 
   @staticmethod
