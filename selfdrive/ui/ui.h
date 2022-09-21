@@ -103,6 +103,16 @@ typedef struct UIScene {
   float light_sensor, accel_sensor, gyro_sensor;
   bool started, ignition, is_metric, map_on_left, longitudinal_control, end_to_end_long;
   uint64_t started_frame;
+
+  // PI button statuses
+  bool mLockOnButton = true;
+  bool mAccelCtrlButton = true;
+  bool mDecelCtrlButton = true;
+  int mAccelEngagedButton = 0;
+  bool mHandleCtrlButton = true;
+  bool mStartAccelPowerUpButton = false;
+  int mUseLaneButton = 0;
+
 } UIScene;
 
 class UIState : public QObject {
