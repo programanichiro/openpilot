@@ -36,7 +36,7 @@ int night_mode = -1;
 MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
 
-  //QMapbox::setNetworkMode(QMapbox::NetworkMode::Offline);
+  QMapbox::setNetworkMode(QMapbox::NetworkMode::Offline);
 
   MAX_ZOOM = MAX_ZOOM0;
   my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
@@ -320,7 +320,7 @@ void MapWindow::updateState(const UIState &s) {
 
   if (zoom_counter == 0) {
     m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
-    zoom_counter = -1;
+    //zoom_counter = -1;
   } else if (zoom_counter > 0) {
     zoom_counter--;
   }
