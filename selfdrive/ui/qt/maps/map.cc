@@ -37,13 +37,11 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
 
   std::string my_mapbox_offline = util::read_file("../../../mb_offline.txt");
-  int map_network_mode = QMapbox::NetworkMode::Online;
+  int map_offline_mode = 0;
   if(my_mapbox_offline.empty() == false){
-    if(std::stoi(my_mapbox_offline) != 0){
-      map_network_mode = QMapbox::NetworkMode::Offline;
-    }
+    map_offline_mode = std::stoi(my_mapbox_offline);
   }
-  QMapbox::setNetworkMode(map_network_mode);
+  QMapbox::setNetworkMode(map_offline_mode ? QMapbox::NetworkMode::Offline : QMapbox::NetworkMode::Online);
 
   MAX_ZOOM = MAX_ZOOM0;
   my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
