@@ -36,8 +36,14 @@ int night_mode = -1;
 MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
 
-  QMapbox::setNetworkMode(QMapbox::NetworkMode::Offline);
-
+  std::string my_mapbox_offline = util::read_file("../../../mb_offline.txt");
+  if(my_mapbox_offline.empty() == false){
+    int offline_mode = std::stoi(my_mapbox_offline);
+    if(offline_mode != 0){
+      QMapbox::setNetworkMode(QMapbox::NetworkMode::Offline);
+    }
+  }
+  
   MAX_ZOOM = MAX_ZOOM0;
   my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
   std::string my_mapbox_pitch = util::read_file("../../../mb_pitch.txt");
