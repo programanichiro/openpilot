@@ -268,8 +268,9 @@ class LongitudinalPlanner:
 
     md = sm['modelV2']
     hasLead = sm['radarState'].leadOne.status
+    distLead_near = sm['radarState'].leadOne.dRel < interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
     global signal_scan_ct,path_x_old_signal,path_x_old_signal_check , red_signal_scan_flag
-    if v_ego <= 0.01/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and hasLead == False)) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
+    if v_ego <= 0.01/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
       if (abs(steer_ang) < 15 or one_pedal == False) and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
@@ -322,7 +323,7 @@ class LongitudinalPlanner:
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #これがFalseのケースは想定外
       path_x = md.position.x #path_xyz[:,0]
       red_signal_v_ego = 4/3.6 #この速度超で赤信号認識。
-      if hasLead == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego):
+      if (hasLead == False or distLead_near == False) and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego):
         if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
           red_signal_scan_flag_1 = 1 #赤信号センシング
 
@@ -331,7 +332,7 @@ class LongitudinalPlanner:
       self.red_signal_path_xs = np.delete(self.red_signal_path_xs , [0])
       sum_red_signal_path_xs = np.sum(self.red_signal_path_xs)
 
-      if hasLead == False and path_x[TRAJECTORY_SIZE -1] < interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
+      if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
         red_signal = "●"
         self.red_signals = np.append(self.red_signals,1)
       else:
@@ -369,7 +370,7 @@ class LongitudinalPlanner:
       with open('/tmp/debug_out_k','w') as fp:
         #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
         lead_mark = "▲"
-        if hasLead == False:
+        if hasLead == False or distLead_near == False:
           lead_mark = "△"
         #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
         #fp.write('@@@%f,%f,%f' % (v_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
@@ -442,7 +443,7 @@ class LongitudinalPlanner:
         red_signal_scan_ct = 0 if red_signal_scan_ct < 1000 else red_signal_scan_ct - 1000
       self.old_red_signal_path_xs = sum_red_signal_path_xs
 
-    if hasLead == True or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+    if (hasLead == True and distLead_near == True) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         red_signal_scan_flag_1 = 0
 
