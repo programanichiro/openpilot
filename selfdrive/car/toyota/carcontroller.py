@@ -76,6 +76,9 @@ class CarController:
     elif self.steer_rate_counter > MAX_STEER_RATE_FRAMES:
       apply_steer_req = 0
       self.steer_rate_counter = 0
+    
+    with open('/tmp/debug_out_y','w') as fp:
+      fp.write('steer_rate,over:%d' % (self.steer_rate_counter))
 
     # TODO: probably can delete this. CS.pcm_acc_status uses a different signal
     # than CS.cruiseState.enabled. confirm they're not meaningfully different
