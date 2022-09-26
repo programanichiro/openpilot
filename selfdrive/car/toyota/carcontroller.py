@@ -12,9 +12,9 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 
 # EPS faults if you apply torque while the steering rate is above 100 deg/s for too long
 MAX_STEER_RATE = 100  # deg/s
-MAX_STEER_RATE_FRAMES = 18  # tx control frames needed before torque can be cut
+# MAX_STEER_RATE_FRAMES = 18  # tx control frames needed before torque can be cut
 # MAX_STEER_RATE = 105  # これを現車で耐えられる可能な限り上げる
-# MAX_STEER_RATE_FRAMES = 20  # こちらも耐えられる可能な限り上げる？
+MAX_STEER_RATE_FRAMES = 20  # こちらも耐えられる可能な限り上げる？
 
 # EPS allows user torque above threshold for 50 frames before permanently faulting
 MAX_USER_TORQUE = 500
@@ -77,8 +77,8 @@ class CarController:
       apply_steer_req = 0
       self.steer_rate_counter = 0
     
-    with open('/tmp/debug_out_y','w') as fp:
-      fp.write('steer_rate,over:%d' % (self.steer_rate_counter))
+    # with open('/tmp/debug_out_y','w') as fp:
+    #   fp.write('steer_rate,over:%d' % (self.steer_rate_counter))
 
     # TODO: probably can delete this. CS.pcm_acc_status uses a different signal
     # than CS.cruiseState.enabled. confirm they're not meaningfully different
