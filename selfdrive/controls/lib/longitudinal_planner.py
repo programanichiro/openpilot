@@ -226,7 +226,8 @@ class LongitudinalPlanner:
 
     sm_longControlState = sm['controlsState'].longControlState
     if sm_longControlState == LongCtrlState.off:
-      if sm['carState'].gasPressed and sm['controlsState'].enabled: #アクセル踏んでエンゲージ中なら
+      # if sm['carState'].gasPressed and sm['controlsState'].enabled: #アクセル踏んでエンゲージ中なら
+      if sm['controlsState'].enabled: #アクセル踏む条件を無視してみる。
         sm_longControlState = LongCtrlState.pid #0.8.14からアクセルONでLongCtrlState.offとなるため、従来動作をシミュレート
     if OP_ENABLE_PREV == False and sm_longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
        #速度が時速３km以上かつ31km未満かつsm['controlsState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
