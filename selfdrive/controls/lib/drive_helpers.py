@@ -183,11 +183,11 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
         pass
     max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
     safe_desired_curvature_rate = clip(desired_curvature_rate,
-                                            -max_curvature_rate,
-                                            max_curvature_rate)
+                                       -max_curvature_rate,
+                                       max_curvature_rate)
     safe_desired_curvature = clip(desired_curvature,
-                                      current_curvature_desired - max_curvature_rate * DT_MDL,
-                                      current_curvature_desired + max_curvature_rate * DT_MDL)
+                                  current_curvature_desired - max_curvature_rate * DT_MDL,
+                                  current_curvature_desired + max_curvature_rate * DT_MDL)
   else:
     # k_v_tss = interp(abs(desired_curvature) , k_vs_org , k_vs)
     # k_v_tss2 = interp(abs(desired_curvature) , k2_vs_org , k2_vs)
@@ -204,9 +204,9 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
     k_v2 = 2 if tss_type < 2 else 2 #tss2なら2,tsspでも4->2で揃えてみる。
     max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) *k_v2 # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
     safe_desired_curvature_rate = clip(desired_curvature_rate*k_v,
-                                            -max_curvature_rate,
-                                            max_curvature_rate)
+                                       -max_curvature_rate,
+                                       max_curvature_rate)
     safe_desired_curvature = clip(desired_curvature*k_v,
-                                      current_curvature_desired - max_curvature_rate * DT_MDL,
-                                      current_curvature_desired + max_curvature_rate * DT_MDL)
+                                  current_curvature_desired - max_curvature_rate * DT_MDL,
+                                  current_curvature_desired + max_curvature_rate * DT_MDL)
   return safe_desired_curvature, safe_desired_curvature_rate
