@@ -929,8 +929,7 @@ void NvgWindow::drawHud(QPainter &p) {
   if((red_signal_scan_flag >= 2 && (night_mode_ct ++) % 11 == 0) || red_signal_scan_flag_txt_ct % 200 == 1 /*10秒に一回は更新*/){
     //static int night_mode = -1;
     if (uiState()->scene.started) {
-      // Scale to 0% to 100%
-      float clipped_brightness = 100.0 * uiState()->scene.light_sensor;
+      float clipped_brightness = uiState()->scene.light_sensor;
 
       // CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
       if (clipped_brightness <= 8) {

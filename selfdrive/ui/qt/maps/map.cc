@@ -100,8 +100,7 @@ bool check_night_mode(){
   bool night = false;
   UIState *s = uiState();
   if (s->scene.started) {
-    // Scale to 0% to 100%
-    float clipped_brightness = 100.0 * s->scene.light_sensor;
+    float clipped_brightness = s->scene.light_sensor;
 
     // CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
     if (clipped_brightness <= 8) {
