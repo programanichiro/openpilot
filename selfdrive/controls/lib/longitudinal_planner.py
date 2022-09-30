@@ -3,7 +3,7 @@ import os
 import random
 import math
 import numpy as np
-from common.numpy_fast import interp
+from common.numpy_fast import clip, interp
 
 import cereal.messaging as messaging
 from common.conversions import Conversions as CV
@@ -530,7 +530,7 @@ class LongitudinalPlanner:
               add_v_by_lead = False
 
     steerAng = sm['carState'].steeringAngleDeg - handle_center
-    orgSteerAng = steerAng
+    # orgSteerAng = steerAng , 使わなくても良くなった？
     limit_vc = V_CRUISE_MAX
     limit_vc_h = V_CRUISE_MAX
     #ml_csv = ""
@@ -645,9 +645,13 @@ class LongitudinalPlanner:
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
+    accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
+    accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
+
     if reset_state:
       self.v_desired_filter.x = v_ego
-      self.a_desired = 0.0
+      # Clip aEgo to cruise limits to prevent large accelerations when becoming active
+      self.a_desired = clip(sm['carState'].aEgo, accel_limits[0], accel_limits[1])
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
@@ -705,10 +709,6 @@ class LongitudinalPlanner:
           fp.write('%d.' % (int(new_vd * 3.6)))
     #with open('/tmp/debug_out_vd','w') as fp:
     #  fp.write('vc:%.2f[km/h] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired_filter.x* 3.6,steerAng , v_ego * 3.6) )
-
-    accel_limits = [A_CRUISE_MIN, get_max_accel(v_ego)]
-    #accel_limits_turns = limit_accel_in_turns(v_ego, sm['carState'].steeringAngleDeg, accel_limits, self.CP)
-    accel_limits_turns = limit_accel_in_turns(v_ego, orgSteerAng, accel_limits, self.CP)
     if force_slow_decel:
       # if required so, force a smooth deceleration
       accel_limits_turns[1] = min(accel_limits_turns[1], AWARENESS_DECEL)
