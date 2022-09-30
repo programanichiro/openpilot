@@ -207,7 +207,7 @@ void UIState::updateStatus() {
         enable = false;
       }
     }
-    if(true || enable == true){
+    if(enable == true){
       started_prev = scene.started;
       emit offroadTransition(!scene.started);
     }
