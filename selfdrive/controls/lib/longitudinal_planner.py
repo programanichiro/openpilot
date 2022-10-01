@@ -466,6 +466,10 @@ class LongitudinalPlanner:
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
+      if red_signal_scan_flag == 3:
+        red_signal_scan_flag = 2
+        with open('/tmp/red_signal_scan_flag.txt','w') as fp:
+          fp.write('%d' % (red_signal_scan_flag))
     if OP_ENABLE_v_cruise_kph != 0:
       v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う
     if CVS_FRAME % 5 == 4:
