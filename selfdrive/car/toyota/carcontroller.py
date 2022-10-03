@@ -14,7 +14,7 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 MAX_STEER_RATE = 100  # deg/s
 # MAX_STEER_RATE_FRAMES = 18  # tx control frames needed before torque can be cut
 # MAX_STEER_RATE = 105  # これを現車で耐えられる可能な限り上げる
-MAX_STEER_RATE_FRAMES = 21 # こちらも耐えられる可能な限り上げる？
+MAX_STEER_RATE_FRAMES = 27 # こちらも耐えられる可能な限り上げる？
 
 # EPS allows user torque above threshold for 50 frames before permanently faulting
 MAX_USER_TORQUE = 500
