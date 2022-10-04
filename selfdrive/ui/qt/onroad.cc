@@ -1779,7 +1779,7 @@ void NvgWindow::knightScanner(QPainter &p) {
       autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
     }
     double mar = (autopilot_ct * 100) / (autopilot_ct + manual_ct); //manual auto rate
-    QString debug_disp = QString(",MAR:") + QString::number((int)mar) + "%";
+    QString debug_disp = QString(",Amr:") + QString::number((int)mar) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
