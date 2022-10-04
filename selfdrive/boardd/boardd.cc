@@ -381,6 +381,33 @@ std::optional<bool> send_panda_states(PubMaster *pm, const std::vector<Panda *> 
     ps.setHarnessStatus(cereal::PandaState::HarnessStatus(health.car_harness_status_pkt));
     ps.setInterruptLoad(health.interrupt_load);
     ps.setFanPower(health.fan_power);
+    ps.setSafetyRxChecksInvalid((bool)(health.safety_rx_checks_invalid));
+
+    std::array<cereal::PandaState::PandaCanState::Builder, PANDA_CAN_CNT> cs = {ps.initCanState0(), ps.initCanState1(), ps.initCanState2()};
+
+    for (uint32_t j = 0; j < PANDA_CAN_CNT; j++) {
+      const auto &can_health = pandaCanStates[i][j];
+      cs[j].setBusOff((bool)can_health.bus_off);
+      cs[j].setBusOffCnt(can_health.bus_off_cnt);
+      cs[j].setErrorWarning((bool)can_health.error_warning);
+      cs[j].setErrorPassive((bool)can_health.error_passive);
+      cs[j].setLastError(cereal::PandaState::PandaCanState::LecErrorCode(can_health.last_error));
+      cs[j].setLastStoredError(cereal::PandaState::PandaCanState::LecErrorCode(can_health.last_stored_error));
+      cs[j].setLastDataError(cereal::PandaState::PandaCanState::LecErrorCode(can_health.last_data_error));
+      cs[j].setLastDataStoredError(cereal::PandaState::PandaCanState::LecErrorCode(can_health.last_data_stored_error));
+      cs[j].setReceiveErrorCnt(can_health.receive_error_cnt);
+      cs[j].setTransmitErrorCnt(can_health.transmit_error_cnt);
+      cs[j].setTotalErrorCnt(can_health.total_error_cnt);
+      cs[j].setTotalTxLostCnt(can_health.total_tx_lost_cnt);
+      cs[j].setTotalRxLostCnt(can_health.total_rx_lost_cnt);
+      cs[j].setTotalTxCnt(can_health.total_tx_cnt);
+      cs[j].setTotalRxCnt(can_health.total_rx_cnt);
+      cs[j].setTotalFwdCnt(can_health.total_fwd_cnt);
+      cs[j].setCanSpeed(can_health.can_speed);
+      cs[j].setCanDataSpeed(can_health.can_data_speed);
+      cs[j].setCanfdEnabled(can_health.canfd_enabled);
+      cs[j].setBrsEnabled(can_health.brs_enabled);
+    }
 
     std::array<cereal::PandaState::PandaCanState::Builder, PANDA_CAN_CNT> cs = {ps.initCanState0(), ps.initCanState1(), ps.initCanState2()};
 
