@@ -1769,7 +1769,8 @@ void NvgWindow::knightScanner(QPainter &p) {
   if(0){
     QString debug_disp = QString(",Fps:") + QString::number(global_fps,'f',1);
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
-  } else {
+  } else if(0){
+    //自立運転時間の割合
     static uint64_t manual_ct = 1 , autopilot_ct;
     if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE || status == STATUS_ALERT){
       if(vc_speed > 0.1/3.6){
@@ -1780,6 +1781,19 @@ void NvgWindow::knightScanner(QPainter &p) {
     }
     double mar = (autopilot_ct * 100) / (autopilot_ct + manual_ct); //manual auto rate
     QString debug_disp = QString(",Amr:") + QString::number((int)mar) + "%";
+    p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  } else {
+    //自立運転距離の割合
+    static double manual_dist = 0.001 , autopilot_dist , before_distance_traveled;
+    double now_dist = distance_traveled - before_distance_traveled;
+    before_distance_traveled = distance_traveled;
+    if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE || status == STATUS_ALERT){
+      manual_dist += now_dist; //手動運転中
+    } else {
+      autopilot_dist += now_dist; //オートパイロット中
+    }
+    double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //manual auto rate
+    QString debug_disp = QString(",Adr:") + QString::number((int)adr) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
