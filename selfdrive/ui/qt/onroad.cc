@@ -1766,8 +1766,20 @@ void NvgWindow::knightScanner(QPainter &p) {
     QString debug_disp = QString("Slow:") + QString::number(cv,'f',0);
     p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
-  {
+  if(0){
     QString debug_disp = QString(",Fps:") + QString::number(global_fps,'f',1);
+    p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  } else {
+    static uint64_t manual_ct = 1 , autopilot_ct;
+    if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE || status == STATUS_ALERT){
+      if(vc_speed > 0.1/3.6){
+        manual_ct ++; //手動運転中 , 停車時は除く。
+      }
+    } else {
+      autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
+    }
+    double mar = (autopilot_ct * 100) / (autopilot_ct + manual_ct); //manual auto rate
+    QString debug_disp = QString(",MAR:") + QString::number((int)mar) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   {
