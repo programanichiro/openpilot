@@ -1795,6 +1795,11 @@ void NvgWindow::knightScanner(QPainter &p) {
     double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //manual auto rate
     QString debug_disp = QString(",Adr:") + QString::number((int)adr) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+    FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
+    if(fp != NULL){
+      fprintf(fp,"%.1f+%.1f=%.1fkm : %.1f%%",autopilot_dist,manual_dist,distance_traveled,adr);
+      fclose(fp);
+    }
   }
   {
     QString debug_disp = QString(",Trip:") + QString::number(distance_traveled / 1000,'f',1) + QString("km");
