@@ -1790,7 +1790,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     before_distance_traveled = distance_traveled;
     if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE || status == STATUS_ALERT){
       manual_dist += now_dist; //手動運転中
-      if (status != STATUS_DISENGAGED{
+      if (status != STATUS_DISENGAGED){
         manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。
       }
     } else {
