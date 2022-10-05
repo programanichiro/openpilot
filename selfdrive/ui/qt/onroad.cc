@@ -1802,14 +1802,14 @@ void NvgWindow::knightScanner(QPainter &p) {
       autopilot_dist += now_dist; //オートパイロット中
       autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
     }
-    double atr = (autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
+    double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
     double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     QString debug_disp = QString(",Adr:") + QString::number((int)adr) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
     FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
     if(fp != NULL){
-      fprintf(fp,"dist:%.0f+%.0f=%.0fm : %.2f%%\n",autopilot_dist,manual_dist,distance_traveled,adr);
-      fprintf(fp,"time:%ld+%ld=%ldt : %.2f%%",autopilot_ct,manual_ct,autopilot_ct+manual_ct,atr);
+      fprintf(fp,"D:%.0f+%.0f=%.0fm %.2f%%\n",autopilot_dist,manual_dist,distance_traveled,adr);
+      fprintf(fp,"T:%ld+%ld=%ldt %.2f%%",autopilot_ct,manual_ct,autopilot_ct+manual_ct,atr);
       fclose(fp);
     }
   }
