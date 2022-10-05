@@ -1797,7 +1797,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
     FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
     if(fp != NULL){
-      fprintf(fp,"%.1f+%.1f=%.1fkm : %.1f%%",autopilot_dist,manual_dist,distance_traveled,adr);
+      fprintf(fp,"%.0f+%.0f=%.0fm : %.2f%%",autopilot_dist,manual_dist,distance_traveled,adr);
       fclose(fp);
     }
   }
