@@ -1804,7 +1804,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
     if(fp != NULL){
       fprintf(fp,"dist:%.0f+%.0f=%.0fm : %.2f%%\n",autopilot_dist,manual_dist,distance_traveled,adr);
-      fprintf(fp,"time:%ld+%ld=%ldt : %.2f%%",autopilot_ct,manual_ct,autopilot_ct+manual_ct,adr,atr);
+      fprintf(fp,"time:%ld+%ld=%ldt : %.2f%%",autopilot_ct,manual_ct,autopilot_ct+manual_ct,atr);
       fclose(fp);
     }
   }
