@@ -797,7 +797,7 @@ void NvgWindow::updateState(const UIState &s) {
 }
 
 static bool global_engageable;
-static bool global_brake_light = false;
+static bool all_brake_light = false;
 static int global_status;
 static float curve_value;
 static float handle_center = -100;
@@ -1193,13 +1193,16 @@ void NvgWindow::drawHud(QPainter &p) {
   }
   
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
+  all_brake_light = false;
   std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
-  if(engageable && brake_light_txt.empty() == false){
+  if(brake_light_txt.empty() == false){
     if(std::stoi(brake_light_txt) != 0){
-      brake_light = true;
+      if(engageable){
+        brake_light = true;
+      }
+      all_brake_light = true; //こちらはエンゲージしていなくてもセットされる。
     }
   }
-  global_brake_light = brake_light;
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2 , brake_light);
@@ -1792,7 +1795,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     before_distance_traveled = distance_traveled;
     if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE || status == STATUS_ALERT){
       manual_dist += now_dist; //手動運転中
-      if (status != STATUS_DISENGAGED || (global_brake_light && vc_speed < 0.1/3.6)){
+      if (status != STATUS_DISENGAGED || (all_brake_light && vc_speed < 0.1/3.6)){
         manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。特例としてエンゲージしてなくてもブレーキ踏めば含める（人が運転しているから）
       }
     } else {
