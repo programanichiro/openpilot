@@ -1791,25 +1791,36 @@ void NvgWindow::knightScanner(QPainter &p) {
     //自立運転距離の割合
     static uint64_t manual_ct = 1 , autopilot_ct; //参考に時間での割合も計算する。
     static double manual_dist = 0.001 , autopilot_dist , before_distance_traveled;
+    static double h_manual_dist = 0.001 , h_autopilot_dist; //停止時間は1秒を1m換算でカウントする。
     double now_dist = distance_traveled - before_distance_traveled;
     before_distance_traveled = distance_traveled;
     if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE || status == STATUS_ALERT){
       manual_dist += now_dist; //手動運転中
+      h_manual_dist += now_dist; //手動運転中
+      if ((all_brake_light && vc_speed < 0.1/3.6)){
+        h_manual_dist += 1.0/20; //1秒を1m換算
+      }
       if (status != STATUS_DISENGAGED || (all_brake_light && vc_speed < 0.1/3.6)){
         manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。特例としてエンゲージしてなくてもブレーキ踏めば含める（人が運転しているから）
       }
     } else {
       autopilot_dist += now_dist; //オートパイロット中
+      h_autopilot_dist += now_dist; //オートパイロット中
+      if ((vc_speed < 0.1/3.6)){
+        h_autopilot_dist += 1.0/20; //1秒を1m換算
+      }
       autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
     }
     double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
     double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
-    QString debug_disp = QString(",Adr:") + QString::number((int)adr) + "%";
+    double ahr = (h_autopilot_dist * 100) / (h_autopilot_dist + h_manual_dist); //autopilot hybrid rate
+    QString debug_disp = QString(",Amr:") + QString::number((int)ahr) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
     FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
     if(fp != NULL){
+      fprintf(fp,"H:%.0f+%.0f=%.0fh %.2f%%\n",h_autopilot_dist,h_manual_dist,h_autopilot_dist + h_manual_dist,ahr);
       fprintf(fp,"D:%.0f+%.0f=%.0fm %.2f%%\n",autopilot_dist,manual_dist,distance_traveled,adr);
-      fprintf(fp,"T:%ld+%ld=%ldt %.2f%%",autopilot_ct,manual_ct,autopilot_ct+manual_ct,atr);
+      fprintf(fp,"T:%ld+%ld=%lds %.2f%%",autopilot_ct/20,manual_ct/20,(autopilot_ct+manual_ct)/20,atr);
       fclose(fp);
     }
   }
