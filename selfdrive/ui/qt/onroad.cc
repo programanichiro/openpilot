@@ -1784,20 +1784,27 @@ void NvgWindow::knightScanner(QPainter &p) {
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   } else {
     //自立運転距離の割合
+    static uint64_t manual_ct = 1 , autopilot_ct; //参考に時間での割合も計算する。
     static double manual_dist = 0.001 , autopilot_dist , before_distance_traveled;
     double now_dist = distance_traveled - before_distance_traveled;
     before_distance_traveled = distance_traveled;
     if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE || status == STATUS_ALERT){
       manual_dist += now_dist; //手動運転中
+      if (status != STATUS_DISENGAGED{
+        manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。
+      }
     } else {
       autopilot_dist += now_dist; //オートパイロット中
+      autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
     }
-    double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //manual auto rate
+    double atr = (autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
+    double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     QString debug_disp = QString(",Adr:") + QString::number((int)adr) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
     FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
     if(fp != NULL){
-      fprintf(fp,"%.0f+%.0f=%.0fm : %.2f%%",autopilot_dist,manual_dist,distance_traveled,adr);
+      fprintf(fp,"dist:%.0f+%.0f=%.0fm : %.2f%%\n",autopilot_dist,manual_dist,distance_traveled,adr);
+      fprintf(fp,"time:%ld+%ld=%ldt : %.2f%%",autopilot_ct,manual_ct,autopilot_ct+manual_ct,adr,atr);
       fclose(fp);
     }
   }
