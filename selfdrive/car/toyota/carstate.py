@@ -22,6 +22,8 @@ class CarState(CarStateBase):
     self.accurate_steer_angle_seen = False
     self.angle_offset = FirstOrderFilter(None, 60.0, DT_CTRL, initialized=False)
 
+    self.brake_state = False
+
     self.low_speed_lockout = False
     self.acc_type = 1
 
@@ -86,6 +88,12 @@ class CarState(CarStateBase):
     ret.steerFaultTemporary = cp.vl["EPS_STATUS"]["LKA_STATE"] in (0, 9, 21, 25)
     # 17 is a fault from a prolonged high torque delta between cmd and user
     ret.steerFaultPermanent = cp.vl["EPS_STATUS"]["LKA_STATE"] == 17
+
+    new_brake_state = bool(cp.vl["ESP_CONTROL"]['BRAKE_LIGHTS_ACC'] or cp.vl["BRAKE_MODULE"]["BRAKE_PRESSED"] != 0)
+    if self.brake_state != new_brake_state:
+      self.brake_state = new_brake_state
+      with open('/tmp/brake_light_state.txt','w') as fp:
+        fp.write('%d' % (new_brake_state))
 
     if self.CP.carFingerprint in (CAR.LEXUS_IS, CAR.LEXUS_RC):
       ret.cruiseState.available = cp.vl["DSU_CRUISE"]["MAIN_ON"] != 0
@@ -171,6 +179,7 @@ class CarState(CarStateBase):
       ("TURN_SIGNALS", "BLINKERS_STATE"),
       ("LKA_STATE", "EPS_STATUS"),
       ("AUTO_HIGH_BEAM", "LIGHT_STALK"),
+      ("BRAKE_LIGHTS_ACC", "ESP_CONTROL"),
     ]
 
     checks = [
