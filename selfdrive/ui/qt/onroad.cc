@@ -1975,9 +1975,9 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   { //dhに奥行き値を反映させる。ワイドカメラ使用でロジック変更。
     float dd = d;
     dd -= 1; //dd=0〜99
-    dd /= (99.0/4); //dd=0〜4
-    dd += 1; //dd=1〜5
-    dh /= dd*dd;
+    dd /= (99.0/29); //dd=0〜29
+    dd += 1; //dd=1〜30
+    dh /= dd;
   }
 
   ww = ww * 2 * 5 / d;
