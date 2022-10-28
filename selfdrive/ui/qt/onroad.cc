@@ -1972,10 +1972,10 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   a_rel = leadcar_lockon[num].a;
 
   float dh = 50 * 0.5;
-  { //dhに奥行き値を反映させる。25mで現状に見えるように。
+  { //dhに奥行き値を反映させる。ワイドカメラ使用でロジック変更。
     float dd = d;
-    dd -= 25; //dd=0〜75
-    dd /= (75.0/2); //dd=0〜2
+    dd -= 1; //dd=0〜99
+    dd /= (99.0/2); //dd=0〜2
     dd += 1; //dd=1〜3
     dh /= dd*dd*dd;
   }
