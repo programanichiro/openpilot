@@ -1981,7 +1981,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
     dh /= dd;
   } else { //ワイドカメラ使用でロジック変更。リアルタイムで変わる。
     ww *= 0.5; hh *= 0.5;
-    dh = 200;
+    dh = 100;
     float dd = d;
     dd -= 5; //dd=0〜95
     dd /= (95.0/10); //dd=0〜10
