@@ -1950,7 +1950,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   painter.setBrush(QColor(0, 0, 0, 0));
   float ww = 300 , hh = 300;
   if(Hardware::TICI()){
-    ww *= 1.25; hh *= 1.25;
+    ww *= 1.25*0.5; hh *= 1.25*0.5;
   }
   float d = d_rel; //距離をロックターケットの大きさに反映させる。
   if(d < 1){
@@ -1971,7 +1971,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10;
   a_rel = leadcar_lockon[num].a;
 
-  float dh = 50;
+  float dh = 50 * 0.1;
   { //dhに奥行き値を反映させる。25mで現状に見えるように。
     float dd = d;
     dd -= 25; //dd=0〜75
