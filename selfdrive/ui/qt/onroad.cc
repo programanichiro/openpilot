@@ -1971,13 +1971,13 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10;
   a_rel = leadcar_lockon[num].a;
 
-  float dh = 50 * 0.5;
+  float dh = 50;
   { //dhに奥行き値を反映させる。ワイドカメラ使用でロジック変更。
     float dd = d;
     dd -= 1; //dd=0〜99
-    dd /= (99.0/2); //dd=0〜2
-    dd += 1; //dd=1〜3
-    dh /= dd*dd*dd;
+    dd /= (99.0/4); //dd=0〜4
+    dd += 1; //dd=1〜5
+    dh /= dd*dd;
   }
 
   ww = ww * 2 * 5 / d;
