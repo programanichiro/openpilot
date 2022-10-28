@@ -1865,7 +1865,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::ModelDataV
   //QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo}};
   float homebase_h = 12;
   QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h},{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo},{x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h}, {x, y + sz + homebase_h + g_yo + 10}};
-  painter.setBrush(QColor(218, 202, 37, 190));
+  painter.setBrush(QColor(218, 202, 37, 210));
   painter.drawPolygon(glow, std::size(glow));
 
   // chevron
@@ -1971,13 +1971,13 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10;
   a_rel = leadcar_lockon[num].a;
 
-  float dh = 50 * 0.1;
+  float dh = 50 * 0.5;
   { //dhに奥行き値を反映させる。25mで現状に見えるように。
     float dd = d;
     dd -= 25; //dd=0〜75
     dd /= (75.0/2); //dd=0〜2
     dd += 1; //dd=1〜3
-    dh /= dd;
+    dh /= dd*dd*dd;
   }
 
   ww = ww * 2 * 5 / d;
