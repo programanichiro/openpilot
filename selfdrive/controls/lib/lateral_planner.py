@@ -15,6 +15,15 @@ tss_type = 0
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
 params = Params()
+try:
+  with open('./handle_center_info.txt','r') as fp:
+    handle_center_info_str = fp.read()
+    if handle_center_info_str:
+      STEERING_CENTER = float(handle_center_info_str)
+      with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+        fp.write('%0.2f' % (STEERING_CENTER) )
+except Exception as e:
+  pass
 
 TRAJECTORY_SIZE = 33
 CAMERA_OFFSET = 0.04

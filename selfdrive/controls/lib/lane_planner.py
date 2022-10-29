@@ -11,15 +11,6 @@ STEER_OLD_ANGLE = 0
 STEERING_CENTER = -4.3
 DCM_FRAME = 0
 dcm_handle_ctrl = False
-try:
-  with open('./handle_center_info.txt','r') as fp:
-    handle_center_info_str = fp.read()
-    if handle_center_info_str:
-      STEERING_CENTER = float(handle_center_info_str)
-      with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
-        fp.write('%0.2f' % (STEERING_CENTER) )
-except Exception as e:
-  pass
 
 TRAJECTORY_SIZE = 33
 # camera offset is meters from center car to camera
