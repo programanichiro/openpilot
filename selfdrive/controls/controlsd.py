@@ -297,8 +297,7 @@ class Controls:
 #      self.events.add(EventName.pedalPressed)
 
     if CS.gasPressed:
-      self.events.add(EventName.pedalPressedPreEnable if (CS.vEgo * 3.6 > 1 and engage_disable == True) else
-                      EventName.gasPressedOverride)
+      self.events.add(EventName.gasPressedOverride)
 
     if not self.CP.notCar:
       self.events.add_from_msg(self.sm['driverMonitoringState'].events)
