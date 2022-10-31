@@ -75,10 +75,9 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
     last_position = *last_gps_position;
   }
 
-  //ここでlast_bearingを復帰させれば最初に向く角度が北向き以外にならないか？
-  std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
-  if(last_bearing_info_str.empty() == false){
-    last_bearing = std::stof(last_bearing_info_str);
+  auto last_gps_bearing = get_bearing_from_params();
+  if (last_gps_bearing) {
+    last_bearing = *last_gps_bearing;
   }
 
   grabGesture(Qt::GestureType::PinchGesture);
@@ -230,15 +229,6 @@ void MapWindow::updateState(const UIState &s) {
       if (already_vego_over_8 == true) {
         last_position = QMapbox::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
         last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
-      }
-      static unsigned int last_bearing_save_ct;
-      if ((last_bearing_save_ct ++ % 100) == 0 && last_bearing && sm["carState"].getCarState().getVEgo() <= 8/3.6) {
-        //向きを保存する。ここでやると地図が出てない状態で降車したら保存されない気がするが、めんどくさいのでいいや。
-        FILE *fp = fopen("../manager/last_bearing_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
-        if(fp != NULL){
-          fprintf(fp,"%.2f",*last_bearing);
-          fclose(fp);
-        }
       }
       velocity_filter.update(locationd_velocity.getValue()[0]);
     }
