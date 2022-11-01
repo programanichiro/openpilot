@@ -114,6 +114,8 @@ private:
 //  void valueChanged();
 
   int prev_width = -1;  // initializes ButtonsWindow width and holds prev width to update it
+  int skip_frame_count = 0;
+  bool wide_cam_requested = false;
 
 protected:
   void paintGL() override;
