@@ -75,17 +75,11 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
     last_position = *last_gps_position;
   }
 
-  auto last_gps_bearing = get_bearing_from_params();
-  if (last_gps_bearing) {
-    last_bearing = *last_gps_bearing;
-  }
-
   grabGesture(Qt::GestureType::PinchGesture);
   qDebug() << "MapWindow initialized";
 }
 
 MapWindow::~MapWindow() {
-  save_bearing();
   makeCurrent();
 }
 
@@ -308,14 +302,7 @@ void MapWindow::updateState(const UIState &s) {
 
   if (pan_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
-    if (last_bearing) {
-      m_map->setBearing(*last_bearing);
-
-      if ((cnt_bearing % 1200) == 0) {
-        save_bearing();
-      }
-      cnt_bearing ++;
-    }
+    if (last_bearing) m_map->setBearing(*last_bearing);
   } else {
     pan_counter--;
   }
@@ -403,6 +390,8 @@ void MapWindow::initializeGL() {
       loaded_once = true;
     }
   });
+
+  m_map->setBearing(*last_bearing);
 }
 
 void MapWindow::paintGL() {
@@ -494,11 +483,16 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
 void MapWindow::offroadTransition(bool offroad) {
   if (offroad) {
     clearRoute();
+
+    std::string last_bearing_JSON = util::string_format("{\"bearing\": %.15f}", *last_bearing);
+    std::thread([] (const std::string bjson) {
+      Params().put("LastGPSBearing", bjson);
+    }, last_bearing_JSON).detach();
   } else {
     auto dest = coordinate_from_param("NavDestination");
     setVisible(dest.has_value());
+    last_bearing = get_bearing_from_params();
   }
-  //last_bearing = {};
 }
 
 MapInstructions::MapInstructions(QWidget * parent) : QWidget(parent) {
