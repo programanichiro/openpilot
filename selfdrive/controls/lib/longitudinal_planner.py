@@ -40,6 +40,7 @@ path_x_old_signal_check = 0
 desired_path_x_speeds    = [0,5 ,10  ,15  ,20  ,30  ,40   ,50   ,60   ,70   ,80   ,90   ,100  ]
 desired_path_x_by_speeds = [0,15,60-5,65-5,75-5,95-5,125-5,150-5,170-5,190-5,220-5,240-5,255-5]
 long_speeddown_flag = False
+before_v_cruise_kph_max_1 = 0
 
 def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
   Z1 = (X2-X1)/(Y1-Y2) - (X3-X2)/(Y2-Y3)
@@ -313,7 +314,7 @@ class LongitudinalPlanner:
       with open('/tmp/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
-    global red_signal_scan_ct , red_signal_scan_ct_2 , red_signal_speed_down_before , red_signal_scan_span , long_speeddown_flag
+    global red_signal_scan_ct , red_signal_scan_ct_2 , red_signal_speed_down_before , red_signal_scan_span , long_speeddown_flag , before_v_cruise_kph_max_1
     red_signal_scan_flag_1 = red_signal_scan_flag
     red_signal_speed_down = 1.0
     desired_path_x_rate = 1.0 #一般的な減速制御
@@ -461,11 +462,13 @@ class LongitudinalPlanner:
       with open('/tmp/red_signal_scan_flag.txt','w') as fp:
         fp.write('%d' % (rssf))
 
-    if one_pedal == True and v_ego < 0.1/3.6 and OP_ENABLE_v_cruise_kph > v_cruise_kph and OP_ENABLE_gas_speed != 1.0 / 3.6: #速度ゼロでIPモード時にレバー下に入れたら
-      OP_ENABLE_v_cruise_kph = v_cruise_kph
-      OP_ENABLE_gas_speed = 1.0 / 3.6
-      with open('/tmp/signal_start_prompt_info.txt','w') as fp:
-        fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
+    if one_pedal == True and v_ego < 0.1/3.6 and OP_ENABLE_v_cruise_kph == 0 and OP_ENABLE_gas_speed != 1.0 / 3.6: #速度ゼロでIPモード時にレバー下に入れたら
+      if v_cruise_kph < before_v_cruise_kph_max_1:
+        OP_ENABLE_v_cruise_kph = v_cruise_kph
+        OP_ENABLE_gas_speed = 1.0 / 3.6
+        with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+          fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
+    before_v_cruise_kph_max_1 = v_cruise_kph
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
