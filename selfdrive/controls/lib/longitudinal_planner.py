@@ -461,6 +461,12 @@ class LongitudinalPlanner:
       with open('/tmp/red_signal_scan_flag.txt','w') as fp:
         fp.write('%d' % (rssf))
 
+    if one_pedal == True and v_ego < 0.1/3.6 and OP_ENABLE_v_cruise_kph > v_cruise_kph and OP_ENABLE_gas_speed != 1.0 / 3.6: #速度ゼロでIPモード時にレバー下に入れたら
+      OP_ENABLE_v_cruise_kph = v_cruise_kph
+      OP_ENABLE_gas_speed = 1.0 / 3.6
+      with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+        fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
+
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
       if red_signal_scan_flag == 3:
