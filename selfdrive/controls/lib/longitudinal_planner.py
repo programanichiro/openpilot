@@ -463,8 +463,8 @@ class LongitudinalPlanner:
         fp.write('%d' % (rssf))
 
     with open('/tmp/debug_out_x','w') as fp:
-      fp.write('p%d,%.1fk,%f.1E,%.1fg,%.1fv,%.1fm' % (one_pedal,v_ego,OP_ENABLE_v_cruise_kph,OP_ENABLE_gas_speed,v_cruise_kph,before_v_cruise_kph_max_1))
-    if one_pedal == True and v_ego < 0.1/3.6 and OP_ENABLE_v_cruise_kph == 0 and OP_ENABLE_gas_speed != 1.0 / 3.6: #速度ゼロでIPモード時にレバー下に入れたら
+      fp.write('p%d,%.1fk,%.1fE,%.1fg,%.1fv,%.1fm' % (one_pedal,v_ego,OP_ENABLE_v_cruise_kph,OP_ENABLE_gas_speed,v_cruise_kph,before_v_cruise_kph_max_1))
+    if one_pedal == True and v_ego < 0.1/3.6 and OP_ENABLE_v_cruise_kph == 0: #速度ゼロでIPモード時にレバー下に入れたら
       if v_cruise_kph < before_v_cruise_kph_max_1:
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = 1.0 / 3.6
