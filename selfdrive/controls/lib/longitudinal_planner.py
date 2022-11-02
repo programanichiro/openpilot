@@ -52,9 +52,9 @@ def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
 
 #LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 86-4      ,60-4      ,47-4      )
 #LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,65-4      ,49-4      )
-LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,27.0 , 91-4      ,62.5-4      ,47.5-4      )
+LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,29.0 , 92-4      ,65.5-4      ,45.5-4      )
 #LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(8.7,13.0,25.0 , 112,93,81)
-LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(9.5,13.0,25.0 , 115,96,85)
+LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH = calc_limit_vc(9.5,13.0,25.0 , 115,103,91)
 
 OP_ENABLE_ACCEL_RELEASE = False
 OP_ENABLE_PREV = False
@@ -125,7 +125,7 @@ class LongitudinalPlanner:
     self.desired_path_x_rates = np.zeros(5)
 
     if self.CP.carFingerprint not in TSS2_CAR:
-      LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,11.6,57.0 , 91-4      ,62.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
+      LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
       
   def read_param(self):
     e2e = self.params.get_bool('EndToEndLong') and self.CP.openpilotLongitudinalControl
