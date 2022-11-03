@@ -357,12 +357,16 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
           if(stdstr_txt != "1"){ //MAXが1ではない時
             if((*(uiState()->sm))["carState"].getCarState().getVEgo() < 0.1/3.6){ //スピードが出ていない時
               setButtonEnabled0("/tmp/force_one_pedal.txt" , true); //これがセットされる条件をなるべく絞る。
+            } else {
+              soundPo(); //操作不能音として鳴らす。
             }
           } else {
             //MAX=1でタッチ
             float vego = (*(uiState()->sm))["carState"].getCarState().getVEgo();
-            if(vego > 3/3.6 && vego < 30/3.6){ //スピードが3〜30km/hのとき
+            if(vego > 3/3.6 && vego <= 30/3.6){ //スピードが3〜30km/hのとき
               setButtonEnabled0("/tmp/force_low_engage.txt" , true);
+            } else {
+              soundPo(); //操作不能音として鳴らす。
             }
           }
         }
