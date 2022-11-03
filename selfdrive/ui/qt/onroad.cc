@@ -361,7 +361,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
           } else {
             //MAX=1でタッチ
             float vego = (*(uiState()->sm))["carState"].getCarState().getVEgo();
-            if(vego < 3/3.6 && vego < 30/3.6){ //スピードが3〜30km/hのとき
+            if(vego > 3/3.6 && vego < 30/3.6){ //スピードが3〜30km/hのとき
               setButtonEnabled0("/tmp/force_low_engage.txt" , true);
             }
           }
@@ -1508,7 +1508,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
         effect.setSource(QUrl::fromLocalFile("../assets/sounds/prompt.wav"));
         //effect.setLoopCount(QSoundEffect::Infinite);
         effect.setLoopCount(0);
-        effect.setVolume(1.0);
+        effect.setVolume(0.7);
       }
       effect.play();
       setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
@@ -1520,7 +1520,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
         effect.setSource(QUrl::fromLocalFile("../assets/sounds/engage.wav"));
         //effect.setLoopCount(QSoundEffect::Infinite);
         effect.setLoopCount(0);
-        effect.setVolume(1.0);
+        effect.setVolume(0.7);
       }
       effect.play();
       setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
