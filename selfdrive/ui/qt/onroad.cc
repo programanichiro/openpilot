@@ -358,6 +358,12 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
             if((*(uiState()->sm))["carState"].getCarState().getVEgo() < 0.1/3.6){ //スピードが出ていない時
               setButtonEnabled0("/tmp/force_one_pedal.txt" , true); //これがセットされる条件をなるべく絞る。
             }
+          } else {
+            //MAX=1でタッチ
+            float vego = (*(uiState()->sm))["carState"].getCarState().getVEgo();
+            if(vego < 3/3.6 && vego < 30/3.6){ //スピードが3〜30km/hのとき
+              setButtonEnabled0("/tmp/force_low_engage.txt" , true);
+            }
           }
         }
       }
@@ -541,6 +547,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2・・・にすれば良い
       uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0
       setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
+      setButtonEnabled0("/tmp/force_low_engage.txt" , false);
     });
     accelEngagedButton->setFixedWidth(150);
     accelEngagedButton->setFixedHeight(150);
