@@ -183,6 +183,7 @@ class Planner:
       with open('/storage/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
+    hasLead = sm['radarState'].leadOne.status
     if hasLead == False and one_pedal == True and v_ego < 0.1/3.6: #速度ゼロでIPモード時にレバー下に入れたら
       if v_cruise_kph < before_v_cruise_kph_max_1 and before_v_cruise_kph_max_1 < 200: #200km/h以下の場合のみ。初回の誤設定を弾く。
         if OP_ENABLE_v_cruise_kph == 0:
@@ -227,7 +228,6 @@ class Planner:
 #
 #    aLeadDEPRECATED @5 :Float32;
 #  }
-    hasLead = sm['radarState'].leadOne.status
     add_v_by_lead = False #前走車に追いつくための増速処理
 
     global accel_lead_ctrl
