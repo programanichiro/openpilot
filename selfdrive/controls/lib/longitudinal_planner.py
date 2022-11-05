@@ -48,6 +48,7 @@ OP_ACCEL_PUSH = False
 on_onepedal_ct = -1
 cruise_info_power_up = False
 one_pedal_chenge_restrict_time = 0
+before_v_cruise_kph_max_1 = 0
 
 START_DASH_CUT    = [0, 17/3.6, 26/3.6, 36/3.6, 45/3.6, 55/3.6, 64/3.6, 74/3.6, 83/3.6,  93/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
@@ -97,7 +98,7 @@ class Planner:
   def update(self, sm):
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , before_v_cruise_kph_max_1
     #with open('/storage/debug_out_v','w') as fp:
     #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
@@ -181,6 +182,15 @@ class Planner:
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       with open('/storage/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
+
+    if v_ego > 3/3.6 and v_ego <= 30/3.6 and sm['carState'].gasPressed: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
+      if before_v_cruise_kph_max_1 <= 37 and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
+        OP_ENABLE_v_cruise_kph = v_cruise_kph
+        OP_ENABLE_gas_speed = v_ego
+        OP_ENABLE_ACCEL_RELEASE = False #このあとのアクセルコントロールを許可する
+        with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+          fp.write('%d' % (2)) #engage.wavを鳴らす。
+    before_v_cruise_kph_max_1 = v_cruise_kph
 
     if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
