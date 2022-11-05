@@ -1337,8 +1337,8 @@ void NvgWindow::knightScanner(QPainter &p) {
       }
       autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
     }
-    double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
-    double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
+    // double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
+    // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     double ahr = (h_autopilot_dist * 100) / (h_autopilot_dist + h_manual_dist); //autopilot hybrid rate
     QString debug_disp = QString(",Amr:") + QString::number((int)ahr) + "%";
     p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
