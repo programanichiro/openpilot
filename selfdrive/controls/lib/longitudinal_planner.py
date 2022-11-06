@@ -191,7 +191,7 @@ class Planner:
             fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = 1.0 / 3.6
-    if v_ego > 3/3.6 and v_ego <= 30/3.6 and sm['carState'].gasPressed: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
+    if v_ego > 3/3.6 and v_ego <= 30/3.6 and sm['carState'].gasPressed and sm['controlsState'].enabled: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
       if before_v_cruise_kph_max_1 <= 37 and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = v_ego
