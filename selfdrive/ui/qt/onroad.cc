@@ -168,9 +168,12 @@ void soundButton2(int onOff){
 }
 
 void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //txt_mngはtxt.c_str()を渡す。
-  if(strstr(fn_mng,"../manager/")){
+  int dir_ofs = 0;
+  if(strstr(fn_mng,"../manager/"))dir_ofs = 11;
+  else if(strstr(fn_mng,"/data/"))dir_ofs = 6;
+  if(dir_ofs > 0){
     char tmpfn[128];
-    sprintf(tmpfn,"/storage/%s",fn_mng + 11); //11 = strlen("../manager/");
+    sprintf(tmpfn,"/storage/%s",fn_mng + dir_ofs); //11 = strlen("../manager/");
     if(first == true){
       FILE *dst_tmp = fopen(tmpfn,"r");
       if(dst_tmp){
