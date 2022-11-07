@@ -72,13 +72,13 @@ class LateralPlanner:
     if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
       handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
       if STEERING_CENTER_calibration_update_count % 100 == 0:
-        with open('./handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
+        with open('../../../handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
           fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
       if STEERING_CENTER_calibration_update_count % 10 == 5:
         with open('/storage/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
           fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
     else:
-      with open('./handle_calibct_info.txt','w') as fp:
+      with open('../../../handle_calibct_info.txt','w') as fp:
         fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
     #with open('/storage/debug_out_y','w') as fp:
     #  path_y_sum = -sum(path_y)
@@ -178,7 +178,7 @@ class LateralPlanner:
     # global tss_type
     # if tss_type == 0:
     #   try:
-    #     with open('./tss_type_info.txt','r') as fp:
+    #     with open('../../../tss_type_info.txt','r') as fp:
     #       tss_type_str = fp.read()
     #       if tss_type_str:
     #         if int(tss_type_str) == 2: #TSS2

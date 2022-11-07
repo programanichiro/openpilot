@@ -12,8 +12,8 @@ STEER_OLD_ANGLE = 0
 STEERING_CENTER = -4.3
 DCM_FRAME = 0
 dcm_handle_ctrl = True
-if os.path.isfile('./handle_center_info.txt'):
-  with open('./handle_center_info.txt','r') as fp:
+if os.path.isfile('../../../handle_center_info.txt'):
+  with open('../../../handle_center_info.txt','r') as fp:
     handle_center_info_str = fp.read()
     if handle_center_info_str:
       STEERING_CENTER = float(handle_center_info_str)

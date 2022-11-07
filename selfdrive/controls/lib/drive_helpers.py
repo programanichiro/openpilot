@@ -125,7 +125,7 @@ def get_lag_adjusted_curvature(CP, v_ego, steerAng , psis, curvatures, curvature
   global tss_type,CT_get_lag_adjusted_curvature,dc_get_lag_adjusted_curvature
   if tss_type == 0:
     try:
-      with open('./tss_type_info.txt','r') as fp:
+      with open('../../../tss_type_info.txt','r') as fp:
         tss_type_str = fp.read()
         if tss_type_str:
           if int(tss_type_str) == 2: #TSS2

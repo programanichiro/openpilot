@@ -190,10 +190,10 @@ void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //tx
   }
 }
 
-bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
+bool getButtonEnabled(const char*fn){ //fn="/data/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // ../manager/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
+    // /data/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return true; //ファイルが無効値なのでtrue
@@ -205,10 +205,10 @@ bool getButtonEnabled(const char*fn){ //fn="../manager/lockon_disp_disable.txt"�
   }
 }
 
-bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
+bool getButtonEnabled0(const char*fn){ //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // ../manager/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
+    // /data/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return false; //ファイルが無効値なのでfalse
@@ -220,10 +220,10 @@ bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"な
   }
 }
 
-int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
+int getButtonInt(const char*fn , int defaultNum){ //新fn="/data/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // ../manager/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
+    // /data/abc.txtを/storage/abc.txtにコピーする(pythonでは/storageから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     return std::stoi(txt);
   }
@@ -231,7 +231,7 @@ int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_enga
 }
 
 bool fp_error = false;
-void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。flagは素直にtrueなら有効。
+void setButtonEnabled(const char*fn , bool flag){ //fn="/data/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。flagは素直にtrueなら有効。
   //util::write_file(fn, (void*)(flag ? "0" : "1"), 1); //flagと書き込む数値文字列の意味が逆なので注意。
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
@@ -242,14 +242,14 @@ void setButtonEnabled(const char*fn , bool flag){ //fn="../manager/lockon_disp_d
       fwrite("1",1,1,fp);
     }
     fclose(fp);
-    // ../manager/abc.txtを/storage/abc.txtにコピーする
+    // /data/abc.txtを/storage/abc.txtにコピーする
     copy_manager2tmp(fn,flag ? "0" : "1",false);
   } else {
     fp_error = true;
   }
 }
 
-void setButtonEnabled0(const char*fn , bool flag){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
+void setButtonEnabled0(const char*fn , bool flag){ //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
@@ -259,14 +259,14 @@ void setButtonEnabled0(const char*fn , bool flag){ //旧fn="../manager/accel_eng
       fwrite("0",1,1,fp);
     }
     fclose(fp);
-    // ../manager/abc.txtを/storage/abc.txtにコピーする
+    // /data/abc.txtを/storage/abc.txtにコピーする
     copy_manager2tmp(fn,flag ? "1" : "0",false);
   } else {
     fp_error = true;
   }
 }
 
-void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。num(0〜3)はそのまま数字で。
+void setButtonInt(const char*fn , int num){ //新fn="/data/accel_engaged.txt"など、このファイルが無かったら0。num(0〜3)はそのまま数字で。
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
@@ -274,7 +274,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
     sprintf(buf,"%d",num);
     fwrite(buf,strlen(buf),1,fp);
     fclose(fp);
-    // ../manager/abc.txtを/storage/abc.txtにコピーする
+    // /data/abc.txtを/storage/abc.txtにコピーする
     copy_manager2tmp(fn,buf,false);
   } else {
     fp_error = true;
@@ -306,7 +306,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
   {
     // turbo boost button
-    uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt");
+    uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("/data/start_accel_power_up_disp_enable.txt");
     startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
     QObject::connect(startAccelPowerUpButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
@@ -321,7 +321,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // use lane button
-    uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("../manager/lane_sw_mode.txt" , Params().getBool("EndToEndToggle") ? 0 : 1);
+    uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("/data/lane_sw_mode.txt" , Params().getBool("EndToEndToggle") ? 0 : 1);
     if(mUseLaneButton == 2){
       useLaneButton = new QPushButton("LA"); //レーンレス自動選択
     } else {
@@ -356,7 +356,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   //const float all_opac = 0.2;
   {
     // Handle Ctrl button
-    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("../manager/handle_ctrl_disable.txt");
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("/data/handle_ctrl_disable.txt");
     handleCtrlButton = new QPushButton("↔︎");
     QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
@@ -372,7 +372,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // LockOn button
-    uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("../manager/lockon_disp_disable.txt");
+    uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("/data/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
     QObject::connect(lockOnButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mLockOnButton = !mLockOnButton;
@@ -394,7 +394,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Ctrl button
-    uiState()->scene.mAccelCtrlButton = mAccelCtrlButton = getButtonEnabled("../manager/accel_ctrl_disable.txt");
+    uiState()->scene.mAccelCtrlButton = mAccelCtrlButton = getButtonEnabled("/data/accel_ctrl_disable.txt");
     accelCtrlButton = new QPushButton("↑");
     QObject::connect(accelCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
@@ -409,7 +409,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Decel Ctrl button
-    uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("../manager/decel_ctrl_disable.txt");
+    uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("/data/decel_ctrl_disable.txt");
     decelCtrlButton = new QPushButton("↓");
     QObject::connect(decelCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
@@ -424,7 +424,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Accel Engage button
-    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("../manager/accel_engaged.txt" , 0);
+    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("/data/accel_engaged.txt" , 0);
     if(mAccelEngagedButton == 3){
       accelEngagedButton = new QPushButton("IP"); //3ならイチロウペダル（インテリジェントペダルモード）
     } else if(mAccelEngagedButton == 2){
@@ -465,21 +465,21 @@ void ButtonsWindow::updateState(const UIState &s) {
   if (mLockOnButton != s.scene.mLockOnButton) {  // update mLockOnButton
     mLockOnButton = s.scene.mLockOnButton;
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
-    setButtonEnabled("../manager/lockon_disp_disable.txt" , mLockOnButton);
+    setButtonEnabled("/data/lockon_disp_disable.txt" , mLockOnButton);
     soundButton(mLockOnButton);
   }
 
   if (mAccelCtrlButton != s.scene.mAccelCtrlButton) {  // update mAccelCtrlButton
     mAccelCtrlButton = s.scene.mAccelCtrlButton;
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton && fp_error==false)));
-    setButtonEnabled("../manager/accel_ctrl_disable.txt" , mAccelCtrlButton);
+    setButtonEnabled("/data/accel_ctrl_disable.txt" , mAccelCtrlButton);
     soundButton(mAccelCtrlButton);
   }
 
   if (mDecelCtrlButton != s.scene.mDecelCtrlButton) {  // update mDecelCtrlButton
     mDecelCtrlButton = s.scene.mDecelCtrlButton;
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton && fp_error==false)));
-    setButtonEnabled("../manager/decel_ctrl_disable.txt" , mDecelCtrlButton);
+    setButtonEnabled("/data/decel_ctrl_disable.txt" , mDecelCtrlButton);
     soundButton(mDecelCtrlButton);
   }
 
@@ -494,21 +494,21 @@ void ButtonsWindow::updateState(const UIState &s) {
     } else {
       accelEngagedButton->setText("A");
     }
-    setButtonInt("../manager/accel_engaged.txt" , mAccelEngagedButton);
+    setButtonInt("/data/accel_engaged.txt" , mAccelEngagedButton);
     soundButton(mAccelEngagedButton);
   }
 
   if (mHandleCtrlButton != s.scene.mHandleCtrlButton) {  // update mHandleCtrlButton
     mHandleCtrlButton = s.scene.mHandleCtrlButton;
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton && fp_error==false)));
-    setButtonEnabled("../manager/handle_ctrl_disable.txt" , mHandleCtrlButton);
+    setButtonEnabled("/data/handle_ctrl_disable.txt" , mHandleCtrlButton);
     soundButton(mHandleCtrlButton);
   }
   
   if (mStartAccelPowerUpButton != s.scene.mStartAccelPowerUpButton) {  // update mStartAccelPowerUpButton
     mStartAccelPowerUpButton = s.scene.mStartAccelPowerUpButton;
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton && fp_error==false)));
-    setButtonEnabled0("../manager/start_accel_power_up_disp_enable.txt" , mStartAccelPowerUpButton);
+    setButtonEnabled0("/data/start_accel_power_up_disp_enable.txt" , mStartAccelPowerUpButton);
     soundButton(mStartAccelPowerUpButton);
   }
   
@@ -520,7 +520,7 @@ void ButtonsWindow::updateState(const UIState &s) {
     } else {
       useLaneButton->setText("/ \\");
     }
-    setButtonInt("../manager/lane_sw_mode.txt" , mUseLaneButton);
+    setButtonInt("/data/lane_sw_mode.txt" , mUseLaneButton);
     soundButton(mUseLaneButton);
   }
   
@@ -604,7 +604,7 @@ void OnroadHud::updateState(const UIState &s) {
   float maxspeed = cs.getVCruise();
   vc_speed = sm["carState"].getCarState().getVEgo();
   if(tss_type == 0){
-    std::string tss_type_txt = util::read_file("../manager/tss_type_info.txt");
+    std::string tss_type_txt = util::read_file("/data/tss_type_info.txt");
     if(tss_type_txt.empty() == false){
       if ( tss_type_txt == "2" ) {
         //TSS2
@@ -1155,7 +1155,7 @@ void NvgWindow::knightScanner(QPainter &p) {
     if(handle_center_txt.empty() == false){
         handle_center = std::stof(handle_center_txt);
     } else {
-      std::string handle_calibct_txt = util::read_file("../manager/handle_calibct_info.txt");
+      std::string handle_calibct_txt = util::read_file("/data/handle_calibct_info.txt");
       if(handle_calibct_txt.empty() == false){
         handle_calibct = std::stoi(handle_calibct_txt);
       }
