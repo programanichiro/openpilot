@@ -46,6 +46,12 @@ AbstractControl::AbstractControl(const QString &title, const QString &desc, cons
   value->setStyleSheet("color: #aaaaaa");
   hlayout->addWidget(value);
 
+  // value next to control button
+  value = new ElidedLabel();
+  value->setAlignment(Qt::AlignRight | Qt::AlignVCenter);
+  value->setStyleSheet("color: #aaaaaa");
+  hlayout->addWidget(value);
+
   main_layout->addLayout(hlayout);
 
   // description

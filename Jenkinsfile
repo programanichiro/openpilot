@@ -59,7 +59,7 @@ pipeline {
         branch 'devel-staging'
       }
       steps {
-        phone_steps("tici-needs-can", [
+        phone_steps("tici", [
           ["build release3-staging & dashcam3-staging", "PUSH=1 $SOURCE_DIR/release/build_release.sh"],
         ])
       }
