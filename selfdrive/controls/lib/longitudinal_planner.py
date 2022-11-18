@@ -735,23 +735,6 @@ class LongitudinalPlanner:
         #fp.write('op:[%d] vk:%.2f gs:%.2fkm/h\n' % (OP_ENABLE_PREV,OP_ENABLE_v_cruise_kph,OP_ENABLE_gas_speed*3.6) )
         fp.write("%s\n%s\n%s" % (msc ,msl ,msv))
 
-    v_desired_rand = 0 #低速の時わざと揺らしてみる。
-    #if v_ego < 41 / 3.6 and v_ego > 0:
-    #  v_desired_rand = random.random() * 1.0 / 3.6
-    #  v_desired_rand *= v_ego / 41/3.6
-
-    #低速急ハンドルで速度を落とす実験->このままでは速度落ちすぎ。v_desired_filter.xより少し落とす感じで、v_cruiseは変更せずv_desired_randに差分を渡して試してみたい。ひとまず保留。
-    if False and abs(steerAng) > 10 and v_ego * 3.6 < 41 and self.v_desired_filter.x * 3.6 > 20:
-      rate = abs(steerAng) - 10 # 10->30 >> 0->20
-      rate /= 20 # 0->1
-      rate += 1 # 1->2
-      if rate > 1.2:
-        rate = 1.2
-      new_vd = self.v_desired_filter.x / rate #30度切って最高半分。
-      if new_vd < v_cruise and new_vd < self.v_desired_filter.x:
-        v_desired_rand = new_vd - self.v_desired_filter.x
-        with open('/tmp/cruise_info.txt','w') as fp:
-          fp.write('%d.' % (int(new_vd * 3.6)))
     #with open('/tmp/debug_out_vd','w') as fp:
     #  fp.write('vc:%.2f[km/h] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired_filter.x* 3.6,steerAng , v_ego * 3.6) )
     if force_slow_decel:
@@ -825,12 +808,11 @@ class LongitudinalPlanner:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
-#    self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-#    self.mpc.set_cur_state(self.v_desired_filter.x + v_desired_rand, self.a_desired*a_desired_mul)
-#    self.mpc.update(sm['carState'], sm['radarState'], v_cruise, prev_accel_constraint=prev_accel_constraint)
     self.mpc.set_weights(prev_accel_constraint)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-    self.mpc.set_cur_state(self.v_desired_filter.x + v_desired_rand, self.a_desired*a_desired_mul)
+    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired*a_desired_mul)
+    with open('/tmp/debug_out_k','w') as fp:
+      fp.write('v_desired:%.2fkm/h' % (self.v_desired_filter.x * 3.6))
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['carState'], sm['radarState'], v_cruise, x, v, a, j)
 
