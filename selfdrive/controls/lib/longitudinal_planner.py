@@ -125,6 +125,7 @@ class LongitudinalPlanner:
     self.night_time = 100 #変数名がわかりにくいが環境光の強さが0〜100で取得できる。
     self.night_time_refresh_ct = 0
     self.desired_path_x_rates = np.zeros(5)
+    self.ac_vc_time = 0.0
 
     if self.CP.carFingerprint not in TSS2_CAR:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
@@ -549,6 +550,7 @@ class LongitudinalPlanner:
       except Exception as e:
         accel_lead_ctrl = True
 
+    v_cruise_kph_1_15 = v_cruise_kph * 1.15
     if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       d_rel = leadOne.dRel #前走者までの距離
@@ -560,12 +562,22 @@ class LongitudinalPlanner:
         if v_ego * 3.6 >= v_cruise_kph * 0.98: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
-          v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
+          if self.ac_vc_time < 1.0:
+            self.ac_vc_time += 0.05
+          self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
+          # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
+          v_cruise_kph = v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
           if v_cruise_kph > 105:
             v_cruise_kph = 105 #危ないのでひとまず時速105kmまで。
             if v_cruise_kph < org_v_cruise_kph:
               v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
+              self.ac_vc_time = 0
               add_v_by_lead = False
+    if add_v_by_lead == False:
+      if self.ac_vc_time > 0:
+        self.ac_vc_time -= 0.05
+      self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
+      v_cruise_kph = v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
 
     steerAng = sm['carState'].steeringAngleDeg - handle_center
     # orgSteerAng = steerAng , 使わなくても良くなった？
