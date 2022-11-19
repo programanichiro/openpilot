@@ -125,6 +125,7 @@ class LongitudinalPlanner:
     self.night_time = 100 #変数名がわかりにくいが環境光の強さが0〜100で取得できる。
     self.night_time_refresh_ct = 0
     self.desired_path_x_rates = np.zeros(5)
+    self.vd_vc_time = 0.0
 
     if self.CP.carFingerprint not in TSS2_CAR:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
@@ -811,14 +812,18 @@ class LongitudinalPlanner:
     self.mpc.set_weights(prev_accel_constraint)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     if self.v_desired_filter.x > v_cruise and sm['carState'].gasPressed == False and red_signal_scan_flag != 3: #アクセルを踏んでなくて、理想速度がACCより大きく、MAX=1じゃなければ、理想速度をACCにしてみる。
-      self.mpc.set_cur_state(v_cruise, self.a_desired*a_desired_mul)
+      if self.vd_vc_time < 1.0:
+        self.vd_vc_time += 0.05
     else:
-      self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired*a_desired_mul)
+      if self.vd_vc_time > 0:
+        self.vd_vc_time -= 0.05
+    self.vd_vc_time = clip(self.vd_vc_time,0.0,1.0)
+    self.mpc.set_cur_state(v_cruise * self.vd_vc_time + self.v_desired_filter.x * (1-self.vd_vc_time), self.a_desired*a_desired_mul)
     with open('/tmp/debug_out_k','w') as fp:
       if self.v_desired_filter.x > v_cruise and sm['carState'].gasPressed == False and red_signal_scan_flag != 3: #アクセルを踏んでなくて、理想速度がACCより大きく、MAX=1じゃなければ、理想速度をACCにしてみる。
-        fp.write('vd:%.2f -> vc:%.2fkm/h' % (self.v_desired_filter.x * 3.6 , v_cruise * 3.6))
+        fp.write('vd:%.2f -> vc:%.2fkm/h(%.2f)' % (self.v_desired_filter.x * 3.6 , v_cruise * 3.6 , (v_cruise * self.vd_vc_time + self.v_desired_filter.x * (1-self.vd_vc_time))*3.6))
       else:
-        fp.write('vd:%.2f <- vc:%.2fkm/h' % (self.v_desired_filter.x * 3.6 , v_cruise * 3.6))
+        fp.write('vd:%.2f <- vc:%.2fkm/h(%.2f)' % (self.v_desired_filter.x * 3.6 , v_cruise * 3.6 , (v_cruise * self.vd_vc_time + self.v_desired_filter.x * (1-self.vd_vc_time))*3.6))
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['carState'], sm['radarState'], v_cruise, x, v, a, j)
 
