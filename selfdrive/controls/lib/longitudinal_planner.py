@@ -812,7 +812,10 @@ class LongitudinalPlanner:
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired*a_desired_mul)
     with open('/tmp/debug_out_k','w') as fp:
-      fp.write('v_desired:%.2fkm/h' % (self.v_desired_filter.x * 3.6))
+      if(self.v_desired_filter.x <= v_cruise):
+        fp.write('vd:%.2f <= vc:%.2fkm/h' % (self.v_desired_filter.x * 3.6 , v_cruise * 3.6))
+      else:
+        fp.write('vd:%.2f >  vc:%.2fkm/h' % (self.v_desired_filter.x * 3.6 , v_cruise * 3.6))
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['carState'], sm['radarState'], v_cruise, x, v, a, j)
 
