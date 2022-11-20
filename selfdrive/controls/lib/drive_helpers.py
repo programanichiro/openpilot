@@ -219,11 +219,11 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
           else:
             dc_get_lag_adjusted_curvature = True
     except Exception as e:
-      dc_get_lag_adjusted_curvature = False if tss_type < 2 else True #tss2ならデフォがTrue
+      dc_get_lag_adjusted_curvature = True #デフォルト
   CT_get_lag_adjusted_curvature += 1
     
   if dc_get_lag_adjusted_curvature == True:
-    #新処理をTSS2で使用。公式状態。
+    #曲率制御が公式状態。
     # This is the "desired rate of the setpoint" not an actual desired rate
     if CT_get_lag_adjusted_curvature % 10 == 3 and skip_curvature_info == False: #書き出し頻度を1/10に
       try:
