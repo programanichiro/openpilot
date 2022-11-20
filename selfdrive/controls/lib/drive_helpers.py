@@ -219,7 +219,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
           else:
             dc_get_lag_adjusted_curvature = True
     except Exception as e:
-      dc_get_lag_adjusted_curvature = True #デフォルト
+      dc_get_lag_adjusted_curvature = False #デフォルト
   CT_get_lag_adjusted_curvature += 1
     
   if dc_get_lag_adjusted_curvature == True:
