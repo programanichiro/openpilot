@@ -225,9 +225,9 @@ class LateralPlanner:
       except Exception as e:
         pass
 
-    if tss_type >= 2:
-      STEER_CTRL_Y = 0
-      max_yp = 0
+    # if tss_type >= 2: #↔︎ボタン仕様変更でTSS2スペシャル対応終了。
+    #   STEER_CTRL_Y = 0
+    #   max_yp = 0
 
     if self.use_lanelines:
       #d_path_xyz = self.LP.get_d_path(self.v_ego, self.t_idxs, self.path_xyz)

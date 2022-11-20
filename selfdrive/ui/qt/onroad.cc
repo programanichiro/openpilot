@@ -474,10 +474,14 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   //const float all_opac = 0.2;
   {
     // Handle Ctrl button
-    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonEnabled("/data/handle_ctrl_disable.txt");
-    handleCtrlButton = new QPushButton("⇔"); //↔︎は⇔に変更。drive_helpers.pyのtss_type == 2を手動切り替えできるよう転用。
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonInt("/data/handle_ctrl_sw.txt",1);
+    if(mHandleCtrlButton >= 2){
+      handleCtrlButton = new QPushButton("⇔"); //⇔で横寄せ。
+    } else {
+      handleCtrlButton = new QPushButton("↔︎"); //↔︎で曲率制限値2倍
+    }
     QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mHandleCtrlButton = !mHandleCtrlButton;
+      uiState()->scene.mHandleCtrlButton = (mHandleCtrlButton + 1) % 3; //0->1->2->0
     });
     handleCtrlButton->setFixedWidth(150);
     handleCtrlButton->setFixedHeight(150);
@@ -620,8 +624,13 @@ void ButtonsWindow::updateState(const UIState &s) {
 
   if (mHandleCtrlButton != s.scene.mHandleCtrlButton) {  // update mHandleCtrlButton
     mHandleCtrlButton = s.scene.mHandleCtrlButton;
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton && fp_error==false)));
-    setButtonEnabled("/data/handle_ctrl_disable.txt" , mHandleCtrlButton);
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton > 0 && fp_error==false)));
+    if(mHandleCtrlButton >= 2){
+      handleCtrlButton->setText("⇔"); //⇔で横寄せ。
+    } else {
+      handleCtrlButton->setText("↔︎"); //↔︎で曲率制限値2倍
+    }
+    setButtonInt("/data/handle_ctrl_sw.txt" , mHandleCtrlButton);
     soundButton(mHandleCtrlButton);
   }
   
