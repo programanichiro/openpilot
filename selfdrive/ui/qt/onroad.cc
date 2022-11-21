@@ -489,7 +489,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     //handleCtrlButton->setAutoFillBackground(true);
     //btns_layoutL->addSpacing(70);
     btns_layoutL->addWidget(handleCtrlButton);
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton)));
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton > 0)));
   }
 
   {
