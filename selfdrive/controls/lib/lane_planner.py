@@ -136,7 +136,7 @@ class LanePlanner:
               with open('/tmp/debug_out_j','w') as fp:
                 fp.write('cin:OFF ')
       except Exception as e:
-        dcm_handle_ctrl = True
+        dcm_handle_ctrl = False
     DCM_FRAME += 1
     if dcm_handle_ctrl == False:
       # if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
