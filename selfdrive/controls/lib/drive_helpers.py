@@ -216,17 +216,15 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
           dcm_handle_ctrl_sw = int(dcm_handle_ctrl_sw_str)
           if dcm_handle_ctrl_sw >= 1:
             dc_get_lag_adjusted_curvature = False
-            with open('/tmp/debug_out_k','w') as fp:
-              fp.write('cvr:ON ')
           else:
             dc_get_lag_adjusted_curvature = True
-            with open('/tmp/debug_out_k','w') as fp:
-              fp.write('cvr:OFF ')
     except Exception as e:
       dc_get_lag_adjusted_curvature = False #デフォルト
   CT_get_lag_adjusted_curvature += 1
     
   if dc_get_lag_adjusted_curvature == True:
+    with open('/tmp/debug_out_k','w') as fp:
+      fp.write('cvr:OFF ')
     #曲率制御が公式状態。
     # This is the "desired rate of the setpoint" not an actual desired rate
     if CT_get_lag_adjusted_curvature % 10 == 3 and skip_curvature_info == False: #書き出し頻度を1/10に
@@ -243,6 +241,8 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
                                   current_curvature_desired - max_curvature_rate * DT_MDL,
                                   current_curvature_desired + max_curvature_rate * DT_MDL)
   else:
+    with open('/tmp/debug_out_k','w') as fp:
+      fp.write('cvr:ON ')
     # k_v_tss = interp(abs(desired_curvature) , k_vs_org , k_vs)
     # k_v_tss2 = interp(abs(desired_curvature) , k2_vs_org , k2_vs)
     k_v = interp(abs(desired_curvature) , k_vs_org , k_vs) if tss_type < 2 else interp(abs(desired_curvature) , k2_vs_org , k2_vs)

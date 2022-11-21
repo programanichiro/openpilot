@@ -129,12 +129,8 @@ class LanePlanner:
             dcm_handle_ctrl_sw = int(dcm_handle_ctrl_sw_str)
             if dcm_handle_ctrl_sw >= 2:
               dcm_handle_ctrl = True
-              with open('/tmp/debug_out_j','w') as fp:
-                fp.write('cin:ON ')
             else:
               dcm_handle_ctrl = False
-              with open('/tmp/debug_out_j','w') as fp:
-                fp.write('cin:OFF ')
       except Exception as e:
         dcm_handle_ctrl = False
     DCM_FRAME += 1
@@ -142,8 +138,12 @@ class LanePlanner:
       # if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
       #   return -(-0.09) #調整中
       #   # return -(-0.10) #左に寄りすぎ？
+      with open('/tmp/debug_out_j','w') as fp:
+        fp.write('cin:OFF ')
       return 0 #車体寄せを行わない
 
+    with open('/tmp/debug_out_j','w') as fp:
+      fp.write('cin:ON ')
     handle_margin = 1 #1.5
     handle_over = 5
     camera_margin = 0.1 #0.05 -> 0.1
