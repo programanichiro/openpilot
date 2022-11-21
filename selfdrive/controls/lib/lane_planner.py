@@ -129,8 +129,12 @@ class LanePlanner:
             dcm_handle_ctrl_sw = int(dcm_handle_ctrl_sw_str)
             if dcm_handle_ctrl_sw >= 2:
               dcm_handle_ctrl = True
+              with open('/tmp/debug_out_j','w') as fp:
+                fp.write('cin:ON ')
             else:
               dcm_handle_ctrl = False
+              with open('/tmp/debug_out_j','w') as fp:
+                fp.write('cin:OFF ')
       except Exception as e:
         dcm_handle_ctrl = True
     DCM_FRAME += 1

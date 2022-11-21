@@ -216,8 +216,12 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
           dcm_handle_ctrl_sw = int(dcm_handle_ctrl_sw_str)
           if dcm_handle_ctrl_sw >= 1:
             dc_get_lag_adjusted_curvature = False
+            with open('/tmp/debug_out_k','w') as fp:
+              fp.write('cvr:ON ')
           else:
             dc_get_lag_adjusted_curvature = True
+            with open('/tmp/debug_out_k','w') as fp:
+              fp.write('cvr:OFF ')
     except Exception as e:
       dc_get_lag_adjusted_curvature = False #デフォルト
   CT_get_lag_adjusted_curvature += 1
