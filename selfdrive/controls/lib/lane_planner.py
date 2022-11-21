@@ -119,25 +119,22 @@ class LanePlanner:
 #関数を最後に追加,dcm(ダイナミックカメラマージン？)名前がおかしいが、コーナーのイン側に寄せるオフセットである。早晩、こちらはlateral_planner.pyへ引っ越し予定。
   def calc_dcm(self, st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob):
     #数値を実際に取得して、調整してみる。UIスイッチで車体寄せをやめるなら、ここでゼロを返せばいい。
-    return 0 #車体寄せを行わない。西湘バイパス出口急カーブでの寄りすぎ原因の調査。こちらでなければk_v2=2が原因。
+    #return 0 #車体寄せを行わない。西湘バイパス出口急カーブでの寄りすぎ原因の調査。こちらでなければk_v2=2が原因。
     global DCM_FRAME , dcm_handle_ctrl
     if DCM_FRAME % 30 == 1 and (st_angle != 0 or pred_angle != 0):
       try:
-        with open('/tmp/handle_ctrl_disable.txt','r') as fp:
-          dcm_handle_ctrl_disable_str = fp.read()
-          if dcm_handle_ctrl_disable_str:
-            dcm_handle_ctrl_disable = int(dcm_handle_ctrl_disable_str)
-            if dcm_handle_ctrl_disable == 0:
+        with open('/tmp/handle_ctrl_sw.txt','r') as fp:
+          dcm_handle_ctrl_sw_str = fp.read()
+          if dcm_handle_ctrl_sw_str:
+            dcm_handle_ctrl_sw = int(dcm_handle_ctrl_sw_str)
+            if dcm_handle_ctrl_sw >= 2:
               dcm_handle_ctrl = True
             else:
               dcm_handle_ctrl = False
       except Exception as e:
-        dcm_handle_ctrl = True
+        dcm_handle_ctrl = False
     DCM_FRAME += 1
     if dcm_handle_ctrl == False:
-      # if r_prob == -1 and l_prob == -1: #ない方がいいかもしれん。取ると車体が右による？。想定と逆
-      #   return -(-0.09) #調整中
-      #   # return -(-0.10) #左に寄りすぎ？
       return 0 #車体寄せを行わない
 
     handle_margin = 1 #1.5
