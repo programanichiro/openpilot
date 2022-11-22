@@ -1472,9 +1472,9 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
     use_lanelines = scene.mUseLaneButton == 0 ? false : true;
   }
   float start_hue, end_hue;
-  if (use_lanelines == true) {
-    bg.setColorAt(0, whiteColor());
-    bg.setColorAt(1, whiteColor(0));
+  if (use_lanelines == true) { //白->薄紫
+    bg.setColorAt(0, QColor(151, 162, 212, 255));
+    bg.setColorAt(1, QColor(151, 162, 212, 0));
   } else if (sm["controlsState"].getControlsState().getExperimentalMode()) {
     const auto &acceleration = sm["modelV2"].getModelV2().getAcceleration();
     float acceleration_future = 0;
