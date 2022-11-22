@@ -1188,7 +1188,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     angle_steer = global_angle_steer0;
     if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){
-      if(uiState()->scene.mHandleCtrlButton == true && tss_type < 2){
+      if(uiState()->scene.mHandleCtrlButton == 2){
         a2 = 200;
       }
     }
