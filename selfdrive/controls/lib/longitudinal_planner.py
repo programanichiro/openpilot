@@ -563,7 +563,7 @@ class LongitudinalPlanner:
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
           if self.ac_vc_time < 1.0:
-            self.ac_vc_time += 0.05
+            self.ac_vc_time += 0.02
           self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
           # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
           v_cruise_kph = v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
@@ -575,7 +575,7 @@ class LongitudinalPlanner:
               add_v_by_lead = False
     if add_v_by_lead == False:
       if self.ac_vc_time > 0:
-        self.ac_vc_time -= 0.05
+        self.ac_vc_time -= 0.02
       self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
       v_cruise_kph = v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
 
