@@ -1783,7 +1783,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   {
     //float vegostopping = (*s->sm)["carParams"].getCarParams().getVEgoStopping();
     //QString debug_disp = QString("Stop:") + QString::number(vegostopping,'f',0);
-    QString debug_disp = QString("Slow:") + QString::number(cv,'f',0);
+    QString debug_disp = QString("↓:") + QString::number(cv,'f',0);
     p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   if(0){
