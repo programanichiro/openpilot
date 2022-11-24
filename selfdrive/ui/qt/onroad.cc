@@ -1784,11 +1784,11 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     //float vegostopping = (*s->sm)["carParams"].getCarParams().getVEgoStopping();
     //QString debug_disp = QString("Stop:") + QString::number(vegostopping,'f',0);
     QString debug_disp = QString("↓:") + QString::number(cv,'f',0);
-    p.drawText(QRect(0+20, rect_h - 46, 200, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+    p.drawText(QRect(0+20, rect_h - 46, 130, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   if(0){
     QString debug_disp = QString(",Fps:") + QString::number(global_fps,'f',1);
-    p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+    p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   } else if(0){
     //自立運転時間の割合
     static uint64_t manual_ct = 1 , autopilot_ct;
@@ -1801,7 +1801,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     }
     double mar = (autopilot_ct * 100) / (autopilot_ct + manual_ct); //manual auto rate
     QString debug_disp = QString(",Amr:") + QString::number((int)mar) + "%";
-    p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+    p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   } else {
     //自立運転距離の割合
     static uint64_t manual_ct = 1 , autopilot_ct; //参考に時間での割合も計算する。
@@ -1830,7 +1830,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     double ahr = (h_autopilot_dist * 100) / (h_autopilot_dist + h_manual_dist); //autopilot hybrid rate
     QString debug_disp = QString(",Amr:") + QString::number((int)ahr) + "%";
-    p.drawText(QRect(0+20 + 200, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+    p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
     // FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
     // if(fp != NULL){
     //   fprintf(fp,"H:%.0f+%.0f=%.0fh %.2f%%\n",h_autopilot_dist,h_manual_dist,h_autopilot_dist + h_manual_dist,ahr);
@@ -1841,7 +1841,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   }
   {
     QString debug_disp = QString(",Trip:") + QString::number(distance_traveled / 1000,'f',1) + QString("km");
-    p.drawText(QRect(0+20 + 200 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+    p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
 }
