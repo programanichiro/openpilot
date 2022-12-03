@@ -784,7 +784,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     maxspeed_str = qstr;
     stdstr_txt_save.clear(); //過去数字の使用は一度限定。
   }
-  cur_speed  *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
+  cur_speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
 
   auto speed_limit_sign = sm["navInstruction"].getNavInstruction().getSpeedLimitSign();
   float speed_limit = nav_alive ? sm["navInstruction"].getNavInstruction().getSpeedLimit() : 0.0;
