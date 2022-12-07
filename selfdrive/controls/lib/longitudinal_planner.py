@@ -8,7 +8,6 @@ from common.numpy_fast import clip, interp
 import cereal.messaging as messaging
 from common.conversions import Conversions as CV
 from common.filter_simple import FirstOrderFilter
-from common.params import Params
 from common.realtime import DT_MDL
 from selfdrive.modeld.constants import T_IDXS
 from selfdrive.controls.lib.longcontrol import LongCtrlState
@@ -19,8 +18,6 @@ from system.swaglog import cloudlog
 
 from selfdrive.car.toyota.values import TSS2_CAR
 from selfdrive.controls.lib.lateral_planner import TRAJECTORY_SIZE
-from common.params import Params
-PARAMS = Params()
 CVS_FRAME = 0
 handle_center = 0 #STEERING_CENTER
 accel_lead_ctrl = True
@@ -102,12 +99,7 @@ def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
 class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0):
     self.CP = CP
-    self.params = Params()
-    self.param_read_counter = 0
-
     self.mpc = LongitudinalMpc()
-    self.read_param()
-
     self.fcw = False
 
     self.a_desired = init_a
@@ -130,10 +122,6 @@ class LongitudinalPlanner:
     if self.CP.carFingerprint not in TSS2_CAR:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
       
-  def read_param(self):
-    e2e = self.params.get_bool('ExperimentalMode') and self.CP.openpilotLongitudinalControl
-    self.mpc.mode = 'blended' if e2e else 'acc'
-
   @staticmethod
   def parse_model(model_msg, model_error):
     if (len(model_msg.position.x) == 33 and
@@ -150,10 +138,8 @@ class LongitudinalPlanner:
       j = np.zeros(len(T_IDXS_MPC))
     return x, v, a, j
 
-  def update(self, sm, read=True):
-    if self.param_read_counter % 50 == 0 and read:
-      self.read_param()
-    self.param_read_counter += 1
+  def update(self, sm):
+    self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
 
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
