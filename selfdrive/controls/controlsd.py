@@ -287,11 +287,6 @@ class Controls:
       (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
       self.events.add(EventName.pedalPressed)
 
-    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-#    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
-#      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)):
-#      self.events.add(EventName.pedalPressed)
-
     if CS.brakePressed and CS.standstill:
       self.events.add(EventName.preEnableStandstill)
 
@@ -671,7 +666,7 @@ class Controls:
       max_torque = abs(self.last_actuators.steer) > 0.99
       if undershooting and turning and good_speed and max_torque:
         self.events.add(EventName.steerSaturated)
-    elif lac_log.active and not CS.steeringPressed and lac_log.saturated:
+    elif lac_log.active and lac_log.saturated:
       dpath_points = lat_plan.dPathPoints
       if len(dpath_points):
         # Check if we deviated from the path
