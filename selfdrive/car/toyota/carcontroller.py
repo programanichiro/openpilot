@@ -20,6 +20,8 @@ MAX_STEER_RATE_FRAMES = 25 # こちらも耐えられる可能な限り上げる
 # EPS allows user torque above threshold for 50 frames before permanently faulting
 MAX_USER_TORQUE = 500
 
+UNLOCK_CMD = b'\x40\x05\x30\x11\x00\x40\x00\x00'
+LOCK_CMD = b'\x40\x05\x30\x11\x00\x80\x00\x00'
 
 class CarController:
   def __init__(self, dbc_name, CP, VM):
@@ -104,12 +106,12 @@ class CarController:
     if True: #auto door lock , unlock
       gear = CS.out.gearShifter
       if self.last_gear != gear and self.lock_once == True: #もしバックに入れたらロック解除。
-        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+        can_sends.append(make_can_msg(0x750, UNLOCK_CMD, 0)) #auto unlock
         self.lock_once = False
         with open('/tmp/debug_out_y','w') as fp:
           fp.write('door lock:%d' % (self.lock_once))
       elif gear == car.CarState.GearShifter.drive and self.lock_once == False: # and CS.out.vEgo >= 30/3.6: #時速30km/h以上でオートロック
-        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+        can_sends.append(make_can_msg(0x750, LOCK_CMD, 0)) #auto lock
         self.lock_once = True
         with open('/tmp/debug_out_y','w') as fp:
           fp.write('door lock:%d' % (self.lock_once))
