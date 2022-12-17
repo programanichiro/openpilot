@@ -36,6 +36,9 @@ class CarController:
     self.gas = 0
     self.accel = 0
 
+    self.last_gear = car.CarState.GearShifter.park
+    self.lock_once = False
+
   def update(self, CC, CS):
     actuators = CC.actuators
     hud_control = CC.hudControl
@@ -97,6 +100,16 @@ class CarController:
     self.last_standstill = CS.out.standstill
 
     can_sends = []
+
+    if True: #auto door lock , unlock
+      gear = CS.out.gearShifter
+      if self.last_gear != gear and self.lock_once == True: #もしバックに入れたらロック解除。
+        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+        self.lock_once = False
+      elif gear == car.CarState.GearShifter.drive and self.lock_once == False and CS.out.vEgo >= 30/3.6: #時速30km/h以上でオートロック
+        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+        self.lock_once = True
+      self.last_gear = gear
 
     # *** control msgs ***
     # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor)
