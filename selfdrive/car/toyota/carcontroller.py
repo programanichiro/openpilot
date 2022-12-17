@@ -106,7 +106,7 @@ class CarController:
       if self.last_gear != gear and self.lock_once == True: #もしバックに入れたらロック解除。
         can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
         self.lock_once = False
-      elif gear == car.CarState.GearShifter.drive and self.lock_once == False and CS.out.vEgo >= 30/3.6: #時速30km/h以上でオートロック
+      elif gear == car.CarState.GearShifter.drive and self.lock_once == False: # and CS.out.vEgo >= 30/3.6: #時速30km/h以上でオートロック
         can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
         self.lock_once = True
       self.last_gear = gear
