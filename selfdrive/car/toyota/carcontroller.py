@@ -103,9 +103,8 @@ class CarController:
 
     if True: #auto door lock , unlock
       gear = CS.out.gearShifter
-      if self.now_gear != gear and gear == car.CarState.GearShifter.reverse or (CS.out.vEgo < 0.1/3.6 and self.lock_flag == True): #バックギアでアンロック。パーキングではアンロックしない。
-        if gear == car.CarState.GearShifter.reverse: #バックギア以外はアンロックしない。
-          can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+      if self.now_gear != gear or CS.out.vEgo < 0.1/3.6: #バックギアでアンロック。パーキングではアンロックしない。
+        #アンロックしないcan_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
         self.lock_flag = False #速度ゼロでもフラグはおろす。
       elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= 30/3.6: #時速30km/h以上でオートロック
         can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
