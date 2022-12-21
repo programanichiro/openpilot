@@ -38,7 +38,6 @@ class CarController:
 
     self.now_gear = car.CarState.GearShifter.park
     self.lock_flag = False
-    self.door_ct = 0
 
   def update(self, CC, CS):
     actuators = CC.actuators
@@ -104,16 +103,13 @@ class CarController:
 
     if True: #auto door lock , unlock
       gear = CS.out.gearShifter
-      if self.now_gear != gear or CS.out.vEgo < 0.1/3.6: #バックギアでアンロック。パーキングではアンロックしない。
+      if self.now_gear != gear or CS.out.doorOpen: #ギアが変わるか、ドアが開くか。
         #アンロックしないcan_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
-        self.lock_flag = False #速度ゼロでもフラグはおろす。
+        self.lock_flag = False #ドアが空いてもフラグはおろす。
       elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= 30/3.6: #時速30km/h以上でオートロック
         can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
         self.lock_flag = True
       self.now_gear = gear
-      with open('/tmp/debug_out_y','w') as fp:
-        self.door_ct += 1 #offroadでもアップする？
-        fp.write('door lock ct:%d' % (self.door_ct))
 
 
     # *** control msgs ***
