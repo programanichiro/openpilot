@@ -38,6 +38,7 @@ class CarController:
 
     self.now_gear = car.CarState.GearShifter.park
     self.lock_flag = False
+    self.door_ct = 0
 
   def update(self, CC, CS):
     actuators = CC.actuators
@@ -110,6 +111,10 @@ class CarController:
         can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
         self.lock_flag = True
       self.now_gear = gear
+      with open('/tmp/debug_out_y','w') as fp:
+        self.door_ct += 1 #offroadでもアップする？
+        fp.write('door lock ct:%d' % (self.door_ct))
+
 
     # *** control msgs ***
     # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor)
