@@ -1958,7 +1958,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarSta
   painter.setCompositionMode(QPainter::CompositionMode_Plus);
   //p.setPen(QColor(0, 255, 0, 255));
 
-  float prob_alpha = lead_data.getProb();
+  float prob_alpha = lead_data.getModelProb();
   if(prob_alpha < 0){
     prob_alpha = 0;
   } else if(prob_alpha > 1.0){
@@ -2051,7 +2051,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarSta
     }
     painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
     if(ww >= 40){
-      //painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
+      //painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getModelProb()*100)) + "％");
 
       //num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
       painter.setPen(Qt::NoPen);
@@ -2195,7 +2195,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarSta
       painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
     }
     if(ww >= 160 /*80*/){
-      //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
+      //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number((int)(lead_data.getModelProb()*100)) + "％");
       //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number(a_rel,'f',1) + "a");
     }
   }
@@ -2274,10 +2274,10 @@ void AnnotatedCameraWidget::paintGL() {
     if (s->scene.longitudinal_control) {
       auto lead_one = radar_state.getLeadOne();
       auto lead_two = radar_state.getLeadTwo();
-      if(lead_one.getProb() > .2){ //信用度20%以上で表示。調整中。
+      if(lead_one.getModelProb() > .2){ //信用度20%以上で表示。調整中。
         drawLockon(painter, lead_one, s->scene.lead_vertices[0] , 0 /* , leads_num /*, lead_one , lead_two*/);
       }
-      if(lead_two.getProb() > .2){ //信用度20%以上で表示。調整中。
+      if(lead_two.getModelProb() > .2){ //信用度20%以上で表示。調整中。
         drawLockon(painter, lead_two, s->scene.lead_vertices[1] , 1 /* , leads_num /*, lead_one , lead_two*/);
       }
 
