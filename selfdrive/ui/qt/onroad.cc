@@ -1853,12 +1853,14 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 
 static float global_a_rel;
 static float global_a_rel_col;
-void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num) {
+void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd /*使っていない, int num , size_t leads_num*/) {
   painter.save();
   const float speedBuff = 10.;
   const float leadBuff = 40.;
-  const float d_rel = lead_data.getX()[0];
-  const float v_rel = lead_data.getV()[0];
+//  const float d_rel = lead_data.getX()[0];
+//  const float v_rel = lead_data.getV()[0];
+  const float d_rel = lead_data.getDRel();
+  const float v_rel = lead_data.getVRel();
 //  const float t_rel = lead_data.getT()[0];
 //  const float y_rel = lead_data.getY()[0];
 //  const float a_rel = lead_data.getA()[0];
@@ -1931,14 +1933,16 @@ struct LeadcarLockon {
 #define LeadcarLockon_MAX 5
 LeadcarLockon leadcar_lockon[LeadcarLockon_MAX]; //この配列0番を推論1番枠と呼ぶことにする。
 
-void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , size_t leads_num , const cereal::ModelDataV2::LeadDataV3::Reader &lead0 , const cereal::ModelDataV2::LeadDataV3::Reader &lead1) {
+void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd , int num  /*使っていない , size_t leads_num , const cereal::RadarState::LeadData::Reader &lead0, const cereal::RadarState::LeadData::Reader &lead1 */) {
   //const float speedBuff = 10.;
   //const float leadBuff = 40.;
-  const float d_rel = lead_data.getX()[0];
+  //const float d_rel = lead_data.getX()[0];
+  const float d_rel = lead_data.getDRel();
   //const float v_rel = lead_data.getV()[0];
   //const float t_rel = lead_data.getT()[0];
   //const float y_rel = lead_data.getY()[0];
-  float a_rel = lead_data.getA()[0];
+  //float a_rel = lead_data.getA()[0];
+  float a_rel = lead_data.getARel(); //ある？
   global_a_rel = a_rel;
 
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
@@ -2204,6 +2208,7 @@ void AnnotatedCameraWidget::paintGL() {
   SubMaster &sm = *(s->sm);
   const double start_draw_t = millis_since_boot();
   const cereal::ModelDataV2::Reader &model = sm["modelV2"].getModelV2();
+  const cereal::RadarState::Reader &radar_state = sm["radarState"].getRadarState();
 
   const int _width = width();  // for ButtonsWindow
   if (prev_width != _width) {
@@ -2260,25 +2265,27 @@ void AnnotatedCameraWidget::paintGL() {
     if (sm.rcv_frame("modelV2") > s->scene.started_frame) {
       update_model(s, sm["modelV2"].getModelV2());
       if (sm.rcv_frame("radarState") > s->scene.started_frame) {
-        update_leads(s, sm["radarState"].getRadarState(), sm["modelV2"].getModelV2().getPosition());
+        update_leads(s, radar_state, sm["modelV2"].getModelV2().getPosition());
       }
     }
 
     drawLaneLines(painter, s);
 
     if (s->scene.longitudinal_control) {
-      const auto leads = model.getLeadsV3();
-      size_t leads_num = leads.size();
-      for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
-        if(leads[i].getProb() > .2){ //信用度20%以上で表示。調整中。
-          drawLockon(painter, leads[i], s->scene.lead_vertices[i] , i , leads_num , leads[0] , leads[1]);
-        }
+      auto lead_one = radar_state.getLeadOne();
+      auto lead_two = radar_state.getLeadTwo();
+      if(lead_one.getProb() > .2){ //信用度20%以上で表示。調整中。
+        drawLockon(painter, lead_one, s->scene.lead_vertices[0] , 0 /* , leads_num /*, lead_one , lead_two*/);
       }
-      if (leads[0].getProb() > .5) {
-        drawLead(painter, leads[0], s->scene.lead_vertices[0] , 0 , leads_num);
+      if(lead_two.getProb() > .2){ //信用度20%以上で表示。調整中。
+        drawLockon(painter, lead_two, s->scene.lead_vertices[1] , 1 /* , leads_num /*, lead_one , lead_two*/);
       }
-      if (leads[1].getProb() > .5 && (std::abs(leads[1].getX()[0] - leads[0].getX()[0]) > 3.0)) {
-        drawLead(painter, leads[1], s->scene.lead_vertices[1] , 1 , leads_num);
+
+      if (lead_one.getStatus()) {
+        drawLead(painter, lead_one, s->scene.lead_vertices[0]);
+      }
+      if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
+        drawLead(painter, lead_two, s->scene.lead_vertices[1]);
       }
     }
   }
