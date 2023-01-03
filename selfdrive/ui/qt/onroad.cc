@@ -1853,7 +1853,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 
 static float global_a_rel;
 static float global_a_rel_col;
-void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd /*使っていない, int num , size_t leads_num*/) {
+void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd , int num /*使っていない, size_t leads_num*/) {
   painter.save();
   const float speedBuff = 10.;
   const float leadBuff = 40.;
@@ -2275,17 +2275,17 @@ void AnnotatedCameraWidget::paintGL() {
       auto lead_one = radar_state.getLeadOne();
       auto lead_two = radar_state.getLeadTwo();
       if(lead_one.getModelProb() > .2){ //信用度20%以上で表示。調整中。
-        drawLockon(painter, lead_one, s->scene.lead_vertices[0] , 0 /* , leads_num /*, lead_one , lead_two*/);
+        drawLockon(painter, lead_one, s->scene.lead_vertices[0] , 0 /* , leads_num , lead_one , lead_two*/);
       }
       if(lead_two.getModelProb() > .2){ //信用度20%以上で表示。調整中。
-        drawLockon(painter, lead_two, s->scene.lead_vertices[1] , 1 /* , leads_num /*, lead_one , lead_two*/);
+        drawLockon(painter, lead_two, s->scene.lead_vertices[1] , 1 /* , leads_num , lead_one , lead_two*/);
       }
 
       if (lead_one.getStatus()) {
-        drawLead(painter, lead_one, s->scene.lead_vertices[0]);
+        drawLead(painter, lead_one, s->scene.lead_vertices[0] , 0);
       }
       if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
-        drawLead(painter, lead_two, s->scene.lead_vertices[1]);
+        drawLead(painter, lead_two, s->scene.lead_vertices[1] , 1);
       }
     }
   }
