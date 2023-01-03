@@ -1933,16 +1933,16 @@ struct LeadcarLockon {
 #define LeadcarLockon_MAX 5
 LeadcarLockon leadcar_lockon[LeadcarLockon_MAX]; //この配列0番を推論1番枠と呼ぶことにする。
 
-void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd , int num  /*使っていない , size_t leads_num , const cereal::RadarState::LeadData::Reader &lead0, const cereal::RadarState::LeadData::Reader &lead1 */) {
+void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num  /*使っていない , size_t leads_num , const cereal::RadarState::LeadData::Reader &lead0, const cereal::RadarState::LeadData::Reader &lead1 */) {
   //const float speedBuff = 10.;
   //const float leadBuff = 40.;
-  //const float d_rel = lead_data.getX()[0];
-  const float d_rel = lead_data.getDRel();
+  const float d_rel = lead_data.getX()[0];
+  //const float d_rel = lead_data.getDRel();
   //const float v_rel = lead_data.getV()[0];
   //const float t_rel = lead_data.getT()[0];
   //const float y_rel = lead_data.getY()[0];
-  //float a_rel = lead_data.getA()[0];
-  float a_rel = lead_data.getARel(); //ある？
+  float a_rel = lead_data.getA()[0];
+  //float a_rel = lead_data.getARel(); //ある？
   global_a_rel = a_rel;
 
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
@@ -1958,7 +1958,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarSta
   painter.setCompositionMode(QPainter::CompositionMode_Plus);
   //p.setPen(QColor(0, 255, 0, 255));
 
-  float prob_alpha = lead_data.getModelProb();
+  float prob_alpha = lead_data.getProb(); //getModelProb();
   if(prob_alpha < 0){
     prob_alpha = 0;
   } else if(prob_alpha > 1.0){
@@ -2051,7 +2051,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarSta
     }
     painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
     if(ww >= 40){
-      //painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getModelProb()*100)) + "％");
+      //painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
 
       //num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
       painter.setPen(Qt::NoPen);
@@ -2195,7 +2195,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::RadarSta
       painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
     }
     if(ww >= 160 /*80*/){
-      //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number((int)(lead_data.getModelProb()*100)) + "％");
+      //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
       //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number(a_rel,'f',1) + "a");
     }
   }
