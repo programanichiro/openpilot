@@ -2276,7 +2276,7 @@ void AnnotatedCameraWidget::paintGL() {
       size_t leads_num = leads.size();
       for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
         if(leads[i].getProb() > .2){ //信用度20%以上で表示。調整中。
-          drawLockon(painter, leads[i], s->scene.lead_vertices[i] , i , leads_num , leads[0] , leads[1]);
+          drawLockon(painter, leads[i], s->scene.lead_vertices[i] , i /*, leads_num , leads[0] , leads[1]*/);
         }
       }
 
