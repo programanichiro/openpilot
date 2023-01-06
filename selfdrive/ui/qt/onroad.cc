@@ -1860,7 +1860,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
 //  const float d_rel = lead_data.getX()[0];
 //  const float v_rel = lead_data.getV()[0];
   const float d_rel = lead_data.getDRel();
-  const float v_rel = lead_data.getVRel();
+  const float v_rel = lead_data.getVRel(); //相対速度のようだ。
 //  const float t_rel = lead_data.getT()[0];
 //  const float y_rel = lead_data.getY()[0];
 //  const float a_rel = lead_data.getA()[0];
@@ -1897,7 +1897,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
     //float dist = d_rel; //lead_data.getT()[0];
     QString dist = QString::number(d_rel,'f',0) + "m";
     int str_w = 200;
-    QString kmph = QString::number(v_rel*3.6,'f',0) + "k";
+    QString kmph = QString::number((v_rel + vc_speed)*3.6,'f',0) + "k";
     int str_w2 = 200;
 //    dist += "<" + QString::number(rect().height()) + ">"; str_w += 500;画面の高さはc2,c3共に1020だった。
 //    dist += "<" + QString::number(leads_num) + ">";
@@ -2192,7 +2192,13 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
 
     if(ww >= 80){
       //ここではy0,y1を参照できない。
-      painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
+      float d_lim = 10;
+      if(wide_cam_requested == false){
+        d_lim = 20; //ロングカメラだとちょっと枠が大きい。
+      }
+      if(num == 0 || (num==1 && d_rel < d_lim)){ //num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。
+        painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
+      }
     }
     if(ww >= 160 /*80*/){
       //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
