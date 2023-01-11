@@ -22,8 +22,16 @@ class CarController():
     self.gas = 0
     self.accel = 0
 
-    self.last_gear = car.CarState.GearShifter.park
-    self.lock_once = False
+    self.now_gear = car.CarState.GearShifter.park
+    self.lock_flag = False
+    self.lock_speed = 0
+    try:
+      with open('../../../run_auto_lock.txt','r') as fp:
+        lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        if lock_speed_str:
+          self.lock_speed = int(lock_speed_str);
+    except Exception as e:
+      pass
 
   def update(self, enabled, active, CS, frame, actuators, pcm_cancel_cmd, hud_alert,
              left_line, right_line, lead, left_lane_depart, right_lane_depart):
@@ -76,15 +84,16 @@ class CarController():
 
     can_sends = []
 
-    if True: #auto door lock , unlock
+    if self.lock_speed > 0: #auto door lock , unlock
       gear = CS.out.gearShifter
-      if self.last_gear != gear and self.lock_once == True: #もしバックに入れたらロック解除。
-        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
-        self.lock_once = False
-      elif gear == car.CarState.GearShifter.drive and self.lock_once == False: # and CS.out.vEgo >= 30/3.6: #時速30km/h以上でオートロック
+      if self.now_gear != gear or (CS.out.doorOpen and self.lock_flag == True): #ギアが変わるか、ドアが開くか。
+        if gear == car.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
+          can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+        self.lock_flag = False #ドアが空いてもフラグはおろす。
+      elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
         can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
-        self.lock_once = True
-      self.last_gear = gear
+        self.lock_flag = True
+      self.now_gear = gear
 
     #*** control msgs ***
     #print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor)
