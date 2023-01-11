@@ -2194,7 +2194,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
       //ここではy0,y1を参照できない。
       float d_lim = 12;
       if(wide_cam_requested == false){
-        d_lim = 24; //ロングカメラだとちょっと枠が大きい。
+        d_lim = 32; //ロングカメラだとちょっと枠が大きい。実測
       }
       if(num == 0 || (num==1 && d_rel < d_lim)){ //num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。
         painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
