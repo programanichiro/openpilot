@@ -106,9 +106,6 @@ class Tici(HardwareBase):
     return (os.path.isfile('/proc/asound/card0/state') and
             open('/proc/asound/card0/state').read().strip() == 'ONLINE')
 
-  def is_sound_playing(self):
-    return "RUNNING" in subprocess.check_output(["pactl", "list", "short", "sinks"]).decode('utf8')
-
   def reboot(self, reason=None):
     subprocess.check_output(["sudo", "reboot"])
 
@@ -452,9 +449,6 @@ class Tici(HardwareBase):
   def initialize_hardware(self):
     self.amplifier.initialize_configuration(self.model)
 
-    # TODO: this should go in AGNOS
-    os.system("sudo chmod 666 /dev/spidev0.0")
-
     # Allow thermald to write engagement status to kmsg
     os.system("sudo chmod a+w /dev/kmsg")
 
@@ -485,17 +479,6 @@ class Tici(HardwareBase):
     # *** VIDC (encoder) config ***
     sudo_write("N", "/sys/kernel/debug/msm_vidc/clock_scaling")
     sudo_write("Y", "/sys/kernel/debug/msm_vidc/disable_thermal_mitigation")
-
-    # *** unexport GPIO for sensors ***
-    # remove from /userspace/usr/comma/gpio.sh
-    sudo_write(str(GPIO.BMX055_ACCEL_INT), "/sys/class/gpio/unexport")
-    sudo_write(str(GPIO.BMX055_GYRO_INT),  "/sys/class/gpio/unexport")
-    sudo_write(str(GPIO.BMX055_MAGN_INT),  "/sys/class/gpio/unexport")
-    sudo_write(str(GPIO.LSM_INT),          "/sys/class/gpio/unexport")
-
-    # *** set /dev/gpiochip0 rights to make accessible by sensord
-    os.system("sudo chmod +r /dev/gpiochip0")
-
 
   def configure_modem(self):
     sim_id = self.get_sim_info().get('sim_id', '')
