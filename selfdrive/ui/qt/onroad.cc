@@ -1603,6 +1603,15 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     if( lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::PRE_LANE_CHANGE ||
         lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定
       lane_change_height = 270;
+    } else { //stand_stillでもウインカーを上げる。
+      std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
+      bool stand_still = false;
+      if(stand_still_txt.empty() == false){
+        stand_still = std::stoi(stand_still_txt) ? true : false;
+      }
+      if(stand_still){
+        lane_change_height = 270;
+      }
     }
 #endif
   }
