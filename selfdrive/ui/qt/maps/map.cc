@@ -519,6 +519,19 @@ void MapWindow::updateDestinationMarker() {
   }
 }
 
+void MapWindow::updateDestinationMarker() {
+  if (marker_id != -1) {
+    m_map->removeAnnotation(marker_id);
+    marker_id = -1;
+  }
+
+  auto nav_dest = coordinate_from_param("NavDestination");
+  if (nav_dest.has_value()) {
+    auto ano = QMapbox::SymbolAnnotation {*nav_dest, "default_marker"};
+    marker_id = m_map->addAnnotation(QVariant::fromValue<QMapbox::SymbolAnnotation>(ano));
+  }
+}
+
 MapInstructions::MapInstructions(QWidget * parent) : QWidget(parent) {
   is_rhd = Params().getBool("IsRhdDetected");
   QHBoxLayout *main_layout = new QHBoxLayout(this);
