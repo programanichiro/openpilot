@@ -1258,7 +1258,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   int long_base_angle0 = 45; //下中央から左右に何度か指定する。
   if((Long_enable || (*s->sm)["controlsState"].getControlsState().getExperimentalMode()) && engageable){
     const int arc_w = -8; //内側に描画
-    QPen pen = QPen(QColor(255, 255, (*s->sm)["controlsState"].getControlsState().getExperimentalMode() ? 0 : 255, 180), abs(arc_w));
+    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode() || mUseLaneButton == 3) ? 0 : 255, 180), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     const float x = x_Long_enable;
@@ -1298,7 +1298,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     const int long_base_angle = long_base_angle0-3; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
-    QPen pen = QPen(QColor(255, 255, (*s->sm)["controlsState"].getControlsState().getExperimentalMode() ? 0 : 255, 180), abs(arc_w_base));
+    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode() || mUseLaneButton == 3) ? 0 : 255, 180), abs(arc_w_base));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
