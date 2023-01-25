@@ -149,12 +149,12 @@ class LongitudinalPlanner:
         if v_ego < 15/3.6:
           params.put_bool("ExperimentalMode", True)
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
-            fp.write('%d' % (0)) #イチロウロング無効
+            fp.write('%d' % (1)) #イチロウロング無効
       else:
         if v_ego > 20/3.6:
           params.put_bool("ExperimentalMode", False)
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
-            fp.write('%d' % (1)) #イチロウロング有効
+            fp.write('%d' % (0)) #イチロウロング有効
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time
     #with open('/tmp/debug_out_v','w') as fp:
     #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
