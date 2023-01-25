@@ -1244,6 +1244,13 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   const float x_Long_enable = rect().right() - radius / 2 - bdr_s * 2;
   const float y_Long_enable = radius / 2 + int(bdr_s * 1.5)+y_ofs;
+  std::string long_speeddown_disable_txt = util::read_file("/tmp/long_speeddown_disable.txt");
+  Long_enable = true;
+  if(long_speeddown_disable_txt.empty() == false){
+    if(std::stoi(long_speeddown_disable_txt) != 0){
+      Long_enable = false;
+    }
+  }
   int long_base_angle0 = 45; //下中央から左右に何度か指定する。
   if((Long_enable || (*s->sm)["controlsState"].getControlsState().getExperimentalMode()) && engageable){
     const int arc_w = -8; //内側に描画
