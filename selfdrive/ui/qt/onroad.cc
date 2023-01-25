@@ -408,8 +408,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // use lane button
     uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("/data/lane_sw_mode.txt" , true /*Params().getBool("EndToEndToggle")*/ ? 0 : 1);
-    if(mUseLaneButton == 2){
-      useLaneButton = new QPushButton("LA"); //レーンレス自動選択
+    if(mUseLaneButton == 3){
+      useLaneButton = new QPushButton("dX"); //ダイナミックexperimentalモード
+    } else if(mUseLaneButton == 2){
+      useLaneButton = new QPushButton("La"); //レーンレス自動選択
     } else {
       useLaneButton = new QPushButton("/ \\");
     }
@@ -417,7 +419,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       // Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
       // uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
       // uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
-      uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 3; //0->1->2->0
+      uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 4; //0->1->2->3->0
     });
     useLaneButton->setFixedWidth(150);
     useLaneButton->setFixedHeight(150*0.9);
@@ -649,8 +651,10 @@ void ButtonsWindow::updateState(const UIState &s) {
   if (mUseLaneButton != s.scene.mUseLaneButton) {  // update mUseLaneButton
     mUseLaneButton = s.scene.mUseLaneButton;
     useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0 && fp_error==false)));
-    if(mUseLaneButton == 2){
-      useLaneButton->setText("LA");
+    if(mUseLaneButton == 3){
+      useLaneButton->setText("dX");
+    } else if(mUseLaneButton == 2){
+      useLaneButton->setText("La");
     } else {
       useLaneButton->setText("/ \\");
     }
@@ -1464,7 +1468,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   // paint path
   QLinearGradient bg(0, height(), 0, height() / 4);
   static bool use_lanelines = false;
-  if(scene.mUseLaneButton == 2){
+  if(scene.mUseLaneButton >= 2){
     float lll_prob = scene.lane_line_probs[1];
     float rll_prob = scene.lane_line_probs[2];
     if(use_lanelines == true && ((lll_prob < 0.45 && rll_prob < 0.45)

@@ -120,6 +120,17 @@ class LongitudinalPlanner:
     self.desired_path_x_rates = np.zeros(5)
     self.ac_vc_time = 0.0
 
+    try:
+      with open('/tmp/lane_sw_mode.txt','r') as fp:
+        lane_sw_mode_str = fp.read()
+        if lane_sw_mode_str:
+          lane_sw_mode = int(lane_sw_mode_str)
+          if lane_sw_mode == 3: #dynamic experimental mode
+            with open('/tmp/long_speeddown_disable.txt','w') as fp:
+              fp.write('%d' % (1)) #初期はイチロウロング無効
+    except Exception as e:
+      pass
+
     if self.CP.carFingerprint not in TSS2_CAR:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
       
@@ -144,15 +155,25 @@ class LongitudinalPlanner:
 
     v_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
-    if True:
+    dexp_mode = False
+    try:
+      with open('/tmp/lane_sw_mode.txt','r') as fp:
+        lane_sw_mode_str = fp.read()
+        if lane_sw_mode_str:
+          lane_sw_mode = int(lane_sw_mode_str)
+          if lane_sw_mode == 3: #dynamic experimental mode
+            dexp_mode = True
+    except Exception as e:
+      pass
+    if dexp_mode:
       if self.mpc.mode == 'acc':
-        if v_ego < 15/3.6:
-          params.put_bool("ExperimentalMode", True)
+        if v_ego <= 15/3.6 and sm['carState'].gasPressed == False:
+          params.put_bool("ExperimentalMode", True) # blended
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (1)) #イチロウロング無効
       else:
-        if v_ego > 20/3.6:
-          params.put_bool("ExperimentalMode", False)
+        if v_ego > 20/3.6 or sm['carState'].gasPressed == True:
+          params.put_bool("ExperimentalMode", False) # acc
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (0)) #イチロウロング有効
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time
