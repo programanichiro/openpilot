@@ -167,12 +167,12 @@ class LongitudinalPlanner:
       pass
     if dexp_mode:
       if self.mpc.mode == 'acc':
-        if v_ego <= 25/3.6 and sm['carState'].gasPressed == False:
+        if v_ego <= 20/3.6 and sm['carState'].gasPressed == False:
           params.put_bool("ExperimentalMode", True) # blended
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (1)) #イチロウロング無効
       else:
-        if v_ego > 30/3.6 or sm['carState'].gasPressed == True:
+        if v_ego > 25/3.6 or sm['carState'].gasPressed == True:
           params.put_bool("ExperimentalMode", False) # acc
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (0)) #イチロウロング有効
