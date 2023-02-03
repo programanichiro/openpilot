@@ -725,14 +725,68 @@ void OnroadAlerts::paintEvent(QPaintEvent *event) {
 }
 
 
+ExperimentalButton::ExperimentalButton(QWidget *parent) : QPushButton(parent) {
+  setVisible(false);
+  setFixedSize(btn_size, btn_size);
+  setCheckable(true);
+
+  params = Params();
+  engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
+  experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size, img_size});
+
+  QObject::connect(this, &QPushButton::toggled, [=](bool checked) {
+    params.putBool("ExperimentalMode", checked);
+  });
+}
+
+void ExperimentalButton::updateState(const UIState &s) {
+  const SubMaster &sm = *(s.sm);
+
+  // button is "visible" if engageable or enabled
+  const auto cs = sm["controlsState"].getControlsState();
+  setVisible(cs.getEngageable() || cs.getEnabled());
+
+  // button is "checked" if experimental mode is enabled
+  setChecked(sm["controlsState"].getControlsState().getExperimentalMode());
+
+  // disable button when experimental mode is not available, or has not been confirmed for the first time
+  const auto cp = sm["carParams"].getCarParams();
+  const bool experimental_mode_available = cp.getExperimentalLongitudinalAvailable() ? params.getBool("ExperimentalLongitudinalEnabled") : cp.getOpenpilotLongitudinalControl();
+  setEnabled(params.getBool("ExperimentalModeConfirmed") && experimental_mode_available);
+}
+
+void ExperimentalButton::paintEvent(QPaintEvent *event) {
+  QPainter p(this);
+  p.setRenderHint(QPainter::Antialiasing);
+
+  QPoint center(btn_size / 2, btn_size / 2);
+  QPixmap img = isChecked() ? experimental_img : engage_img;
+
+  p.setOpacity(1.0);
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor(0, 0, 0, 166));
+  p.drawEllipse(center, btn_size / 2, btn_size / 2);
+  p.setOpacity(isDown() ? 0.8 : 1.0);
+  p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, img);
+}
+
+
 AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* parent) : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraWidget("camerad", type, true, parent) {
   pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"uiDebug"});
+/*
+  QVBoxLayout *main_layout  = new QVBoxLayout(this);
+  main_layout->setMargin(bdr_s);
+  main_layout->setSpacing(0);
 
+  experimental_btn = new ExperimentalButton(this);
+  main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
+*/
   engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
   experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size - 5, img_size - 5});
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size, img_size});
 }
 
+static bool global_engageable;
 static float vc_speed;
 static int tss_type = 0;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -812,15 +866,17 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("hideDM", cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   setProperty("status", s.status);
 
-  // update engageability and DM icons at 2Hz
+  // update engageability/experimental mode button
+  //experimental_btn->updateState(s);
+
+  // update DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
-    setProperty("engageable", cs.getEngageable() || cs.getEnabled());
+    global_engageable = (cs.getEngageable() || cs.getEnabled());
     setProperty("dmActive", sm["driverMonitoringState"].getDriverMonitoringState().getIsActiveMode());
     setProperty("rightHandDM", sm["driverMonitoringState"].getDriverMonitoringState().getIsRHD());
   }
 }
 
-static bool global_engageable;
 static bool all_brake_light = false;
 static int global_status;
 static float curve_value;
@@ -1187,10 +1243,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   float a0 = 150,a1 = 150,a2 = 150,a3 = 150;
   curve_value = 0;
   global_status = status;
-  global_engageable = engageable;
-  if (engageable && !(status == STATUS_ENGAGED || status == STATUS_OVERRIDE)) {
+  //global_engageable = engageable;
+  if (global_engageable && !(status == STATUS_ENGAGED || status == STATUS_OVERRIDE)) {
     a0 = 50; a1 = 50; a2 = 50; a3 = 50;
-  } else if (engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)) {
+  } else if (global_engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)) {
     a0 = 50; a1 = 50; a2 = 50; a3 = 50;
     if(vc_speed < 1/3.6){
       a3 = 200;
@@ -1221,7 +1277,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
   if(brake_light_txt.empty() == false){
     if(std::stoi(brake_light_txt) != 0){
-      if(engageable){
+      if(global_engageable){
         brake_light = true;
       }
       all_brake_light = true; //こちらはエンゲージしていなくてもセットされる。
@@ -1235,7 +1291,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
 
   // engage-ability icon
-  if (engageable) {
+  if (global_engageable) {
     SubMaster &sm = *(uiState()->sm);
     QBrush bg_color = bg_colors[status];
     if(uiState()->scene.mAccelEngagedButton == 3 && fabs(global_angle_steer0) >= 50 && (*(uiState()->sm))["carState"].getCarState().getVEgo() <= 0.01/3.6){
@@ -1358,7 +1414,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   // dm icon
   if (!hideDM) {
     //左右反転にボタン配置が対応していない。要検討事項。
-    int dm_icon_x = false ? rect().right() -  radius / 2 - (bdr_s * 2) : radius / 2 + (bdr_s * 2);
+    int dm_icon_x = false ? rect().right() -  btn_size / 2 - (bdr_s * 2) : btn_size / 2 + (bdr_s * 2);
     drawIcon(p, dm_icon_x, rect().bottom() - footer_h / 2,
              dm_img, blackColor(70), dmActive ? 1.0 : 0.2 , 0);
     if(rightHandDM){ //ボタンを移動できないので、アイコンはそのまま、左肩に"R"を表示。
@@ -1402,7 +1458,7 @@ void AnnotatedCameraWidget::drawIcon(QPainter &p, int x, int y, QPixmap &img, QB
   p.setOpacity(1.0);  // bg dictates opacity of ellipse
   p.setPen(Qt::NoPen);
   p.setBrush(bg);
-  p.drawEllipse(x - radius / 2, y - radius / 2, radius, radius);
+  p.drawEllipse(x - btn_size / 2, y - btn_size / 2, btn_size, btn_size);
   p.setOpacity(opacity);
   p.resetTransform();
   p.translate(x - img.size().width() / 2,y - img.size().height() / 2);
@@ -1744,7 +1800,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   static float curvature = 0;
   static float k_v = 1.0;
   std::string curvature_info = util::read_file("/tmp/curvature_info.txt");
-  if(curvature_info.empty() == false && engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)) {
+  if(curvature_info.empty() == false && global_engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)) {
     auto separator = std::string("/");         // 区切り文字
     //auto separator_length = separator.length(); // 区切り文字の長さ
     auto pos = curvature_info.find(separator, 0);
@@ -1756,7 +1812,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       k_v = std::stod(k_v_str); //倍率。1未満もあり得る
     }
   }
-  if(engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)){
+  if(global_engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)){
     float h = rect_h * curvature / (tss_type < 2 ? 0.03 : 0.05);
     float wp1 = 25;
     //float wpa = 10;
@@ -1877,10 +1933,10 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
   painter.save();
   const float speedBuff = 10.;
   const float leadBuff = 40.;
-//  const float d_rel = lead_data.getX()[0];
-//  const float v_rel = lead_data.getV()[0];
   const float d_rel = lead_data.getDRel();
   const float v_rel = lead_data.getVRel(); //相対速度のようだ。
+//  const float d_rel = lead_data.getX()[0];
+//  const float v_rel = lead_data.getV()[0];
 //  const float t_rel = lead_data.getT()[0];
 //  const float y_rel = lead_data.getY()[0];
 //  const float a_rel = lead_data.getA()[0];

@@ -1,12 +1,17 @@
 #pragma once
 
+#include <QPushButton>
 #include <QStackedLayout>
 #include <QWidget>
 #include <QPushButton>
 
 #include "common/util.h"
-#include "selfdrive/ui/qt/widgets/cameraview.h"
 #include "selfdrive/ui/ui.h"
+#include "selfdrive/ui/qt/widgets/cameraview.h"
+
+
+const int btn_size = 192;
+const int img_size = (btn_size / 4) * 3;
 
 
 // ***** onroad widgets *****
@@ -61,6 +66,21 @@ public slots:
   void updateState(const UIState &s);
 };
 
+class ExperimentalButton : public QPushButton {
+  Q_OBJECT
+
+public:
+  explicit ExperimentalButton(QWidget *parent = 0);
+  void updateState(const UIState &s);
+
+private:
+  void paintEvent(QPaintEvent *event) override;
+
+  Params params;
+  QPixmap engage_img;
+  QPixmap experimental_img;
+};
+
 // container window for the NVG UI
 class AnnotatedCameraWidget : public CameraWidget {
   Q_OBJECT
@@ -74,7 +94,6 @@ class AnnotatedCameraWidget : public CameraWidget {
   Q_PROPERTY(bool has_us_speed_limit MEMBER has_us_speed_limit);
   Q_PROPERTY(bool is_metric MEMBER is_metric);
 
-  Q_PROPERTY(bool engageable MEMBER engageable);
   Q_PROPERTY(bool dmActive MEMBER dmActive);
   Q_PROPERTY(bool hideDM MEMBER hideDM);
   Q_PROPERTY(bool rightHandDM MEMBER rightHandDM);
@@ -89,11 +108,8 @@ private:
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false);
   void drawText(QPainter &p, int x, int y, const QString &text, const QColor &col);
 
-  QPixmap engage_img;
-  QPixmap experimental_img;
+  ExperimentalButton *experimental_btn;
   QPixmap dm_img;
-  const int radius = 192;
-  const int img_size = (radius / 2) * 1.5;
   float speed;
   QString speedUnit;
   QString maxSpeed;
@@ -101,7 +117,6 @@ private:
   float speedLimit;
   bool is_cruise_set = false;
   bool is_metric = false;
-  bool engageable = false;
   bool dmActive = false;
   bool hideDM = false;
   bool rightHandDM = false;
