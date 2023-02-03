@@ -1298,7 +1298,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       //停止時の青信号発進抑制、一時的に緩和、15->50度
       bg_color = bg_colors[STATUS_WARNING]; //ワンペダル時に信号スタート可能角度でなければ警告色。
     }
-    drawIcon(p, rect().right() - radius / 2 - bdr_s * 2, radius / 2 + int(bdr_s * 1.5)+y_ofs,
+    drawIcon(p, rect().right() - btn_size / 2 - bdr_s * 2, btn_size / 2 + int(bdr_s * 1.5)+y_ofs,
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
              sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), 1.0 , -global_angle_steer0);
   }
@@ -1312,7 +1312,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
   }
   int long_base_angle0 = 45; //下中央から左右に何度か指定する。
-  if((Long_enable || (*s->sm)["controlsState"].getControlsState().getExperimentalMode()) && engageable){
+  if((Long_enable || (*s->sm)["controlsState"].getControlsState().getExperimentalMode()) && global_engageable){
     const int arc_w = -8; //内側に描画
     QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode() || s->scene.mUseLaneButton == 3) ? 0 : 255, 180), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
@@ -1346,7 +1346,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       }
     }
     int long_base_angle = long_base_angle0; //下中央から左右に何度か指定する。
-    p.drawArc(x - radius / 2 -arc_w/2, y - radius / 2 -arc_w/2, radius+arc_w, radius+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
+    p.drawArc(x - btn_size / 2 -arc_w/2, y - btn_size / 2 -arc_w/2, btn_size+arc_w, btn_size+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
   }
   if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが) , Experimental Modeでは表示しない。
     const float x = x_Long_enable;
@@ -1357,14 +1357,14 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode() || s->scene.mUseLaneButton == 3) ? 0 : 255, 180), abs(arc_w_base));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
-    p.drawArc(x - radius / 2 -arc_w_base/2, y - radius / 2 -arc_w_base/2, radius+arc_w_base, radius+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
+    p.drawArc(x - btn_size / 2 -arc_w_base/2, y - btn_size / 2 -arc_w_base/2, btn_size+arc_w_base, btn_size+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
   p.setPen(QPen(QColor(0xff, 0xff, 0xff, 0), 0));
   //int calib_h = radius;
   int calib_h = -33 -33 - 30; //表示位置を上に
-  QRect rc2(rect().right() - radius / 2 - bdr_s * 2 - 100, -20 + radius / 2 + int(bdr_s * 1.5)+y_ofs + calib_h -36, 200, 36);
+  QRect rc2(rect().right() - btn_size / 2 - bdr_s * 2 - 100, -20 + btn_size / 2 + int(bdr_s * 1.5)+y_ofs + calib_h -36, 200, 36);
   if(/*engageable ||*/ handle_center == -100){
     std::string handle_center_txt = util::read_file("/tmp/handle_center_info.txt");
     if(handle_center_txt.empty() == false){
@@ -1396,7 +1396,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     float hc = handle_center;
 
     configFont(p, FONT_OPEN_SANS, 33, "Bold");
-    drawText(p, rect().right() - radius / 2 - bdr_s * 2 , -20 + radius / 2 + int(bdr_s * 1.5)+y_ofs + calib_h - 8, QString::number(hc,'f',2) + "deg", 200);
+    drawText(p, rect().right() - btn_size / 2 - bdr_s * 2 , -20 + btn_size / 2 + int(bdr_s * 1.5)+y_ofs + calib_h - 8, QString::number(hc,'f',2) + "deg", 200);
   } else {
     p.setBrush(QColor(150, 150, 0, 0xf1));
     p.drawRoundedRect(rc2, 18, 18);
@@ -1404,10 +1404,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
     if(handle_calibct == 0){
       configFont(p, FONT_OPEN_SANS, 33, "Regular");
-      drawText(p, rect().right() - radius / 2 - bdr_s * 2 , -20 + radius / 2 + int(bdr_s * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
+      drawText(p, rect().right() - btn_size / 2 - bdr_s * 2 , -20 + btn_size / 2 + int(bdr_s * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
     } else {
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
-      drawText(p, rect().right() - radius / 2 - bdr_s * 2 , -20 + radius / 2 + int(bdr_s * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
+      drawText(p, rect().right() - btn_size / 2 - bdr_s * 2 , -20 + btn_size / 2 + int(bdr_s * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
     }
   }
   
