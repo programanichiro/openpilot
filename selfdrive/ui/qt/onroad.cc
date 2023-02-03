@@ -773,14 +773,14 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 
 AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* parent) : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraWidget("camerad", type, true, parent) {
   pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"uiDebug"});
-/*
+
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setMargin(bdr_s);
   main_layout->setSpacing(0);
 
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
-*/
+
   engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
   experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size - 5, img_size - 5});
   dm_img = loadPixmap("../assets/img_driver_face.png", {img_size, img_size});
@@ -867,7 +867,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("status", s.status);
 
   // update engageability/experimental mode button
-  //experimental_btn->updateState(s);
+  experimental_btn->updateState(s);
 
   // update DM icons at 2Hz
   if (sm.frame % (UI_FREQ / 2) == 0) {
