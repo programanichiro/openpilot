@@ -1302,8 +1302,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
              sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), 1.0 , -global_angle_steer0);
   }
-  const float x_Long_enable = rect().right() - radius / 2 - bdr_s * 2;
-  const float y_Long_enable = radius / 2 + int(bdr_s * 1.5)+y_ofs;
+  const float x_Long_enable = rect().right() - btn_size / 2 - bdr_s * 2;
+  const float y_Long_enable = btn_size / 2 + int(bdr_s * 1.5)+y_ofs;
   std::string long_speeddown_disable_txt = util::read_file("/tmp/long_speeddown_disable.txt");
   Long_enable = true;
   if(long_speeddown_disable_txt.empty() == false){
@@ -1419,7 +1419,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
              dm_img, blackColor(70), dmActive ? 1.0 : 0.2 , 0);
     if(rightHandDM){ //ボタンを移動できないので、アイコンはそのまま、左肩に"R"を表示。
       configFont(p, FONT_OPEN_SANS, 70, "Bold");
-      drawText(p, dm_icon_x - radius / 2, rect().bottom() - footer_h / 2 - radius / 4, "R" , dmActive ? 200 : 100);
+      drawText(p, dm_icon_x - btn_size / 2, rect().bottom() - footer_h / 2 - btn_size / 4, "R" , dmActive ? 200 : 100);
     }
   }
   p.restore();
