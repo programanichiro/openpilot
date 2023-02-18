@@ -93,8 +93,10 @@ def apply_std_steer_torque_limits(apply_torque, apply_torque_last, driver_torque
   return int(round(float(apply_torque)))
 
 
+#トルク制御内変数表示
 def apply_toyota_steer_torque_limits(apply_torque, apply_torque_last, motor_torque, LIMITS):
   # limits due to comparison of commanded torque VS motor reported torque
+  #new_steer = apply_torque #debug_out_yに書く場合は有効にする
   max_lim = min(max(motor_torque + LIMITS.STEER_ERROR_MAX, LIMITS.STEER_ERROR_MAX), LIMITS.STEER_MAX)
   min_lim = max(min(motor_torque - LIMITS.STEER_ERROR_MAX, -LIMITS.STEER_ERROR_MAX), -LIMITS.STEER_MAX)
 
@@ -109,6 +111,9 @@ def apply_toyota_steer_torque_limits(apply_torque, apply_torque_last, motor_torq
     apply_torque = clip(apply_torque,
                         apply_torque_last - LIMITS.STEER_DELTA_UP,
                         min(apply_torque_last + LIMITS.STEER_DELTA_DOWN, LIMITS.STEER_DELTA_UP))
+
+#  with open('/tmp/debug_out_y','w') as fp:
+#    fp.write('apply:%.2f/%0.2f(max:%.2f,min:%.2f) ; applyLast:%.2f ; motor:%.2f' % (apply_torque ,new_steer , max_lim,min_lim, apply_torque_last, motor_torque))
 
   return int(round(float(apply_torque)))
 

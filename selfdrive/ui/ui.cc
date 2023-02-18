@@ -200,6 +200,17 @@ static void update_state(UIState *s) {
     scene.light_sensor = std::max(100.0f - scale * sm["wideRoadCameraState"].getWideRoadCameraState().getExposureValPercent(), 0.0f);
   }
   scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
+
+  if (sm.updated("carState")) {
+    float v_ego = sm["carState"].getCarState().getVEgo();
+    // TODO: support replays without ecam by using fcam
+    // Wide or narrow cam dependent on speed
+    if ((v_ego < 10) || s->wide_cam_only) {
+      scene.wide_cam = true;
+    } else if (v_ego > 15) {
+      scene.wide_cam = false;
+    }
+  }
 }
 
 void ui_update_params(UIState *s) {
@@ -231,8 +242,19 @@ void UIState::updateStatus() {
       scene.started_frame = sm->frame;
       wide_cam_only = Params().getBool("WideCameraOnly");
     }
-    started_prev = scene.started;
-    emit offroadTransition(!scene.started);
+    //developer control
+    std::string branch = Params().get("GitBranch");
+    std::string dongleId = Params().get("DongleId");
+    bool enable = true;
+    if(branch != "release3" && branch != "release2" && branch.find("release3-pi")  == std::string::npos && branch.find("release2-pi")  == std::string::npos && branch.find("rehearsal")  == std::string::npos && dongleId.find("1131d250d405") == std::string::npos && branch.find("debug") == std::string::npos){
+      if(sm->frame != 1){
+        enable = false;
+      }
+    }
+    if(enable == true){
+      started_prev = scene.started;
+      emit offroadTransition(!scene.started);
+    }
   }
 
   // Handle prime type change
@@ -248,6 +270,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "liveLocationKalman", "driverStateV2",
     "wideRoadCameraState", "managerState", "navInstruction", "navRoute", "gnssMeasurements",
+    "lateralPlan",
   });
 
   Params params;

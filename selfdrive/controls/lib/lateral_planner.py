@@ -1,13 +1,29 @@
 import numpy as np
+from common.params import Params
 from common.realtime import sec_since_boot, DT_MDL
 from common.numpy_fast import interp
 from system.swaglog import cloudlog
 from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import LateralMpc
 from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import N as LAT_MPC_N
 from selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED
+from selfdrive.controls.lib.lane_planner import LanePlanner
 from selfdrive.controls.lib.desire_helper import DesireHelper
 import cereal.messaging as messaging
 from cereal import log
+
+tss_type = 0
+STEERING_CENTER_calibration = []
+STEERING_CENTER_calibration_update_count = 0
+params = Params()
+try:
+  with open('../../../handle_center_info.txt','r') as fp:
+    handle_center_info_str = fp.read()
+    if handle_center_info_str:
+      STEERING_CENTER = float(handle_center_info_str)
+      with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+        fp.write('%0.2f' % (STEERING_CENTER) )
+except Exception as e:
+  pass
 
 TRAJECTORY_SIZE = 33
 CAMERA_OFFSET = 0.04
@@ -26,6 +42,8 @@ STEERING_RATE_COST = 800.0
 
 class LateralPlanner:
   def __init__(self, CP):
+    self.use_lanelines = False
+    self.LP = LanePlanner(False)
     self.DH = DesireHelper()
 
     # Vehicle model parameters used to calculate lateral movement of car
@@ -54,11 +72,92 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
+    self.LP.parse_model(md) #ichiropilot
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
       self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       self.t_idxs = np.array(md.position.t)
       self.plan_yaw = np.array(md.orientation.z)
       self.plan_yaw_rate = np.array(md.orientationRate.z)
+
+    STEER_CTRL_Y = sm['carState'].steeringAngleDeg
+    path_y = self.path_xyz[:,1]
+    max_yp = 0
+    for yp in path_y:
+      max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+    STEERING_CENTER_calibration_max = 300 #3秒
+    if abs(max_yp) / 2.5 < 0.1 and self.v_ego > 20/3.6 and abs(STEER_CTRL_Y) < 8:
+      STEERING_CENTER_calibration.append(STEER_CTRL_Y)
+      if len(STEERING_CENTER_calibration) > STEERING_CENTER_calibration_max:
+        STEERING_CENTER_calibration.pop(0)
+    if len(STEERING_CENTER_calibration) > 0:
+      value_STEERING_CENTER_calibration = sum(STEERING_CENTER_calibration) / len(STEERING_CENTER_calibration)
+    else:
+      value_STEERING_CENTER_calibration = 0
+    handle_center = 0 #STEERING_CENTER
+    global STEERING_CENTER_calibration_update_count
+    STEERING_CENTER_calibration_update_count += 1
+    if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
+      handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
+      if STEERING_CENTER_calibration_update_count % 100 == 0:
+        with open('../../../handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+      if STEERING_CENTER_calibration_update_count % 10 == 5:
+        with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+    else:
+      with open('../../../handle_calibct_info.txt','w') as fp:
+        fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
+    #with open('/tmp/debug_out_y','w') as fp:
+    #  path_y_sum = -sum(path_y)
+    #  #fp.write('{0}\n'.format(['%0.2f' % i for i in self.path_xyz[:,1]]))
+    #  fp.write('calibration:%0.2f/%d ; max:%0.2f ; sum:%0.2f ; avg:%0.2f' % (value_STEERING_CENTER_calibration,len(STEERING_CENTER_calibration),-max_yp , path_y_sum, path_y_sum / len(path_y)) )
+    STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+    ypf = STEER_CTRL_Y
+    if abs(STEER_CTRL_Y) < abs(max_yp) / 2.5:
+      STEER_CTRL_Y = (-max_yp / 2.5)
+
+    if False:
+      ssa = ""
+      ssao = ""
+      ssas = ""
+      if ypf > 0:
+        for vml in range(int(min(ypf,30))):
+          ssa+= "|"
+      if ypf > 0 and int(min(STEER_CTRL_Y - ypf,30 - len(ssa))) > 0:
+        for vml in range(int(min(STEER_CTRL_Y - ypf,30 - len(ssa)))):
+          ssao+= "<"
+      elif ypf < 0 and (STEER_CTRL_Y) > 0 and int(min((STEER_CTRL_Y),30 - len(ssa))) > 0:
+        for vml in range(int(min((STEER_CTRL_Y),30 - len(ssa)))):
+          ssao+= "<"
+      if 30 - len(ssa) - len(ssao) > 0:
+        for vml in range(int(30 - len(ssa) - len(ssao))):
+          ssas+= " "
+      mssa = ""
+      mssao = ""
+      mssas = ""
+      if ypf < 0:
+        for vml in range(int(min(-ypf,30))):
+          mssa+= "|"
+      if ypf < 0 and int(min(-(STEER_CTRL_Y - ypf),30 - len(mssa))) > 0:
+        for vml in range(int(min(-(STEER_CTRL_Y - ypf),30 - len(mssa)))):
+          mssao+= ">"
+      elif ypf > 0 and (STEER_CTRL_Y) < 0 and int(min(-(STEER_CTRL_Y),30 - len(mssa))) > 0:
+        for vml in range(int(min(-(STEER_CTRL_Y),30 - len(mssa)))):
+          mssao+= ">"
+      if 30 - len(mssa) - len(mssao) > 0:
+        for vml in range(int(30 - len(mssa) - len(mssao))):
+          mssas+= " "
+      with open('/tmp/debug_out_1','w') as fp:
+        #fp.write('strAng:%0.1f->%0.1f[deg] , speed:%0.1f[km/h]' % (ypf , STEER_CTRL_Y - ypf, self.v_ego * 3.6))
+        #fp.write('steerAngY:%0.1f[deg] , speed:%0.1f[km/h]' % (STEER_CTRL_Y, self.v_ego * 3.6))
+        #fp.write('steerAng:%0.1f[deg] , speed:%0.1f[km/h]' % (STEER_CTRL_Y + handle_center, self.v_ego * 3.6)) #ハンドルセンターなしの素のSTEER_CTRL_Yを表示
+        fp.write('strAng:%5.1f(%+5.1f[deg])%s%s%s^%s%s%s' % (ypf , STEER_CTRL_Y - ypf, ssas,ssao,ssa,mssa,mssao,mssas))
+      
+
+    if sm['carState'].leftBlinker == True:
+      STEER_CTRL_Y = 90
+    if sm['carState'].rightBlinker == True:
+      STEER_CTRL_Y = -90
 
     # Lane change logic
     desire_state = md.meta.desireState
@@ -68,10 +167,80 @@ class LateralPlanner:
     lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
     self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob)
 
-    d_path_xyz = self.path_xyz
-    self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
-                             LATERAL_ACCEL_COST, LATERAL_JERK_COST,
-                             STEERING_RATE_COST)
+    # Turn off lanes during lane change
+    # if self.DH.desire == log.LateralPlan.Desire.laneChangeRight or self.DH.desire == log.LateralPlan.Desire.laneChangeLeft:
+    #   self.LP.lll_prob *= self.DH.lane_change_ll_prob
+    #   self.LP.rll_prob *= self.DH.lane_change_ll_prob
+
+    # Calculate final driving path and set MPC costs
+    try:
+      # with open('/tmp/debug_out_y','w') as fp:
+      #   fp.write('prob:%0.2f , %0.2f' % (self.LP.lll_prob , self.LP.rll_prob))
+      with open('/tmp/lane_sw_mode.txt','r') as fp:
+        lane_sw_mode_str = fp.read()
+        if lane_sw_mode_str:
+          lane_sw_mode = int(lane_sw_mode_str)
+          if lane_sw_mode == 0:
+            if self.use_lanelines == True:
+              # params.put_bool('EndToEndToggle',True)
+              # self.use_lanelines = not params.get_bool('EndToEndToggle')
+              self.use_lanelines = False
+          elif lane_sw_mode == 1:
+            if self.use_lanelines == False:
+              # params.put_bool('EndToEndToggle',False)
+              # self.use_lanelines = not params.get_bool('EndToEndToggle')
+              self.use_lanelines = True
+          else: #lane_sw_mode == 2
+            if self.use_lanelines == True and ((self.LP.lll_prob < 0.45 and self.LP.rll_prob < 0.45)
+              or (self.LP.lll_prob < 0.60 and self.LP.rll_prob < 0.05)
+              or (self.LP.lll_prob < 0.05 and self.LP.rll_prob < 0.60)
+              or abs(max_yp) / 2.5 > 7 #前方カーブが強くなったらレーンレス走行へ切り替え。
+              ) or self.use_lanelines == False and ((self.LP.lll_prob < 0.55 and self.LP.rll_prob < 0.55)
+              or (self.LP.lll_prob < 0.70 and self.LP.rll_prob < 0.15)
+              or (self.LP.lll_prob < 0.15 and self.LP.rll_prob < 0.70)
+              or abs(max_yp) / 2.5 > 5
+              ): #切り替えのバタつき防止
+              if self.use_lanelines == True:
+                # params.put_bool('EndToEndToggle',True)
+                # self.use_lanelines = not params.get_bool('EndToEndToggle')
+                self.use_lanelines = False
+            else:
+              if self.use_lanelines == False:
+                # params.put_bool('EndToEndToggle',False)
+                # self.use_lanelines = not params.get_bool('EndToEndToggle')
+                self.use_lanelines = True
+    except Exception as e:
+      pass
+
+    global tss_type
+    if tss_type == 0:
+      try:
+        with open('../../../tss_type_info.txt','r') as fp:
+          tss_type_str = fp.read()
+          if tss_type_str:
+            if int(tss_type_str) == 2: #TSS2
+              tss_type = 2
+            elif int(tss_type_str) == 1: #TSSP
+              tss_type = 1
+      except Exception as e:
+        pass
+
+    # if tss_type >= 2: #↔︎ボタン仕様変更でTSS2スペシャル対応終了。
+    #   STEER_CTRL_Y = 0
+    #   max_yp = 0
+
+    if self.use_lanelines:
+      #d_path_xyz = self.LP.get_d_path(self.v_ego, self.t_idxs, self.path_xyz)
+      d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
+      self.lat_mpc.set_weights(PATH_COST, 1.0, LATERAL_ACCEL_COST, LATERAL_JERK_COST,STEERING_RATE_COST) #そろそろ整合性が取れなくなりつつある・・・
+    else:
+      d_path_xyz = self.path_xyz
+      #ToDO,calc_dcmを消える運命のlane_plannerから持ってくる。
+      dcm = self.LP.calc_dcm(STEER_CTRL_Y, (-max_yp / 2.5) , ypf , self.v_ego,2.5,-1,-1) #2.5はレーンを消すダミー,-1,-1はカメラオフセット反映に必要
+      d_path_xyz[:,1] -= dcm #CAMERA_OFFSETが反映されている。->実はcalc_dcmの中で無視している。無い方が走りが良い？
+      self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
+                               LATERAL_ACCEL_COST, LATERAL_JERK_COST,
+                               STEERING_RATE_COST)
 
     y_pts = np.interp(self.v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(d_path_xyz, axis=1), d_path_xyz[:, 1])
     heading_pts = np.interp(self.v_ego * self.t_idxs[:LAT_MPC_N + 1], np.linalg.norm(self.path_xyz, axis=1), self.plan_yaw)
