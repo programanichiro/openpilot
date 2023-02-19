@@ -1501,31 +1501,8 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   // paint path
   QLinearGradient bg(0, height(), 0, height() / 4);
-  static bool use_lanelines = false;
-  if(scene.mUseLaneButton >= 2){
-    float lll_prob = scene.lane_line_probs[1];
-    float rll_prob = scene.lane_line_probs[2];
-    if(use_lanelines == true && ((lll_prob < 0.45 && rll_prob < 0.45)
-      || (lll_prob < 0.60 && rll_prob < 0.05)
-      || (lll_prob < 0.05 && rll_prob < 0.60)
-      || fabs(global_angle_steer0) > 7
-      ) || use_lanelines == false && ((lll_prob < 0.55 and rll_prob < 0.55)
-      || (lll_prob < 0.70 && rll_prob < 0.15)
-      || (lll_prob < 0.15 && rll_prob < 0.70)
-      || fabs(global_angle_steer0) > 5
-      )){ //切り替えのバタつき防止
-      use_lanelines = false;
-    } else {
-      use_lanelines = true;
-    }
-  } else {
-    use_lanelines = scene.mUseLaneButton == 0 ? false : true;
-  }
   float start_hue, end_hue;
-  if (use_lanelines == true) { //白->薄紫
-    bg.setColorAt(0, QColor(122, 131, 171, 255));
-    bg.setColorAt(1, QColor(122, 131, 171, 0));
-  } else if (sm["controlsState"].getControlsState().getExperimentalMode()) {
+  if (sm["controlsState"].getControlsState().getExperimentalMode()) {
     const auto &acceleration = sm["modelV2"].getModelV2().getAcceleration();
     float acceleration_future = 0;
     if (acceleration.getZ().size() > 16) {
