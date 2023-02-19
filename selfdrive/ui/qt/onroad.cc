@@ -389,18 +389,13 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // use lane button
     uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("/data/lane_sw_mode.txt" , true /*Params().getBool("EndToEndToggle")*/ ? 0 : 1);
-    if(mUseLaneButton == 3){
-      useLaneButton = new QPushButton("dX"); //ダイナミックexperimentalモード
-    } else if(mUseLaneButton == 2){
-      useLaneButton = new QPushButton("La"); //レーンレス自動選択
-    } else {
-      useLaneButton = new QPushButton("/ \\");
-    }
+    useLaneButton = new QPushButton("dX"); //ダイナミックexperimentalモード
     QObject::connect(useLaneButton, &QPushButton::pressed, [=]() {
       // Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
       // uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
       // uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
-      uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 4; //0->1->2->3->0
+      //uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 4; //0->1->2->3->0
+      uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 2; //0->1->0
     });
     useLaneButton->setFixedWidth(150);
     useLaneButton->setFixedHeight(150*0.9);
@@ -639,12 +634,10 @@ void ButtonsWindow::updateState(const UIState &s) {
   if (mUseLaneButton != s.scene.mUseLaneButton) {  // update mUseLaneButton
     mUseLaneButton = s.scene.mUseLaneButton;
     useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0 && fp_error==false)));
-    if(mUseLaneButton == 3){
+    if(mUseLaneButton >= 1){
       useLaneButton->setText("dX");
-    } else if(mUseLaneButton == 2){
-      useLaneButton->setText("La");
     } else {
-      useLaneButton->setText("/ \\");
+      useLaneButton->setText("dX"); //どのケースでも"dX"
     }
     setButtonInt("/data/lane_sw_mode.txt" , mUseLaneButton);
     soundButton(mUseLaneButton);

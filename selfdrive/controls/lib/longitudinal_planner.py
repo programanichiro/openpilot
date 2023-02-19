@@ -125,7 +125,7 @@ class LongitudinalPlanner:
         lane_sw_mode_str = fp.read()
         if lane_sw_mode_str:
           lane_sw_mode = int(lane_sw_mode_str)
-          if lane_sw_mode == 3: #dynamic experimental mode
+          if lane_sw_mode >= 1: #dynamic experimental mode
             with open('/tmp/long_speeddown_disable.txt','w') as fp:
               fp.write('%d' % (1)) #初期はイチロウロング無効
     except Exception as e:
@@ -168,7 +168,7 @@ class LongitudinalPlanner:
         lane_sw_mode_str = fp.read()
         if lane_sw_mode_str:
           lane_sw_mode = int(lane_sw_mode_str)
-          if lane_sw_mode == 3: #dynamic experimental mode
+          if lane_sw_mode >= 1: #dynamic experimental mode
             dexp_mode = True
     except Exception as e:
       pass
