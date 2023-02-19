@@ -6,6 +6,8 @@ from common.numpy_fast import interp
 from common.realtime import DT_MDL
 # from system.swaglog import cloudlog
 
+#このファイルは廃止です。削除予定。
+
 STEER_SAME_DIRECTION_CT = 0
 STEER_OLD_ANGLE = 0
 STEERING_CENTER = -4.3
