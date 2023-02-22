@@ -99,7 +99,10 @@ void Sidebar::updateState(const UIState &s) {
   ItemStatus tempStatus = {{tr("TEMP"), tr("HIGH")}, danger_color};
   auto ts = deviceState.getThermalStatus();
   if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
-    tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
+    int temp = (int)deviceState.getAmbientTempC();
+    QString good_disp = QString::number(temp) + "°C";
+    tempStatus = {{tr("TEMP"), tr(good_disp.toUtf8().data())}, good_color};
+    //tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
   } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
     tempStatus = {{tr("TEMP"), tr("OK")}, warning_color};
   }
