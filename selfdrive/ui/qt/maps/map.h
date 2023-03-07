@@ -99,7 +99,7 @@ private:
   // Panning
   QPointF m_lastPos;
   int pan_counter = 0;
-  int zoom_counter = 0; //-1;これが-1だと、一度画面を操作するまで速度ズームしなくなる。地図を右に出すとが画面操作できないので、公式のバグだと思う。
+  int zoom_counter = -1;
 
   // Position
   std::optional<QMapbox::Coordinate> last_position;
