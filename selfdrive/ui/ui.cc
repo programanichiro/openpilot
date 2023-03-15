@@ -205,17 +205,6 @@ static void update_state(UIState *s) {
     scene.light_sensor = std::max(100.0f - scale * sm["wideRoadCameraState"].getWideRoadCameraState().getExposureValPercent(), 0.0f);
   }
   scene.started = sm["deviceState"].getDeviceState().getStarted() && scene.ignition;
-
-  if (sm.updated("carState")) {
-    float v_ego = sm["carState"].getCarState().getVEgo();
-    // TODO: support replays without ecam by using fcam
-    // Wide or narrow cam dependent on speed
-    if ((v_ego < 10) || s->wide_cam_only) {
-      scene.wide_cam = true;
-    } else if (v_ego > 15) {
-      scene.wide_cam = false;
-    }
-  }
 }
 
 void ui_update_params(UIState *s) {
