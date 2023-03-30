@@ -9,6 +9,7 @@ from selfdrive.car.interfaces import CarInterfaceBase
 
 EventName = car.CarEvent.EventName
 
+NowStandStill = False
 
 class CarInterface(CarInterfaceBase):
   @staticmethod
@@ -203,6 +204,7 @@ class CarInterface(CarInterfaceBase):
     ret.enableBsm = 0x3F6 in fingerprint[0] and candidate in TSS2_CAR
     # Detect smartDSU, which intercepts ACC_CMD from the DSU allowing openpilot to send it
     smartDsu = 0x2FF in fingerprint[0]
+
     # In TSS2 cars the camera does long control
     found_ecus = [fw.ecu for fw in car_fw]
     ret.enableDsu = len(found_ecus) > 0 and Ecu.dsu not in found_ecus and candidate not in (NO_DSU_CAR | UNSUPPORTED_DSU_CAR) and not smartDsu
@@ -247,11 +249,13 @@ class CarInterface(CarInterfaceBase):
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
 
+    new_stand_still = False
     # events
     events = self.create_common_events(ret)
 
     if self.CP.openpilotLongitudinalControl:
       if ret.cruiseState.standstill and not ret.brakePressed and not self.CP.enableGasInterceptor:
+        new_stand_still = True
         events.add(EventName.resumeRequired)
       if self.CS.low_speed_lockout:
         events.add(EventName.lowSpeedLockout)
@@ -265,6 +269,12 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.manualRestart)
 
     ret.events = events.to_msg()
+
+    global NowStandStill
+    if NowStandStill != new_stand_still:
+      NowStandStill = new_stand_still
+      with open('/tmp/stand_still.txt','w') as fp:
+        fp.write('%d' % (new_stand_still))      
 
     return ret
 
