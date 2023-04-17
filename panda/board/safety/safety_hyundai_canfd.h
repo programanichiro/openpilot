@@ -167,7 +167,7 @@ static uint32_t hyundai_canfd_compute_checksum(CANPacket_t *to_push) {
 static int hyundai_canfd_rx_hook(CANPacket_t *to_push) {
 
   bool valid = addr_safety_check(to_push, &hyundai_canfd_rx_checks,
-                                 hyundai_canfd_get_checksum, hyundai_canfd_compute_checksum, hyundai_canfd_get_counter);
+                                 hyundai_canfd_get_checksum, hyundai_canfd_compute_checksum, hyundai_canfd_get_counter, NULL);
 
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
@@ -312,9 +312,8 @@ static int hyundai_canfd_tx_hook(CANPacket_t *to_send) {
   return tx;
 }
 
-static int hyundai_canfd_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
+static int hyundai_canfd_fwd_hook(int bus_num, int addr) {
   int bus_fwd = -1;
-  int addr = GET_ADDR(to_fwd);
 
   if (bus_num == 0) {
     bus_fwd = 2;

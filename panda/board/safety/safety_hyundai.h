@@ -170,7 +170,7 @@ static int hyundai_rx_hook(CANPacket_t *to_push) {
 
   bool valid = addr_safety_check(to_push, &hyundai_rx_checks,
                                  hyundai_get_checksum, hyundai_compute_checksum,
-                                 hyundai_get_counter);
+                                 hyundai_get_counter, NULL);
 
   int bus = GET_BUS(to_push);
   int addr = GET_ADDR(to_push);
@@ -305,10 +305,9 @@ static int hyundai_tx_hook(CANPacket_t *to_send) {
   return tx;
 }
 
-static int hyundai_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
+static int hyundai_fwd_hook(int bus_num, int addr) {
 
   int bus_fwd = -1;
-  int addr = GET_ADDR(to_fwd);
 
   // forward cam to ccan and viceversa, except lkas cmd
   if (bus_num == 0) {
