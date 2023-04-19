@@ -37,7 +37,8 @@ with open('/tmp/red_signal_scan_flag.txt','w') as fp:
 path_x_old_signal = 0
 path_x_old_signal_check = 0
 desired_path_x_speeds    = [0,5 ,10  ,15  ,20  ,30  ,40   ,50   ,60   ,70   ,80   ,90   ,100  ]
-desired_path_x_by_speeds = [0,15,60-5,65-5,75-5,90-5,125-5,158-5,178-5,190-5,220-5,240-5,255-5] #toro_555
+#desired_path_x_by_speeds = [0,15,60-5,65-5,75-5,90-5,125-5,158-5,178-5,190-5,220-5,240-5,255-5] #toro_555
+desired_path_x_by_speeds = [0,15,55  ,60  ,73-5,88-5,125-5,160-5,178-5,193-5,220-5,240-5,255-5] #toro_555
 #desired_path_x_by_speeds = [0,15,60-5,65-5,75-5,95-5,125-5,150-5,170-5,190-5,220-5,240-5,255-5]
 long_speeddown_flag = False
 before_v_cruise_kph_max_1 = 0
