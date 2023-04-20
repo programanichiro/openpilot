@@ -155,7 +155,8 @@ class LongitudinalPlanner:
         latitude REAL,
         longitude REAL,
         bearing REAL,
-        velocity REAL
+        velocity REAL,
+        timestamp DATETIME
     );
     """
 
