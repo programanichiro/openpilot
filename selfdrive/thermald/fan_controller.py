@@ -92,12 +92,12 @@ class TiciFanController(BaseFanController):
     #speedsから距離と方位が近いデータを100個読み、100m以内で30km/h以上＆速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
     #制限速度を/tmp/limitspeed_data.txt"へ数値で書き込む。
 
-    # 削除条件となる日時を計算
-    delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
-    # テーブルから削除する
-    self.cur.execute("DELETE FROM tablename WHERE timestamp < ?", (delete_date,))
-    # 変更を保存
-    self.conn.commit()
+    # # 削除条件となる日時を計算
+    # delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
+    # # テーブルから削除する
+    # self.cur.execute("DELETE FROM tablename WHERE timestamp < ?", (delete_date,))
+    # # 変更を保存
+    # self.conn.commit()
 
     return fan_pwr_out
 
