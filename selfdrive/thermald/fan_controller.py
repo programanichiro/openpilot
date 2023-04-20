@@ -33,7 +33,7 @@ class TiciFanController(BaseFanController):
         longitude REAL,
         bearing REAL,
         velocity REAL,
-        timestamp DATETIME
+        timestamp REAL
     );
     """
 
@@ -57,20 +57,20 @@ class TiciFanController(BaseFanController):
       """
       # データを挿入
       data = [
-          (35.123, 139.456, 90.0, 10.0, datetime.datetime.now()),
+          (35.123, 139.456, 90.0, 10.0, datetime.datetime.now().timestamp()),
       ]
       self.cur.executemany(insert_data_sql, data)
       # データベースに反映
       self.conn.commit()
 
-    # カーソルと接続を閉じる
-    self.cur.close()
-    self.conn.close()
-    
-  def __del__(self):
     # # カーソルと接続を閉じる
     # self.cur.close()
     # self.conn.close()
+
+  def __del__(self):
+    # カーソルと接続を閉じる
+    self.cur.close()
+    self.conn.close()
     pass
   
   def update(self, max_cpu_temp: float, ignition: bool) -> int:
@@ -87,5 +87,17 @@ class TiciFanController(BaseFanController):
                     ))
 
     self.last_ignition = ignition
+
+    #/tmp/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出してspeedsに挿入する
+    #speedsから距離と方位が近いデータを100個読み、100m以内で30km/h以上＆速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
+    #制限速度を/tmp/limitspeed_data.txt"へ数値で書き込む。
+
+    # 削除条件となる日時を計算
+    delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
+    # テーブルから削除する
+    self.cur.execute("DELETE FROM tablename WHERE timestamp < ?", (delete_date,))
+    # 変更を保存
+    self.conn.commit()
+
     return fan_pwr_out
 

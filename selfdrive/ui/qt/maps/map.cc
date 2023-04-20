@@ -249,8 +249,8 @@ void MapWindow::updateState(const UIState &s) {
           double bearing = last_bearing;
           double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
           QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
-          QString now = currentTime.toString("yyyy/MM/dd hh:mm:ss");
-          fprintf(fp,"%.7f,%.7f,%.7f,%.7f,%s,",latitude,longitude,bearing,velo,now.toUtf8().data());
+          double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
+          fprintf(fp,"%.7f,%.7f,%.7f,%.7f,%.7f",latitude,longitude,bearing,velo,now);
           fclose(fp);
         }
     }
