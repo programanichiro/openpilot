@@ -19,8 +19,6 @@ from system.swaglog import cloudlog
 from selfdrive.car.toyota.values import TSS2_CAR
 from selfdrive.controls.lib.lateral_planner import TRAJECTORY_SIZE
 from common.params import Params
-import sqlite3
-import datetime
 params = Params()
 CVS_FRAME = 0
 handle_center = 0 #STEERING_CENTER
@@ -145,57 +143,6 @@ class LongitudinalPlanner:
     if self.CP.carFingerprint not in TSS2_CAR:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
 
-    #self.db_path = "limitspeed.db"
-    self.db_path = "../../../limitspeed.db" #例によって遅くないか？
-
-    # テーブルを作成するSQL
-    create_table_sql = """
-    CREATE TABLE speeds (
-        id INTEGER PRIMARY KEY,
-        latitude REAL,
-        longitude REAL,
-        bearing REAL,
-        velocity REAL,
-        timestamp DATETIME
-    );
-    """
-
-    # データベースに接続してカーソルを取得
-    self.conn = sqlite3.connect(self.db_path)
-    self.cur = self.conn.cursor()
-    #self.date = datetime.datetime.now()
-
-    # テーブルが存在しない場合にのみ作成する
-    table_exists_query = "SELECT name FROM sqlite_master WHERE type='table' AND name='speeds'"
-    result = self.cur.execute(table_exists_query)
-    table_exists = bool(result.fetchone())
-
-    if not table_exists:
-      # テーブルを作成
-      self.cur.execute(create_table_sql)
-      # データを挿入するSQL
-      insert_data_sql = """
-      INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
-      VALUES (?, ?, ?, ?, ?);
-      """
-      # データを挿入
-      data = [
-          (35.123, 139.456, 90.0, 10.0, datetime.datetime.now()),
-      ]
-      self.cur.executemany(insert_data_sql, data)
-      # データベースに反映
-      self.conn.commit()
-
-    # カーソルと接続を閉じる
-    self.cur.close()
-    self.conn.close()
-
-  def __del__(self):
-    # # カーソルと接続を閉じる
-    # self.cur.close()
-    # self.conn.close()
-      pass
-  
   @staticmethod
   def parse_model(model_msg, model_error):
     if (len(model_msg.position.x) == 33 and
