@@ -239,6 +239,15 @@ void MapWindow::updateState(const UIState &s) {
         }
       }
       velocity_filter.update(locationd_velocity.getValue()[0]);
+/*
+      //この辺で30mか1秒ごとに、以下を/tmp/limitspeed_info.txtに書き込む。
+      double latitude = last_position.latitude(); // 緯度を取得
+      double longitude = last_position.longitude(); // 経度を取得        last_position;
+      double bearing = last_bearing;
+      double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
+      QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
+      QString now = currentTime.toString("yyyy/MM/dd hh:mm:ss");
+*/
     }
   }
 
