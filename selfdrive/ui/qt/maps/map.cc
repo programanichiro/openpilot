@@ -68,6 +68,13 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
   map_eta->move(25, 1080 - h - bdr_s*2);
   map_eta->setVisible(false);
 
+  map_limitspeed = new MapLimitspeed(this);
+  QObject::connect(this, &MapWindow::LimitspeedChanged, map_limitspeed, &MapLimitspeed::updateLimitspeed);
+
+  map_limitspeed->setFixedHeight(150);
+  map_limitspeed->move(0, 0);
+  map_limitspeed->setVisible(true);
+
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
   if (last_gps_position.has_value()) {
     last_position = *last_gps_position;
@@ -253,6 +260,8 @@ void MapWindow::updateState(const UIState &s) {
           double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
           fprintf(fp,"%.7f,%.7f,%.7f,%.7f,%.7f",latitude,longitude,bearing,velo,now);
           fclose(fp);
+
+          emit LimitspeedChanged(velo);
         }
       }
     }
@@ -820,4 +829,38 @@ void MapETA::updateETA(float s, float s_typical, float d) {
 
   // Center
   move(static_cast<QWidget*>(parent())->width() / 2 - width() / 2, 1080 - height() - bdr_s*2);
+}
+
+MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
+  QHBoxLayout *main_layout = new QHBoxLayout(this);
+  main_layout->setContentsMargins(20, 10, 20, 10);
+
+  {
+    QHBoxLayout *layout = new QHBoxLayout;
+    speed = new QLabel;
+    speed->setAlignment(Qt::AlignCenter);
+    speed->setStyleSheet("font-weight:600");
+
+    layout->addWidget(speed);
+    main_layout->addLayout(layout);
+  }
+
+  setStyleSheet(R"(
+    * {
+      color: white;
+      font-family: "Inter";
+      font-size: 70px;
+    }
+  )");
+
+  QPalette pal = palette();
+  pal.setColor(QPalette::Background, QColor(0, 0, 0, 150));
+  setAutoFillBackground(true);
+  setPalette(pal);
+}
+
+void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
+  speed->setText(QString::number((int)splimitspeedeed)));
+
+  QPainter p(this); //これができりゃなんでも描き放題？
 }

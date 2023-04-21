@@ -65,6 +65,19 @@ public slots:
   void updateETA(float seconds, float seconds_typical, float distance);
 };
 
+class MapLimitspeed : public QWidget {
+  Q_OBJECT
+
+private:
+  QLabel *speed;
+
+public:
+  MapLimitspeed(QWidget * parent=nullptr);
+
+public slots:
+  void updateLimitspeed(float limitspeed);
+};
+
 class MapWindow : public QOpenGLWidget {
   Q_OBJECT
 
@@ -110,6 +123,7 @@ private:
 
   MapInstructions* map_instructions;
   MapETA* map_eta;
+  MapLimitspeed* map_limitspeed;
 
   void clearRoute();
   void updateDestinationMarker();
@@ -125,5 +139,6 @@ signals:
   void distanceChanged(float distance);
   void instructionsChanged(cereal::NavInstruction::Reader instruction);
   void ETAChanged(float seconds, float seconds_typical, float distance);
+  void LimitspeedChanged(float limitspeed);
 };
 
