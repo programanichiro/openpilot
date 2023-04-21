@@ -146,6 +146,7 @@ class TiciFanController(BaseFanController):
 
       # データ内容を検査して走行速度を推定する。
       earth_ang = 0.0009 #大体200m四方
+      earth_ang *= interp(self.velocity, [0, 50.0], [0.3, 1.0])#検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
       rows = []
       velo_max = 0
       velo_max_ct = 0
