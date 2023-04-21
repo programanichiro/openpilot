@@ -254,6 +254,7 @@ void MapWindow::updateState(const UIState &s) {
           fprintf(fp,"%.7f,%.7f,%.7f,%.7f,%.7f",latitude,longitude,bearing,velo,now);
           fclose(fp);
         }
+      }
     }
   }
 
