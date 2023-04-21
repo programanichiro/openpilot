@@ -50,16 +50,6 @@ class TiciFanController(BaseFanController):
     if not table_exists:
       # テーブルを作成
       self.cur.execute(create_table_sql)
-      # データを挿入するSQL
-      insert_data_sql = """
-      INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
-      VALUES (?, ?, ?, ?, ?);
-      """
-      # データを挿入
-      data = [
-          (35.123, 139.456, 90.0, 10.0, datetime.datetime.now().timestamp()),
-      ]
-      self.cur.executemany(insert_data_sql, data)
       # データベースに反映
       self.conn.commit()
 
