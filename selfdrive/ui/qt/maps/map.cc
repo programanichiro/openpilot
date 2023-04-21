@@ -244,8 +244,9 @@ void MapWindow::updateState(const UIState &s) {
         FILE *fp = fopen("/tmp/limitspeed_info.txt","w");
         if(fp != NULL){
           //この辺で30mか1秒？ごとに、以下を/tmp/limitspeed_info.txtに書き込む。
-          double latitude = last_position.latitude(); // 緯度を取得
-          double longitude = last_position.longitude(); // 経度を取得        last_position;
+          QMapbox::Coordinate coordinate = last_position.value();
+          double latitude = coordinate.latitude(); // 緯度を取得
+          double longitude = coordinate.longitude(); // 経度を取得        last_position;
           double bearing = last_bearing;
           double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
           QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
