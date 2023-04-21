@@ -99,6 +99,7 @@ class TiciFanController(BaseFanController):
       with open('/tmp/limitspeed_info.txt','r') as fp:
         limitspeed_info_str = fp.read()
         if limitspeed_info_str:
+          limitspeed_info_ok = True
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
@@ -112,7 +113,6 @@ class TiciFanController(BaseFanController):
             #print("緯度: {}, 経度: {}, 方位: {}, 速度: {}, 日時: {}".format(self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp))
             # 変更を保存
             self.conn.commit()
-            limitspeed_info_ok = True
     except Exception as e:
       pass
     #speedsから距離と方位が近いデータを100個読み、100m以内で速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
