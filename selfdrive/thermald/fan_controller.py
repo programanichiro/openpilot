@@ -154,6 +154,7 @@ class TiciFanController(BaseFanController):
         self.longitude = 0
 
       # データ内容を検査して走行速度を推定する。
+      earth_ang = 0.0009 #大体200m四方
       rows = []
       velo_max = 0
       velo_max_ct = 0
@@ -161,7 +162,7 @@ class TiciFanController(BaseFanController):
         rows.append(row) #取っておく
         row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
         velo_max_ct += 1
-        if velo_max < velocity:
+        if velo_max < velocity and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
           velo_max = velocity
 
       if velo_max > 0:
@@ -170,7 +171,7 @@ class TiciFanController(BaseFanController):
         velo_ave_ct = 0
         for row in rows: #rowsは何度でも使える。
           row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
-          if velo_80 <= velocity:
+          if velo_80 <= velocity and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
             velo_ave_ct += 1
             velo_ave += velocity
         if velo_ave_ct > 0:
