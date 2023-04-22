@@ -897,6 +897,6 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   p.setPen(pen);
 
-  p.drawArc(0-arc_w/2, 0-arc_w/2, r*2+arc_w/2,r*2+arc_w/2, 0*16, 360*16);
+  p.drawArc(0-arc_w/2, 0-arc_w/2, r*2+arc_w,r*2+arc_w, 0*16, 360*16);
 }
 
