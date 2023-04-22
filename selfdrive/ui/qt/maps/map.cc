@@ -863,11 +863,28 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 }
 
 void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
-  speed->setText(QString::number((int)splimitspeedeed));
+
+  std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
+  if(limitspeed_info_txt.empty() == false){
+    float output[3]; // float型の配列
+    int i = 0; // インデックス
+
+    std::stringstream ss(limitspeed_info_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+      output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
+      i++; // インデックスを1つ進める
+    }
+    if((int)output[2] == 111){
+      speed->setText(QString::number((int)splimitspeedeed));
+    } else {
+      speed->setText(QString::number((int)output[0]));
+    }
+  }
 
   QPainter p(this); //これができりゃなんでも描き放題？
   p.setPen(Qt::NoPen);
-  p.setBrush(QColor::fromRgbF(1.0, 0, 0, 1.0);
+  p.setBrush(QColor::fromRgbF(1.0, 0, 0, 1.0));
   float r = 200;
   p.drawEllipse(r,r,r,r);
 
