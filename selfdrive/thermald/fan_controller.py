@@ -68,6 +68,8 @@ class TiciFanController(BaseFanController):
     self.get_limit_avg = 0
     self.get_limitspeed_old = 0
     self.velo_ave_ct_old = 0
+    self.db_add = 0
+    self.db_none = 0
     
     # # カーソルと接続を閉じる
     # self.cur.close()
@@ -115,6 +117,9 @@ class TiciFanController(BaseFanController):
             #print("緯度: {}, 経度: {}, 方位: {}, 速度: {}, 日時: {}".format(self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp))
             # 変更を保存
             self.conn.commit()
+            self.db_add += 1
+          else:
+            self.db_none += 1
     except Exception as e:
       pass
     #speedsから距離と方位が近いデータを100個読み、100m以内で速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
@@ -179,10 +184,10 @@ class TiciFanController(BaseFanController):
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999' % (int(get_limitspeed/10) * 10 , get_limitspeed))
+        fp.write('%d,%.2f,999,%d,%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , self.db_add))
     else:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,111' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg))
+        fp.write('%d,%.2f,111,%d,%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , self.db_none))
 
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
     # # 変更を保存
