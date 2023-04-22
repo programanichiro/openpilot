@@ -842,7 +842,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     speed->setAlignment(Qt::AlignCenter);
     speed->setStyleSheet("font-weight:600");
     this->updateLimitspeed(0);
-    speed->setText("➖");
+    speed->setText("━");
 
     layout->addWidget(speed);
     main_layout->addLayout(layout);
@@ -877,7 +877,7 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
       i++; // インデックスを1つ進める
     }
     if((int)output[2] == 111){
-      speed->setText("➖");
+      speed->setText("━");
     } else {
       speed->setText(QString::number((int)output[0]));
     }
