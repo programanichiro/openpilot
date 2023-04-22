@@ -860,7 +860,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 }
 
 void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
-  speed->setText(QString::number((int)splimitspeedeed)));
+  speed->setText(QString::number((int)splimitspeedeed));
 
   QPainter p(this); //これができりゃなんでも描き放題？
 }
