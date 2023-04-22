@@ -69,6 +69,7 @@ class MapLimitspeed : public QWidget {
   Q_OBJECT
 
 private:
+  void paintEvent(QPaintEvent *event) override;
   QLabel *speed;
 
 public:

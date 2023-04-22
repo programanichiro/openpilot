@@ -883,10 +883,13 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
     }
   }
 
-  QPainter p(this); //これができりゃなんでも描き放題？
+}
+
+void MapLimitspeed::paintEvent(QPaintEvent *event) {
+  QPainter p(this);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   float r = 100;
   p.drawEllipse(r,r,r,r);
-
 }
+
