@@ -73,7 +73,7 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
 
   map_limitspeed->setFixedHeight(200);
   map_limitspeed->setFixedWidth(200);
-  map_limitspeed->move(30, 1080 - 30 - 200);
+  map_limitspeed->move(30, 1080 - 60 - 30 - 200);
   map_limitspeed->setVisible(true);
 
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
@@ -834,14 +834,15 @@ void MapETA::updateETA(float s, float s_typical, float d) {
 
 MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
   QHBoxLayout *main_layout = new QHBoxLayout(this);
-  main_layout->setContentsMargins(20, 10, 20, 10);
+  main_layout->setContentsMargins(0, 0, 0, 0);
 
   {
     QHBoxLayout *layout = new QHBoxLayout;
     speed = new QLabel;
     speed->setAlignment(Qt::AlignCenter);
     speed->setStyleSheet("font-weight:600");
-    speed->setText("・・・");
+    this->updateLimitspeed(0);
+    speed->setText("➖");
 
     layout->addWidget(speed);
     main_layout->addLayout(layout);
@@ -865,4 +866,9 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
   speed->setText(QString::number((int)splimitspeedeed));
 
   QPainter p(this); //これができりゃなんでも描き放題？
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor::fromRgbF(1.0, 0, 0, 1.0);
+  float r = 200;
+  p.drawEllipse(r,r,r,r);
+
 }
