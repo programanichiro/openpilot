@@ -73,7 +73,7 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
 
   map_limitspeed->setFixedHeight(200);
   map_limitspeed->setFixedWidth(200);
-  map_limitspeed->move(30, 30);
+  map_limitspeed->move(30, 1080 - 30 - 200);
   map_limitspeed->setVisible(true);
 
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
@@ -841,7 +841,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     speed = new QLabel;
     speed->setAlignment(Qt::AlignCenter);
     speed->setStyleSheet("font-weight:600");
-    speed->setText("…");
+    speed->setText("・・・");
 
     layout->addWidget(speed);
     main_layout->addLayout(layout);
@@ -849,14 +849,14 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
   setStyleSheet(R"(
     * {
-      color: white;
+      color: #2457A1;
       font-family: "Inter";
       font-size: 70px;
     }
   )");
 
   QPalette pal = palette();
-  pal.setColor(QPalette::Background, QColor(0, 0, 0, 150));
+  pal.setColor(QPalette::Background, QColor(255, 255, 255, 200));
   setAutoFillBackground(true);
   setPalette(pal);
 }
