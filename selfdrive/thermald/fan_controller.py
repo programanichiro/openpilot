@@ -66,6 +66,8 @@ class TiciFanController(BaseFanController):
     self.velocity = 0
     self.timestamp = 0
     self.get_limit_avg = 0
+    self.get_limitspeed_old = 0
+    self.velo_ave_ct_old = 0
     
     # # カーソルと接続を閉じる
     # self.cur.close()
@@ -103,8 +105,8 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
-          if self.velocity >= limitspeed_min:
-            # データを挿入するSQL
+          if self.velocity >= limitspeed_min and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or self.velo_ave_ct_old < 5):
+            # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。
             insert_data_sql = """
             INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
             VALUES (?, ?, ?, ?, ?);
@@ -166,6 +168,7 @@ class TiciFanController(BaseFanController):
           if velo_80 <= velocity and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
             velo_ave_ct += 1
             velo_ave += velocity
+        self.velo_ave_ct_old = velo_ave_ct
         if velo_ave_ct > 0:
           velo_ave /= velo_ave_ct
           get_limitspeed = velo_ave
@@ -173,6 +176,7 @@ class TiciFanController(BaseFanController):
           #ここでもしself.get_limit_avgとself.velocityが近ければ、rows内のrow_idの中から近傍の値を消すと最適化として具合いいかも。
 
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
+    self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,999' % (int(get_limitspeed/10) * 10 , get_limitspeed))
