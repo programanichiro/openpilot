@@ -852,7 +852,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     * {
       color: #2457A1;
       font-family: "Inter";
-      font-size: 70px;
+      font-size: 90px;
     }
   )");
 /*
@@ -893,10 +893,10 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   p.drawEllipse(0,0,r*2,r*2);
 
   const int arc_w = -30; //内側に描画
-  QPen pen = QPen(QColor(255, 0, 0, 255), abs(arc_w));
+  QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   p.setPen(pen);
 
-  p.drawArc(0-arc_w/2, 0-arc_w/2, r*2+arc_w,r*2+arc_w, 0*16, 360*16);
+  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, 0*16, 360*16);
 }
 
