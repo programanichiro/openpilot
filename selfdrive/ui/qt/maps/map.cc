@@ -855,11 +855,12 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
       font-size: 70px;
     }
   )");
-
+/*
   QPalette pal = palette();
   pal.setColor(QPalette::Background, QColor(255, 255, 255, 200));
   setAutoFillBackground(true);
   setPalette(pal);
+*/
 }
 
 void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
@@ -876,7 +877,7 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
       i++; // インデックスを1つ進める
     }
     if((int)output[2] == 111){
-      speed->setText(QString::number((int)splimitspeedeed));
+      speed->setText("➖");
     } else {
       speed->setText(QString::number((int)output[0]));
     }
@@ -884,8 +885,8 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
 
   QPainter p(this); //これができりゃなんでも描き放題？
   p.setPen(Qt::NoPen);
-  p.setBrush(QColor::fromRgbF(1.0, 0, 0, 1.0));
-  float r = 200;
+  p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+  float r = 100;
   p.drawEllipse(r,r,r,r);
 
 }
