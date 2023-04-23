@@ -895,17 +895,16 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
 
 void MapLimitspeed::paintEvent(QPaintEvent *event) {
 
+  float r = 200 / 2;
+  int stand_still_height = 0;
   if(g_stand_still){
-    int stand_still_height = 270;
-    map_limitspeed->move(30, 1080 - 60 - 30 - 200 - stand_still_height);
-  } else {
-    map_limitspeed->move(30, 1080 - 60 - 30 - 200);
+    stand_still_height = 270;
   }
+  map_limitspeed->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
 
   QPainter p(this);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
-  float r = 100;
   p.drawEllipse(0,0,r*2,r*2);
 
   const int arc_w = -30; //内側に描画
