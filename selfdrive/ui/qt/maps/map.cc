@@ -73,7 +73,7 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
 
   map_limitspeed->setFixedHeight(200);
   map_limitspeed->setFixedWidth(200);
-  map_limitspeed->move(30, 1080 - 60 - 30 - 200);
+//  map_limitspeed->move(30, 1080 - 60 - 30 - 200);
   map_limitspeed->setVisible(true);
 
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
@@ -863,6 +863,8 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 */
 }
 
+static bool g_stand_still;
+
 void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
 
   std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
@@ -883,9 +885,23 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
     }
   }
 
+  std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
+  g_stand_still = false;
+  if(stand_still_txt.empty() == false){
+    g_stand_still = std::stoi(stand_still_txt) ? true : false;
+  }
+
 }
 
 void MapLimitspeed::paintEvent(QPaintEvent *event) {
+
+  if(g_stand_still){
+    int stand_still_height = 270;
+    map_limitspeed->move(30, 1080 - 60 - 30 - 200 - stand_still_height);
+  } else {
+    map_limitspeed->move(30, 1080 - 60 - 30 - 200);
+  }
+
   QPainter p(this);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
