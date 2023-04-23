@@ -1,10 +1,6 @@
 // When changing these structs, python/__init__.py needs to be kept up to date!
 
-<<<<<<< HEAD
 #define HEALTH_PACKET_VERSION 13
-=======
-#define HEALTH_PACKET_VERSION 12
->>>>>>> release3_pi_work
 struct __attribute__((packed)) health_t {
   uint32_t uptime_pkt;
   uint32_t voltage_pkt;
@@ -30,10 +26,7 @@ struct __attribute__((packed)) health_t {
   uint8_t fan_power;
   uint8_t safety_rx_checks_invalid;
   uint16_t spi_checksum_error_count;
-<<<<<<< HEAD
   uint8_t fan_stall_count;
-=======
->>>>>>> release3_pi_work
 };
 
 #define CAN_HEALTH_PACKET_VERSION 4
