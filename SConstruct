@@ -5,6 +5,10 @@ import sysconfig
 import platform
 import numpy as np
 
+import SCons.Errors
+
+SCons.Warnings.warningAsException(True)
+
 TICI = os.path.isfile('/TICI')
 AGNOS = TICI
 
@@ -118,7 +122,7 @@ else:
       f"#third_party/libyuv/{yuv_dir}/lib",
       f"{brew_prefix}/lib",
       f"{brew_prefix}/Library",
-      f"{brew_prefix}/opt/openssl/lib",
+      f"{brew_prefix}/opt/openssl@3.0/lib",
       f"{brew_prefix}/Cellar",
       "/System/Library/Frameworks/OpenGL.framework/Libraries",
     ]
@@ -131,7 +135,7 @@ else:
     cxxflags += ["-DGL_SILENCE_DEPRECATION"]
     cpppath += [
       f"{brew_prefix}/include",
-      f"{brew_prefix}/opt/openssl/include",
+      f"{brew_prefix}/opt/openssl@3.0/include",
     ]
   # Linux 86_64
   else:
@@ -311,7 +315,11 @@ else:
   elif arch != "Darwin":
     qt_libs += ["GL"]
 
-qt_env.Tool('qt')
+try:
+  qt_env.Tool('qt3')
+except SCons.Errors.UserError:
+  qt_env.Tool('qt')
+
 qt_env['CPPPATH'] += qt_dirs + ["#selfdrive/ui/qt/"]
 qt_flags = [
   "-D_REENTRANT",
@@ -398,6 +406,7 @@ SConscript([
   'system/camerad/SConscript',
   'system/clocksd/SConscript',
   'system/proclogd/SConscript',
+  'system/ubloxd/SConscript',
 ])
 if arch != "Darwin":
   SConscript(['system/logcatd/SConscript'])
@@ -424,18 +433,15 @@ SConscript(['selfdrive/controls/lib/longitudinal_mpc_lib/SConscript'])
 
 SConscript(['selfdrive/boardd/SConscript'])
 
-SConscript(['selfdrive/loggerd/SConscript'])
+SConscript(['system/loggerd/SConscript'])
 
 SConscript(['selfdrive/locationd/SConscript'])
-SConscript(['selfdrive/sensord/SConscript'])
+SConscript(['system/sensord/SConscript'])
 SConscript(['selfdrive/ui/SConscript'])
 SConscript(['selfdrive/navd/SConscript'])
 
-if arch in ['x86_64', 'Darwin'] or GetOption('extras'):
+if (arch in ['x86_64', 'Darwin'] and Dir('#tools/cabana/').exists()) or GetOption('extras'):
   SConscript(['tools/replay/SConscript'])
-
-  opendbc = abspath([File('opendbc/can/libdbc.so')])
-  Export('opendbc')
   SConscript(['tools/cabana/SConscript'])
 
 external_sconscript = GetOption('external_sconscript')

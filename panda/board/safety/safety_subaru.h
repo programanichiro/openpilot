@@ -24,7 +24,8 @@ const CanMsg SUBARU_TX_MSGS[] = {
   {0x122, 0, 8},
   {0x221, 0, 8},
   {0x321, 0, 8},
-  {0x322, 0, 8}
+  {0x322, 0, 8},
+  {0x323, 0, 8},
 };
 #define SUBARU_TX_MSGS_LEN (sizeof(SUBARU_TX_MSGS) / sizeof(SUBARU_TX_MSGS[0]))
 
@@ -32,7 +33,8 @@ const CanMsg SUBARU_GEN2_TX_MSGS[] = {
   {0x122, 0, 8},
   {0x221, 1, 8},
   {0x321, 0, 8},
-  {0x322, 0, 8}
+  {0x322, 0, 8},
+  {0x323, 0, 8}
 };
 #define SUBARU_GEN2_TX_MSGS_LEN (sizeof(SUBARU_GEN2_TX_MSGS) / sizeof(SUBARU_GEN2_TX_MSGS[0]))
 
@@ -82,7 +84,7 @@ static uint32_t subaru_compute_checksum(CANPacket_t *to_push) {
 static int subaru_rx_hook(CANPacket_t *to_push) {
 
   bool valid = addr_safety_check(to_push, &subaru_rx_checks,
-                                 subaru_get_checksum, subaru_compute_checksum, subaru_get_counter);
+                                 subaru_get_checksum, subaru_compute_checksum, subaru_get_counter, NULL);
 
   if (valid) {
     const int bus = GET_BUS(to_push);
@@ -145,7 +147,7 @@ static int subaru_tx_hook(CANPacket_t *to_send) {
   return tx;
 }
 
-static int subaru_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
+static int subaru_fwd_hook(int bus_num, int addr) {
   int bus_fwd = -1;
 
   if (bus_num == 0) {
@@ -157,8 +159,8 @@ static int subaru_fwd_hook(int bus_num, CANPacket_t *to_fwd) {
     // 0x122 ES_LKAS
     // 0x321 ES_DashStatus
     // 0x322 ES_LKAS_State
-    int addr = GET_ADDR(to_fwd);
-    bool block_lkas = (addr == 0x122) || (addr == 0x321) || (addr == 0x322);
+    // 0x323 INFOTAINMENT_STATUS
+    bool block_lkas = (addr == 0x122) || (addr == 0x321) || (addr == 0x322) || (addr == 0x323);
     if (!block_lkas) {
       bus_fwd = 0;  // Main CAN
     }
