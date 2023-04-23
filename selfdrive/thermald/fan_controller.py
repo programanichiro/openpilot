@@ -70,6 +70,7 @@ class TiciFanController(BaseFanController):
     self.velo_ave_ct_old = 0
     self.db_add = 0
     self.db_none = 0
+    self.min_distance_old = 0
     
     # # カーソルと接続を閉じる
     # self.cur.close()
@@ -107,7 +108,7 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
-          if self.velocity >= limitspeed_min and self.get_limit_avg -10 < self.velocity and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or self.velo_ave_ct_old < 5):
+          if self.velocity >= limitspeed_min and self.get_limit_avg -10 < self.velocity and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or (self.min_distance_old**0.5) * 100 / 0.0009 > self.velocity/3.6):
             # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。もしくは平均より10km/h遅くても登録しない。
             insert_data_sql = """
             INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
@@ -168,11 +169,16 @@ class TiciFanController(BaseFanController):
         velo_80 = (velo_max - limitspeed_min) * 0.8 + limitspeed_min
         velo_ave = 0
         velo_ave_ct = 0
+        self.min_distance_old = 0
         for row in rows: #rowsは何度でも使える。
           row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
           if velo_80 <= velocity and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
             velo_ave_ct += 1
             velo_ave += velocity
+            distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
+            if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
+              self.min_distance_old = distance #最も近い距離のポイント
+
         self.velo_ave_ct_old = velo_ave_ct
         if velo_ave_ct > 0:
           velo_ave /= velo_ave_ct
@@ -184,10 +190,10 @@ class TiciFanController(BaseFanController):
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999,%d,%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , self.db_add))
+        fp.write('%d,%.2f,999,%.1fm,%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
     else:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,111,%d,%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , self.db_none))
+        fp.write('%d,%.2f,111,%.1fm,%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none))
 
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
     # # 変更を保存
