@@ -107,8 +107,8 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
-          if self.velocity >= limitspeed_min and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or self.velo_ave_ct_old < 5):
-            # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。
+          if self.velocity >= limitspeed_min and self.get_limit_avg -10 < self.velocity and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or self.velo_ave_ct_old < 5):
+            # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。もしくは平均より10km/h遅くても登録しない。
             insert_data_sql = """
             INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
             VALUES (?, ?, ?, ?, ?);

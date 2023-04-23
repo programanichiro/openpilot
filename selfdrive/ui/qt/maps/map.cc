@@ -891,17 +891,17 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
     g_stand_still = std::stoi(stand_still_txt) ? true : false;
   }
 
-}
-
-void MapLimitspeed::paintEvent(QPaintEvent *event) {
-
   float r = 200 / 2;
   int stand_still_height = 0;
   if(g_stand_still){
     stand_still_height = 270;
   }
   this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
+}
 
+void MapLimitspeed::paintEvent(QPaintEvent *event) {
+
+  float r = 200 / 2;
   QPainter p(this);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
