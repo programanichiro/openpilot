@@ -14,6 +14,8 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 # EPS faults if you apply torque while the steering rate is above 100 deg/s for too long
 MAX_STEER_RATE = 100  # deg/s
 MAX_STEER_RATE_FRAMES = 18  # tx control frames needed before torque can be cut
+# MAX_STEER_RATE = 105  # これを現車で耐えられる可能な限り上げる
+# MAX_STEER_RATE_FRAMES = 25 # こちらも耐えられる可能な限り上げる？
 
 # EPS allows user torque above threshold for 50 frames before permanently faulting
 MAX_USER_TORQUE = 500
@@ -33,6 +35,17 @@ class CarController:
     self.packer = CANPacker(dbc_name)
     self.gas = 0
     self.accel = 0
+
+    self.now_gear = car.CarState.GearShifter.park
+    self.lock_flag = False
+    self.lock_speed = 0
+    try:
+      with open('../../../run_auto_lock.txt','r') as fp:
+        lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        if lock_speed_str:
+          self.lock_speed = int(lock_speed_str);
+    except Exception as e:
+      pass
 
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
@@ -75,6 +88,11 @@ class CarController:
     elif self.steer_rate_counter > MAX_STEER_RATE_FRAMES:
       apply_steer_req = 0
       self.steer_rate_counter = 0
+    
+    # Never actuate with LKA on cars that only support LTA
+    if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
+      apply_steer = 0
+      apply_steer_req = 0
 
     # Never actuate with LKA on cars that only support LTA
     if self.CP.steerControlType == car.CarParams.SteerControlType.angle:
@@ -87,7 +105,7 @@ class CarController:
       pcm_cancel_cmd = 1
 
     # on entering standstill, send standstill request
-    if CS.out.standstill and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor):
+    if CS.out.standstill and not self.CP.openpilotLongitudinalControl and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor):
       self.standstill_req = True
     if CS.pcm_acc_status != 8:
       # pcm entered standstill or it's disabled
@@ -97,6 +115,18 @@ class CarController:
     self.last_standstill = CS.out.standstill
 
     can_sends = []
+
+    if self.lock_speed > 0: #auto door lock , unlock
+      gear = CS.out.gearShifter
+      if self.now_gear != gear or (CS.out.doorOpen and self.lock_flag == True): #ギアが変わるか、ドアが開くか。
+        if gear == car.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
+          can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+        self.lock_flag = False #ドアが空いてもフラグはおろす。
+      elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
+        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+        self.lock_flag = True
+      self.now_gear = gear
+
 
     # *** control msgs ***
     # print("steer {0} {1} {2} {3}".format(apply_steer, min_lim, max_lim, CS.steer_torque_motor)
