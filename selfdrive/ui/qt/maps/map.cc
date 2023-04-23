@@ -900,7 +900,7 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   if(g_stand_still){
     stand_still_height = 270;
   }
-  map_limitspeed->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
+  this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
 
   QPainter p(this);
   p.setPen(Qt::NoPen);
