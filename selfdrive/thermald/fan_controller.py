@@ -108,7 +108,10 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
-          if self.velocity >= limitspeed_min and self.get_limit_avg -10 < self.velocity and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or (self.min_distance_old**0.5) * 100 / 0.0009 > self.velocity/3.6):
+          limit_m = self.velocity/3.6
+          if limit_m < 10:
+            limit_m = 10 #10m以内の範囲には登録しない。
+          if self.velocity >= limitspeed_min and self.get_limit_avg -10 < self.velocity and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or ((self.min_distance_old**0.5) * 100 / 0.0009 > limit_m and self.velo_ave_ct_old < 10)):
             # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。もしくは平均より10km/h遅くても登録しない。
             insert_data_sql = """
             INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
@@ -190,10 +193,10 @@ class TiciFanController(BaseFanController):
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999,%.1fm,%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
+        fp.write('%d,%.2f,999,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
     else:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,111,%.1fm,%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none))
+        fp.write('%d,%.2f,111,%.1fm,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none))
 
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
     # # 変更を保存
