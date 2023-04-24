@@ -99,7 +99,7 @@ class TiciFanController(BaseFanController):
 
     #"/tmp/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出して速度30km/h以上ならspeedsに挿入する
     limitspeed_info_ok = False
-    limitspeed_min = 30
+    limitspeed_min = 1 #30,debug
     try:
       with open('/tmp/limitspeed_info.txt','r') as fp:
         limitspeed_info_str = fp.read()
@@ -108,9 +108,9 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
-          limit_m = self.velocity/3.6
-          if limit_m < 10:
-            limit_m = 10 #10m以内の範囲には登録しない。
+          limit_m = 0 #self.velocity/3.6
+          # if limit_m < 10:
+          #   limit_m = 10 #10m以内の範囲には登録しない。
           if self.velocity >= limitspeed_min and self.get_limit_avg * 0.9 < self.velocity and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or ((self.min_distance_old**0.5) * 100 / 0.0009 > limit_m and self.velo_ave_ct_old < 10)):
             # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。もしくは平均より10km/h遅くても登録しない。
             insert_data_sql = """
