@@ -372,18 +372,19 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   }
 
   {
-    // turbo boost button
-    uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("/data/start_accel_power_up_disp_enable.txt");
-    startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
-    QObject::connect(startAccelPowerUpButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
+    // Handle Ctrl button（廃止準備。制限速度標識ボタンに変容予定）
+    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonInt("/data/handle_ctrl_sw.txt",1);
+    handleCtrlButton = new QPushButton("◯"); //↔︎で曲率制限値2倍
+    QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
+      uiState()->scene.mHandleCtrlButton = (mHandleCtrlButton + 1) % 2; //0->1->0
     });
-    startAccelPowerUpButton->setFixedWidth(150);
-    startAccelPowerUpButton->setFixedHeight(150*0.9);
-    //lockOnButton->setWindowOpacity(all_opac);
-    btns_layoutLL->addSpacing(10);
-    btns_layoutLL->addWidget(startAccelPowerUpButton);
-    startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
+    handleCtrlButton->setFixedWidth(150);
+    handleCtrlButton->setFixedHeight(150);
+    //handleCtrlButton->setPalette(QColor(255,255,255,all_opac*255));
+    //handleCtrlButton->setAutoFillBackground(true);
+    //btns_layoutL->addSpacing(70);
+    btns_layoutL->addWidget(handleCtrlButton);
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton > 0)));
   }
 
   {
@@ -463,19 +464,18 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   //const float all_opac = 0.2;
   {
-    // Handle Ctrl button
-    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonInt("/data/handle_ctrl_sw.txt",1);
-    handleCtrlButton = new QPushButton("↔︎"); //↔︎で曲率制限値2倍
-    QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mHandleCtrlButton = (mHandleCtrlButton + 1) % 2; //0->1->0
+    // turbo boost button
+    uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("/data/start_accel_power_up_disp_enable.txt");
+    startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
+    QObject::connect(startAccelPowerUpButton, &QPushButton::pressed, [=]() {
+      uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
-    handleCtrlButton->setFixedWidth(150);
-    handleCtrlButton->setFixedHeight(150);
-    //handleCtrlButton->setPalette(QColor(255,255,255,all_opac*255));
-    //handleCtrlButton->setAutoFillBackground(true);
-    //btns_layoutL->addSpacing(70);
-    btns_layoutL->addWidget(handleCtrlButton);
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton > 0)));
+    startAccelPowerUpButton->setFixedWidth(150);
+    startAccelPowerUpButton->setFixedHeight(150*0.9);
+    //lockOnButton->setWindowOpacity(all_opac);
+    btns_layoutLL->addSpacing(10);
+    btns_layoutLL->addWidget(startAccelPowerUpButton);
+    startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
   }
 
   {
