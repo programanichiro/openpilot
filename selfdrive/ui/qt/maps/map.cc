@@ -255,7 +255,13 @@ void MapWindow::updateState(const UIState &s) {
           QMapbox::Coordinate coordinate = last_position.value();
           double latitude = coordinate.first; // 緯度を取得
           double longitude = coordinate.second; // 経度を取得
-          double bearing = *last_bearing;
+          double bearing = *last_bearing;  //-180〜180
+          if(bearing < 0){
+            bearing += 360;
+            if(bearing >= 360){
+              bearing = 0;
+            }
+          } //0〜360へ変換、クエリの角度差分計算がマイナス角に対応していない。
           double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
           QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
           double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
