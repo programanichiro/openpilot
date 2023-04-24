@@ -308,7 +308,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
 }
 
 // ButtonsWindow
-const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1";
+const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
 bool Long_enable = true;
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
@@ -373,11 +373,11 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   {
     // Handle Ctrl button（廃止準備。制限速度標識ボタンに変容予定）
-    uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonInt("/data/handle_ctrl_sw.txt",1);
+    uiState()->scene.mLimitspeedButton = mLimitspeedButton = getButtonInt("/data/limitspeed_sw.txt",0);
     handleCtrlButton = new QPushButton("○"); //この丸がセンターに出る。
     //handleCtrlButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
     QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mHandleCtrlButton = (mHandleCtrlButton + 1) % 2; //0->1->0
+      uiState()->scene.mLimitspeedButton = (mLimitspeedButton + 1) % 2; //0->1->0
     });
     handleCtrlButton->setFixedWidth(150);
     handleCtrlButton->setFixedHeight(150*0.9);
@@ -385,7 +385,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     //handleCtrlButton->setAutoFillBackground(true);
     btns_layoutLL->addSpacing(10);
     btns_layoutLL->addWidget(handleCtrlButton);
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton > 0)));
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0)));
   }
 
   {
@@ -608,11 +608,11 @@ void ButtonsWindow::updateState(const UIState &s) {
     soundButton(mAccelEngagedButton);
   }
 
-  if (mHandleCtrlButton != s.scene.mHandleCtrlButton) {  // update mHandleCtrlButton
-    mHandleCtrlButton = s.scene.mHandleCtrlButton;
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton > 0 && fp_error==false)));
-    setButtonInt("/data/handle_ctrl_sw.txt" , mHandleCtrlButton);
-    soundButton(mHandleCtrlButton);
+  if (mLimitspeedButton != s.scene.mLimitspeedButton) {  // update mLimitspeedButton
+    mLimitspeedButton = s.scene.mLimitspeedButton;
+    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0 && fp_error==false)));
+    setButtonInt("/data/limitspeed_sw.txt" , mLimitspeedButton);
+    soundButton(mLimitspeedButton);
   }
   
   if (mStartAccelPowerUpButton != s.scene.mStartAccelPowerUpButton) {  // update mStartAccelPowerUpButton
@@ -1233,7 +1233,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     angle_steer = global_angle_steer0;
     if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){
-      if(uiState()->scene.mHandleCtrlButton == 2){
+      extern int limit_speed_auto_detect;
+      if(uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1){ //インジケーターはACC自動設定時にするか、速度標識表示時にするか検討中
         a2 = 200;
       }
     }
@@ -1265,7 +1266,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
-  drawText(p, rect().center().x(), 50 + 40*2 , "make curve inner offset", a2 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*2 , "limit speed auto detect", a2 , brake_light);
   //drawText(p, rect().center().x(), 50 + 40*2 , "curvature reinforcement", a2 , brake_light);
   //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);

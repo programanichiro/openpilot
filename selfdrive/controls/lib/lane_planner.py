@@ -121,7 +121,8 @@ class LanePlanner:
 #関数を最後に追加,dcm(ダイナミックカメラマージン？)名前がおかしいが、コーナーのイン側に寄せるオフセットである。早晩、こちらはlateral_planner.pyへ引っ越し予定。
   def calc_dcm(self, st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob):
     #数値を実際に取得して、調整してみる。UIスイッチで車体寄せをやめるなら、ここでゼロを返せばいい。
-    #return 0 #車体寄せを行わない。西湘バイパス出口急カーブでの寄りすぎ原因の調査。こちらでなければk_v2=2が原因。
+    return 0 #車体寄せを行わない。
+    # handle_ctrl_sw.txt無効による実質的な廃止。
     global DCM_FRAME , dcm_handle_ctrl
     if DCM_FRAME % 30 == 1 and (st_angle != 0 or pred_angle != 0):
       try:

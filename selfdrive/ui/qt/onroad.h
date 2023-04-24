@@ -58,7 +58,7 @@ private:
   bool mAccelCtrlButton = true;  // triggers initialization
   bool mDecelCtrlButton = true;  // triggers initialization
   int mAccelEngagedButton = 0;  // triggers initialization
-  int mHandleCtrlButton = 0;  // triggers initialization
+  int mLimitspeedButton = 0;  // triggers initialization
   bool mStartAccelPowerUpButton = false;  // triggers initialization
   int mUseLaneButton = 0;  // triggers initialization
 

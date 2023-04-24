@@ -870,6 +870,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 }
 
 static bool g_stand_still;
+int limit_speed_auto_detect;
 
 void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
 
@@ -886,8 +887,10 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
     }
     if((int)output[2] == 111){
       speed->setText("━");
+      limit_speed_auto_detect = 0;
     } else {
       speed->setText(QString::number((int)output[0]));
+      limit_speed_auto_detect = 1;
     }
   }
 

@@ -129,7 +129,7 @@ typedef struct UIScene {
   bool mAccelCtrlButton = true;
   bool mDecelCtrlButton = true;
   int mAccelEngagedButton = 0;
-  int mHandleCtrlButton = 0;
+  int mLimitspeedButton = 0;
   bool mStartAccelPowerUpButton = false;
   int mUseLaneButton = 0;
 
