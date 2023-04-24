@@ -379,11 +379,11 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mHandleCtrlButton = (mHandleCtrlButton + 1) % 2; //0->1->0
     });
     handleCtrlButton->setFixedWidth(150);
-    handleCtrlButton->setFixedHeight(150);
+    handleCtrlButton->setFixedHeight(150*0.9);
     //handleCtrlButton->setPalette(QColor(255,255,255,all_opac*255));
     //handleCtrlButton->setAutoFillBackground(true);
-    //btns_layoutL->addSpacing(70);
-    btns_layoutL->addWidget(handleCtrlButton);
+    btns_layoutLL->addSpacing(10);
+    btns_layoutLL->addWidget(handleCtrlButton);
     handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mHandleCtrlButton > 0)));
   }
 
@@ -471,10 +471,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
     startAccelPowerUpButton->setFixedWidth(150);
-    startAccelPowerUpButton->setFixedHeight(150*0.9);
+    startAccelPowerUpButton->setFixedHeight(150);
     //lockOnButton->setWindowOpacity(all_opac);
-    btns_layoutLL->addSpacing(10);
-    btns_layoutLL->addWidget(startAccelPowerUpButton);
+    btns_layoutL->addWidget(startAccelPowerUpButton);
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
   }
 
