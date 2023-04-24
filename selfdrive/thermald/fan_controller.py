@@ -195,6 +195,7 @@ class TiciFanController(BaseFanController):
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
     else:
+      self.min_distance_old = 0
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,111,%d,%.1fm,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none))
 

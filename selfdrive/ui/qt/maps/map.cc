@@ -261,11 +261,11 @@ void MapWindow::updateState(const UIState &s) {
             if(bearing >= 360){
               bearing = 0;
             }
-          } //0〜360へ変換、クエリの角度差分計算がマイナス角に対応していない。
+          } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
           double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
           QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
           double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
-          fprintf(fp,"%.7f,%.7f,%.7f,%.7f,%.7f",latitude,longitude,bearing,velo,now);
+          fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
           fclose(fp);
 
           emit LimitspeedChanged(velo);
