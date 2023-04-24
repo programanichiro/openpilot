@@ -99,7 +99,7 @@ class TiciFanController(BaseFanController):
 
     #"/tmp/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出して速度30km/h以上ならspeedsに挿入する
     limitspeed_info_ok = False
-    limitspeed_min = 1 #30,debug
+    limitspeed_min = 30
     try:
       with open('/tmp/limitspeed_info.txt','r') as fp:
         limitspeed_info_str = fp.read()
