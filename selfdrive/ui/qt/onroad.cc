@@ -374,7 +374,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // Handle Ctrl button（廃止準備。制限速度標識ボタンに変容予定）
     uiState()->scene.mHandleCtrlButton = mHandleCtrlButton = getButtonInt("/data/handle_ctrl_sw.txt",1);
-    handleCtrlButton = new QPushButton("Xd");
+    handleCtrlButton = new QPushButton("○");
     QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mHandleCtrlButton = (mHandleCtrlButton + 1) % 2; //0->1->0
     });
