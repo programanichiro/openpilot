@@ -1232,7 +1232,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       a3 = 200;
     }
     angle_steer = global_angle_steer0;
-    if(vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)){
+    if(1 /*vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)*/){
       extern int limit_speed_auto_detect;
       if(uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1){ //インジケーターはACC自動設定時にするか、速度標識表示時にするか検討中
         a2 = 200;
