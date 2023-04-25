@@ -912,7 +912,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(ms.length() > 1){
     if(maxSpeed.mid(0,1) == ";"){ //先頭セミコロンで制限速度適用
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0xff, 0, 0xff, 200), 20)); //加速時は紫の太枠
+      p.setPen(QPen(QColor(0xff, 0, 0xff, 200), 6)); //加速時は紫
       lemit_speed_override = true;
     } else if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
       ms = maxSpeed.mid(1,maxSpeed.length()-1);

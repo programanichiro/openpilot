@@ -218,6 +218,8 @@ class LongitudinalPlanner:
               if limitspeed_flag == 999:
                 v_cruise_kph = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
                 limitspeed_set = True
+                if OP_ENABLE_v_cruise_kph != 0:
+                  OP_ENABLE_v_cruise_kph = v_cruise_kph #ACC速度切り替え検出をキャンセルする
     except Exception as e:
       pass
 
