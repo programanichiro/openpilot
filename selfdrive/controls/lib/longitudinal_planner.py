@@ -216,7 +216,7 @@ class LongitudinalPlanner:
               limitspeed_data = limitspeed_data_str.split(",")
               limitspeed_flag = int(limitspeed_data[2])
               if limitspeed_flag == 999:
-                v_cruise_kph = int(limitspeed_data[1]) #実際にセットするのは平均速度の方
+                v_cruise_kph = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
                 limitspeed_set = True
     except Exception as e:
       pass
