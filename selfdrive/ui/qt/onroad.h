@@ -41,7 +41,7 @@ private:
   QPushButton *accelCtrlButton;
   QPushButton *decelCtrlButton;
   QPushButton *accelEngagedButton;
-  QPushButton *handleCtrlButton;
+  QPushButton *limitspeedButton;
   QPushButton *startAccelPowerUpButton;
   QPushButton *useLaneButton;
 

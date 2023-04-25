@@ -374,18 +374,18 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // Handle Ctrl button（廃止準備。制限速度標識ボタンに変容予定）
     uiState()->scene.mLimitspeedButton = mLimitspeedButton = getButtonInt("/data/limitspeed_sw.txt",0);
-    handleCtrlButton = new QPushButton("○"); //この丸がセンターに出る。
-    //handleCtrlButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
-    QObject::connect(handleCtrlButton, &QPushButton::pressed, [=]() {
+    limitspeedButton = new QPushButton("○"); //この丸がセンターに出る。
+    //limitspeedButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
+    QObject::connect(limitspeedButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mLimitspeedButton = (mLimitspeedButton + 1) % 2; //0->1->0
     });
-    handleCtrlButton->setFixedWidth(150);
-    handleCtrlButton->setFixedHeight(150*0.9);
-    //handleCtrlButton->setPalette(QColor(255,255,255,all_opac*255));
-    //handleCtrlButton->setAutoFillBackground(true);
+    limitspeedButton->setFixedWidth(150);
+    limitspeedButton->setFixedHeight(150*0.9);
+    //limitspeedButton->setPalette(QColor(255,255,255,all_opac*255));
+    //limitspeedButton->setAutoFillBackground(true);
     btns_layoutLL->addSpacing(10);
-    btns_layoutLL->addWidget(handleCtrlButton);
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0)));
+    btns_layoutLL->addWidget(limitspeedButton);
+    limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0)));
   }
 
   {
@@ -610,7 +610,7 @@ void ButtonsWindow::updateState(const UIState &s) {
 
   if (mLimitspeedButton != s.scene.mLimitspeedButton) {  // update mLimitspeedButton
     mLimitspeedButton = s.scene.mLimitspeedButton;
-    handleCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0 && fp_error==false)));
+    limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0 && fp_error==false)));
     setButtonInt("/data/limitspeed_sw.txt" , mLimitspeedButton);
     soundButton(mLimitspeedButton);
   }
