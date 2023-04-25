@@ -550,7 +550,7 @@ class LongitudinalPlanner:
       with open('/tmp/limitspeed_sw.txt','r') as fp:
         limitspeed_sw_str = fp.read()
         if limitspeed_sw_str:
-          if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0: #自動設定モード
+          if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
             with open('/tmp/limitspeed_data.txt','r') as fp2:
               limitspeed_data_str = fp2.read()
               # fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
