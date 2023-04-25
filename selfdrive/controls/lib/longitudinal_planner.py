@@ -204,23 +204,6 @@ class LongitudinalPlanner:
     if v_cruise_kph < min_acc_speed:
       v_cruise_kph = min_acc_speed #念のため
 
-    limitspeed_set = False
-    try:
-      with open('/tmp/limitspeed_sw.txt','r') as fp:
-        limitspeed_sw_str = fp.read()
-        if limitspeed_sw_str:
-          if int(limitspeed_sw_str) == 1: #自動設定モード
-            with open('/tmp/limitspeed_data.txt','r') as fp2:
-              limitspeed_data_str = fp2.read()
-              # fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
-              limitspeed_data = limitspeed_data_str.split(",")
-              limitspeed_flag = int(limitspeed_data[2])
-              if limitspeed_flag == 999 and OP_ENABLE_v_cruise_kph == 0:
-                v_cruise_kph = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
-                limitspeed_set = True
-    except Exception as e:
-      pass
-
     one_pedal = False
     on_accel0 = False #押した瞬間
     if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
@@ -561,6 +544,23 @@ class LongitudinalPlanner:
             handle_center = float(handle_center_info_str)
       except Exception as e:
         pass
+
+    limitspeed_set = False
+    try:
+      with open('/tmp/limitspeed_sw.txt','r') as fp:
+        limitspeed_sw_str = fp.read()
+        if limitspeed_sw_str:
+          if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0: #自動設定モード
+            with open('/tmp/limitspeed_data.txt','r') as fp2:
+              limitspeed_data_str = fp2.read()
+              # fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
+              limitspeed_data = limitspeed_data_str.split(",")
+              limitspeed_flag = int(limitspeed_data[2])
+              if limitspeed_flag == 999:
+                v_cruise_kph = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
+                limitspeed_set = True
+    except Exception as e:
+      pass
 
 #  struct LeadData {
 #    dRel @0 :Float32;
