@@ -908,8 +908,13 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   QRect set_speed_rect(60 + default_rect_width / 2 - rect_width / 2, 45 +y_ofs, rect_width, rect_height);
 //  p.setPen(QPen(whiteColor(75), 6));
   QString ms = QString(maxSpeed);
+  bool lemit_speed_override = false;
   if(ms.length() > 1){
-    if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
+    if(maxSpeed.mid(0,1) == ";"){ //先頭セミコロンで制限速度適用
+      ms = maxSpeed.mid(1,maxSpeed.length()-1);
+      p.setPen(QPen(QColor(0xff, 0, 0xff, 200), 20)); //加速時は紫の太枠
+      lemit_speed_override = true;
+    } else if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
       p.setPen(QPen(QColor(0, 0xff, 0, 200), 6)); //加速時は緑
     } else if(maxSpeed.mid(maxSpeed.length()-1,1) == "."){ //末尾ピリオドで減速
@@ -1015,6 +1020,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(red_signal_scan_flag >= 3){
     QColor speed_max;
     speed_max = QColor(0xff, 0, 0 , 255);
+    p.setPen(speed_max);
+  } else if(lemit_speed_override == true){
+    QColor speed_max;
+    speed_max = QColor(0xff, 0, 0xff , 255);
     p.setPen(speed_max);
   }
   p.drawText(speed_rect, Qt::AlignCenter, setSpeedStr);
