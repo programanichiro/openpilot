@@ -937,7 +937,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   { //テストコード
     lemit_speed_override = true;
-    p.setPen(QPen(QColor(0xff, 0xff, 0xff, 255), 6)); //枠を白
+    p.setPen(QPen(QColor(0, 0xff, 0xff, 255), 6));
+    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.8)); //速度標識の地の色に合わせる。
   }
   drawRoundedRect(p, set_speed_rect, top_radius, top_radius, bottom_radius, bottom_radius);
   if(lemit_speed_override == true){
