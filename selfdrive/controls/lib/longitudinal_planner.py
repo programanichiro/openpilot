@@ -215,11 +215,9 @@ class LongitudinalPlanner:
               # fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
               limitspeed_data = limitspeed_data_str.split(",")
               limitspeed_flag = int(limitspeed_data[2])
-              if limitspeed_flag == 999:
+              if limitspeed_flag == 999 and OP_ENABLE_v_cruise_kph == 0:
                 v_cruise_kph = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
                 limitspeed_set = True
-                if OP_ENABLE_v_cruise_kph != 0:
-                  OP_ENABLE_v_cruise_kph = v_cruise_kph #ACC速度切り替え検出をキャンセルする
     except Exception as e:
       pass
 
