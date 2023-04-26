@@ -913,7 +913,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     if(maxSpeed.mid(0,1) == ";"){ //先頭セミコロンで制限速度適用
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
       //p.setPen(QPen(QColor(205, 44, 38, 255), 12)); //標識の赤枠の色に合わせる
-      p.setPen(QPen(QColor(0xff, 0xff, 0xff, 255), 6)); //枠を白
+      p.setPen(QPen(QColor(0xff, 0xff, 0xff, 255*0.8), 6)); //枠を白
       lemit_speed_override = true;
     } else if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
@@ -933,11 +933,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(lemit_speed_override == false){
     p.setBrush(blackColor(166));
   } else {
-    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.8)); //速度標識の地の色に合わせる。
-  }
-  { //テストコード
-    lemit_speed_override = true;
-    p.setPen(QPen(QColor(0xff, 0xff, 0xff, 255), 6));
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.8)); //速度標識の地の色に合わせる。
   }
   drawRoundedRect(p, set_speed_rect, top_radius, top_radius, bottom_radius, bottom_radius);
@@ -973,17 +968,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.setPen(QColor(0xa6, 0xa6, 0xa6, 0xff));
   }
   configFont(p, "Inter", 40*max_disp_k, "SemiBold");
-  if(lemit_speed_override == false){
-    QRect max_rect = getTextRect(p, Qt::AlignCenter, tr("MAX"));
-    max_rect.moveCenter({set_speed_rect.center().x(), 0});
-    max_rect.moveTop(set_speed_rect.top() + 27*max_disp_k);
-    p.drawText(max_rect, Qt::AlignCenter, tr("MAX"));
-  } else {
-    QRect max_rect = getTextRect(p, Qt::AlignCenter, tr("AUTO"));
-    max_rect.moveCenter({set_speed_rect.center().x(), 0});
-    max_rect.moveTop(set_speed_rect.top() + 27*max_disp_k);
-    p.drawText(max_rect, Qt::AlignCenter, tr("AUTO"));
-  }
+  QString MAX_AUTO = lemit_speed_override == false ? tr("MAX") : tr("AUTO");
+  QRect max_rect = getTextRect(p, Qt::AlignCenter, MAX_AUTO);
+  max_rect.moveCenter({set_speed_rect.center().x(), 0});
+  max_rect.moveTop(set_speed_rect.top() + 27*max_disp_k);
+  p.drawText(max_rect, Qt::AlignCenter, MAX_AUTO);
   // Draw set speed
   if (is_cruise_set) {
     if (speedLimit > 0 && status != STATUS_DISENGAGED && status != STATUS_OVERRIDE) {
