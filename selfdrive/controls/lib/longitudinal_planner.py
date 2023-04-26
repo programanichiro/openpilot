@@ -869,8 +869,8 @@ class LongitudinalPlanner:
         #ワンペダル停止の減速を強めてみる。
         a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
-    # with open('/tmp/debug_out_v','w') as fp:
-    #   fp.write("v_cruise=%.2fkm/h" % (v_cruise*3.6))
+    with open('/tmp/debug_out_v','w') as fp:
+      fp.write("v_desired=%.2fkm/h" % (self.v_desired_filter.x*3.6))
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired*a_desired_mul + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired*a_desired_mul - 0.05)
