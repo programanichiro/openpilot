@@ -121,6 +121,7 @@ class LongitudinalPlanner:
     self.night_time_refresh_ct = 0
     self.desired_path_x_rates = np.zeros(5)
     self.ac_vc_time = 0.0
+    self.limitspeed_point = 0.0
 
     try:
       with open('/tmp/lane_sw_mode.txt','r') as fp:
@@ -557,7 +558,12 @@ class LongitudinalPlanner:
               limitspeed_data = limitspeed_data_str.split(",")
               limitspeed_flag = int(limitspeed_data[2])
               if limitspeed_flag == 999:
-                v_cruise_kph = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
+                target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
+                if target > self.limitspeed_point:
+                  self.limitspeed_point += 0.1
+                elif target < self.limitspeed_point:
+                  self.limitspeed_point -= 0.1
+                v_cruise_kph = self.limitspeed_point
                 limitspeed_set = True
     except Exception as e:
       pass

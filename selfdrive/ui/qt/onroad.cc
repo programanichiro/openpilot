@@ -913,7 +913,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     if(maxSpeed.mid(0,1) == ";"){ //先頭セミコロンで制限速度適用
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
       //p.setPen(QPen(QColor(205, 44, 38, 255), 12)); //標識の赤枠の色に合わせる
-      p.setPen(QPen(QColor(0xff, 0xff, 0xff, 255*0.8), 6)); //枠を白
+      p.setPen(QPen(QColor(0xff, 0xff, 0xff, 255*0.9), 6)); //枠を白
       lemit_speed_override = true;
     } else if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
@@ -933,7 +933,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(lemit_speed_override == false){
     p.setBrush(blackColor(166));
   } else {
-    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.8)); //速度標識の地の色に合わせる。
+    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
   }
   drawRoundedRect(p, set_speed_rect, top_radius, top_radius, bottom_radius, bottom_radius);
   if(lemit_speed_override == true){
@@ -949,7 +949,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   // Draw MAX
   if(lemit_speed_override == true){
-    p.setPen(QColor(0x30, 0x30, 0x30, 0xff)); //薄黒
+    p.setPen(QColor(0x24, 0x57, 0xa1 , 255)); //速度標識の数字に合わせる。
   } else if (is_cruise_set) {
     if (status == STATUS_DISENGAGED) {
       p.setPen(whiteColor());
