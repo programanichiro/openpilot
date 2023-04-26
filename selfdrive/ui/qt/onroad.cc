@@ -1297,7 +1297,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
-  drawText(p, rect().center().x(), 50 + 40*2 , "limit speed auto detect", a2 , brake_light);
+  drawText(p, rect().center().x(), 50 + 40*2 , "speed limit auto detect", a2 , brake_light);
   //drawText(p, rect().center().x(), 50 + 40*2 , "curvature reinforcement", a2 , brake_light);
   //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
