@@ -559,7 +559,11 @@ class LongitudinalPlanner:
               limitspeed_flag = int(limitspeed_data[2])
               if limitspeed_flag == 999:
                 target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
-                if target > self.limitspeed_point:
+                if target > self.limitspeed_point+5:
+                  self.limitspeed_point += 1
+                elif target < self.limitspeed_point-5:
+                  self.limitspeed_point -= 1
+                elif target > self.limitspeed_point:
                   self.limitspeed_point += 0.1
                 elif target < self.limitspeed_point:
                   self.limitspeed_point -= 0.1
