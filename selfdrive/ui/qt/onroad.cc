@@ -947,7 +947,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     //太い赤枠を内側に描画する。
     const int ls_w2 = 30;
     QRect set_speed_rect2(60 + default_rect_width / 2 - rect_width / 2 +ls_w2/2, 45 +y_ofs +ls_w2/2, rect_width - ls_w2, rect_height -ls_w2);
-    p.setPen(QPen(QColor(205, 44, 38, 255), ls_w2)); //標識の赤枠の色に合わせる
+    p.setPen(QPen(QColor(205, 44, 38, (lemit_speed_override ? 255 : 180)), ls_w2)); //標識の赤枠の色に合わせる
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0)); //２０描画はしない
     drawRoundedRect(p, set_speed_rect2, top_radius-ls_w2/2, top_radius-ls_w2/2, bottom_radius-ls_w2/2, bottom_radius-ls_w2/2);
   }
