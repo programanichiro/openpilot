@@ -564,9 +564,9 @@ class LongitudinalPlanner:
                 elif target < self.limitspeed_point-10:
                   self.limitspeed_point = target +10
                 elif target > self.limitspeed_point+5:
-                  self.limitspeed_point += 1
+                  self.limitspeed_point += 0.2
                 elif target < self.limitspeed_point-5:
-                  self.limitspeed_point -= 1
+                  self.limitspeed_point -= 0.2
                 elif target > self.limitspeed_point:
                   self.limitspeed_point += 0.1
                 elif target < self.limitspeed_point:
