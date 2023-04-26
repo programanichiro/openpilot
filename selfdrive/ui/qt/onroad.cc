@@ -937,7 +937,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   drawRoundedRect(p, set_speed_rect, top_radius, top_radius, bottom_radius, bottom_radius);
   extern int limit_speed_auto_detect;
-  if(lemit_speed_override == true || limit_speed_auto_detect > 0){
+  if(lemit_speed_override == true || (uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1)){
     //太い赤枠を内側に描画する。
     const int ls_w2 = 30;
     QRect set_speed_rect2(60 + default_rect_width / 2 - rect_width / 2 +ls_w2/2, 45 +y_ofs +ls_w2/2, rect_width - ls_w2, rect_height -ls_w2);
