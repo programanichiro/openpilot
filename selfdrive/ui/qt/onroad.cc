@@ -766,6 +766,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
 static bool global_engageable;
 static float vc_speed;
 static int tss_type = 0;
+static float maxspeed_org;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
   int SET_SPEED_NA = 557; //255;
   const SubMaster &sm = *(s.sm);
@@ -776,6 +777,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto cs = sm["controlsState"].getControlsState();
 
   float maxspeed = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster(); //v_cruise->maxspeed
+  maxspeed_org = maxspeed; //レバー値の元の値。
   if(tss_type == 0){
     std::string tss_type_txt = util::read_file("/data/tss_type_info.txt");
     if(tss_type_txt.empty() == false){
@@ -933,7 +935,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(lemit_speed_override == false){
     p.setBrush(blackColor(166));
   } else {
-    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
+    if(maxspeed_org+10 > ms.toDouble()){
+      p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
+    } else {
+      p.setBrush(QColor::fromRgbF(1.0, 1.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告。
+    }
   }
   drawRoundedRect(p, set_speed_rect, top_radius, top_radius, bottom_radius, bottom_radius);
   extern int limit_speed_auto_detect;
