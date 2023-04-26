@@ -870,7 +870,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 }
 
 static bool g_stand_still;
-int limit_speed_auto_detect;
+int limit_speed_auto_detect; //onroad.ccから参照あり
 
 void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
 
