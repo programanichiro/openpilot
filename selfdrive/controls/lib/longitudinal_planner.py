@@ -568,9 +568,9 @@ class LongitudinalPlanner:
                 elif target < self.limitspeed_point-5:
                   self.limitspeed_point -= 0.2
                 elif target > self.limitspeed_point:
-                  self.limitspeed_point += 0.1
+                  self.limitspeed_point += 0.05
                 elif target < self.limitspeed_point:
-                  self.limitspeed_point -= 0.1
+                  self.limitspeed_point -= 0.05
                 v_cruise_kph = self.limitspeed_point
                 limitspeed_set = True
     except Exception as e:
