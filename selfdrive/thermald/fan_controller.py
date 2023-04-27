@@ -247,10 +247,10 @@ class TiciFanController(BaseFanController):
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add,self.db_del))
+        fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
     else:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,111,%d,%.1fm,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none))
+        fp.write('%d,%.2f,111,%d,%.1fm,=%d,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
 
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
     # # 変更を保存
