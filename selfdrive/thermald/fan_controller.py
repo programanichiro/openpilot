@@ -71,6 +71,7 @@ class TiciFanController(BaseFanController):
     self.db_add = 0
     self.db_none = 0
     self.min_distance_old = 0
+    self.tss_type = 0
     
     # # カーソルと接続を閉じる
     # self.cur.close()
@@ -97,6 +98,19 @@ class TiciFanController(BaseFanController):
 
     self.last_ignition = ignition
 
+    if self.tss_type == 0:
+      try:
+        with open('../../../tss_type_info.txt','r') as fp:
+          tss_type_str = fp.read()
+          if tss_type_str:
+            if int(tss_type_str) == 2: #TSS2
+              self.tss_type = 2
+              dc_get_lag_adjusted_curvature = True
+            elif int(tss_type_str) == 1: #TSSP
+              self.tss_type = 1
+      except Exception as e:
+        pass
+
     #"/tmp/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出して速度30km/h以上ならspeedsに挿入する
     limitspeed_info_ok = False
     limitspeed_min = 30
@@ -108,6 +122,8 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
+          if self.tss_type < 2 and self.velocity > 119:
+            self.velocity = 119 #TSSPでは最高119(メーター125)km/h
           limit_m = self.velocity/3.6
           if limit_m < 10:
             limit_m = 10 #10m以内の範囲には登録しない。
@@ -173,16 +189,17 @@ class TiciFanController(BaseFanController):
         velo_ave_ct = 0
         self.min_distance_old = 0
 
-        velo_70 = (velo_max - limitspeed_min) * 0.7 + limitspeed_min #まず70〜90を検査する。
-        velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
-        for row in rows: #rowsは何度でも使える。
-          row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
-          if velo_70 <= velocity and velocity <= velo_95 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
-            velo_ave_ct += 1
-            velo_ave += velocity
-            distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
-            if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
-              self.min_distance_old = distance #最も近い距離のポイント
+        if self.velocity < 110 or self.tss_type == 2: #TSSPで120km/h高速対応にするため、こちらは110超では通さない。,TSS2なら使って良い。
+          velo_70 = (velo_max - limitspeed_min) * 0.7 + limitspeed_min #まず70〜90を検査する。
+          velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
+          for row in rows: #rowsは何度でも使える。
+            row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            if velo_70 <= velocity and velocity <= velo_95 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+              velo_ave_ct += 1
+              velo_ave += velocity
+              distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
+              if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
+                self.min_distance_old = distance #最も近い距離のポイント
 
         if velo_ave_ct == 0: #70〜95の間に何も無ければ80以上で再取得する。
           velo_80 = (velo_max - limitspeed_min) * 0.8 + limitspeed_min
