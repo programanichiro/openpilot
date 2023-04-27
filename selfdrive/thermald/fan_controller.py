@@ -201,7 +201,10 @@ class TiciFanController(BaseFanController):
               if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
                 self.min_distance_old = distance #最も近い距離のポイント
 
-        if velo_ave_ct == 0: #70〜95の間に何も無ければ80以上で再取得する。
+        if velo_ave_ct < 4: #70〜95の間のサンプルが少なければ80以上で再取得する。
+          velo_ave = 0
+          velo_ave_ct = 0
+          self.min_distance_old = 0
           velo_80 = (velo_max - limitspeed_min) * 0.8 + limitspeed_min
           for row in rows: #rowsは何度でも使える。
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
