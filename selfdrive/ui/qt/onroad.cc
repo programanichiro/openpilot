@@ -777,7 +777,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto cs = sm["controlsState"].getControlsState();
 
   float maxspeed = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster(); //v_cruise->maxspeed
-  maxspeed_org = maxspeed; //レバー値の元の値。
+  maxspeed_org = maxspeed; //レバー値の元の値。getVCruiseCluster導入でここが45〜115になってる可能性あり。ただ黄色点滅警告にはなんかマッチしてる気がする。
   if(tss_type == 0){
     std::string tss_type_txt = util::read_file("/data/tss_type_info.txt");
     if(tss_type_txt.empty() == false){
