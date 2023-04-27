@@ -174,17 +174,17 @@ class TiciFanController(BaseFanController):
         self.min_distance_old = 0
 
         velo_70 = (velo_max - limitspeed_min) * 0.7 + limitspeed_min #まず70〜90を検査する。
-        velo_90 = (velo_max - limitspeed_min) * 0.9 + limitspeed_min
+        velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
         for row in rows: #rowsは何度でも使える。
           row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
-          if velo_70 <= velocity and velocity <= velo_90 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+          if velo_70 <= velocity and velocity <= velo_95 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
             velo_ave_ct += 1
             velo_ave += velocity
             distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
             if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
               self.min_distance_old = distance #最も近い距離のポイント
 
-        if velo_ave_ct == 0: #70〜90の間に何も無ければ80以上で再取得する。
+        if velo_ave_ct == 0: #70〜95の間に何も無ければ80以上で再取得する。
           velo_80 = (velo_max - limitspeed_min) * 0.8 + limitspeed_min
           for row in rows: #rowsは何度でも使える。
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
