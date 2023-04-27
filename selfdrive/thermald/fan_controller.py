@@ -70,6 +70,7 @@ class TiciFanController(BaseFanController):
     self.velo_ave_ct_old = 0
     self.db_add = 0
     self.db_none = 0
+    self.db_del = 0
     self.min_distance_old = 0
     self.tss_type = 0
     
@@ -201,6 +202,8 @@ class TiciFanController(BaseFanController):
               if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
                 self.min_distance_old = distance #最も近い距離のポイント
 
+        del_speed_max = 0
+        del_speed_min = 10000
         if velo_ave_ct < 4: #70〜95の間のサンプルが少なければ80以上で再取得する。
           velo_ave = 0
           velo_ave_ct = 0
@@ -214,6 +217,24 @@ class TiciFanController(BaseFanController):
               distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
               if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
                 self.min_distance_old = distance #最も近い距離のポイント
+        elif velo_ave_ct > 20: #サンプルが多い時は最大と最小の速度を削除してみる
+          del_speed_max_id = 0
+          del_speed_min_id = 0
+          for row in rows: #rowsは何度でも使える。
+            row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            if del_speed_max <= velocity:
+              del_speed_max = velocity
+              del_speed_max_id = row_id
+            if del_speed_min >= velocity:
+              del_speed_min = velocity
+              del_speed_min_id = row_id
+
+        #削除処理
+        if del_speed_max > 0 and del_speed_min < 10000 and del_speed_max != del_speed_min:
+          self.cur.execute("DELETE FROM speeds WHERE id IN (?, ?)", (del_speed_max_id,del_speed_min_id)) #二つまとめて削除
+          #self.cur.execute("DELETE FROM speeds WHERE id = ?", (del_speed_max_id,)) #一つ削除ならこう
+          self.conn.commit()
+          self.db_del += 2
 
         self.velo_ave_ct_old = velo_ave_ct
         if velo_ave_ct > 0:
@@ -226,7 +247,7 @@ class TiciFanController(BaseFanController):
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
+        fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add,self.db_del))
     else:
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,111,%d,%.1fm,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none))
