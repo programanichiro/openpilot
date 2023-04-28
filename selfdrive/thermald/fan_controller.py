@@ -179,13 +179,14 @@ class TiciFanController(BaseFanController):
       velo_max = 0
       velo_max_ct = 0
       for row in self.cur: #一度ループさせると消える。
-        rows.append(row) #取っておく
         row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
         velo_max_ct += 1
         if velo_max < velocity and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+          rows.append(row) #取っておく
           velo_max = velocity
 
       if velo_max > 0:
+        #この時点でrowsは自車近傍に絞られている。
         velo_ave = 0
         velo_ave_ct = 0
         self.min_distance_old = 0
@@ -195,7 +196,7 @@ class TiciFanController(BaseFanController):
           velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
           for row in rows: #rowsは何度でも使える。
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
-            if velo_70 <= velocity and velocity <= velo_95 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+            if velo_70 <= velocity: #rowsが自車近傍のみなので、以降の条件はいらない,and velocity <= velo_95 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
               velo_ave_ct += 1
               velo_ave += velocity
               distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
@@ -211,7 +212,7 @@ class TiciFanController(BaseFanController):
           velo_80 = (velo_max - limitspeed_min) * 0.8 + limitspeed_min
           for row in rows: #rowsは何度でも使える。
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
-            if velo_80 <= velocity and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+            if velo_80 <= velocity: #rowsが自車近傍のみなので、以降の条件はいらない,and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
               velo_ave_ct += 1
               velo_ave += velocity
               distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
@@ -235,6 +236,45 @@ class TiciFanController(BaseFanController):
           #self.cur.execute("DELETE FROM speeds WHERE id = ?", (del_speed_max_id,)) #一つ削除ならこう
           self.conn.commit()
           self.db_del += 2
+
+        #削除条件、◯ボタンOFF、cruise_info.txt31以上かつ車速がcruise_info.txt/0.95以上のとき車速以上の速度のデータを削除する
+        #cruise_info.txtが10〜20＆AボタンOFFで走行中はrows全削除モード。
+        try:
+          with open('/tmp/limitspeed_sw.txt','r') as fp:
+            limitspeed_sw_str = fp.read()
+            if limitspeed_sw_str:
+              if int(limitspeed_sw_str) == 0: #標識表示のみモード
+                pass #try節を続行
+              else:
+                raise Exception("try節を脱出")
+
+          #ここにAボタンOFF判定でも追加するか？
+          with open('/tmp/accel_engaged.txt','r') as fp:
+            accel_engaged_str = fp.read()
+            if accel_engaged_str:
+              if int(accel_engaged_str) == 0: #AボタンOFF
+                pass #try節を続行
+              else:
+                raise Exception("try節を脱出")
+
+          with open('/tmp/cruise_info.txt','r') as fp:
+            cruise_info_str = fp.read()
+            if cruise_info_str:
+              cri = int(cruise_info_str)
+              if cri >= 31 and self.velocity >= cri/0.95:
+                pass #try節を続行
+              else:
+                raise Exception("try節を脱出")
+
+          for row in rows: #rowsは何度でも使える。
+            row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            if velocity >= self.velocity + 5: #車速より5km/h以上速いデータを削除
+              self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id)) #一つずつループして削除
+              self.db_del += 1
+          self.conn.commit()
+
+        except Exception as e:
+          pass
 
         self.velo_ave_ct_old = velo_ave_ct
         if velo_ave_ct > 0:
