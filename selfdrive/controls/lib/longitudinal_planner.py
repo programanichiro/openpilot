@@ -615,8 +615,7 @@ class LongitudinalPlanner:
         accel_lead_ctrl = True
 
     v_cruise_kph_1_15 = v_cruise_kph * 1.15
-    #制限速度ACC自動設定中は前走車追従を行わない。速度がどんどん上がってしまう。
-    if limitspeed_set == False and accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+    if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       d_rel = leadOne.dRel #前走者までの距離
       #a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス,常にゼロ？UIで使ってるgetAEgoと違うようだ。

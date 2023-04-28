@@ -263,6 +263,10 @@ void MapWindow::updateState(const UIState &s) {
             }
           } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
           double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
+          extern bool add_v_by_lead;
+          if(add_v_by_lead == true){
+            velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
+          }
           QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
           double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
           fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);

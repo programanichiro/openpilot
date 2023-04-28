@@ -868,6 +868,7 @@ static float distance_traveled;
 static float global_angle_steer0 = 0;
 static float clipped_brightness0 = 101; //初回ファイルアクセスさせるため、わざと101
 static float global_fps;
+bool add_v_by_lead;
 void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.save();
   int y_ofs = 150;
@@ -911,15 +912,17 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 //  p.setPen(QPen(whiteColor(75), 6));
   QString ms = QString(maxSpeed);
   bool lemit_speed_override = false;
+  add_v_by_lead = false;
   if(ms.length() > 1){
     if(maxSpeed.mid(0,1) == ";"){ //先頭セミコロンで制限速度適用
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
       //p.setPen(QPen(QColor(205, 44, 38, 255), 12)); //標識の赤枠の色に合わせる
       p.setPen(QPen(QColor(0xff, 0xff, 0xff, 255*0.9), 6)); //枠を白
       lemit_speed_override = true;
-    } else if(maxSpeed.mid(0,1) == ","){ //先頭カンマで加速
+    } else if(maxSpeed.mid(0,1) == ","){ //先頭カンマで増速
+      add_v_by_lead = true;
       ms = maxSpeed.mid(1,maxSpeed.length()-1);
-      p.setPen(QPen(QColor(0, 0xff, 0, 200), 6)); //加速時は緑
+      p.setPen(QPen(QColor(0, 0xff, 0, 200), 6)); //前走車追従時は緑
     } else if(maxSpeed.mid(maxSpeed.length()-1,1) == "."){ //末尾ピリオドで減速
       ms = maxSpeed.mid(0,maxSpeed.length()-1);
       p.setPen(QPen(QColor(0xff, 0, 0, 200), 6)); //減速時は赤
