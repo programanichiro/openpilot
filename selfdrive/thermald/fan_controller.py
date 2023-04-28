@@ -240,19 +240,18 @@ class TiciFanController(BaseFanController):
         #削除条件、◯ボタンOFF、cruise_info.txt31以上かつ車速がcruise_info.txt/0.95以上のとき車速以上の速度のデータを削除する
         #cruise_info.txtが10〜20＆AボタンOFFで走行中はrows全削除モード。
         try:
-          with open('/tmp/limitspeed_sw.txt','r') as fp:
-            limitspeed_sw_str = fp.read()
-            if limitspeed_sw_str:
-              if int(limitspeed_sw_str) == 0: #標識表示のみモード
-                pass #try節を続行
-              else:
-                raise Exception("try節を脱出")
-
-          #ここにAボタンOFF判定でも追加するか？
           with open('/tmp/accel_engaged.txt','r') as fp:
             accel_engaged_str = fp.read()
             if accel_engaged_str:
               if int(accel_engaged_str) == 0: #AボタンOFF
+                pass #try節を続行
+              else:
+                raise Exception("try節を脱出")
+
+          with open('/tmp/limitspeed_sw.txt','r') as fp:
+            limitspeed_sw_str = fp.read()
+            if limitspeed_sw_str:
+              if int(limitspeed_sw_str) == 0: #標識表示のみモード
                 pass #try節を続行
               else:
                 raise Exception("try節を脱出")
