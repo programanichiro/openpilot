@@ -500,7 +500,7 @@ void MapWindow::offroadTransition(bool offroad) {
     auto dest = coordinate_from_param("NavDestination");
     setVisible(dest.has_value());
   }
-  last_bearing = {};
+  //last_bearing = {}; これがあると最終状態保持がキャンセルされる？
 }
 
 void MapWindow::updateDestinationMarker() {
