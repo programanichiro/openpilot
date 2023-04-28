@@ -241,7 +241,6 @@ class TiciFanController(BaseFanController):
           velo_ave /= velo_ave_ct
           get_limitspeed = velo_ave
           self.get_limit_avg = get_limitspeed
-          #ここでもしself.get_limit_avgとself.velocityが近ければ、rows内のrow_idの中から近傍の値を消すと最適化として具合いいかも。
 
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
     self.get_limitspeed_old = get_limitspeed
