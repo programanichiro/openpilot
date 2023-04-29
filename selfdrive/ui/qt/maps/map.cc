@@ -273,12 +273,12 @@ void MapWindow::updateState(const UIState &s) {
           fclose(fp);
           emit LimitspeedChanged(velo);
         }
+      }
 #else
       if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
           emit LimitspeedChanged(0);
       }
 #endif
-      }
     }
   }
 

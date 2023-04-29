@@ -1218,17 +1218,16 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       FILE *fp = fopen("/tmp/limitspeed_info.txt","w");
       if(fp != NULL){
         //この辺で30mか1秒？ごとに、以下を/tmp/limitspeed_info.txtに書き込む。
-        QMapbox::Coordinate coordinate = last_position.value();
-        double latitude = coordinate.first; // 緯度を取得
-        double longitude = coordinate.second; // 経度を取得
-        double bearing = *last_bearing;  //-180〜180
+        double latitude = locationd_pos.getValue()[0]; // 緯度を取得
+        double longitude = locationd_pos.getValue()[1]; // 経度を取得
+        double bearing = RAD2DEG(locationd_orientation.getValue()[2]);  //-180〜180
         if(bearing < 0){
           bearing += 360;
           if(bearing >= 360){
             bearing = 0;
           }
         } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
-        double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
+        double velo = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
         if(add_v_by_lead == true){
           velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
         }
