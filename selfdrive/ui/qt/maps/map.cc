@@ -275,7 +275,7 @@ void MapWindow::updateState(const UIState &s) {
         }
 #else
       if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
-          emit LimitspeedChanged(velo);
+          emit LimitspeedChanged(0);
       }
 #endif
       }
@@ -880,7 +880,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 static bool g_stand_still;
 int limit_speed_auto_detect; //onroad.ccから参照あり
 
-void MapLimitspeed::updateLimitspeed(float splimitspeedeed) {
+void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
 
   std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
   if(limitspeed_info_txt.empty() == false){
