@@ -942,7 +942,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(limit_speed_override == false){
     bool yellow_flag = false;
     if((uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1)){
-      if(maxspeed_org+10 <= ms.toDouble()){
+      if(maxspeed_org+8 <= ms.toDouble()){
         if(yellow_flash_ct %6 < 3){
           p.setBrush(QColor::fromRgbF(1.0, 1.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
           yellow_flag = true;
@@ -953,7 +953,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       p.setBrush(blackColor(166));
     }
   } else {
-    if(maxspeed_org+10 > ms.toDouble()){
+    if(maxspeed_org+8 > ms.toDouble()){
       p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
     } else {
       if(yellow_flash_ct %6 < 3){
