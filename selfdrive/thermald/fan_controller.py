@@ -275,9 +275,13 @@ class TiciFanController(BaseFanController):
 
           del_mode_debug = 8
           for row in rows: #rowsは何度でも使える。
+            del_mode_debug = 9
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            del_mode_debug = velocity
             if velocity >= self.velocity + 5: #車速より5km/h以上速いデータを削除
+              del_mode_debug = 1000
               self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id)) #一つずつループして削除
+              del_mode_debug = 1001
               self.db_del += 1
           self.conn.commit()
 
