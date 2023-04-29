@@ -239,7 +239,6 @@ class TiciFanController(BaseFanController):
           self.db_del += 2
 
         #削除条件、◯ボタンOFF、cruise_info.txt31以上かつ車速がcruise_info.txt/0.95以上のとき車速以上の速度のデータを削除する
-        #cruise_info.txtが10〜20＆AボタンOFFで走行中はrows全削除モード。
         try:
           del_mode_debug = 1
           with open('/tmp/accel_engaged.txt','r') as fp:
@@ -280,7 +279,7 @@ class TiciFanController(BaseFanController):
             del_mode_debug = velocity
             if velocity >= self.velocity + 5: #車速より5km/h以上速いデータを削除
               del_mode_debug = 1000
-              self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id)) #一つずつループして削除
+              self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id,)) #一つずつループして削除
               del_mode_debug = 1001
               self.db_del += 1
           self.conn.commit()
