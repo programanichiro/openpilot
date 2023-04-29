@@ -144,7 +144,6 @@ class TiciFanController(BaseFanController):
     except Exception as e:
       pass
     #speedsから距離と方位が近いデータを100個読み、100m以内で速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
-    del_mode_debug = 0
     get_limitspeed = 0
     if limitspeed_info_ok or (self.latitude != 0 or self.longitude != 0):
       #self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp
@@ -240,49 +239,41 @@ class TiciFanController(BaseFanController):
 
         #削除条件、◯ボタンOFF、cruise_info.txt31以上かつ車速がcruise_info.txt/0.95以上のとき車速以上の速度のデータを削除する
         try:
-          del_mode_debug = 1
           with open('/tmp/accel_engaged.txt','r') as fp:
             accel_engaged_str = fp.read()
             if accel_engaged_str:
               if int(accel_engaged_str) == 0: #AボタンOFF
                 pass #try節を続行
               else:
-                del_mode_debug = 2
                 raise Exception("try節を脱出")
 
-          del_mode_debug = 3
           with open('/tmp/limitspeed_sw.txt','r') as fp:
             limitspeed_sw_str = fp.read()
             if limitspeed_sw_str:
               if int(limitspeed_sw_str) == 0: #標識表示のみモード
                 pass #try節を続行
               else:
-                del_mode_debug = 4
                 raise Exception("try節を脱出")
 
-          del_mode_debug = 5
           with open('/tmp/cruise_info.txt','r') as fp:
             cruise_info_str = fp.read()
             if cruise_info_str:
-              del_mode_debug = 6
               cri = int(cruise_info_str)
               if cri >= 31 and self.velocity >= cri/0.95:
                 pass #try節を続行
               else:
-                del_mode_debug = 7
                 raise Exception("try節を脱出")
 
-          del_mode_debug = 8
+          del_db_del = False
           for row in rows: #rowsは何度でも使える。
-            del_mode_debug = 9
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
-            del_mode_debug = velocity
             if velocity >= self.velocity + 5: #車速より5km/h以上速いデータを削除
-              del_mode_debug = 1000
-              self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id,)) #一つずつループして削除
-              del_mode_debug = 1001
+              self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id,)) #一つずつループして削除、一つでもカンマが必要。
               self.db_del += 1
-          self.conn.commit()
+              del_db_del = True
+              
+          if del_db_del == True:
+            self.conn.commit()
 
         except Exception as e:
           pass
@@ -297,10 +288,10 @@ class TiciFanController(BaseFanController):
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d,^%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del,del_mode_debug))
+        fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
     else:
       with open('/tmp/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,111,%d,%.1fm,=%d,-%d,^%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del,del_mode_debug))
+        fp.write('%d,%.2f,111,%d,%.1fm,=%d,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
 
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
     # # 変更を保存
