@@ -247,7 +247,7 @@ void MapWindow::updateState(const UIState &s) {
         }
       }
       velocity_filter.update(locationd_velocity.getValue()[0]);
-
+#if 0
       if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに書き込む
         FILE *fp = fopen("/tmp/limitspeed_info.txt","w");
         if(fp != NULL){
@@ -271,9 +271,13 @@ void MapWindow::updateState(const UIState &s) {
           double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
           fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
           fclose(fp);
-
           emit LimitspeedChanged(velo);
         }
+#else
+      if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
+          emit LimitspeedChanged(velo);
+      }
+#endif
       }
     }
   }
