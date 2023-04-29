@@ -777,7 +777,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto cs = sm["controlsState"].getControlsState();
 
   float maxspeed = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster(); //v_cruise->maxspeed
-  maxspeed_org = cs.getVCruise(); //これで元の41〜 , maxspeed; //レバー値の元の値。getVCruiseCluster導入でここが45〜115になってる可能性あり。ただ黄色点滅警告にはなんかマッチしてる気がする。
+  //maxspeed_org = cs.getVCruise(); //これで元の41〜 , maxspeed; //レバー値の元の値。getVCruiseCluster導入でここが45〜115になってる可能性あり。ただ黄色点滅警告にはなんかマッチしてる気がする。
+  maxspeed_org = maxspeed; //getVCruiseを使うと点滅しすぎる？
   if(tss_type == 0){
     std::string tss_type_txt = util::read_file("/data/tss_type_info.txt");
     if(tss_type_txt.empty() == false){
@@ -941,7 +942,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(limit_speed_override == false){
     bool yellow_flag = false;
     if((uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1)){
-      if(maxspeed_org+10 > ms.toDouble()){
+      if(maxspeed_org+10 <= ms.toDouble()){
         if(yellow_flash_ct %6 < 3){
           p.setBrush(QColor::fromRgbF(1.0, 1.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
           yellow_flag = true;
