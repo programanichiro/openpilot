@@ -255,24 +255,50 @@ class TiciFanController(BaseFanController):
               else:
                 raise Exception("try節を脱出")
 
+          del_db_del = False
+
+          # with open('/tmp/cruise_info.txt','r') as fp:
+          #   cruise_info_str = fp.read()
+          #   if cruise_info_str:
+          #     cri = int(cruise_info_str)
+          #     if cri >= 31 and self.velocity >= cri/0.95:
+          #       pass #try節を続行
+          #     else:
+          #       raise Exception("try節を脱出")
+
+          # for row in rows: #rowsは何度でも使える。
+          #   row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+          #   if velocity >= self.velocity + 0: #車速より0km/h以上速いデータを削除
+          #     self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id,)) #一つずつループして削除、一つでもカンマが必要。
+          #     self.db_del += 1
+          #     del_db_del = True
+
+          cri = 0 #もっと単純に、MAX値(>=30)より速いデータを全部刈り取ってしまう。完全にお掃除モード
           with open('/tmp/cruise_info.txt','r') as fp:
             cruise_info_str = fp.read()
             if cruise_info_str:
               cri = int(cruise_info_str)
-              if cri >= 31 and self.velocity >= cri/0.95:
+              if cri >= 30:
                 pass #try節を続行
               else:
                 raise Exception("try節を脱出")
-
-          del_db_del = False
+              
           for row in rows: #rowsは何度でも使える。
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
-            if velocity >= self.velocity + 5: #車速より5km/h以上速いデータを削除
+            if velocity > cri: #MAX値より速いデータを削除
               self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id,)) #一つずつループして削除、一つでもカンマが必要。
               self.db_del += 1
               del_db_del = True
-              
+
           if del_db_del == True:
+            #刈り取った後、criを一つ記録する
+            # if self.velocity > 1 and velo_ave_ct < 3: #停車時は記録しない
+            #   insert_data_sql = """
+            #   INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
+            #   VALUES (?, ?, ?, ?, ?);
+            #   """
+            #   self.cur.execute(insert_data_sql,(self.latitude, self.longitude, self.bearing, cri ,self.timestamp))
+            #   self.db_add += 1
             self.conn.commit()
 
         except Exception as e:
