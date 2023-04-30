@@ -374,10 +374,14 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   {
     // Handle Ctrl button（廃止準備。制限速度標識ボタンに変容予定）
     uiState()->scene.mLimitspeedButton = mLimitspeedButton = getButtonInt("/data/limitspeed_sw.txt",0);
-    limitspeedButton = new QPushButton("○"); //この丸がセンターに出る。
-    //limitspeedButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
+    if(mLimitspeedButton <= 1){
+      limitspeedButton = new QPushButton("○"); //この丸がセンターに出る。
+      //limitspeedButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
+    } else {
+      limitspeedButton = new QPushButton("×"); //DELEモード
+    }
     QObject::connect(limitspeedButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mLimitspeedButton = (mLimitspeedButton + 1) % 2; //0->1->0
+      uiState()->scene.mLimitspeedButton = (mLimitspeedButton + 1) % 3; //0->1>2->0
     });
     limitspeedButton->setFixedWidth(150);
     limitspeedButton->setFixedHeight(150*0.9);
@@ -611,6 +615,12 @@ void ButtonsWindow::updateState(const UIState &s) {
   if (mLimitspeedButton != s.scene.mLimitspeedButton) {  // update mLimitspeedButton
     mLimitspeedButton = s.scene.mLimitspeedButton;
     limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0 && fp_error==false)));
+    if(mLimitspeedButton <= 1){
+      limitspeedButton->setText("○");
+      //limitspeedButton->setText("◯"); //枠内いっぱいに出る大きな丸。
+    } else {
+      limitspeedButton->setText("×");
+    }
     setButtonInt("/data/limitspeed_sw.txt" , mLimitspeedButton);
     soundButton(mLimitspeedButton);
   }
@@ -942,7 +952,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   bool db_del_mode = false;
   if(limit_speed_override == false){
     bool yellow_flag = false;
-    if(uiState()->scene.mAccelEngagedButton == 0 && uiState()->scene.mLimitspeedButton == 0 && ms.toDouble() >= 30){
+    if(uiState()->scene.mLimitspeedButton == 2 && ms.toDouble() >= 30){
       p.setBrush(QColor::fromRgbF(0.4, 0.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
       db_del_mode = true;
       yellow_flag = true;
