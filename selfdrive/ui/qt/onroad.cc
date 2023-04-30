@@ -378,7 +378,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       limitspeedButton = new QPushButton("○"); //この丸がセンターに出る。
       //limitspeedButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
     } else {
-      limitspeedButton = new QPushButton("×"); //DELEモード
+      //limitspeedButton = new QPushButton("×"); //DELEモード
+      limitspeedButton = new QPushButton("✖️"); //DELEモード
     }
     QObject::connect(limitspeedButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mLimitspeedButton = (mLimitspeedButton + 1) % 3; //0->1>2->0
@@ -619,7 +620,7 @@ void ButtonsWindow::updateState(const UIState &s) {
       limitspeedButton->setText("○");
       //limitspeedButton->setText("◯"); //枠内いっぱいに出る大きな丸。
     } else {
-      limitspeedButton->setText("×");
+      limitspeedButton->setText("✖️"); //DELEモード
     }
     setButtonInt("/data/limitspeed_sw.txt" , mLimitspeedButton);
     soundButton(mLimitspeedButton);
