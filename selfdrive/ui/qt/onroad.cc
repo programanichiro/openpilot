@@ -941,7 +941,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   yellow_flash_ct ++;
   if(limit_speed_override == false){
     bool yellow_flag = false;
-    if(accel_engaged.txt==0 && limitspeed_sw.txt==0 && ms.toDouble() >= 30){
+    if(uiState()->scene.mAccelEngagedButton == 0 && uiState()->scene.mLimitspeedButton == 0 && ms.toDouble() >= 30){
       p.setBrush(QColor::fromRgbF(0.4, 0.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
       yellow_flag = true;
     } else if((uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1)){
