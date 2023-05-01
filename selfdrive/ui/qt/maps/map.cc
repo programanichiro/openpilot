@@ -18,16 +18,40 @@
 const int PAN_TIMEOUT = 100;
 const float MANEUVER_TRANSITION_THRESHOLD = 10;
 
-const float MAX_ZOOM = 17;
+const float MAX_ZOOM0 = 17;
+float MAX_ZOOM;
 const float MIN_ZOOM = 14;
 const float MAX_PITCH = 50;
-const float MIN_PITCH = 0;
+float MIN_PITCH = 0;
 const float MAP_SCALE = 2;
 
 const QString ICON_SUFFIX = ".png";
+std::string my_mapbox_triangle;
+std::string my_mapbox_style;
+std::string my_mapbox_style_night;
+int night_mode = -1;
 
 MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
+
+  std::string my_mapbox_offline = util::read_file("../../../mb_offline.txt");
+  int map_offline_mode = 0;
+  if(my_mapbox_offline.empty() == false){
+    map_offline_mode = std::stoi(my_mapbox_offline);
+  }
+  QMapbox::setNetworkMode(map_offline_mode ? QMapbox::NetworkMode::Offline : QMapbox::NetworkMode::Online);
+
+  MAX_ZOOM = MAX_ZOOM0;
+  my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
+  std::string my_mapbox_pitch = util::read_file("../../../mb_pitch.txt");
+  if(my_mapbox_pitch.empty() == false){
+    MIN_PITCH = std::stof(my_mapbox_pitch);
+
+    MAX_ZOOM += sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+    if(MAX_ZOOM > 22){
+      MAX_ZOOM = 22;
+    }
+  }
 
   // Instructions
   map_instructions = new MapInstructions(this);
@@ -44,9 +68,23 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
   map_eta->move(25, 1080 - h - bdr_s*2);
   map_eta->setVisible(false);
 
+  map_limitspeed = new MapLimitspeed(this);
+  QObject::connect(this, &MapWindow::LimitspeedChanged, map_limitspeed, &MapLimitspeed::updateLimitspeed);
+
+  map_limitspeed->setFixedHeight(200);
+  map_limitspeed->setFixedWidth(200);
+//  map_limitspeed->move(30, 1080 - 60 - 30 - 200);
+  map_limitspeed->setVisible(true);
+
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
   if (last_gps_position.has_value()) {
     last_position = *last_gps_position;
+  }
+
+  //ここでlast_bearingを復帰させれば最初に向く角度が北向き以外にならないか？
+  std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
+  if(last_bearing_info_str.empty() == false){
+    last_bearing = std::stof(last_bearing_info_str);
   }
 
   grabGesture(Qt::GestureType::PinchGesture);
@@ -55,6 +93,48 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
 
 MapWindow::~MapWindow() {
   makeCurrent();
+}
+
+bool check_night_mode(){
+#if 0
+  auto q_time = QDateTime::currentDateTime(); //.addSecs(9*3600); //UTCなので9時間足す
+  QString g_hour = q_time.toString("HH:mm");
+  //bool night = (QString::compare(g_hour,"17:00") >= 0 || QString::compare(g_hour,"06:00") < 0);
+  bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
+#else
+  //時間ではなく、カメラ輝度で判定する
+  bool night = false;
+  UIState *s = uiState();
+  if (s->scene.started) {
+    float clipped_brightness = s->scene.light_sensor;
+
+    // CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+    if (clipped_brightness <= 8) {
+      clipped_brightness = (clipped_brightness / 903.3);
+    } else {
+      clipped_brightness = std::pow((clipped_brightness + 16.0) / 116.0, 3.0);
+    }
+
+    // Scale back to 10% to 100%
+    clipped_brightness = std::clamp(100.0f * clipped_brightness, 10.0f, 100.0f);
+
+    //night = clipped_brightness < 50; //どのくらいが妥当？
+    night = clipped_brightness < (night_mode == -1 ? 80 : (night_mode == 1 ? 85 : 75)); //ばたつかないようにする。80程度でかなり夕方。
+#if 0 //昼間で97以上。多少影に入っても関係ない。トンネルで一気に10まで下がった。上の制御で十分だが、夕方の切り替わるタイミングはlight_sensorの挙動依存となる。
+    if(1 || (night == true && night_mode != 1) || (night == false && night_mode != 0)){
+      //切り替わるなら書き出し。
+      FILE *fp = fopen("/tmp/brightness_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
+      if(fp != NULL){
+        char buf[32];
+        sprintf(buf,"brightness:%.1f",clipped_brightness);
+        fwrite(buf,strlen(buf),1,fp);
+        fclose(fp);
+      }
+    }
+#endif
+  }
+#endif
+  return night;
 }
 
 void MapWindow::initLayers() {
@@ -84,7 +164,11 @@ void MapWindow::initLayers() {
   }
   if (!m_map->layerExists("carPosLayer")) {
     qDebug() << "Initializing carPosLayer";
-    m_map->addImage("label-arrow", QImage("../assets/images/triangle.svg"));
+    if(my_mapbox_triangle.empty() == false){
+      m_map->addImage("label-arrow", QImage("../../../mb_triangle.svg"));
+    } else {
+      m_map->addImage("label-arrow", QImage("../assets/images/triangle.svg"));
+    }    
 
     QVariantMap carPos;
     carPos["id"] = "carPosLayer";
@@ -98,6 +182,34 @@ void MapWindow::initLayers() {
     m_map->setLayoutProperty("carPosLayer", "icon-allow-overlap", true);
     m_map->setLayoutProperty("carPosLayer", "symbol-sort-key", 0);
   }
+
+  if(night_mode >= 0 && my_mapbox_style_night.empty() == false){
+#if 1
+    if(check_night_mode()){
+      if(night_mode != 1 /*&& my_mapbox_style_night.empty() == false*/){
+        night_mode = 1;
+        m_map->setStyleUrl(my_mapbox_style_night.c_str());
+      }
+    } else {
+      if(night_mode != 0 && my_mapbox_style.empty() == false){
+        night_mode = 0;
+        m_map->setStyleUrl(my_mapbox_style.c_str());
+      }
+    }
+#else
+    //切り替えテスト
+    static long long int test_counter = 0;
+    test_counter ++;
+    if(test_counter % 10 == 5){
+      MIN_PITCH = 60;
+      m_map->setStyleUrl(my_mapbox_style_night.c_str());
+    }
+    if(test_counter % 10 == 0){
+      MIN_PITCH = 0;
+      m_map->setStyleUrl(my_mapbox_style.c_str());
+    }
+#endif
+  }
 }
 
 void MapWindow::updateState(const UIState &s) {
@@ -107,6 +219,10 @@ void MapWindow::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
   update();
 
+  static bool already_vego_over_8 = false;
+  if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
+    already_vego_over_8 = true; //一旦時速8km/h以上になった。
+  }
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
@@ -117,9 +233,52 @@ void MapWindow::updateState(const UIState &s) {
       locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid();
 
     if (locationd_valid) {
-      last_position = QMapbox::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
-      last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
+      if (already_vego_over_8 == true) {
+        last_position = QMapbox::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
+        last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
+      }
+      static unsigned int last_bearing_save_ct;
+      if ((last_bearing_save_ct ++ % 100) == 0 && last_bearing && sm["carState"].getCarState().getVEgo() <= 8/3.6) {
+        //向きを保存する。ここでやると地図が出てない状態で降車したら保存されない気がするが、めんどくさいのでいいや。
+        FILE *fp = fopen("../manager/last_bearing_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
+        if(fp != NULL){
+          fprintf(fp,"%.2f",*last_bearing);
+          fclose(fp);
+        }
+      }
       velocity_filter.update(locationd_velocity.getValue()[0]);
+#if 0
+      if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに書き込む
+        FILE *fp = fopen("/tmp/limitspeed_info.txt","w");
+        if(fp != NULL){
+          //この辺で30mか1秒？ごとに、以下を/tmp/limitspeed_info.txtに書き込む。
+          QMapbox::Coordinate coordinate = last_position.value();
+          double latitude = coordinate.first; // 緯度を取得
+          double longitude = coordinate.second; // 経度を取得
+          double bearing = *last_bearing;  //-180〜180
+          if(bearing < 0){
+            bearing += 360;
+            if(bearing >= 360){
+              bearing = 0;
+            }
+          } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
+          double velo = sm["carState"].getCarState().getVEgo() * 3.6; //km/h
+          extern bool add_v_by_lead;
+          if(add_v_by_lead == true){
+            velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
+          }
+          QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
+          double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
+          fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
+          fclose(fp);
+          emit LimitspeedChanged(velo);
+        }
+      }
+#else
+      if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
+          emit LimitspeedChanged(0);
+      }
+#endif
     }
   }
 
@@ -220,7 +379,29 @@ void MapWindow::initializeGL() {
 
   m_map->setMargins({0, 350, 0, 50});
   m_map->setPitch(MIN_PITCH);
-  m_map->setStyleUrl("mapbox://styles/commaai/ckr64tlwp0azb17nqvr9fj13s");
+
+  my_mapbox_style = util::read_file("../../../mb_style.txt");
+  if(my_mapbox_style.empty() == false){
+    while(my_mapbox_style.c_str()[my_mapbox_style.length()-1] == 0x0a){
+      my_mapbox_style = my_mapbox_style.substr(0,my_mapbox_style.length()-1);
+    }
+  }
+  my_mapbox_style_night = util::read_file("../../../mb_style_night.txt");
+  if(my_mapbox_style_night.empty() == false){
+    while(my_mapbox_style_night.c_str()[my_mapbox_style_night.length()-1] == 0x0a){
+      my_mapbox_style_night = my_mapbox_style_night.substr(0,my_mapbox_style_night.length()-1);
+    }
+  }
+
+  if(my_mapbox_style_night.empty() == false && check_night_mode()){ //夜だったら
+    night_mode = 1;
+    m_map->setStyleUrl(my_mapbox_style_night.c_str());
+  } else if(my_mapbox_style.empty() == false){ //昼だったら
+    night_mode = 0;
+    m_map->setStyleUrl(my_mapbox_style.c_str());
+  } else {
+    m_map->setStyleUrl("mapbox://styles/commaai/ckr64tlwp0azb17nqvr9fj13s");
+  }
 
   QObject::connect(m_map.data(), &QMapboxGL::mapChanged, [=](QMapboxGL::MapChange change) {
     if (change == QMapboxGL::MapChange::MapChangeDidFinishLoadingMap) {
@@ -323,7 +504,7 @@ void MapWindow::offroadTransition(bool offroad) {
     auto dest = coordinate_from_param("NavDestination");
     setVisible(dest.has_value());
   }
-  last_bearing = {};
+  //last_bearing = {}; これがあると最終状態保持がキャンセルされる？
 }
 
 void MapWindow::updateDestinationMarker() {
@@ -664,3 +845,90 @@ void MapETA::updateETA(float s, float s_typical, float d) {
   // Center
   move(static_cast<QWidget*>(parent())->width() / 2 - width() / 2, 1080 - height() - bdr_s*2);
 }
+
+MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
+  QHBoxLayout *main_layout = new QHBoxLayout(this);
+  main_layout->setContentsMargins(0, 0, 0, 0);
+
+  {
+    QHBoxLayout *layout = new QHBoxLayout;
+    speed = new QLabel;
+    speed->setAlignment(Qt::AlignCenter);
+    speed->setStyleSheet("font-weight:600");
+    this->updateLimitspeed(0);
+    speed->setText("━");
+
+    layout->addWidget(speed);
+    main_layout->addLayout(layout);
+  }
+
+  setStyleSheet(R"(
+    * {
+      color: #2457A1;
+      font-family: "Inter";
+      font-size: 90px;
+    }
+  )");
+/*
+  QPalette pal = palette();
+  pal.setColor(QPalette::Background, QColor(255, 255, 255, 200));
+  setAutoFillBackground(true);
+  setPalette(pal);
+*/
+}
+
+static bool g_stand_still;
+int limit_speed_auto_detect; //onroad.ccから参照あり
+
+void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
+
+  std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
+  if(limitspeed_info_txt.empty() == false){
+    float output[3]; // float型の配列
+    int i = 0; // インデックス
+
+    std::stringstream ss(limitspeed_info_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+      output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
+      i++; // インデックスを1つ進める
+    }
+    if((int)output[2] == 111){
+      speed->setText("━");
+      limit_speed_auto_detect = 0;
+    } else {
+      speed->setText(QString::number((int)output[0]));
+      limit_speed_auto_detect = 1;
+    }
+  }
+
+  std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
+  g_stand_still = false;
+  if(stand_still_txt.empty() == false){
+    g_stand_still = std::stoi(stand_still_txt) ? true : false;
+  }
+
+  float r = 200 / 2;
+  int stand_still_height = 0;
+  if(g_stand_still){
+    stand_still_height = 270;
+  }
+  this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
+}
+
+void MapLimitspeed::paintEvent(QPaintEvent *event) {
+
+  float r = 200 / 2;
+  QPainter p(this);
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+  p.drawEllipse(0,0,r*2,r*2);
+
+  const int arc_w = -30; //内側に描画
+  QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
+  pen.setCapStyle(Qt::FlatCap); //端をフラットに
+  p.setPen(pen);
+
+  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, 0*16, 360*16);
+}
+
