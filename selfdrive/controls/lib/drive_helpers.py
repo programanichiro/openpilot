@@ -216,21 +216,21 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
     except Exception as e:
       pass
 
-  if CT_get_lag_adjusted_curvature % 100 == 51:
-    try:
-      with open('/tmp/handle_ctrl_sw.txt','r') as fp:
-        dcm_handle_ctrl_sw_str = fp.read()
-        if dcm_handle_ctrl_sw_str:
-          dcm_handle_ctrl_sw = int(dcm_handle_ctrl_sw_str)
-          if dcm_handle_ctrl_sw >= 1:
-            dc_get_lag_adjusted_curvature = False
-          else:
-            dc_get_lag_adjusted_curvature = True
-    except Exception as e:
-      dc_get_lag_adjusted_curvature = False #デフォルト
+  # if CT_get_lag_adjusted_curvature % 100 == 51:
+  #   try:
+  #     with open('/tmp/handle_ctrl_sw.txt','r') as fp:
+  #       dcm_handle_ctrl_sw_str = fp.read()
+  #       if dcm_handle_ctrl_sw_str:
+  #         dcm_handle_ctrl_sw = int(dcm_handle_ctrl_sw_str)
+  #         if dcm_handle_ctrl_sw >= 1:
+  #           dc_get_lag_adjusted_curvature = False
+  #         else:
+  #           dc_get_lag_adjusted_curvature = True
+  #   except Exception as e:
+  #     dc_get_lag_adjusted_curvature = False #デフォルト
   CT_get_lag_adjusted_curvature += 1
     
-  if dc_get_lag_adjusted_curvature == True:
+  if True: #dc_get_lag_adjusted_curvature == True:
     #曲率制御が公式状態。
     # This is the "desired rate of the setpoint" not an actual desired rate
     if CT_get_lag_adjusted_curvature % 10 == 3 and skip_curvature_info == False: #書き出し頻度を1/10に
