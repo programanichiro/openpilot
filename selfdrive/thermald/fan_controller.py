@@ -54,11 +54,11 @@ class TiciFanController(BaseFanController):
       self.conn.commit()
 
     # 削除条件となる日時を計算
-    delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
-    # テーブルから削除する
-    self.cur.execute("DELETE FROM speeds WHERE timestamp < ?", (delete_date,))
-    # 変更を保存,月単位の削除なら起動時に一回で十分。
-    self.conn.commit()
+    # delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
+    # # テーブルから削除する
+    # self.cur.execute("DELETE FROM speeds WHERE timestamp < ?", (delete_date,))
+    # # 変更を保存,月単位の削除なら起動時に一回で十分。 -> しばらく削除しないで様子見。随時最適化とDELEモード実装でテーブル増加に対処できるか様子見中。
+    # self.conn.commit()
 
     self.latitude = 0
     self.longitude = 0
