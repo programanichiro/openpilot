@@ -54,6 +54,7 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::offroadTransition, this, &OnroadWindow::offroadTransition);
 }
 
+bool mapVisible;
 void OnroadWindow::updateState(const UIState &s) {
   QColor bgColor = bg_colors[s.status];
   Alert alert = Alert::get(*(s.sm), s.scene.started_frame);
@@ -73,6 +74,7 @@ void OnroadWindow::updateState(const UIState &s) {
   }
 
   nvg->updateState(s);
+  mapVisible = isMapVisible();
 
   if (bg != bgColor) {
     // repaint border
@@ -1454,7 +1456,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
   //カメラ内に速度標識もどきを表示。
-  if (map == nullptr || map->isVisible() == false){
+  if (mapVisible == false){
     QString traffic_speed;
     std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
     if(limitspeed_info_txt.empty() == false){
