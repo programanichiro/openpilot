@@ -1253,7 +1253,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
         }
 #if 0 //保留。"○"ボタンONでは思い切って記録しないという選択もありか？
         if(uiState()->scene.mLimitspeedButton == 2 && ms.toDouble() >= 30){
-           velo = ms.toDouble() - 0.1; //刈り取りモードではMAX値を記録する手もある。
+           velo = ms.toDouble(); //刈り取りモードではMAX値を記録する手もある。
         }
 #endif
         QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
@@ -1451,6 +1451,43 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     p.drawArc(x - btn_size / 2 -arc_w_base/2, y - btn_size / 2 -arc_w_base/2, btn_size+arc_w_base, btn_size+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
+  }
+
+  //カメラ内に速度標識もどきを表示。
+  if (map == nullptr || map->isVisible() == false){
+    QString traffic_speed;
+    std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
+    if(limitspeed_info_txt.empty() == false){
+      float output[3]; // float型の配列
+      int i = 0; // インデックス
+
+      std::stringstream ss(limitspeed_info_txt); // 入力文字列をstringstreamに変換
+      std::string token; // 一時的にトークンを格納する変数
+      while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+        output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
+        i++; // インデックスを1つ進める
+      }
+      if((int)output[2] == 111){
+        traffic_speed = "━";
+      } else {
+        traffic_speed = QString::number((int)output[0]);
+      }
+    }
+
+    const float traffic_speed_r = 150 / 2 , traffic_speed_x = 230 , traffic_speed_y = rect().height() - traffic_speed_r*2 - 20;
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+    p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
+
+    const int arc_w = -22; //内側に描画
+    QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
+    pen.setCapStyle(Qt::FlatCap); //端をフラットに
+    p.setPen(pen);
+
+    p.drawArc(traffic_speed_x-arc_w/2+5, traffic_speed_y-arc_w/2+5, traffic_speed_r*2+arc_w-10,traffic_speed_r*2+arc_w-10, 0*16, 360*16);
+
+    configFont(p, "Inter", traffic_speed_r * 67 / 150, "SemiBold");
+    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
