@@ -1470,7 +1470,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
         i++; // インデックスを1つ進める
       }
       if((int)output[2] == 111){
-        traffic_speed = "━";
+        traffic_speed = "99";
       } else {
         traffic_speed = QString::number((int)output[0]);
       }
@@ -1481,7 +1481,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
     p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
 
-    const int arc_w = -22; //内側に描画
+    const int arc_w = -30 * traffic_speed_r / (150 / 2); //内側に描画
     QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
@@ -1489,7 +1489,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+5, traffic_speed_y-arc_w/2+5, traffic_speed_r*2+arc_w-10,traffic_speed_r*2+arc_w-10, 0*16, 360*16);
 
     configFont(p, "Inter", traffic_speed_r * 67 / (150 / 2), "Bold");
-    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
+    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r*0, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
