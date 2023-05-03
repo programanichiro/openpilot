@@ -1476,7 +1476,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       }
     }
 
-    const float traffic_speed_r = 150 / 2 , traffic_speed_x = 230 , traffic_speed_y = rect().height() - traffic_speed_r*2 - 20;
+    const float traffic_speed_r = 150 / 2 , traffic_speed_x = 230 , traffic_speed_y = rect().height() - traffic_speed_r*2 - 35;
     p.setPen(Qt::NoPen);
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
     p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
@@ -1489,7 +1489,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+5, traffic_speed_y-arc_w/2+5, traffic_speed_r*2+arc_w-10,traffic_speed_r*2+arc_w-10, 0*16, 360*16);
 
     configFont(p, "Inter", traffic_speed_r * 67 / (150 / 2), "Bold");
-    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r*2, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
+    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
