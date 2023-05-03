@@ -1481,7 +1481,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
     p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
 
-    const int arc_w = -30 * traffic_speed_r / (150 / 2); //内側に描画
+    const int arc_w = -22 * traffic_speed_r / (150 / 2); //内側に描画
     QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
