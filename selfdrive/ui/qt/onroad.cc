@@ -379,6 +379,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       //limitspeedButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
     } else {
       limitspeedButton = new QPushButton("✖️"); //DELEモード
+      //limitspeedButton = new QPushButton("⬇︎⇩♻︎"); //DELEモード
       //limitspeedButton = new QPushButton("✖︎"); //DELEモード
       //limitspeedButton = new QPushButton("❌"); //DELEモード
     }
@@ -1250,6 +1251,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
         if(add_v_by_lead == true){
           velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
         }
+#if 0 //保留。"○"ボタンONでは思い切って記録しないという選択もありか？
+        if(uiState()->scene.mLimitspeedButton == 2 && ms.toDouble() >= 30){
+           velo = ms.toDouble() - 0.1; //刈り取りモードではMAX値を記録する手もある。
+        }
+#endif
         QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
         double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
         fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
