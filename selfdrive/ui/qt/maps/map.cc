@@ -894,7 +894,7 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
       i++; // インデックスを1つ進める
     }
     if((int)output[2] == 111){
-      speed->setText("━");
+      speed->setText("199" /*"━"*/);
       limit_speed_auto_detect = 0;
     } else {
       speed->setText(QString::number((int)output[0]));
