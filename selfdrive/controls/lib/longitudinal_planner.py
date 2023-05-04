@@ -702,7 +702,7 @@ class LongitudinalPlanner:
           else:
             fp.write('%d.' % (v_cruise_kph))
         else:
-          if add_v_by_lead == True:
+          if add_v_by_lead == True or self.ac_vc_time > 0:
             if cruise_info_power_up:
               fp.write('%d;' % (v_cruise_kph_org))
             else:
