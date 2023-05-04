@@ -1456,32 +1456,42 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
   //カメラ内に速度標識もどきを表示。
+  static unsigned int limitspeed_info_read_ct;
+  static int limit_speed_num = 0;
   if (mapVisible == false){
-    QString traffic_speed;
-    std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
-    int limit_speed_num = 0;
-    if(limitspeed_info_txt.empty() == false){
-      float output[3]; // float型の配列
-      int i = 0; // インデックス
+    if(limitspeed_info_read_ct++ % 10 == 5){
+      std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
+      int limit_speed_num = 0;
+      if(limitspeed_info_txt.empty() == false){
+        float output[3]; // float型の配列
+        int i = 0; // インデックス
 
-      std::stringstream ss(limitspeed_info_txt); // 入力文字列をstringstreamに変換
-      std::string token; // 一時的にトークンを格納する変数
-      while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
-        output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
-        i++; // インデックスを1つ進める
-      }
-      limit_speed_num = (int)output[0];
-      if((int)output[2] == 111){
-        limit_speed_num = 0;
-        traffic_speed = "━";
-      } else {
-        traffic_speed = QString::number(limit_speed_num);
-      }
+        std::stringstream ss(limitspeed_info_txt); // 入力文字列をstringstreamに変換
+        std::string token; // 一時的にトークンを格納する変数
+        while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+          output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
+          i++; // インデックスを1つ進める
+        }
+        limit_speed_num = (int)output[0];
+        if((int)output[2] == 111){
+          limit_speed_num = 0;
+          traffic_speed = "━";
+        } else {
+          traffic_speed = QString::number(limit_speed_num);
+        }
+      }      
+    }
+
+    QString traffic_speed;
+    if(limit_speed_num == 0){
+      traffic_speed = "━";
+    } else {
+      traffic_speed = QString::number(limit_speed_num);
     }
 
     const float traffic_speed_r = 120 / 2 , traffic_speed_x = 247 , traffic_speed_y = rect().height() - traffic_speed_r*2 - 50;
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9));
+    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.85));
     p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
 
     int arc_w = -22; //内側に描画
