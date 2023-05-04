@@ -1459,6 +1459,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if (mapVisible == false){
     QString traffic_speed;
     std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
+    int limit_speed_num = 0;
     if(limitspeed_info_txt.empty() == false){
       float output[3]; // float型の配列
       int i = 0; // インデックス
@@ -1469,10 +1470,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
         output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
         i++; // インデックスを1つ進める
       }
+      limit_speed_num = (int)output[0]
       if((int)output[2] == 111){
+        limit_speed_num = 199; //0;
         traffic_speed = "199"; //"━";
       } else {
-        traffic_speed = QString::number((int)output[0]);
+        traffic_speed = QString::number(limit_speed_num);
       }
     }
 
@@ -1481,7 +1484,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9));
     p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
 
-    const int arc_w = -22 * traffic_speed_r / (150 / 2); //内側に描画
+    int arc_w = -22; //内側に描画
+    if(limit_speed_num >= 100){
+      int arc_w = -15; //枠と数字が被らないように枠を細くする。
+    }
+    arc_w = arc_w * traffic_speed_r / (150 / 2);
     QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
@@ -1489,7 +1496,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+5, traffic_speed_y-arc_w/2+5, traffic_speed_r*2+arc_w-10,traffic_speed_r*2+arc_w-10, 0*16, 360*16);
     int f_size = traffic_speed_r * 67 / (150 / 2);
     configFont(p, "Inter",f_size , "Bold");
-    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -10, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
+    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。

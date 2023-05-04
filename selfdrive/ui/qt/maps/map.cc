@@ -879,6 +879,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
 static bool g_stand_still;
 int limit_speed_auto_detect; //onroad.ccから参照あり
+int limit_speed_num;
 
 void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
 
@@ -893,11 +894,13 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
       output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
       i++; // インデックスを1つ進める
     }
+    limit_speed_num = (int)output[0]
     if((int)output[2] == 111){
+      limit_speed_num = 199; //0;
       speed->setText("199" /*"━"*/);
       limit_speed_auto_detect = 0;
     } else {
-      speed->setText(QString::number((int)output[0]));
+      speed->setText(QString::number(limit_speed_num));
       limit_speed_auto_detect = 1;
     }
   }
@@ -924,7 +927,10 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   p.drawEllipse(0,0,r*2,r*2);
 
-  const int arc_w = -30; //内側に描画
+  int arc_w = -30; //内側に描画
+  if(limit_speed_num >= 100){
+    arc_w = -20; ///枠と数字が被らないように枠を細くする。
+  }
   QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   p.setPen(pen);
