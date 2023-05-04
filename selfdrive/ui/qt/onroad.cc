@@ -1461,7 +1461,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if (mapVisible == false){
     if(limitspeed_info_read_ct++ % 10 == 5){
       std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
-      int limit_speed_num = 0;
       if(limitspeed_info_txt.empty() == false){
         float output[3]; // float型の配列
         int i = 0; // インデックス
