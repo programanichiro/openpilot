@@ -894,7 +894,7 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
       output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
       i++; // インデックスを1つ進める
     }
-    limit_speed_num = (int)output[0]
+    limit_speed_num = (int)output[0];
     if((int)output[2] == 111){
       limit_speed_num = 199; //0;
       speed->setText("199" /*"━"*/);
