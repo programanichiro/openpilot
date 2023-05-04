@@ -1486,7 +1486,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
     int arc_w = -22; //内側に描画
     if(limit_speed_num >= 100){
-      int arc_w = -15; //枠と数字が被らないように枠を細くする。
+      arc_w = -15; //枠と数字が被らないように枠を細くする。
     }
     arc_w = arc_w * traffic_speed_r / (150 / 2);
     QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
