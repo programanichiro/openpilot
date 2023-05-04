@@ -1471,12 +1471,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
           output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
           i++; // インデックスを1つ進める
         }
-        limit_speed_num = (int)output[0];
         if((int)output[2] == 111){
           limit_speed_num = 0;
-          traffic_speed = "━";
         } else {
-          traffic_speed = QString::number(limit_speed_num);
+          limit_speed_num = (int)output[0];
         }
       }      
     }
