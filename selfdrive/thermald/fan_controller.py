@@ -128,7 +128,7 @@ class TiciFanController(BaseFanController):
           limit_m = self.velocity/3.6
           if limit_m < 10:
             limit_m = 10 #10m以内の範囲には登録しない。
-          if self.velocity >= limitspeed_min and (self.get_limit_avg * 0.8 < self.velocity or self.get_limitspeed_old == 0) and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or ((self.min_distance_old**0.5) * 100 / 0.0009 > limit_m and self.velo_ave_ct_old < 10)):
+          if self.velocity >= limitspeed_min and (self.get_limit_avg * 0.7 < self.velocity or self.get_limitspeed_old == 0) and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or ((self.min_distance_old**0.5) * 100 / 0.0009 > limit_m and self.velo_ave_ct_old < 10)):
             # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。もしくは平均より10km/h遅くても登録しない。
             insert_data_sql = """
             INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
