@@ -255,6 +255,7 @@ void MapWindow::updateState(const UIState &s) {
   }
   static bool emit_LimitspeedChanged_first_set = false;
   if(emit_LimitspeedChanged_first_set == false){
+    emit_LimitspeedChanged_first_set = true;
     emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
   }
 
