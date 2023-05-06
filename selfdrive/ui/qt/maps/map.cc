@@ -253,6 +253,10 @@ void MapWindow::updateState(const UIState &s) {
       }
     }
   }
+  static bool emit_LimitspeedChanged_first_set = false;
+  if(emit_LimitspeedChanged_first_set == false){
+    emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
+  }
 
   if (sm.updated("navRoute") && sm["navRoute"].getNavRoute().getCoordinates().size()) {
     qWarning() << "Got new navRoute from navd. Opening map:" << allow_open;
