@@ -249,7 +249,7 @@ void MapWindow::updateState(const UIState &s) {
       velocity_filter.update(locationd_velocity.getValue()[0]);
 
       if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
-          emit LimitspeedChanged(0);
+        emit LimitspeedChanged(rect().width());
       }
     }
   }
@@ -853,7 +853,7 @@ static bool g_stand_still;
 int limit_speed_auto_detect; //onroad.ccから参照あり
 int limit_speed_num;
 
-void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
+void MapLimitspeed::updateLimitspeed(int map_width) {
 
   std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
   if(limitspeed_info_txt.empty() == false){
@@ -888,7 +888,12 @@ void MapLimitspeed::updateLimitspeed(float splimitspeedeed_no_use) {
   if(g_stand_still){
     stand_still_height = 270;
   }
-  this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
+
+  if (map_width == 0 || uiState()->scene.map_on_left) {
+    this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
+  } else {
+    this->move(map_width - r*2 - 30, 1080 - 60 - 30 - r*2 - stand_still_height);
+  }
 }
 
 void MapLimitspeed::paintEvent(QPaintEvent *event) {
