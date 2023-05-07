@@ -52,6 +52,9 @@ class TiciFanController(BaseFanController):
       self.cur.execute(create_table_sql)
       # データベースに反映
       self.conn.commit()
+    else:
+      self.conn.execute("VACUUM") #起動のたびにゴミ掃除
+      # self.conn.execute("REINDEX") #検索インデックスの振り直し？ こちらは保留。
 
     # 削除条件となる日時を計算
     # delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
