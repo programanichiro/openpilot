@@ -1,4 +1,4 @@
-![](https://i.imgur.com/b0ZyIx5.jpg)
+![](https://i.imgur.com/W93GZCe.jpg)
 
 Table of Contents
 =======================
