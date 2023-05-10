@@ -16,8 +16,14 @@ class CarState(CarStateBase):
     if CP.transmissionType == TransmissionType.automatic:
       self.shifter_values = can_define.dv["Gear_Shift_by_Wire_FD1"]["TrnRng_D_RqGsm"]
 
+    self.vehicle_sensors_valid = False
+
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
+
+    # Occasionally on startup, the ABS module recalibrates the steering pinion offset, so we need to block engagement
+    # The vehicle usually recovers out of this state within a minute of normal driving
+    self.vehicle_sensors_valid = cp.vl["SteeringPinion_Data"]["StePinCompAnEst_D_Qf"] == 3
 
     # car speed
     ret.vEgoRaw = cp.vl["BrakeSysFeatures"]["Veh_V_ActlBrk"] * CV.KPH_TO_MS
@@ -37,7 +43,7 @@ class CarState(CarStateBase):
     # steering wheel
     ret.steeringAngleDeg = cp.vl["SteeringPinion_Data"]["StePinComp_An_Est"]
     ret.steeringTorque = cp.vl["EPAS_INFO"]["SteeringColumnTorque"]
-    ret.steeringPressed = abs(ret.steeringTorque) > CarControllerParams.STEER_DRIVER_ALLOWANCE
+    ret.steeringPressed = self.update_steering_pressed(abs(ret.steeringTorque) > CarControllerParams.STEER_DRIVER_ALLOWANCE, 5)
     ret.steerFaultTemporary = cp.vl["EPAS_INFO"]["EPAS_Failure"] == 1
     ret.steerFaultPermanent = cp.vl["EPAS_INFO"]["EPAS_Failure"] in (2, 3)
     # ret.espDisabled = False  # TODO: find traction control signal
@@ -48,6 +54,7 @@ class CarState(CarStateBase):
     ret.cruiseState.available = cp.vl["EngBrakeData"]["CcStat_D_Actl"] in (3, 4, 5)
     ret.cruiseState.nonAdaptive = cp.vl["Cluster_Info1_FD1"]["AccEnbl_B_RqDrv"] == 0
     ret.cruiseState.standstill = cp.vl["EngBrakeData"]["AccStopMde_D_Rq"] == 3
+    ret.accFaulted = cp.vl["EngBrakeData"]["CcStat_D_Actl"] in (1, 2)
 
     # gear
     if self.CP.transmissionType == TransmissionType.automatic:
@@ -105,6 +112,7 @@ class CarState(CarStateBase):
       ("AccStopMde_D_Rq", "EngBrakeData"),                   # PCM ACC standstill
       ("AccEnbl_B_RqDrv", "Cluster_Info1_FD1"),              # PCM ACC enable
       ("StePinComp_An_Est", "SteeringPinion_Data"),          # PSCM estimated steering angle (deg)
+      ("StePinCompAnEst_D_Qf", "SteeringPinion_Data"),       # PSCM estimated steering angle (quality flag)
                                                              # Calculates steering angle (and offset) from pinion
                                                              # angle and driving measurements.
                                                              # StePinRelInit_An_Sns is the pinion angle, initialised
