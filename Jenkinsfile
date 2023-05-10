@@ -23,6 +23,10 @@ if [ -f /data/openpilot/launch_env.sh ]; then
   source /data/openpilot/launch_env.sh
 fi
 
+if [ -d /data/openpilot ]; then
+  source /data/openpilot/launch_env.sh
+fi
+
 ln -snf ${env.TEST_DIR} /data/pythonpath
 
 cd ${env.TEST_DIR} || true
