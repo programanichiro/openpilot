@@ -1174,10 +1174,14 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   // current speed
   configFont(p, "Inter", 176, "Bold");
-  drawText(p, rect().center().x()-7, 210+y_ofs-5, speedStr,speed_waku);
-  drawText(p, rect().center().x()+7, 210+y_ofs-5, speedStr,speed_waku);
-  drawText(p, rect().center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
-  drawText(p, rect().center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
+  double velo_for_trans = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
+  const double velo_for_trans_limit = 0.05; //0.05km/h以下では速度を半透明にする。
+  if(velo_for_trans >= velo_for_trans_limit){
+    drawText(p, rect().center().x()-7, 210+y_ofs-5, speedStr,speed_waku);
+    drawText(p, rect().center().x()+7, 210+y_ofs-5, speedStr,speed_waku);
+    drawText(p, rect().center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
+    drawText(p, rect().center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
+  }
   QColor speed_num;
   static bool red_signal_scan_flag_2 = false;
   if(red_signal_scan_flag >= 2 && red_signal_scan_flag_txt_ct %6 < 3){
@@ -1193,6 +1197,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     if(red_signal_scan_flag < 2 && this->speed > 24){
       red_signal_scan_flag_2 = false; //ある程度スピードが上がらないと、このフラグも戻さない。
     }
+    if(velo_for_trans < velo_for_trans_limit){
+      speed_num = QColor(0xff, 0xff, 0xff , 70);
+    }
   }
   drawText(p, rect().center().x(), 210 + y_ofs-5, speedStr , speed_num);
 
@@ -1200,7 +1207,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if (uiState()->scene.longitudinal_control == false) {
     drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, bg_colors[STATUS_WARNING]); //縦制御無効状態でkm/hを警告色に。
   } else {
-    drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
+    if(velo_for_trans < velo_for_trans_limit){
+      drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, speed_num);
+    } else {
+      drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
+    }
   }
 
 //以下オリジナル表示要素
@@ -1249,7 +1260,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
             bearing = 0;
           }
         } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
-        double velo = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
+        //double velo = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
+        double velo = velo_for_trans;
         if(add_v_by_lead == true){
           velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
         }
