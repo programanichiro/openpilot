@@ -1174,6 +1174,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   // current speed
   configFont(p, "Inter", 176, "Bold");
+  UIState *s = uiState();
   double velo_for_trans = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
   const double velo_for_trans_limit = 0.05; //0.05km/h以下では速度を半透明にする。
   if(velo_for_trans >= velo_for_trans_limit){
@@ -1216,7 +1217,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
-  UIState *s = uiState();
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
   int temp = (int)deviceState.getAmbientTempC();
 #if 0
