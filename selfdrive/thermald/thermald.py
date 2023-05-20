@@ -262,16 +262,22 @@ def thermald_thread(end_event, hw_queue):
       # # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
       # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
       # pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=True))
-      is_offroad_for_1_min = (started_ts is None) and ((not started_seen) or (off_ts is None) or (sec_since_boot() - off_ts > 30 * 1))
+      is_offroad_for_1_min = (started_ts is None) and ((not started_seen) or (off_ts is None) or (sec_since_boot() - off_ts > 10 * 1))
       with open('/tmp/debug_out_o','w') as fp:
         fp.write('offroad 1 min:%d,%d' % (is_offroad_for_1_min,already_auto_lock))
       if is_offroad_for_1_min == True: #停車時のオートロック。
         if already_auto_lock == False:
           can_sends = []
           # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+          with open('/tmp/debug_out_o','w') as fp:
+            fp.write('offroad 2 min:%d,%d' % (is_offroad_for_1_min,already_auto_lock))
           can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
           already_auto_lock = True
+          with open('/tmp/debug_out_o','w') as fp:
+            fp.write('offroad 3 min:%d,%d' % (is_offroad_for_1_min,already_auto_lock))
           pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan'))
+          with open('/tmp/debug_out_o','w') as fp:
+            fp.write('offroad 4 min:%d,%d' % (is_offroad_for_1_min,already_auto_lock))
       else:
         already_auto_lock = False
 
