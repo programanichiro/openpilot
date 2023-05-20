@@ -244,8 +244,7 @@ void CameraWidget::updateFrameMat() {
         }
         frames_wide = std::clamp(frames_wide, 0.0f, 20.0f);
         intrinsic_matrix = ecam_intrinsic_matrix;
-        float frames_wide_2 = frames_wide > 10 ? 10.0f : frames_wide; //frames_wideが20まで行かない？
-        intrinsic_matrix.v[2] -= 100 * (10 - frames_wide_2) / 10; //中心位置がズレるのを誤魔化す。
+        float frames_wide_2 = frames_wide > 10 ? 10.0f : frames_wide; //frames_wideが最大20で計算するとv[5]補正が掛かり切らない？
         intrinsic_matrix.v[5] -= 50 * (10 - frames_wide_2) / 10; //中心位置がズレるのを誤魔化す。
         zoom = util::map_val((float)frames_wide, 0.0f, 20.0f, 4.7f, 2.0f);
 //        zoom = 4.5;
