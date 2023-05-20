@@ -275,7 +275,7 @@ def thermald_thread(end_event, hw_queue):
           already_auto_lock = True
           with open('/tmp/debug_out_o','w') as fp:
             fp.write('offroad 3 min:%d,%d' % (is_offroad_for_1_min,already_auto_lock))
-          pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan'))
+          pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan')) #ここで死んでる。
           with open('/tmp/debug_out_o','w') as fp:
             fp.write('offroad 4 min:%d,%d' % (is_offroad_for_1_min,already_auto_lock))
       else:
