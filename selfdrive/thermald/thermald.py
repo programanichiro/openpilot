@@ -270,8 +270,8 @@ def thermald_thread(end_event, hw_queue):
           can_sends = []
           # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
           can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
-          pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=True))
           already_auto_lock = True
+          pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan'))
       else:
         already_auto_lock = False
 
