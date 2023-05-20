@@ -235,24 +235,19 @@ void CameraWidget::updateFrameMat() {
         ready_to_switch = false;
       }
 
-      // if (active_stream_type == VISION_STREAM_WIDE_ROAD) {
-      //   intrinsic_matrix = fcam_intrinsic_matrix;
-      //   zoom = 1.1;
-      // }
-
+      const float cam_trs_speed_k = 0.4; //0.2;
       if (active_stream_type == VISION_STREAM_WIDE_ROAD) {
         if (requested_stream_type == VISION_STREAM_WIDE_ROAD) {
-          frames_wide += frames_wide * 0.2 + 0.5;
+          frames_wide += frames_wide * cam_trs_speed_k + 0.5;
         } else {
-          frames_wide -= (20 - frames_wide) * 0.2 + 0.5;
+          frames_wide -= (20 - frames_wide) * cam_trs_speed_k + 0.5;
         }
-//        frames_wide += frames_wide * 0.2 + 0.5;
         frames_wide = std::clamp(frames_wide, 0.0f, 20.0f);
         intrinsic_matrix = ecam_intrinsic_matrix;
         zoom = util::map_val((float)frames_wide, 0.0f, 20.0f, 4.7f, 2.0f);
 //        zoom = 4.5;
       } else {
-        frames_wide -= (20 - frames_wide) * 0.2 + 0.5;
+        frames_wide -= (20 - frames_wide) * cam_trs_speed_k + 0.5;
         frames_wide = std::clamp(frames_wide, 0.0f, 20.0f);
         intrinsic_matrix = fcam_intrinsic_matrix;
         // zoom = util::map_val((float)frames_wide, 0.0f, 20.0f, 4.7f, 2.0f);
