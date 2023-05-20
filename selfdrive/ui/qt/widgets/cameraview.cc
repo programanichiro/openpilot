@@ -244,7 +244,7 @@ void CameraWidget::updateFrameMat() {
         }
         frames_wide = std::clamp(frames_wide, 0.0f, 20.0f);
         intrinsic_matrix = ecam_intrinsic_matrix;
-        intrinsic_matrix.v[5] += 100;
+        intrinsic_matrix.v[5] -= 50;
         zoom = util::map_val((float)frames_wide, 0.0f, 20.0f, 4.7f, 2.0f);
 //        zoom = 4.5;
       } else {
