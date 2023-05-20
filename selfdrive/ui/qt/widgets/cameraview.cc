@@ -236,7 +236,6 @@ void CameraWidget::updateFrameMat() {
       }
 
       const float cam_trs_speed_k = 0.4; //0.2;
-      float y_zoom = 1.0;
       if (active_stream_type == VISION_STREAM_WIDE_ROAD) {
         if (requested_stream_type == VISION_STREAM_WIDE_ROAD) {
           frames_wide += frames_wide * cam_trs_speed_k + 0.5;
@@ -246,7 +245,7 @@ void CameraWidget::updateFrameMat() {
         frames_wide = std::clamp(frames_wide, 0.0f, 20.0f);
         intrinsic_matrix = ecam_intrinsic_matrix;
         float frames_wide_2 = frames_wide > 10 ? 10.0f : frames_wide; //frames_wideが20まで行かない？
-        y_zoom = 1.1;
+        intrinsic_matrix.v[2] -= 20 * (10 - frames_wide_2) / 10; //中心位置がズレるのを誤魔化す。
         intrinsic_matrix.v[5] -= 50 * (10 - frames_wide_2) / 10; //中心位置がズレるのを誤魔化す。
         zoom = util::map_val((float)frames_wide, 0.0f, 20.0f, 4.7f, 2.0f);
 //        zoom = 4.5;
@@ -271,7 +270,7 @@ void CameraWidget::updateFrameMat() {
       y_offset = std::clamp(y_offset_, -max_y_offset, max_y_offset);
 
       float zx = zoom * 2 * intrinsic_matrix.v[2] / w;
-      float zy = zoom * 2 * intrinsic_matrix.v[5] / h * y_zoom;
+      float zy = zoom * 2 * intrinsic_matrix.v[5] / h;
       const mat4 frame_transform = {{
         zx, 0.0, 0.0, -x_offset / w * 2,
         0.0, zy, 0.0, y_offset / h * 2,
