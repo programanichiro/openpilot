@@ -19,6 +19,8 @@ from common.realtime import DT_TRML, sec_since_boot
 from selfdrive.controls.lib.alertmanager import set_offroad_alert
 from system.hardware import HARDWARE, TICI, AGNOS
 from system.loggerd.config import get_available_percent
+from selfdrive.boardd.boardd import can_list_to_can_capnp
+from selfdrive.car import make_can_msg
 from selfdrive.statsd import statlog
 from selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
 from system.swaglog import cloudlog
@@ -152,7 +154,7 @@ def hw_state_thread(end_event, hw_queue):
 
 
 def thermald_thread(end_event, hw_queue):
-  pm = messaging.PubMaster(['deviceState'])
+  pm = messaging.PubMaster(['deviceState', 'sendcan'])
   sm = messaging.SubMaster(["peripheralState", "gpsLocationExternal", "controlsState", "pandaStates"], poll=["pandaStates"])
 
   count = 0
@@ -255,6 +257,10 @@ def thermald_thread(end_event, hw_queue):
 
     if fan_controller is not None:
       msg.deviceState.fanSpeedPercentDesired = fan_controller.update(all_comp_temp, onroad_conditions["ignition"])
+      can_sends = []
+      # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+      can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+      pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=True))
 
     is_offroad_for_5_min = (started_ts is None) and ((not started_seen) or (off_ts is None) or (sec_since_boot() - off_ts > 60 * 5))
     if is_offroad_for_5_min and offroad_comp_temp > OFFROAD_DANGER_TEMP:
