@@ -257,10 +257,14 @@ def thermald_thread(end_event, hw_queue):
 
     if fan_controller is not None:
       msg.deviceState.fanSpeedPercentDesired = fan_controller.update(all_comp_temp, onroad_conditions["ignition"])
-      can_sends = []
-      # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
-      can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
-      pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=True))
+      # can_sends = []
+      # # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+      # can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+      # pm.send('sendcan', can_list_to_can_capnp(can_sends, msgtype='sendcan', valid=True))
+      is_offroad_for_0_min = (started_ts is None) and ((not started_seen) or (off_ts is None) or (sec_since_boot() - off_ts > 60 * 0))
+      is_offroad_for_1_min = (started_ts is None) and ((not started_seen) or (off_ts is None) or (sec_since_boot() - off_ts > 60 * 1))
+      with open('/tmp/debug_out_o','w') as fp:
+        fp.write('onroad check:%d,%d' % (is_offroad_for_0_min , is_offroad_for_1_min))
 
     is_offroad_for_5_min = (started_ts is None) and ((not started_seen) or (off_ts is None) or (sec_since_boot() - off_ts > 60 * 5))
     if is_offroad_for_5_min and offroad_comp_temp > OFFROAD_DANGER_TEMP:
