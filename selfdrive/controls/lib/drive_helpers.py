@@ -45,16 +45,6 @@ skip_curvature_info = False
 
 MAX_VEL_ERR = 5.0
 
-MAX_VEL_ERR = 5.0
-
-MAX_VEL_ERR = 5.0
-
-MAX_VEL_ERR = 5.0
-
-MAX_VEL_ERR = 5.0
-
-MAX_VEL_ERR = 5.0
-
 ButtonEvent = car.CarState.ButtonEvent
 ButtonType = car.CarState.ButtonEvent.Type
 CRUISE_LONG_PRESS = 50
