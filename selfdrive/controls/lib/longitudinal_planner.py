@@ -571,13 +571,13 @@ class LongitudinalPlanner:
             self.limitspeed_point -= 0.1
             if target > self.limitspeed_point:
               self.limitspeed_point = target
-        with open('/tmp/limitspeed_sw.txt','r') as fp:
-          limitspeed_sw_str = fp.read()
-          if limitspeed_sw_str and limitspeed_data_str:
-            if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
-              if limitspeed_flag == 999:
-                v_cruise_kph = self.limitspeed_point
-                limitspeed_set = True
+          with open('/tmp/limitspeed_sw.txt','r') as fp:
+            limitspeed_sw_str = fp.read()
+            if limitspeed_sw_str and limitspeed_data_str:
+              if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
+                if limitspeed_flag == 999:
+                  v_cruise_kph = self.limitspeed_point
+                  limitspeed_set = True
     except Exception as e:
       pass
 
