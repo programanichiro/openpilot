@@ -6,7 +6,7 @@ from common.numpy_fast import interp
 from common.realtime import DT_MDL
 # from system.swaglog import cloudlog
 
-#このファイルは廃止です。削除予定。
+#このファイルは廃止です。削除予定。-> chillモード時に復活してみる。昔の小細工は働かないようにしている。
 
 STEER_SAME_DIRECTION_CT = 0
 STEER_OLD_ANGLE = 0
@@ -102,10 +102,10 @@ class LanePlanner:
     # elif st_angle > prob_limit_angle:
     #   if l_prob > 0.5 and l_prob*0.8 > r_prob:
     #     r_prob = 0
-    dcm = self.calc_dcm(st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob) #0が返るだけ。
-    path_from_left_lane -= dcm
-    path_from_right_lane -= dcm
-    path_xyz[:,1] -= dcm
+    # dcm = self.calc_dcm(st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob) #0が返るだけ。
+    # path_from_left_lane -= dcm
+    # path_from_right_lane -= dcm
+    # path_xyz[:,1] -= dcm
 
     self.d_prob = l_prob + r_prob - l_prob * r_prob
     lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
