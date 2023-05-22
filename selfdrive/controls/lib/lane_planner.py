@@ -102,7 +102,7 @@ class LanePlanner:
     # elif st_angle > prob_limit_angle:
     #   if l_prob > 0.5 and l_prob*0.8 > r_prob:
     #     r_prob = 0
-    dcm = self.calc_dcm(st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob)
+    dcm = self.calc_dcm(st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob) #0が返るだけ。
     path_from_left_lane -= dcm
     path_from_right_lane -= dcm
     path_xyz[:,1] -= dcm

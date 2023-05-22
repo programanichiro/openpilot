@@ -6,6 +6,7 @@ from system.swaglog import cloudlog
 from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import LateralMpc
 from selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import N as LAT_MPC_N
 from selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed_error
+from selfdrive.controls.lib.lane_planner import LanePlanner
 from selfdrive.controls.lib.desire_helper import DesireHelper
 import cereal.messaging as messaging
 from cereal import log
@@ -40,6 +41,7 @@ STEERING_RATE_COST = 700.0
 
 class LateralPlanner:
   def __init__(self, CP):
+    self.LP = LanePlanner(True) #widw_camera常にONで呼び出す。
     self.DH = DesireHelper()
 
     # Vehicle model parameters used to calculate lateral movement of car
@@ -73,6 +75,8 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
+    if sm['controlsState'].experimentalMode == False: #chillモードなら
+        self.LP.parse_model(md) #ichiropilot
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
       self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       self.t_idxs = np.array(md.position.t)
@@ -137,8 +141,15 @@ class LateralPlanner:
     self.lat_mpc.set_weights(PATH_COST, LATERAL_MOTION_COST,
                              LATERAL_ACCEL_COST, LATERAL_JERK_COST,
                              STEERING_RATE_COST)
+    
+    if sm['controlsState'].experimentalMode == False: #chillモードでLP復活
+      ypf = STEER_CTRL_Y
+      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
+      y_pts = d_path_xyz[:LAT_MPC_N+1, 1]
+    else:
+      y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
 
-    y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
     heading_pts = self.plan_yaw[:LAT_MPC_N+1]
     yaw_rate_pts = self.plan_yaw_rate[:LAT_MPC_N+1]
     self.y_pts = y_pts
