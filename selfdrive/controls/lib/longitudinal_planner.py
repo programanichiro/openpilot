@@ -557,24 +557,25 @@ class LongitudinalPlanner:
               # fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
               limitspeed_data = limitspeed_data_str.split(",")
               limitspeed_flag = int(limitspeed_data[2])
+              #self.limitspeed_pointの計算は常に行う。
+              target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
+              if target > self.limitspeed_point+10:
+                self.limitspeed_point = target -10
+              elif target < self.limitspeed_point-10:
+                self.limitspeed_point = target +10
+              elif target > self.limitspeed_point+5:
+                self.limitspeed_point += 1
+              elif target < self.limitspeed_point-5:
+                self.limitspeed_point -= 1
+              elif target > self.limitspeed_point:
+                self.limitspeed_point += 0.1
+                if target < self.limitspeed_point:
+                  self.limitspeed_point = target
+              elif target < self.limitspeed_point:
+                self.limitspeed_point -= 0.1
+                if target > self.limitspeed_point:
+                  self.limitspeed_point = target
               if limitspeed_flag == 999:
-                target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
-                if target > self.limitspeed_point+10:
-                  self.limitspeed_point = target -10
-                elif target < self.limitspeed_point-10:
-                  self.limitspeed_point = target +10
-                elif target > self.limitspeed_point+5:
-                  self.limitspeed_point += 1
-                elif target < self.limitspeed_point-5:
-                  self.limitspeed_point -= 1
-                elif target > self.limitspeed_point:
-                  self.limitspeed_point += 0.1
-                  if target < self.limitspeed_point:
-                    self.limitspeed_point = target
-                elif target < self.limitspeed_point:
-                  self.limitspeed_point -= 0.1
-                  if target > self.limitspeed_point:
-                    self.limitspeed_point = target
                 v_cruise_kph = self.limitspeed_point
                 limitspeed_set = True
     except Exception as e:
