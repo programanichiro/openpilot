@@ -74,14 +74,18 @@ class LanePlanner:
       width_at_t = interp(t_check * (v_ego + 7), self.ll_x, width_pts)
       prob_mods.append(interp(width_at_t, [4.0, 5.0], [1.0, 0.0]))
     mod = min(prob_mods)
-    l_prob *= mod *0.8 #若干e2eパスを優先
-    r_prob *= mod *0.8 #若干e2eパスを優先
+    l_prob *= mod
+    r_prob *= mod
 
     # Reduce reliance on uncertain lanelines
     l_std_mod = interp(self.lll_std, [.15, .3], [1.0, 0.0])
     r_std_mod = interp(self.rll_std, [.15, .3], [1.0, 0.0])
     l_prob *= l_std_mod
     r_prob *= r_std_mod
+    with open('/tmp/debug_out_o','w') as fp:
+      fp.write('LEFT:%.2f , RIGHT:%.2f' % (l_prob , r_prob))
+    l_prob *= 0.8 #若干e2eパスを優先
+    r_prob *= 0.8 #若干e2eパスを優先
 
     # Find current lanewidth
     self.lane_width_certainty.update(l_prob * r_prob)
