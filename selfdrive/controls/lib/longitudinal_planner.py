@@ -548,33 +548,33 @@ class LongitudinalPlanner:
 
     limitspeed_set = False
     try:
-      with open('/tmp/limitspeed_sw.txt','r') as fp:
-        limitspeed_sw_str = fp.read()
-        if limitspeed_sw_str:
-          if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
-            with open('/tmp/limitspeed_data.txt','r') as fp2:
-              limitspeed_data_str = fp2.read()
-              # fp.write('%d,%.2f,999,%d,%.1fm,+%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add))
-              limitspeed_data = limitspeed_data_str.split(",")
-              limitspeed_flag = int(limitspeed_data[2])
-              #self.limitspeed_pointの計算は常に行う。
-              target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
-              if target > self.limitspeed_point+10:
-                self.limitspeed_point = target -10
-              elif target < self.limitspeed_point-10:
-                self.limitspeed_point = target +10
-              elif target > self.limitspeed_point+5:
-                self.limitspeed_point += 1
-              elif target < self.limitspeed_point-5:
-                self.limitspeed_point -= 1
-              elif target > self.limitspeed_point:
-                self.limitspeed_point += 0.1
-                if target < self.limitspeed_point:
-                  self.limitspeed_point = target
-              elif target < self.limitspeed_point:
-                self.limitspeed_point -= 0.1
-                if target > self.limitspeed_point:
-                  self.limitspeed_point = target
+      with open('/tmp/limitspeed_data.txt','r') as fp2:
+        limitspeed_data_str = fp2.read()
+        if limitspeed_data_str:
+          limitspeed_data = limitspeed_data_str.split(",")
+          limitspeed_flag = int(limitspeed_data[2])
+          #self.limitspeed_pointの計算は常に行う。
+          target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
+          if target > self.limitspeed_point+10:
+            self.limitspeed_point = target -10
+          elif target < self.limitspeed_point-10:
+            self.limitspeed_point = target +10
+          elif target > self.limitspeed_point+5:
+            self.limitspeed_point += 1
+          elif target < self.limitspeed_point-5:
+            self.limitspeed_point -= 1
+          elif target > self.limitspeed_point:
+            self.limitspeed_point += 0.1
+            if target < self.limitspeed_point:
+              self.limitspeed_point = target
+          elif target < self.limitspeed_point:
+            self.limitspeed_point -= 0.1
+            if target > self.limitspeed_point:
+              self.limitspeed_point = target
+        with open('/tmp/limitspeed_sw.txt','r') as fp:
+          limitspeed_sw_str = fp.read()
+          if limitspeed_sw_str and limitspeed_data_str:
+            if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
               if limitspeed_flag == 999:
                 v_cruise_kph = self.limitspeed_point
                 limitspeed_set = True
