@@ -1663,7 +1663,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 #if 1 //レーン依存率をカラーで表す。
     if(expm){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
-        lane_prob = scene.lane_line_probs[i] - 0.25;
+        float lane_prob = scene.lane_line_probs[i] - 0.25;
         if(lane_prob < 0){
           lane_prob = 0;
         }
