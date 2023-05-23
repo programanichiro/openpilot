@@ -126,7 +126,7 @@ class LanePlanner:
       # lane_path_y_interp_right += 0.2 #右端より20cm内側へ寄せる。
       #比較にr_prob,l_probを反映する方法が思いつかない。
       with open('/tmp/debug_out_o','w') as fp:
-        fp.write('l:%.2f , e:%.2f , r:%.2f' % (lane_path_y_interp_left[0] , path_xyz[:,1][0] , lane_path_y_interp_right[0]))
+        fp.write('l:%.2f , e:%.2f ,w:%.1f , r:%.2f' % (lane_path_y_interp_left[0] , path_xyz[:,1][0] , clipped_lane_width , lane_path_y_interp_right[0]))
       # if r_prob > 0.5 and path_xyz[:,1] < lane_path_y_interp_right: # , any(x < y for x, y in zip(path_xyz[:,1], lane_path_y_interp_right)): #,要素一つでも<を満たせば
       #   path_xyz[:,1] = lane_path_y_interp_right
       #   # path_xyz[:,1] = r_prob * lane_path_y_interp_right + (1.0 - r_prob) * path_xyz[:,1]
