@@ -649,6 +649,9 @@ void ButtonsWindow::updateState(const UIState &s) {
     }
     setButtonInt("/data/lane_sw_mode.txt" , mUseLaneButton);
     soundButton(mUseLaneButton);
+    if(mUseLaneButton == 0){
+      //ここで"/tmp/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
+    }
   }
   
 }
