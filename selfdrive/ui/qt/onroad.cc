@@ -1661,7 +1661,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   bool expm = sm["controlsState"].getControlsState().getExperimentalMode();
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
 #if 1 //レーン依存率をカラーで表す。
-    if(expm){
+    if(expm == false){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i] - 0.25;
         if(lane_prob < 0){
