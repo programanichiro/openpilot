@@ -82,10 +82,6 @@ class LanePlanner:
     r_std_mod = interp(self.rll_std, [.15, .3], [1.0, 0.0])
     l_prob *= l_std_mod
     r_prob *= r_std_mod
-    with open('/tmp/debug_out_o','w') as fp:
-      fp.write('LEFT:%.2f , RIGHT:%.2f' % (l_prob , r_prob))
-    l_prob *= 0.8 #若干e2eパスを優先
-    r_prob *= 0.8 #若干e2eパスを優先
 
     # Find current lanewidth
     self.lane_width_certainty.update(l_prob * r_prob)
@@ -99,6 +95,13 @@ class LanePlanner:
     path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
     path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
 
+    with open('/tmp/debug_out_o','w') as fp:
+      fp.write('LEFT:%.2f , W:%.1f , RIGHT:%.2f' % (l_prob , clipped_lane_width , r_prob))
+    # l_prob *= 0.8 #若干e2eパスを優先
+    # r_prob *= 0.8 #若干e2eパスを優先
+    l_prob = l_prob - 0.25 if l_prob > 0.25 else 0 #若干e2eパスを優先(*1)
+    r_prob = r_prob - 0.25 if r_prob > 0.25 else 0 #若干e2eパスを優先(*1)
+
     # prob_limit_angle = 6 #これよりハンドル角が大きい時で、カーブのアウト側がインより薄い認識だと、アウト側を無視してみる
     # if st_angle < -prob_limit_angle:
     #   if r_prob > 0.5 and r_prob*0.8 > l_prob:
@@ -111,7 +114,7 @@ class LanePlanner:
     # path_from_right_lane -= dcm
     # path_xyz[:,1] -= dcm
 
-    self.d_prob = l_prob + r_prob - l_prob * r_prob
+    self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
     lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
     safe_idxs = np.isfinite(self.ll_t)
     if safe_idxs[0]:
