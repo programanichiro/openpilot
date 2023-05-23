@@ -95,8 +95,8 @@ class LanePlanner:
     path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
     path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
 
-    with open('/tmp/debug_out_o','w') as fp:
-      fp.write('LEFT:%.2f , W:%.1f , RIGHT:%.2f' % (l_prob , clipped_lane_width , r_prob))
+    # with open('/tmp/debug_out_o','w') as fp:
+    #   fp.write('LEFT:%.2f , W:%.1f , RIGHT:%.2f' % (l_prob , clipped_lane_width , r_prob))
     # l_prob *= 0.8 #若干e2eパスを優先
     # r_prob *= 0.8 #若干e2eパスを優先
     l_prob = l_prob - 0.25 if l_prob > 0.25 else 0 #若干e2eパスを優先(*1)
@@ -118,8 +118,21 @@ class LanePlanner:
     lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
     safe_idxs = np.isfinite(self.ll_t)
     if safe_idxs[0]:
-      lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
-      path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
+      # lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
+      # path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
+      lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
+      # lane_path_y_interp_left -= 0.2 #左端より20cm内側へ寄せる。
+      lane_path_y_interp_right = np.interp(path_t, self.ll_t[safe_idxs], path_from_right_lane[safe_idxs])
+      # lane_path_y_interp_right += 0.2 #右端より20cm内側へ寄せる。
+      #比較にr_prob,l_probを反映する方法が思いつかない。
+      with open('/tmp/debug_out_o','w') as fp:
+        fp.write('l:%.2f , e:%.2f , r:%.2f' % (lane_path_y_interp_left[0] , path_xyz[:,1][0] , lane_path_y_interp_right[0]))
+      # if r_prob > 0.5 and path_xyz[:,1] < lane_path_y_interp_right: # , any(x < y for x, y in zip(path_xyz[:,1], lane_path_y_interp_right)): #,要素一つでも<を満たせば
+      #   path_xyz[:,1] = lane_path_y_interp_right
+      #   # path_xyz[:,1] = r_prob * lane_path_y_interp_right + (1.0 - r_prob) * path_xyz[:,1]
+      # elif l_prob > 0.5 and path_xyz[:,1] > lane_path_y_interp_left: # , any(x > y for x, y in zip(path_xyz[:,1], lane_path_y_interp_left)): #,要素一つでも>を満たせば
+      #   path_xyz[:,1] = lane_path_y_interp_left
+      #   # path_xyz[:,1] = l_prob * lane_path_y_interp_left + (1.0 - l_prob) * path_xyz[:,1]
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass

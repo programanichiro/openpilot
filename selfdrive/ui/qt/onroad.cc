@@ -1660,7 +1660,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   // lanelines
   bool expm = sm["controlsState"].getControlsState().getExperimentalMode();
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
-#if 1 //レーン依存率をカラーで表す。
+#if 0 //レーン依存率をカラーで表す。
     if(expm == false){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i] - 0.25;
@@ -1668,6 +1668,21 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
           lane_prob = 0;
         }
         painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
+      } else {
+        painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
+      }
+    } else
+#elif 1
+    if(expm == false){
+      if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
+        float lane_prob = scene.lane_line_probs[i] - 0.25;
+        if(lane_prob > 0.5){
+          lane_prob = 1.0;
+          painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), 1.0));
+        } else {
+          lane_prob = 0;
+          painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
+        }
       } else {
         painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
       }
