@@ -115,24 +115,21 @@ class LanePlanner:
     # path_xyz[:,1] -= dcm
 
     self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
-    lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
+    #lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
     safe_idxs = np.isfinite(self.ll_t)
     if safe_idxs[0]:
       # lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
       # path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
       lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
-      # lane_path_y_interp_left -= 0.2 #左端より20cm内側へ寄せる。
       lane_path_y_interp_right = np.interp(path_t, self.ll_t[safe_idxs], path_from_right_lane[safe_idxs])
-      # lane_path_y_interp_right += 0.2 #右端より20cm内側へ寄せる。
-      #比較にr_prob,l_probを反映する方法が思いつかない。
-      with open('/tmp/debug_out_o','w') as fp:
-        fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
-      # if r_prob > 0.5 and path_xyz[:,1] < lane_path_y_interp_right: # , any(x < y for x, y in zip(path_xyz[:,1], lane_path_y_interp_right)): #,要素一つでも<を満たせば
-      #   path_xyz[:,1] = lane_path_y_interp_right
-      #   # path_xyz[:,1] = r_prob * lane_path_y_interp_right + (1.0 - r_prob) * path_xyz[:,1]
-      # elif l_prob > 0.5 and path_xyz[:,1] > lane_path_y_interp_left: # , any(x > y for x, y in zip(path_xyz[:,1], lane_path_y_interp_left)): #,要素一つでも>を満たせば
-      #   path_xyz[:,1] = lane_path_y_interp_left
-      #   # path_xyz[:,1] = l_prob * lane_path_y_interp_left + (1.0 - l_prob) * path_xyz[:,1]
+      #比較にr_prob,l_probをスムースに反映する方法が思いつかない。
+      # with open('/tmp/debug_out_o','w') as fp:
+      #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
+      #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
+      if r_prob > 0.5: #レーン右と比べて大きい方を採用。
+        path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+      if l_prob > 0.5: #レーン左と比べて小さい方を採用。
+        path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
