@@ -115,11 +115,13 @@ class LanePlanner:
     # path_xyz[:,1] -= dcm
 
     self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
-    #lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
     safe_idxs = np.isfinite(self.ll_t)
     if safe_idxs[0]:
+      # lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
       # lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
       # path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
+      # 以上従来処理
+      
       lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
       lane_path_y_interp_right = np.interp(path_t, self.ll_t[safe_idxs], path_from_right_lane[safe_idxs])
       #比較にr_prob,l_probをスムースに反映する方法が思いつかない。
