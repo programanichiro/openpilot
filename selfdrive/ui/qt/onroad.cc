@@ -1675,7 +1675,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
         painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
       }
     } else
-#elif 1
+#elif 0
     if(expm == false){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i] - 0.25;
@@ -1686,6 +1686,25 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
           lane_prob = 0;
           painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
         }
+      } else {
+        painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
+      }
+    } else
+#elif 1
+    if(expm == false){
+      if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
+        float lane_prob = scene.lane_line_probs[i];
+        if(lane_prob < 0){
+          lane_prob = 0;
+        }
+        if(fabs(global_angle_steer0) > 5){
+          float angle_prob = fabs(global_angle_steer0) - 5;
+          if(angle_prob > 10){
+            angle_prob = 10;
+          }
+          lane_prob *= angle_prob / 10; //たくさん曲がるとレーン依存発動。
+        }
+        painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), std::clamp<float>(scene.lane_line_probs[i], 0.0, 1.0)));
       } else {
         painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
       }
