@@ -60,12 +60,12 @@ class TiciFanController(BaseFanController):
       # データベースに反映
       self.conn.commit()
     else:
-      if speeds_table_size > 1 * 1024 * 1024: #テーブルサイズが3Mを超えたら
+      if speeds_table_size > 3 * 1024 * 1024: #テーブルサイズが3Mを超えたら
         # 奇数番目のレコードを削除
         self.cur.execute("SELECT * FROM speeds")
         records = self.cur.fetchall()
         # 削除条件となる日時を計算
-        delete_date = datetime.datetime.now().timestamp() - 10*24*3600 #30日前
+        delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
         for index, record in enumerate(records):
           if index % 2 != 1:
             row_id , latitude, longitude, bearing, velocity,timestamp = record
