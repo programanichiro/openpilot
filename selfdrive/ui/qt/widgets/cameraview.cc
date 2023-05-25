@@ -215,19 +215,19 @@ void CameraWidget::updateFrameMat() {
       // for narrow come and a little lower for wide cam.
       // TODO: use proper perspective transform?
       if (active_stream_type == VISION_STREAM_WIDE_ROAD) {
+        const float cam_trs_speed_k = 0.4; //0.2;
         // If narrow road camera is requested, start zooming in.
         // Mark ready to switch once we're fully zoomed in
         if (requested_stream_type != VISION_STREAM_WIDE_ROAD) {
-          zoom_transition += zoom_transition * 0.2 + 0.01;
+          zoom_transition += zoom_transition * cam_trs_speed_k + 0.01;
         } else {
-          zoom_transition -= (1.0 - zoom_transition) * 0.2 + 0.01;
+          zoom_transition -= (1.0 - zoom_transition) * cam_trs_speed_k + 0.01;
         }
         zoom_transition = std::clamp(zoom_transition, 0.0f, 1.0f);
         ready_to_switch_stream = fabs(zoom_transition - 1) < 1e-3;
 
         intrinsic_matrix = ecam_intrinsic_matrix;
-        // float frames_wide_2 = frames_wide > 10 ? 10.0f : frames_wide; //frames_wideが最大20で計算するとv[5]補正が掛かり切らない？
-        // intrinsic_matrix.v[5] -= 50 * (10 - frames_wide_2) / 10; //中心位置がズレるのを誤魔化す。
+        intrinsic_matrix.v[5] -= 50 * zoom_transition; //中心位置がズレるのを誤魔化す。
         zoom = util::map_val(zoom_transition, 0.0f, 1.0f, ecam_zoom, ecam_to_fcam_zoom * fcam_zoom);
       } else {
         intrinsic_matrix = fcam_intrinsic_matrix;
