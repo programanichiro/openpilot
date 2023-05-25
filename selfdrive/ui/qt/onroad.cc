@@ -1697,12 +1697,12 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
         if(lane_prob < 0){
           lane_prob = 0;
         }
-        if(fabs(global_angle_steer0) > 0){
-          float angle_prob = fabs(global_angle_steer0) - 0;
-          if(angle_prob > 6){
-            angle_prob = 6;
+        if(fabs(global_angle_steer0) > 2){
+          float angle_prob = fabs(global_angle_steer0) - 2;
+          if(angle_prob > 7){
+            angle_prob = 7;
           }
-          lane_prob *= angle_prob / 6; //たくさん曲がるとレーン依存発動。
+          lane_prob *= angle_prob / 7; //たくさん曲がるとレーン依存発動。
         } else {
           lane_prob = 0;
         }

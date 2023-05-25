@@ -120,11 +120,11 @@ class LanePlanner:
       lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
       lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
       # 以上従来処理
-      if abs(pred_angle) > 0:
-        angle_prob = abs(pred_angle) - 0
-        if angle_prob > 6:
-          angle_prob = 6
-        self.d_prob *= angle_prob / 6 #たくさん曲がるとレーン依存発動。
+      if abs(pred_angle) > 2:
+        angle_prob = abs(pred_angle) - 2
+        if angle_prob > 7:
+          angle_prob = 7
+        self.d_prob *= angle_prob / 7 #たくさん曲がるとレーン依存発動。
       else:
         self.d_prob = 0
       path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
