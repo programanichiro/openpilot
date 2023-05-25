@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 from abc import ABC, abstractmethod
+import os
 import sqlite3
 import datetime
 
@@ -38,6 +39,12 @@ class TiciFanController(BaseFanController):
     """
 
     # データベースに接続してカーソルを取得
+    speeds_table_size = 0
+    try:
+      speeds_table_size = os.path.getsize(self.db_path)
+    except Exception as e:
+      pass
+
     self.conn = sqlite3.connect(self.db_path)
     self.cur = self.conn.cursor()
     #self.date = datetime.datetime.now()
@@ -53,8 +60,22 @@ class TiciFanController(BaseFanController):
       # データベースに反映
       self.conn.commit()
     else:
+      if speeds_table_size > 1 * 1024 * 1024: #テーブルサイズが3Mを超えたら
+        # 奇数番目のレコードを削除
+        self.cur.execute("SELECT * FROM speeds")
+        records = self.cur.fetchall()
+        # 削除条件となる日時を計算
+        delete_date = datetime.datetime.now().timestamp() - 10*24*3600 #30日前
+        for index, record in enumerate(records):
+          if index % 2 != 1:
+            row_id , latitude, longitude, bearing, velocity,timestamp = record
+            self.cur.execute("DELETE FROM speeds WHERE id = ? and timestamp < ?", (row_id,delete_date)) #60日前の奇数番目のレコードを削除
+        self.conn.commit() #一旦コミットしないとVACUUMできない。
+
       self.conn.execute("VACUUM") #起動のたびにゴミ掃除
       # self.conn.execute("REINDEX") #検索インデックスの振り直し？ こちらは保留。
+      self.conn.commit()
+
 
     # 削除条件となる日時を計算
     # delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
