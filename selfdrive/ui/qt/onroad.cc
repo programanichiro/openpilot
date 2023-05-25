@@ -1703,6 +1703,8 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
             angle_prob = 10;
           }
           lane_prob *= angle_prob / 10; //たくさん曲がるとレーン依存発動。
+        } else {
+          lane_prob = 0;
         }
         painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), std::clamp<float>(scene.lane_line_probs[i], 0.0, 1.0)));
       } else {

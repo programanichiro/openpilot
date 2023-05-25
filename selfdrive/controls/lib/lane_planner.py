@@ -125,6 +125,8 @@ class LanePlanner:
         if angle_prob > 10:
           angle_prob = 10
         self.d_prob *= angle_prob / 10 #たくさん曲がるとレーン依存発動。
+      else:
+        self.d_prob = 0
       path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
 
       # lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
