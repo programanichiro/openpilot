@@ -81,11 +81,12 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
     last_position = *last_gps_position;
   }
 
-  //ここでlast_bearingを復帰させれば最初に向く角度が北向き以外にならないか？
-  std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
-  if(last_bearing_info_str.empty() == false){
-    last_bearing = std::stof(last_bearing_info_str);
-  }
+  //❌ここでlast_bearingを復帰させれば最初に向く角度が北向き以外にならないか？
+  //offroad遷移時にやる。
+  // std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
+  // if(last_bearing_info_str.empty() == false){
+  //   last_bearing = std::stof(last_bearing_info_str);
+  // }
 
   grabGesture(Qt::GestureType::PinchGesture);
   qDebug() << "MapWindow initialized";
@@ -239,12 +240,13 @@ void MapWindow::updateState(const UIState &s) {
       }
       static unsigned int last_bearing_save_ct;
       if ((last_bearing_save_ct ++ % 100) == 0 && last_bearing && sm["carState"].getCarState().getVEgo() <= 8/3.6) {
-        //向きを保存する。ここでやると地図が出てない状態で降車したら保存されない気がするが、めんどくさいのでいいや。
-        FILE *fp = fopen("../manager/last_bearing_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
-        if(fp != NULL){
-          fprintf(fp,"%.2f",*last_bearing);
-          fclose(fp);
-        }
+        //❌向きを保存する。ここでやると地図が出てない状態で降車したら保存されない気がするが、めんどくさいのでいいや。
+        //ここでは保存せず、offroad遷移時にやる。last_bearing_save_ct ++はemit LimitspeedChangedで使っているので注意。
+        // FILE *fp = fopen("../manager/last_bearing_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
+        // if(fp != NULL){
+        //   fprintf(fp,"%.2f",*last_bearing);
+        //   fclose(fp);
+        // }
       }
       velocity_filter.update(locationd_velocity.getValue()[0]);
 
@@ -477,9 +479,18 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
 void MapWindow::offroadTransition(bool offroad) {
   if (offroad) {
     clearRoute();
+    FILE *fp = fopen("../manager/last_bearing_info.txt","w");
+    if(fp != NULL){
+      fprintf(fp,"%.2f",*last_bearing);
+      fclose(fp);
+    }
   } else {
     auto dest = coordinate_from_param("NavDestination");
     setVisible(dest.has_value());
+    std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
+    if(last_bearing_info_str.empty() == false){
+      last_bearing = std::stof(last_bearing_info_str);
+    }
   }
   //last_bearing = {}; これがあると最終状態保持がキャンセルされる？
 }
