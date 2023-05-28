@@ -1673,7 +1673,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
         painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
       }
     } else
-#elif 0
+#elif 1
     if(expm == false){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i] - 0.25;
@@ -1688,7 +1688,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
         painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
       }
     } else
-#elif 1
+#elif 0
     if(expm == false){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i];

@@ -91,9 +91,11 @@ class LanePlanner:
     self.lane_width = self.lane_width_certainty.x * self.lane_width_estimate.x + \
                       (1 - self.lane_width_certainty.x) * speed_lane_width
 
-    clipped_lane_width = min(4.0, self.lane_width)
-    path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
-    path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
+    # clipped_lane_width = min(4.0, self.lane_width)
+    # path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
+    # path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
+    path_from_left_lane = self.lll_y + 1.8 / 2.0 #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
+    path_from_right_lane = self.rll_y - 1.8 / 2.0
 
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('LEFT:%.2f , W:%.1f , RIGHT:%.2f' % (l_prob , clipped_lane_width , r_prob))
@@ -117,28 +119,28 @@ class LanePlanner:
     self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
     safe_idxs = np.isfinite(self.ll_t)
     if safe_idxs[0]:
-      lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
-      lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
-      # 以上従来処理
-      if abs(pred_angle) > 2:
-        angle_prob = abs(pred_angle) - 2
-        if angle_prob > 7:
-          angle_prob = 7
-        self.d_prob *= angle_prob / 7 #たくさん曲がるとレーン依存発動。
-      else:
-        self.d_prob = 0
-      path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
+      # lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
+      # lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
+      # # 以上従来処理
+      # if abs(pred_angle) > 2:
+      #   angle_prob = abs(pred_angle) - 2
+      #   if angle_prob > 7:
+      #     angle_prob = 7
+      #   self.d_prob *= angle_prob / 7 #たくさん曲がるとレーン依存発動。
+      # else:
+      #   self.d_prob = 0
+      # path_xyz[:,1] = self.d_prob * lane_path_y_interp + (1.0 - self.d_prob) * path_xyz[:,1]
 
-      # lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
-      # lane_path_y_interp_right = np.interp(path_t, self.ll_t[safe_idxs], path_from_right_lane[safe_idxs])
-      # #比較にr_prob,l_probをスムースに反映する方法が思いつかない。
-      # # with open('/tmp/debug_out_o','w') as fp:
-      # #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
-      # #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
-      # if r_prob > 0.5: #レーン右と比べて大きい方を採用。
-      #   path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
-      # if l_prob > 0.5: #レーン左と比べて小さい方を採用。
-      #   path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+      lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
+      lane_path_y_interp_right = np.interp(path_t, self.ll_t[safe_idxs], path_from_right_lane[safe_idxs])
+      #比較にr_prob,l_probをスムースに反映する方法が思いつかない。
+      # with open('/tmp/debug_out_o','w') as fp:
+      #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
+      #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
+      if r_prob > 0.5: #レーン右と比べて大きい方を採用。
+        path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+      if l_prob > 0.5: #レーン左と比べて小さい方を採用。
+        path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
