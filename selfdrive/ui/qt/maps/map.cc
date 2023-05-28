@@ -81,13 +81,6 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
     last_position = *last_gps_position;
   }
 
-  //❌ここでlast_bearingを復帰させれば最初に向く角度が北向き以外にならないか？
-  //offroad遷移時にやる。
-  // std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
-  // if(last_bearing_info_str.empty() == false){
-  //   last_bearing = std::stof(last_bearing_info_str);
-  // }
-
   grabGesture(Qt::GestureType::PinchGesture);
   qDebug() << "MapWindow initialized";
 }
@@ -220,10 +213,6 @@ void MapWindow::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
   update();
 
-  static bool already_vego_over_8 = false;
-  if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
-    already_vego_over_8 = true; //一旦時速8km/h以上になった。
-  }
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
@@ -234,23 +223,12 @@ void MapWindow::updateState(const UIState &s) {
       locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid();
 
     if (locationd_valid) {
-      if (already_vego_over_8 == true) {
-        last_position = QMapbox::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
-        last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
-      }
-      static unsigned int last_bearing_save_ct;
-      if ((last_bearing_save_ct ++ % 100) == 0 && last_bearing && sm["carState"].getCarState().getVEgo() <= 8/3.6) {
-        //❌向きを保存する。ここでやると地図が出てない状態で降車したら保存されない気がするが、めんどくさいのでいいや。
-        //ここでは保存せず、offroad遷移時にやる。last_bearing_save_ct ++はemit LimitspeedChangedで使っているので注意。
-        // FILE *fp = fopen("../manager/last_bearing_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
-        // if(fp != NULL){
-        //   fprintf(fp,"%.2f",*last_bearing);
-        //   fclose(fp);
-        // }
-      }
+      last_position = QMapbox::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
+      last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
       velocity_filter.update(locationd_velocity.getValue()[0]);
 
-      if ((last_bearing_save_ct % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
+      static unsigned int LimitspeedChanged_ct;
+      if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
         emit LimitspeedChanged(rect().width());
       }
     }
