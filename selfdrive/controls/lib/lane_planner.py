@@ -141,7 +141,7 @@ class LanePlanner:
       #   path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
       # if l_prob > 0.5: #レーン左からはみ出さないように。
       #   path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
-      path_xyz[:,1] = lane_path_y_interp_right, path_xyz[:,1] #強制的に右レーンに寄ってみる。
+      path_xyz[:,1] = lane_path_y_interp_right #強制的に右レーンに寄ってみる。
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
