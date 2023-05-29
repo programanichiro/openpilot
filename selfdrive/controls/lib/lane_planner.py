@@ -116,7 +116,7 @@ class LanePlanner:
     # path_from_right_lane -= dcm
     # path_xyz[:,1] -= dcm
 
-    self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
+    # self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
     safe_idxs = np.isfinite(self.ll_t)
     if safe_idxs[0]:
       # lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
@@ -138,9 +138,9 @@ class LanePlanner:
       #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
       if r_prob > 0.5: #レーン右と比べて大きい方を採用。
-        path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+        path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
       if l_prob > 0.5: #レーン左と比べて小さい方を採用。
-        path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+        path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
