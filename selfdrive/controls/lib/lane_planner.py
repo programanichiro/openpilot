@@ -137,11 +137,18 @@ class LanePlanner:
       # with open('/tmp/debug_out_o','w') as fp:
       #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
-      # if r_prob > 0.5: #レーン右からはみ出さないように。
-      #   path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
-      # if l_prob > 0.5: #レーン左からはみ出さないように。
-      #   path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
-      path_xyz[:,1] = lane_path_y_interp_right #強制的に右レーンに寄ってみる。
+      if pred_angle > 0:
+        #左に曲がる時は右->左の順番で検査する。カーブの内側に切り込まないように。
+        if r_prob > 0.5: #レーン右からはみ出さないように。
+          path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+        if l_prob > 0.5: #レーン左からはみ出さないように。
+          path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+      else:
+        #右に曲がる時は左->右の順番で検査する。カーブの内側に切り込まないように。
+        if l_prob > 0.5: #レーン左からはみ出さないように。
+          path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+        if r_prob > 0.5: #レーン右からはみ出さないように。
+          path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
