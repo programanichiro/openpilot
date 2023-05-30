@@ -77,25 +77,26 @@ class LanePlanner:
     l_prob *= mod
     r_prob *= mod
 
-    # Reduce reliance on uncertain lanelines
-    l_std_mod = interp(self.lll_std, [.15, .3], [1.0, 0.0])
-    r_std_mod = interp(self.rll_std, [.15, .3], [1.0, 0.0])
-    l_prob *= l_std_mod
-    r_prob *= r_std_mod
+    if False:
+      # Reduce reliance on uncertain lanelines
+      l_std_mod = interp(self.lll_std, [.15, .3], [1.0, 0.0])
+      r_std_mod = interp(self.rll_std, [.15, .3], [1.0, 0.0])
+      l_prob *= l_std_mod
+      r_prob *= r_std_mod
 
-    # Find current lanewidth
-    self.lane_width_certainty.update(l_prob * r_prob)
-    current_lane_width = abs(self.rll_y[0] - self.lll_y[0])
-    self.lane_width_estimate.update(current_lane_width)
-    speed_lane_width = interp(v_ego, [0., 31.], [2.4, 3.1]) #, [2.8, 3.5]
-    self.lane_width = self.lane_width_certainty.x * self.lane_width_estimate.x + \
-                      (1 - self.lane_width_certainty.x) * speed_lane_width
+      # Find current lanewidth
+      self.lane_width_certainty.update(l_prob * r_prob)
+      current_lane_width = abs(self.rll_y[0] - self.lll_y[0])
+      self.lane_width_estimate.update(current_lane_width)
+      speed_lane_width = interp(v_ego, [0., 31.], [2.4, 3.1]) #, [2.8, 3.5]
+      self.lane_width = self.lane_width_certainty.x * self.lane_width_estimate.x + \
+                        (1 - self.lane_width_certainty.x) * speed_lane_width
 
     # clipped_lane_width = min(4.0, self.lane_width)
     # path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
     # path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
     path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.2 #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
-    path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.2
+    path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.4
 
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('LEFT:%.2f , W:%.1f , RIGHT:%.2f' % (l_prob , clipped_lane_width , r_prob))
@@ -137,7 +138,19 @@ class LanePlanner:
       # with open('/tmp/debug_out_o','w') as fp:
       #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
-      if pred_angle > 0:
+      lock_off = False
+      try:
+        with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
+          lockon_disp_disable_str = fp.read()
+          if lockon_disp_disable_str:
+            lockon_disp_disable = int(lockon_disp_disable_str)
+            if lockon_disp_disable != 0:
+              lock_off = True #ロックオンOFFで右レーン依存テスト
+      except Exception as e:
+        pass
+      if lock_off == True:
+        path_xyz[:,1] = path_from_right_lane #右レーンから40cm内側設定で、はみ出しカーブを走ってみる。
+      elif pred_angle > 0:
         #左に曲がる時は右->左の順番で検査する。カーブの内側に切り込まないように。
         if r_prob > 0.5: #レーン右からはみ出さないように。
           path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
