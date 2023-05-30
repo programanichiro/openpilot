@@ -149,7 +149,9 @@ class LanePlanner:
       except Exception as e:
         pass
       if lock_off == True:
-        path_xyz[:,1] = path_from_right_lane #右レーンから40cm内側設定で、はみ出しカーブを走ってみる。
+        # diff_r = path_from_right_lane[0] - path_xyz[:,1][0]
+        # path_xyz[:,1] += diff_r
+        path_xyz[:,1] = lane_path_y_interp_right
       elif pred_angle > 0:
         #左に曲がる時は右->左の順番で検査する。カーブの内側に切り込まないように。
         if r_prob > 0.5: #レーン右からはみ出さないように。
