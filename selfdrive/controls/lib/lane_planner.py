@@ -96,7 +96,7 @@ class LanePlanner:
     # path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
     # path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
     path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.2 #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
-    path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.4
+    path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.2
 
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('LEFT:%.2f , W:%.1f , RIGHT:%.2f' % (l_prob , clipped_lane_width , r_prob))
@@ -138,32 +138,44 @@ class LanePlanner:
       # with open('/tmp/debug_out_o','w') as fp:
       #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
-      lock_off = False
-      try:
-        with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
-          lockon_disp_disable_str = fp.read()
-          if lockon_disp_disable_str:
-            lockon_disp_disable = int(lockon_disp_disable_str)
-            if lockon_disp_disable != 0:
-              lock_off = True #ロックオンOFFで右レーン依存テスト
-      except Exception as e:
-        pass
-      if lock_off == True:
+      # lock_off = False
+      # try:
+      #   with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
+      #     lockon_disp_disable_str = fp.read()
+      #     if lockon_disp_disable_str:
+      #       lockon_disp_disable = int(lockon_disp_disable_str)
+      #       if lockon_disp_disable != 0:
+      #         lock_off = True #ロックオンOFFで右レーン依存テスト
+      # except Exception as e:
+      #   pass
+      if False: #lock_off == True:
         diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
         path_xyz[:,1] += diff_r #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
         # path_xyz[:,1] = lane_path_y_interp_right
       elif pred_angle > 0:
         #左に曲がる時は右->左の順番で検査する。カーブの内側に切り込まないように。
         if r_prob > 0.5: #レーン右からはみ出さないように。
-          path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+          # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+          diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
+          if diff_r < 0:
+            path_xyz[:,1] += diff_r #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
         if l_prob > 0.5: #レーン左からはみ出さないように。
-          path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+          # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+          diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
+          if diff_l > 0:
+            path_xyz[:,1] += diff_l #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
       else:
         #右に曲がる時は左->右の順番で検査する。カーブの内側に切り込まないように。
         if l_prob > 0.5: #レーン左からはみ出さないように。
-          path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+          # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
+          diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
+          if diff_l > 0:
+            path_xyz[:,1] += diff_l #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
         if r_prob > 0.5: #レーン右からはみ出さないように。
-          path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+          # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
+          diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
+          if diff_r < 0:
+            path_xyz[:,1] += diff_r #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
