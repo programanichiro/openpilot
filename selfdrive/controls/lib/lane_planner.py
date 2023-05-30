@@ -96,8 +96,8 @@ class LanePlanner:
     # clipped_lane_width = min(4.0, self.lane_width)
     # path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
     # path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
-    path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.2 + 0.05 #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
-    path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.2
+    path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.3 + 0.05 #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
+    path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.3
 
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('LEFT:%.2f , W:%.1f , RIGHT:%.2f' % (l_prob , clipped_lane_width , r_prob))
