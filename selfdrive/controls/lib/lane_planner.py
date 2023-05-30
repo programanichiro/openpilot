@@ -43,6 +43,7 @@ class LanePlanner:
 
     self.camera_offset = -CAMERA_OFFSET if wide_camera else CAMERA_OFFSET
     #self.camera_offset += 0.10 # 車体を10cm右に寄せる
+    self.lane_collision = 0 #bit0:left , bit1:right
     self.path_offset = -PATH_OFFSET if wide_camera else PATH_OFFSET
 
   def parse_model(self, md):
@@ -119,6 +120,7 @@ class LanePlanner:
 
     # self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
     safe_idxs = np.isfinite(self.ll_t)
+    new_lane_collision = 0 #bit0:left , bit1:right
     if safe_idxs[0]:
       # lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
       # lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
@@ -159,11 +161,13 @@ class LanePlanner:
           diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
           if diff_r < 0:
             path_xyz[:,1] += diff_r #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            new_lane_collision |= 2
         if l_prob > 0.5: #レーン左からはみ出さないように。
           # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
           diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
           if diff_l > 0:
             path_xyz[:,1] += diff_l #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            new_lane_collision |= 1
       else:
         #右に曲がる時は左->右の順番で検査する。カーブの内側に切り込まないように。
         if l_prob > 0.5: #レーン左からはみ出さないように。
@@ -171,14 +175,20 @@ class LanePlanner:
           diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
           if diff_l > 0:
             path_xyz[:,1] += diff_l #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            new_lane_collision |= 1
         if r_prob > 0.5: #レーン右からはみ出さないように。
           # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
           diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
           if diff_r < 0:
             path_xyz[:,1] += diff_r #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            new_lane_collision |= 2
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
+    if self.lane_collision != new_lane_collision:
+      with open('/tmp/lane_collision.txt','w') as fp:
+        fp.write('%d' % (new_lane_collision))
+        self.lane_collision = new_lane_collision
     return path_xyz
 
 #関数を最後に追加,dcm(ダイナミックカメラマージン？)名前がおかしいが、コーナーのイン側に寄せるオフセットである。早晩、こちらはlateral_planner.pyへ引っ越し予定。

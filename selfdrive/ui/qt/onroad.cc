@@ -1660,6 +1660,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   // lanelines
   bool expm = sm["controlsState"].getControlsState().getExperimentalMode();
+  int lane_collision = -1;
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
 #if 0 //レーン依存率をカラーで表す。
     if(expm == false){
@@ -1675,8 +1676,16 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
     } else
 #elif 1
     if(expm == false){
-      if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
-        float lane_prob = scene.lane_line_probs[i] - 0.25;
+      if(lane_collision == -1){
+          std::string lane_collision_txt = util::read_file("/tmp/lane_collision.txt");
+          if(lane_collision_txt.empty() == false){
+            lane_collision = std::stoi(lane_collision_txt);
+          } else {
+            lane_collision = 0x04; //lane_collision.txtが無い。
+          }
+      }
+      if((i == 1 && (lane_collision & 0x01))/*左レーン*/ || (i == 0x02 && (lane_collision & 2))/*右レーン*/){
+        float lane_prob = scene.lane_line_probs[i];
         if(lane_prob > 0.5){
           lane_prob = 1.0;
           painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), 1.0));
