@@ -75,7 +75,8 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
-    if sm['controlsState'].experimentalMode == False: #chillモードなら
+    chill_mode = (sm['controlsState'].experimentalMode == False) #chillモードでLP復活
+    if chill_mode: #chillモードなら
         self.LP.parse_model(md) #ichiropilot
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
       self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
@@ -142,7 +143,7 @@ class LateralPlanner:
                              LATERAL_ACCEL_COST, LATERAL_JERK_COST,
                              STEERING_RATE_COST)
     
-    if sm['controlsState'].experimentalMode == False: #chillモードでLP復活
+    if chill_mode: #chillモードなら
       ypf = STEER_CTRL_Y
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
