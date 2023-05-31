@@ -153,7 +153,7 @@ class LanePlanner:
       # except Exception as e:
       #   pass
       diff_mul = 1.1 #押し戻すための倍率
-      diff_add = 0.05 #さらに押し戻す距離[m]
+      diff_add = 0.05 * lane_speed_margin #さらに押し戻す距離[m]
       if False: #lock_off == True:
         diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
         path_xyz[:,1] += diff_r #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
