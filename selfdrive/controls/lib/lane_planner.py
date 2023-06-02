@@ -118,29 +118,37 @@ class LanePlanner:
       diff_add = 0.05 * lane_speed_margin #さらに押し戻す距離[m]
       if pred_angle > 0:
         #左に曲がる時は右->左の順番で検査する。カーブの内側に切り込まないように。
-        if r_prob > 0.5: #レーン右からはみ出さないように。
+        if r_prob > 0.2: #レーン右からはみ出さないように。
           # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
           diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
+          if r_prob < 0.5:
+            diff_r *= r_prob*2 #50％以下の場合は押し戻す距離を減らす
           if diff_r < 0:
             path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
             new_lane_collision |= 2
-        if l_prob > 0.5: #レーン左からはみ出さないように。
+        if l_prob > 0.2: #レーン左からはみ出さないように。
           # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
           diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
+          if l_prob < 0.5:
+            diff_l *= l_prob*2 #50％以下の場合は押し戻す距離を減らす
           if diff_l > 0:
             path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
             new_lane_collision |= 1
       else:
         #右に曲がる時は左->右の順番で検査する。カーブの内側に切り込まないように。
-        if l_prob > 0.5: #レーン左からはみ出さないように。
+        if l_prob > 0.2: #レーン左からはみ出さないように。
           # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
           diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
+          if l_prob < 0.5:
+            diff_l *= l_prob*2 #50％以下の場合は押し戻す距離を減らす
           if diff_l > 0:
             path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
             new_lane_collision |= 1
-        if r_prob > 0.5: #レーン右からはみ出さないように。
+        if r_prob > 0.2: #レーン右からはみ出さないように。
           # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
           diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
+          if r_prob < 0.5:
+            diff_r *= r_prob*2 #50％以下の場合は押し戻す距離を減らす
           if diff_r < 0:
             path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
             new_lane_collision |= 2
