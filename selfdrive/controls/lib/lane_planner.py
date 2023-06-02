@@ -116,42 +116,33 @@ class LanePlanner:
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
       diff_mul = 1.1 #押し戻すための倍率
       diff_add = 0.05 * lane_speed_margin #さらに押し戻す距離[m]
+      def prob_diff_path_xyz(prob,lane_path_y_interp,plus_minus):
+        if prob > 0.2: #レーンからはみ出さないように。
+          diff = lane_path_y_interp[0] - path_xyz[:,1][0]
+          if prob < 0.5:
+            diff *= prob*2 #50％以下の場合は押し戻す距離を減らす
+          if diff * plus_minus > 0:
+            return diff * diff_mul -diff_add , (2 if plus_minus < 0 else 1)
+        return 0 , 0
       if pred_angle > 0:
         #左に曲がる時は右->左の順番で検査する。カーブの内側に切り込まないように。
-        if r_prob > 0.2: #レーン右からはみ出さないように。
-          # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
-          diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
-          if r_prob < 0.5:
-            diff_r *= r_prob*2 #50％以下の場合は押し戻す距離を減らす
-          if diff_r < 0:
-            path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
-            new_lane_collision |= 2
-        if l_prob > 0.2: #レーン左からはみ出さないように。
-          # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
-          diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
-          if l_prob < 0.5:
-            diff_l *= l_prob*2 #50％以下の場合は押し戻す距離を減らす
-          if diff_l > 0:
-            path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
-            new_lane_collision |= 1
+        diff_r , collision_r = prob_diff_path_xyz(r_prob , lane_path_y_interp_right , -1)
+        if diff_r != 0:
+          path_xyz[:,1] += diff_r
+          new_lane_collision |= collision_r
+        diff_l , collision_l = prob_diff_path_xyz(l_prob , lane_path_y_interp_left , +1)
+        if diff_l != 0:
+          path_xyz[:,1] += diff_l
+          new_lane_collision |= collision_l
       else:
         #右に曲がる時は左->右の順番で検査する。カーブの内側に切り込まないように。
-        if l_prob > 0.2: #レーン左からはみ出さないように。
-          # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
-          diff_l = lane_path_y_interp_left[0] - path_xyz[:,1][0]
-          if l_prob < 0.5:
-            diff_l *= l_prob*2 #50％以下の場合は押し戻す距離を減らす
-          if diff_l > 0:
-            path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
-            new_lane_collision |= 1
-        if r_prob > 0.2: #レーン右からはみ出さないように。
-          # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
-          diff_r = lane_path_y_interp_right[0] - path_xyz[:,1][0]
-          if r_prob < 0.5:
-            diff_r *= r_prob*2 #50％以下の場合は押し戻す距離を減らす
-          if diff_r < 0:
-            path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
-            new_lane_collision |= 2
+        diff_l , collision_l = prob_diff_path_xyz(l_prob , lane_path_y_interp_left , +1)
+        if diff_l != 0:
+          path_xyz[:,1] += diff_l
+          new_lane_collision |= collision_l
+        if diff_r != 0:
+          path_xyz[:,1] += diff_r
+          new_lane_collision |= collision_r
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
