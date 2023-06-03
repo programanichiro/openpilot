@@ -38,8 +38,8 @@ class LanePlanner:
     self.lll_std = 0.
     self.rll_std = 0.
 
-    self.l_lane_change_prob = 0.
-    self.r_lane_change_prob = 0.
+    # self.l_lane_change_prob = 0.
+    # self.r_lane_change_prob = 0.
 
     self.camera_offset = -CAMERA_OFFSET if wide_camera else CAMERA_OFFSET
     #self.camera_offset += 0.10 # 車体を10cm右に寄せる
@@ -59,10 +59,10 @@ class LanePlanner:
       self.lll_std = md.laneLineStds[1]
       self.rll_std = md.laneLineStds[2]
 
-    desire_state = md.meta.desireState
-    if len(desire_state):
-      self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
-      self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
+    # desire_state = md.meta.desireState
+    # if len(desire_state):
+    #   self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
+    #   self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
 
   def get_d_path(self, st_angle, pred_angle , org_angle , v_ego, path_t, path_xyz):
     # Reduce reliance on lanelines that are too far apart or
