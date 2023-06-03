@@ -158,9 +158,9 @@ class LanePlanner:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
     if self.lane_collision != new_lane_collision:
-      if new_lane_collision == 1 or new_lane_collision == 2:
-        with open('/tmp/signal_start_prompt_info.txt','w') as fp:
-          fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
+      # if new_lane_collision == 1 or new_lane_collision == 2:
+      #   with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+      #     fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
       with open('/tmp/lane_collision.txt','w') as fp:
         fp.write('%d' % (new_lane_collision))
         self.lane_collision = new_lane_collision
