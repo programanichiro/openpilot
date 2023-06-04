@@ -1659,7 +1659,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   SubMaster &sm = *(s->sm);
 
   // lanelines
-  // bool lta_mode = sm["controlsState"].getControlsState().getExperimentalMode();
+  // bool lta_mode = !sm["controlsState"].getControlsState().getExperimentalMode();
   bool lta_mode = !Params().getBool("IsLdwEnabled");
   int lane_collision = -1;
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
