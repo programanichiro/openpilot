@@ -75,8 +75,8 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
-    # lta_enable = (sm['controlsState'].experimentalMode == False) #chillモードでLP復活
-    lta_enable = not params.get_bool("IsLdwEnabled") #LDWを「切る」とイチロウLTA発動。experimentalモードでも有効。
+    chill_enable = False #(sm['controlsState'].experimentalMode == False)
+    lta_enable = (v_ego_car > 16/3.6 or chill_enable) and not params.get_bool("IsLdwEnabled") #LDWを「切る」とイチロウLTA発動。experimentalモードでも有効。
     if lta_enable: #lta_enableなら
         self.LP.parse_model(md) #ichiropilot
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:

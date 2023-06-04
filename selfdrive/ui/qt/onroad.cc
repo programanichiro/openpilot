@@ -1659,8 +1659,9 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   SubMaster &sm = *(s->sm);
 
   // lanelines
-  // bool lta_mode = !sm["controlsState"].getControlsState().getExperimentalMode();
-  bool lta_mode = !Params().getBool("IsLdwEnabled");
+  const bool chill_mode = false; //!sm["controlsState"].getControlsState().getExperimentalMode();
+  const float v_ego_car = sm["carState"].getCarState().getVEgo();
+  const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && !Params().getBool("IsLdwEnabled");
   int lane_collision = -1;
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
 #if 0 //レーン依存率をカラーで表す。
