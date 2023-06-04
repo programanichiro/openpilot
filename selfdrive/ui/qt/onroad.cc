@@ -1659,11 +1659,12 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   SubMaster &sm = *(s->sm);
 
   // lanelines
-  bool expm = sm["controlsState"].getControlsState().getExperimentalMode();
+  // bool lta_mode = sm["controlsState"].getControlsState().getExperimentalMode();
+  bool lta_mode = !Params().getBool("IsLdwEnabled");
   int lane_collision = -1;
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
 #if 0 //レーン依存率をカラーで表す。
-    if(expm == false){
+    if(lta_mode == true){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i] - 0.25;
         if(lane_prob < 0){
@@ -1675,7 +1676,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
       }
     } else
 #elif 1
-    if(expm == false){
+    if(lta_mode == true){
       if(lane_collision == -1){
           std::string lane_collision_txt = util::read_file("/tmp/lane_collision.txt");
           if(lane_collision_txt.empty() == false){
@@ -1697,7 +1698,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
       }
     } else
 #elif 0
-    if(expm == false){
+    if(lta_mode == true){
       if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i];
         if(lane_prob < 0){
