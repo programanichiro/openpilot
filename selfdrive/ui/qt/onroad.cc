@@ -1661,7 +1661,12 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   // lanelines
   const bool chill_mode = false; //!sm["controlsState"].getControlsState().getExperimentalMode();
   const float v_ego_car = sm["carState"].getCarState().getVEgo();
-  const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && !Params().getBool("IsLdwEnabled");
+  static bool IsLdwEnabled = false;
+  static unsigned int IsLdwEnabled_ct = 0;
+  if(IsLdwEnabled_ct++ % 20 == 0){
+    IsLdwEnabled = Params().getBool("IsLdwEnabled");
+  }
+  const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && !IsLdwEnabled;
   int lane_collision = -1;
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
 #if 0 //レーン依存率をカラーで表す。
@@ -1694,27 +1699,6 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
           lane_prob *= 2; //50％以下でも多少の影響を視覚化。
         }
         painter.setBrush(QColor::fromRgbF(1.0, 0.5, 0, lane_prob));
-      } else {
-        painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
-      }
-    } else
-#elif 0
-    if(lta_mode == true){
-      if(i == 1/*左レーン*/ || i == 2/*右レーン*/){
-        float lane_prob = scene.lane_line_probs[i];
-        if(lane_prob < 0){
-          lane_prob = 0;
-        }
-        if(fabs(global_angle_steer0) > 2){
-          float angle_prob = fabs(global_angle_steer0) - 2;
-          if(angle_prob > 7){
-            angle_prob = 7;
-          }
-          lane_prob *= angle_prob / 7; //たくさん曲がるとレーン依存発動。
-        } else {
-          lane_prob = 0;
-        }
-        painter.setBrush(QColor::fromRgbF(1.0, 0.5 + 0.5 * (1.0-lane_prob), 1.0 * (1.0-lane_prob), std::clamp<float>(scene.lane_line_probs[i], 0.0, 1.0)));
       } else {
         painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
       }

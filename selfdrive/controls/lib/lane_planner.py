@@ -1,5 +1,6 @@
 import os
 import numpy as np
+from common.params import Params
 from cereal import log
 from common.filter_simple import FirstOrderFilter
 from common.numpy_fast import interp
@@ -7,6 +8,7 @@ from common.realtime import DT_MDL
 # from system.swaglog import cloudlog
 
 #このファイルは廃止です。削除予定。-> chillモード時に復活してみる。昔の小細工は働かないようにしている。
+params = Params()
 
 STEER_SAME_DIRECTION_CT = 0
 STEER_OLD_ANGLE = 0
@@ -46,7 +48,19 @@ class LanePlanner:
     self.lane_collision = 0 #bit0:left , bit1:right
     self.path_offset = -PATH_OFFSET if wide_camera else PATH_OFFSET
 
-  def parse_model(self, md):
+    self.frame_ct = 0
+    self.lta_mode = False
+
+  def parse_model(self, md, v_ego_car):
+    #ここでlta_mode判定を行う。
+    if self.frame_ct % 20 == 0:
+      chill_enable = False #(sm['controlsState'].experimentalMode == False) #ここにsmはないので、experimentalMode判定を復活するなら一手間かかる。
+      self.lta_mode = (v_ego_car > 16/3.6 or chill_enable) and not params.get_bool("IsLdwEnabled") #LDWを「切る」とイチロウLTA発動。experimentalモードでも有効。
+
+    self.frame_ct += 1
+    if self.lta_mode == False:
+      return
+
     lane_lines = md.laneLines
     if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
       self.ll_t = (np.array(lane_lines[1].t) + np.array(lane_lines[2].t))/2

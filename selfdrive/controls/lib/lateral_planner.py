@@ -75,10 +75,7 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
-    chill_enable = False #(sm['controlsState'].experimentalMode == False)
-    lta_enable = (v_ego_car > 16/3.6 or chill_enable) and not params.get_bool("IsLdwEnabled") and self.DH.lane_change_state == 0 #LDWを「切る」とイチロウLTA発動。experimentalモードでも有効。レーンチェンジ中は発動しない。
-    if lta_enable: #lta_enableなら
-        self.LP.parse_model(md) #ichiropilot
+    self.LP.parse_model(md,v_ego_car) #ichiropilot,lta_mode判定をこの中で行う。
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
       self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       self.t_idxs = np.array(md.position.t)
@@ -144,7 +141,7 @@ class LateralPlanner:
                              LATERAL_ACCEL_COST, LATERAL_JERK_COST,
                              STEERING_RATE_COST)
     
-    if lta_enable: #lta_enableモードなら
+    if self.LP.lta_mode and self.DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。
       ypf = STEER_CTRL_Y
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       d_path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
