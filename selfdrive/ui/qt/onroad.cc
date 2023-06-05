@@ -380,7 +380,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       limitspeedButton = new QPushButton("○"); //この丸がセンターに出る。
       //limitspeedButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
     } else {
-      limitspeedButton = new QPushButton("✖️"); //DELEモード
+      limitspeedButton = new QPushButton("⬇︎"); //RECモード⇩
+      //limitspeedButton = new QPushButton("✖️"); //DELEモード
       //limitspeedButton = new QPushButton("⬇︎⇩♻︎"); //DELEモード
       //limitspeedButton = new QPushButton("✖︎"); //DELEモード
       //limitspeedButton = new QPushButton("❌"); //DELEモード
@@ -624,7 +625,8 @@ void ButtonsWindow::updateState(const UIState &s) {
       limitspeedButton->setText("○");
       //limitspeedButton->setText("◯"); //枠内いっぱいに出る大きな丸。
     } else {
-      limitspeedButton->setText("✖️"); //DELEモード
+      limitspeedButton->setText("⬇︎"); //RECモード
+      //limitspeedButton->setText("✖️"); //DELEモード
       //limitspeedButton->setText("✖︎"); //DELEモード
       //limitspeedButton->setText("❌"); //DELEモード
     }
@@ -957,12 +959,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   static unsigned int yellow_flash_ct = 0;
   yellow_flash_ct ++;
-  bool db_del_mode = false;
+  bool db_rec_mode = false;
   if(limit_speed_override == false){
     bool yellow_flag = false;
     if(uiState()->scene.mLimitspeedButton == 2 && ms.toDouble() >= 30){
       p.setBrush(QColor::fromRgbF(0.4, 0.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
-      db_del_mode = true;
+      db_rec_mode = true;
       yellow_flag = true;
     } else if((uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1)){
       if(maxspeed_org+12 <= ms.toDouble()){
@@ -1019,7 +1021,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.setPen(QColor(0xa6, 0xa6, 0xa6, 0xff));
   }
   configFont(p, "Inter", 40*max_disp_k, "SemiBold");
-  QString MAX_AUTO = db_del_mode == true ? tr("DELE") : (limit_speed_override == false ? tr("MAX") : tr("AUTO"));
+  QString MAX_AUTO = db_rec_mode == true ? tr("REC") : (limit_speed_override == false ? tr("MAX") : tr("AUTO"));
   QRect max_rect = getTextRect(p, Qt::AlignCenter, MAX_AUTO);
   max_rect.moveCenter({set_speed_rect.center().x(), 0});
   max_rect.moveTop(set_speed_rect.top() + 27*max_disp_k);

@@ -136,6 +136,21 @@ class TiciFanController(BaseFanController):
       except Exception as e:
         pass
 
+    rec_mode = False
+    rec_speed = 0
+    try:
+      with open('/tmp/limitspeed_sw.txt','r') as fp:
+        limitspeed_sw_str = fp.read()
+        if limitspeed_sw_str:
+          if int(limitspeed_sw_str) == 2: #RECモード
+            rec_mode = True
+            with open('/tmp/cruise_info.txt','r') as fp:
+              cruise_info_str = fp.read()
+              if cruise_info_str:
+                rec_speed = int(cruise_info_str) #MAX km/h
+    except Exception as e:
+      pass
+
     #"/tmp/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出して速度30km/h以上ならspeedsに挿入する
     limitspeed_info_ok = False
     limitspeed_min = 30
@@ -149,6 +164,8 @@ class TiciFanController(BaseFanController):
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
           if self.tss_type < 2 and self.velocity > 119:
             self.velocity = 119 #TSSPでは最高119(メーター125)km/h
+          if rec_mode == True and rec_speed >= 30:
+            self.velocity = rec_speed
           limit_m = self.velocity/3.6
           if limit_m < 10:
             limit_m = 10 #10m以内の範囲には登録しない。
@@ -261,12 +278,12 @@ class TiciFanController(BaseFanController):
           self.conn.commit()
           self.db_del += 2
 
-        #削除条件、◯ボタンOFF、cruise_info.txt31以上かつ車速がcruise_info.txt/0.95以上のとき車速以上の速度のデータを削除する
+        #削除条件、◯ボタンOFF、cruise_info.txt31以上のとき車速以上の速度のデータを削除する
         try:
           with open('/tmp/limitspeed_sw.txt','r') as fp:
             limitspeed_sw_str = fp.read()
             if limitspeed_sw_str:
-              if int(limitspeed_sw_str) == 2: #DELEモード
+              if int(limitspeed_sw_str) == 2: #RECモード
                 pass #try節を続行
               else:
                 raise Exception("try節を脱出")
