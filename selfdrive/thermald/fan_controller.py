@@ -162,7 +162,7 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
-          if rec_mode == True and rec_speed >= 30:
+          if rec_mode == True and rec_speed >= 30 and self.velocity >= limitspeed_min:
             self.velocity = rec_speed
           if self.tss_type < 2 and self.velocity > 119:
             self.velocity = 119 #TSSPでは最高119(メーター125)km/h
@@ -280,23 +280,16 @@ class TiciFanController(BaseFanController):
 
         #削除条件、◯ボタンOFF、cruise_info.txt31以上のとき車速以上の速度のデータを削除する
         try:
-          with open('/tmp/limitspeed_sw.txt','r') as fp:
-            limitspeed_sw_str = fp.read()
-            if limitspeed_sw_str:
-              if int(limitspeed_sw_str) == 2: #RECモード
-                pass #try節を続行
-              else:
-                raise Exception("try節を脱出")
+          if rec_mode: #RECモード
+            pass #try節を続行
+          else:
+            raise Exception("try節を脱出")
 
-          cri = 0 #もっと単純に、MAX値(>=30)より速いデータを全部刈り取ってしまう。完全にお掃除モード
-          with open('/tmp/cruise_info.txt','r') as fp:
-            cruise_info_str = fp.read()
-            if cruise_info_str:
-              cri = int(cruise_info_str)
-              if cri >= 30:
-                pass #try節を続行
-              else:
-                raise Exception("try節を脱出")
+          cri = rec_speed #もっと単純に、MAX値(>=30)より速いデータを全部刈り取ってしまう。完全にお掃除モード
+          if cri >= 30:
+            pass #try節を続行
+          else:
+            raise Exception("try節を脱出")
               
           del_db_del = False
           for row in rows: #rowsは何度でも使える。
