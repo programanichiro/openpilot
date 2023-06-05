@@ -162,10 +162,10 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
-          if self.tss_type < 2 and self.velocity > 119:
-            self.velocity = 119 #TSSPでは最高119(メーター125)km/h
           if rec_mode == True and rec_speed >= 30:
             self.velocity = rec_speed
+          if self.tss_type < 2 and self.velocity > 119:
+            self.velocity = 119 #TSSPでは最高119(メーター125)km/h
           limit_m = self.velocity/3.6
           if limit_m < 10:
             limit_m = 10 #10m以内の範囲には登録しない。
