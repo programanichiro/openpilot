@@ -1133,6 +1133,7 @@ void CameraState::set_camera_exposure(float grey_frac) {
 
       // Compute optimal time for given gain
       int t = std::clamp(int(std::round(desired_ev / gain)), exposure_time_min, exposure_time_max);
+#if 0
       const int new_exposure_time_min = exposure_time_min + (exposure_time_max - exposure_time_min) / 50; //c3のカメラはこっち。画面が白飛びするが、LED発光を捉える時間は増える。
       float vego_kph = 0;
       std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_info.txt");
@@ -1151,7 +1152,7 @@ void CameraState::set_camera_exposure(float grey_frac) {
       if(vego_kph < 0.5 && t < new_exposure_time_min){
         t = new_exposure_time_min;
       }
-
+#endif
       // Only go below recommended gain when absolutely necessary to not overexpose
       if (g < analog_gain_rec_idx && t > 20 && g < gain_idx) {
         continue;
