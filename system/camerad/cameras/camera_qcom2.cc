@@ -1132,10 +1132,10 @@ void CameraState::set_camera_exposure(float grey_frac) {
 
       // Compute optimal time for given gain
       int t = std::clamp(int(std::round(desired_ev / gain)), exposure_time_min, exposure_time_max);
-      if(t * 2 < exposure_time_max){
-        t *= 2; //2倍明るくしてみる。
+      if(t / 2 > exposure_time_min){
+        t /= 2; //2倍暗くしてみる。
       } else {
-        t = exposure_time_max;
+        t = exposure_time_min;
       }
 
       // Only go below recommended gain when absolutely necessary to not overexpose
