@@ -1475,12 +1475,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   static int limit_speed_num = 0;
   if (mapVisible == false){
     if(limitspeed_info_read_ct++ % 10 == 5){
-      std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_data.txt");
-      if(limitspeed_info_txt.empty() == false){
+      std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
+      if(limitspeed_data_txt.empty() == false){
         float output[3]; // float型の配列
         int i = 0; // インデックス
 
-        std::stringstream ss(limitspeed_info_txt); // 入力文字列をstringstreamに変換
+        std::stringstream ss(limitspeed_data_txt); // 入力文字列をstringstreamに変換
         std::string token; // 一時的にトークンを格納する変数
         while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
           output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
