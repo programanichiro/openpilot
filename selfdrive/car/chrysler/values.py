@@ -5,7 +5,7 @@ from typing import Dict, List, Optional, Union
 from cereal import car
 from panda.python import uds
 from selfdrive.car import dbc_dict
-from selfdrive.car.docs_definitions import CarInfo, Harness, HarnessKit
+from selfdrive.car.docs_definitions import CarHarness, CarInfo, CarParts
 from selfdrive.car.fw_query_definitions import FwQueryConfig, Request, p16
 
 Ecu = car.CarParams.Ecu
@@ -60,7 +60,7 @@ RAM_CARS = RAM_DT | RAM_HD
 @dataclass
 class ChryslerCarInfo(CarInfo):
   package: str = "Adaptive Cruise Control (ACC)"
-  harness_kit: HarnessKit = HarnessKit(Harness.fca)
+  car_parts: CarParts = CarParts.common([CarHarness.fca])
 
 
 CAR_INFO: Dict[str, Optional[Union[ChryslerCarInfo, List[ChryslerCarInfo]]]] = {
@@ -74,10 +74,10 @@ CAR_INFO: Dict[str, Optional[Union[ChryslerCarInfo, List[ChryslerCarInfo]]]] = {
   ],
   CAR.JEEP_CHEROKEE: ChryslerCarInfo("Jeep Grand Cherokee 2016-18", video_link="https://www.youtube.com/watch?v=eLR9o2JkuRk"),
   CAR.JEEP_CHEROKEE_2019: ChryslerCarInfo("Jeep Grand Cherokee 2019-21", video_link="https://www.youtube.com/watch?v=jBe4lWnRSu4"),
-  CAR.RAM_1500: ChryslerCarInfo("Ram 1500 2019-23", harness_kit=HarnessKit(Harness.ram)),
+  CAR.RAM_1500: ChryslerCarInfo("Ram 1500 2019-23", car_parts=CarParts.common([CarHarness.ram])),
   CAR.RAM_HD: [
-    ChryslerCarInfo("Ram 2500 2020-22", harness_kit=HarnessKit(Harness.ram)),
-    ChryslerCarInfo("Ram 3500 2019-22", harness_kit=HarnessKit(Harness.ram)),
+    ChryslerCarInfo("Ram 2500 2020-22", car_parts=CarParts.common([CarHarness.ram])),
+    ChryslerCarInfo("Ram 3500 2019-22", car_parts=CarParts.common([CarHarness.ram])),
   ],
 }
 
@@ -225,8 +225,8 @@ FW_VERSIONS = {
       b'68453513AD',
       b'68453514AD',
       b'68510283AG',
-      b'68527375AD',
       b'68527346AE',
+      b'68527375AD',
     ],
     (Ecu.srs, 0x744, None): [
       b'68428609AB',
@@ -248,8 +248,8 @@ FW_VERSIONS = {
       b'68438456AF',
       b'68535469AB',
       b'68535470AC',
-      b'68586307AB',
       b'68548900AB',
+      b'68586307AB',
     ],
     (Ecu.fwdRadar, 0x753, None): [
       b'04672892AB',
@@ -275,13 +275,14 @@ FW_VERSIONS = {
       b'68522583AB',
       b'68522585AB',
       b'68552788AA',
+      b'68552789AA',
       b'68552790AA',
       b'68585112AB',
-      b'68552789AA',
     ],
     (Ecu.engine, 0x7e0, None): [
       b'05036065AE ',
       b'05036066AE ',
+      b'05149846AA ',
       b'68378701AI ',
       b'68378758AM ',
       b'68448163AJ',
@@ -289,7 +290,6 @@ FW_VERSIONS = {
       b'68500630AD',
       b'68500630AE',
       b'68539650AD',
-      b'05149846AA ',
     ],
     (Ecu.transmission, 0x7e1, None): [
       b'68360078AL',
@@ -301,8 +301,8 @@ FW_VERSIONS = {
       b'68445533AB',
       b'68484467AC',
       b'68502994AD',
-      b'68540431AB',
       b'68520867AE',
+      b'68540431AB',
     ],
   },
 
@@ -314,6 +314,7 @@ FW_VERSIONS = {
       b'68525485AB',
       b'68525487AB',
       b'68525498AB',
+      b'68528791AF',
     ],
     (Ecu.srs, 0x744, None): [
       b'68399794AC',
@@ -329,9 +330,11 @@ FW_VERSIONS = {
       b'68504022AC',
       b'68530686AB',
       b'68530686AC',
+      b'68544596AC',
     ],
     (Ecu.fwdRadar, 0x753, None): [
       b'04672895AB',
+      b'04672934AB',
       b'56029827AG',
       b'56029827AH',
       b'68462657AE',
@@ -341,6 +344,7 @@ FW_VERSIONS = {
     (Ecu.eps, 0x761, None): [
       b'68421036AC',
       b'68507906AB',
+      b'68534023AC',
     ],
     (Ecu.engine, 0x7e0, None): [
       b'52370131AF',
@@ -349,6 +353,7 @@ FW_VERSIONS = {
       b'52370931CT',
       b'52401032AE',
       b'52421132AF',
+      b'52421332AF',
       b'68527616AD ',
       b'M2370131MB',
       b'M2421132MB',
