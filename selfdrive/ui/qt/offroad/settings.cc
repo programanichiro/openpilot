@@ -189,6 +189,33 @@ void TogglesPanel::updateToggles() {
 
 DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
   setSpacing(50);
+
+  // power buttons
+  QHBoxLayout *power_layout = new QHBoxLayout();
+  power_layout->setSpacing(30);
+
+  QPushButton *reboot_btn = new QPushButton(tr("Reboot"));
+  reboot_btn->setObjectName("reboot_btn");
+  power_layout->addWidget(reboot_btn);
+  QObject::connect(reboot_btn, &QPushButton::clicked, this, &DevicePanel::reboot);
+
+  QPushButton *poweroff_btn = new QPushButton(tr("Power Off"));
+  poweroff_btn->setObjectName("poweroff_btn");
+  power_layout->addWidget(poweroff_btn);
+  QObject::connect(poweroff_btn, &QPushButton::clicked, this, &DevicePanel::poweroff);
+
+  if (!Hardware::PC()) {
+    connect(uiState(), &UIState::offroadTransition, poweroff_btn, &QPushButton::setVisible);
+  }
+
+  setStyleSheet(R"(
+    #reboot_btn { height: 120px; border-radius: 15px; background-color: #393939; }
+    #reboot_btn:pressed { background-color: #4a4a4a; }
+    #poweroff_btn { height: 120px; border-radius: 15px; background-color: #E22C2C; }
+    #poweroff_btn:pressed { background-color: #FF2424; }
+  )");
+  addItem(power_layout);
+    
   addItem(new LabelControl(tr("Dongle ID"), getDongleId().value_or(tr("N/A"))));
   addItem(new LabelControl(tr("Serial"), params.get("HardwareSerial").c_str()));
 
@@ -247,31 +274,7 @@ DevicePanel::DevicePanel(SettingsWindow *parent) : ListWidget(parent) {
     }
   });
 
-  // power buttons
-  QHBoxLayout *power_layout = new QHBoxLayout();
-  power_layout->setSpacing(30);
 
-  QPushButton *reboot_btn = new QPushButton(tr("Reboot"));
-  reboot_btn->setObjectName("reboot_btn");
-  power_layout->addWidget(reboot_btn);
-  QObject::connect(reboot_btn, &QPushButton::clicked, this, &DevicePanel::reboot);
-
-  QPushButton *poweroff_btn = new QPushButton(tr("Power Off"));
-  poweroff_btn->setObjectName("poweroff_btn");
-  power_layout->addWidget(poweroff_btn);
-  QObject::connect(poweroff_btn, &QPushButton::clicked, this, &DevicePanel::poweroff);
-
-  if (!Hardware::PC()) {
-    connect(uiState(), &UIState::offroadTransition, poweroff_btn, &QPushButton::setVisible);
-  }
-
-  setStyleSheet(R"(
-    #reboot_btn { height: 120px; border-radius: 15px; background-color: #393939; }
-    #reboot_btn:pressed { background-color: #4a4a4a; }
-    #poweroff_btn { height: 120px; border-radius: 15px; background-color: #E22C2C; }
-    #poweroff_btn:pressed { background-color: #FF2424; }
-  )");
-  addItem(power_layout);
 }
 
 void DevicePanel::updateCalibDescription() {
@@ -364,7 +367,7 @@ SettingsWindow::SettingsWindow(QWidget *parent) : QFrame(parent) {
     }
   )");
   close_btn->setFixedSize(200, 200);
-  sidebar_layout->addSpacing(45);
+  sidebar_layout->addSpacing(0); //45
   sidebar_layout->addWidget(close_btn, 0, Qt::AlignCenter);
   QObject::connect(close_btn, &QPushButton::clicked, this, &SettingsWindow::closeSettings);
 
