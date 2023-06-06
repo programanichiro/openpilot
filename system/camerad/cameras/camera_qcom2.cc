@@ -535,7 +535,7 @@ void CameraState::camera_set_parameters() {
     dc_gain_off_grey = DC_GAIN_OFF_GREY_AR0231;
     exposure_time_min = EXPOSURE_TIME_MIN_AR0231;
     exposure_time_max = EXPOSURE_TIME_MAX_AR0231;
-    //exposure_time_min += (exposure_time_max - exposure_time_min) / 5;
+    exposure_time_min += (exposure_time_max - exposure_time_min) / 5; //c3のカメラはこっち。
     analog_gain_min_idx = ANALOG_GAIN_MIN_IDX_AR0231;
     analog_gain_rec_idx = ANALOG_GAIN_REC_IDX_AR0231;
     analog_gain_max_idx = ANALOG_GAIN_MAX_IDX_AR0231;
