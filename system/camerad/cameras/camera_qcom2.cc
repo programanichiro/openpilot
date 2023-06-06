@@ -21,7 +21,6 @@
 #include "media/cam_sync.h"
 #include "common/swaglog.h"
 #include "system/camerad/cameras/sensor2_i2c.h"
-#include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/ui.h"
 
 // For debugging:
