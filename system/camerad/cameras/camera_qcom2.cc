@@ -535,7 +535,7 @@ void CameraState::camera_set_parameters() {
     dc_gain_off_grey = DC_GAIN_OFF_GREY_AR0231;
     exposure_time_min = EXPOSURE_TIME_MIN_AR0231;
     exposure_time_max = EXPOSURE_TIME_MAX_AR0231;
-    exposure_time_min += (exposure_time_max - exposure_time_min) / 50; //c3のカメラはこっち。
+    //exposure_time_min += (exposure_time_max - exposure_time_min) / 50; //c3のカメラはこっち。画面が白飛びするが、LED発光を捉える時間は増える。
     analog_gain_min_idx = ANALOG_GAIN_MIN_IDX_AR0231;
     analog_gain_rec_idx = ANALOG_GAIN_REC_IDX_AR0231;
     analog_gain_max_idx = ANALOG_GAIN_MAX_IDX_AR0231;
@@ -555,7 +555,7 @@ void CameraState::camera_set_parameters() {
     dc_gain_off_grey = DC_GAIN_OFF_GREY_OX03C10;
     exposure_time_min = EXPOSURE_TIME_MIN_OX03C10;
     exposure_time_max = EXPOSURE_TIME_MAX_OX03C10;
-    exposure_time_min += (exposure_time_max - exposure_time_min) / 50;
+    //exposure_time_min += (exposure_time_max - exposure_time_min) / 50;
     analog_gain_min_idx = ANALOG_GAIN_MIN_IDX_OX03C10;
     analog_gain_rec_idx = ANALOG_GAIN_REC_IDX_OX03C10;
     analog_gain_max_idx = ANALOG_GAIN_MAX_IDX_OX03C10;
@@ -1132,6 +1132,11 @@ void CameraState::set_camera_exposure(float grey_frac) {
 
       // Compute optimal time for given gain
       int t = std::clamp(int(std::round(desired_ev / gain)), exposure_time_min, exposure_time_max);
+      if(t * 2 < exposure_time_max){
+        t *= 2; //2倍明るくしてみる。
+      } else {
+        t = exposure_time_max;
+      }
 
       // Only go below recommended gain when absolutely necessary to not overexpose
       if (g < analog_gain_rec_idx && t > 20 && g < gain_idx) {
