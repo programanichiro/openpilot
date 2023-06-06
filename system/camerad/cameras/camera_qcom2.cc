@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 
 #include "media/cam_defs.h"
 #include "media/cam_isp.h"
