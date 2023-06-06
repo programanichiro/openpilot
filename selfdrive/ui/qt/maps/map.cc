@@ -856,7 +856,7 @@ int limit_speed_num;
 void MapLimitspeed::updateLimitspeed(int map_width) {
 
   std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
-  if(limitspeed_info_txt.empty() == false){
+  if(limitspeed_data_txt.empty() == false){
     float output[3]; // float型の配列
     int i = 0; // インデックス
 
