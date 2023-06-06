@@ -12,7 +12,6 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
-#include <iostream>
 
 #include "media/cam_defs.h"
 #include "media/cam_isp.h"
@@ -22,6 +21,8 @@
 #include "media/cam_sync.h"
 #include "common/swaglog.h"
 #include "system/camerad/cameras/sensor2_i2c.h"
+#include "selfdrive/ui/qt/util.h"
+#include "selfdrive/ui/ui.h"
 
 // For debugging:
 // echo "4294967295" > /sys/module/cam_debug_util/parameters/debug_mdl
@@ -1135,7 +1136,6 @@ void CameraState::set_camera_exposure(float grey_frac) {
       int t = std::clamp(int(std::round(desired_ev / gain)), exposure_time_min, exposure_time_max);
       const int new_exposure_time_min = exposure_time_min + (exposure_time_max - exposure_time_min) / 50; //c3のカメラはこっち。画面が白飛びするが、LED発光を捉える時間は増える。
       float vego_kph = 0;
-#if 0
       std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_info.txt");
       if(limitspeed_info_txt.empty() == false){
         float output[5]; // float型の配列
@@ -1149,7 +1149,6 @@ void CameraState::set_camera_exposure(float grey_frac) {
         }
         vego_kph = (float)output[3]; //車速km/h
       }
-#endif
       if(vego_kph < 0.5 && t < new_exposure_time_min){
         t = new_exposure_time_min;
       }
