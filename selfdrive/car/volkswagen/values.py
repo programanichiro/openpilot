@@ -181,9 +181,6 @@ class VWCarInfo(CarInfo):
     if CP.carFingerprint in (CAR.CRAFTER_MK2, CAR.TRANSPORTER_T61):
       self.car_parts = CarParts([Device.three_angled_mount, CarHarness.j533])
 
-    if CP.carFingerprint in (CAR.CRAFTER_MK2, CAR.TRANSPORTER_T61):
-      self.car_parts = CarParts([Device.three_angled_mount, CarHarness.j533])
-
 
 CAR_INFO: Dict[str, Union[VWCarInfo, List[VWCarInfo]]] = {
   CAR.ARTEON_MK1: [
