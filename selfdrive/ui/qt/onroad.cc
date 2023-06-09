@@ -467,7 +467,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0U = new QWidget;
   QVBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
-  btns_layout0U->setContentsMargins(0, 430-200-70 - 30 * bottom_btns, 0, 0);
+  btns_layout0U->setContentsMargins(0, 430-200-70 - 20 * bottom_btns, 0, 0);
   btns_layout00->addWidget(btns_wrapper0U, 0, Qt::AlignTop);
 
   { //exp,long,ステルスボタン
