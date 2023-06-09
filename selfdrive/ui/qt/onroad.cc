@@ -329,12 +329,13 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QWidget *btns_wrapperBB = new QWidget;
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
     btns_layoutBB->setSpacing(0);
-    btns_layoutBB->setContentsMargins(0, 30, 0, -30);
+    btns_layoutBB->setContentsMargins(0, 0, 0, 0);
     main_layout->addWidget(btns_wrapperBB, 0, 0); //Alignは何も指定しない。
 
     { //テストボタン1
       QPushButton *T1_Button = new QPushButton("test1");
       btns_layoutBB->addWidget(T1_Button);
+      T1_Button->setContentsMargins(0, 30, 0, 0);
       T1_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T1_Button->setFixedHeight(80);
       T1_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
@@ -342,6 +343,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     { //テストボタン2
       QPushButton *T2_Button = new QPushButton("test2");
       btns_layoutBB->addWidget(T2_Button);
+      T2_Button->setContentsMargins(0, 30, 0, 0);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setFixedHeight(80);
       T2_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(true)));
@@ -349,6 +351,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     { //テストボタン3
       QPushButton *T3_Button = new QPushButton("test3");
       btns_layoutBB->addWidget(T3_Button);
+      T3_Button->setContentsMargins(0, 30, 0, 0);
       T3_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T3_Button->setFixedHeight(80);
       T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
