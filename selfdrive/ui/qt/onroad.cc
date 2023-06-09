@@ -312,7 +312,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
 // ButtonsWindow
 const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
-const static char *btn_styleb = "font-size: 90px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+const static char *btn_styleb = "font-size: 35px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
 bool Knight_scanner = true;
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
