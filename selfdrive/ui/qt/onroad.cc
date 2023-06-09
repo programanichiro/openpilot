@@ -320,7 +320,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper00 = new QWidget;
   QHBoxLayout *btns_layout00  = new QHBoxLayout(btns_wrapper00);
   btns_layout00->setSpacing(0);
-  btns_layout00->setContentsMargins(0, 0, 0, -30);
+  btns_layout00->setContentsMargins(0, 0, 0, 0);
   main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
 
   int bottom_btns = 0;
@@ -329,7 +329,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QWidget *btns_wrapperBB = new QWidget;
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
     btns_layoutBB->setSpacing(0);
-    btns_layoutBB->setContentsMargins(0, 0, 0, 0);
+    btns_layoutBB->setContentsMargins(0, 30, 0, -30);
     main_layout->addWidget(btns_wrapperBB, 0, 0); //Alignは何も指定しない。
 
     { //テストボタン1
