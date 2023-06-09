@@ -316,6 +316,7 @@ const static char *btn_styleb = "font-size: 45px; border-radius: 10px; border-co
 bool Long_enable = true;
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
+  main_layout->setContentsMargins(0, 0, 0, 0);
 
   QWidget *btns_wrapper00 = new QWidget;
   QHBoxLayout *btns_layout00  = new QHBoxLayout(btns_wrapper00);
