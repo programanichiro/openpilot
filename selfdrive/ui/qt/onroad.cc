@@ -314,6 +314,7 @@ const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
 const static char *btn_styleb = "font-size: 45px; border-radius: 10px; border-color: %1";
 bool Long_enable = true;
+bool Knight_scanner = true;
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
@@ -334,28 +335,38 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     main_layout->addWidget(btns_wrapperBB, 0, 0); //Alignは何も指定しない。
 
     { //テストボタン1
-      QPushButton *T1_Button = new QPushButton("test1");
+      QPushButton *T1_Button = new QPushButton("…");
       btns_layoutBB->addWidget(T1_Button);
       T1_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T1_Button->setContentsMargins(0, 0, 0, 0);
       T1_Button->setFixedHeight(90);
-      T1_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+      T1_Button->setStyleSheet(QString(btn_style0).arg(mButtonColors.at(false)));
     }
-    { //テストボタン2
-      QPushButton *T2_Button = new QPushButton("test2");
+    { //ナイトスキャナー非表示(テストボタン2)
+      QPushButton *T2_Button = new QPushButton("…");
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setContentsMargins(0, 0, 0, 0);
       T2_Button->setFixedHeight(90);
-      T2_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(true)));
+      T2_Button->setStyleSheet(QString(btn_style0).arg(mButtonColors.at(true)));
+      Knight_scanner = getButtonEnabled("/data/night_scanner_disable.txt");
+      QObject::connect(T2_Button, &QPushButton::pressed, [=]() {
+        Knight_scanner = !getButtonEnabled("/data/night_scanner_disable.txt");
+        setButtonEnabled("/data/night_scanner_disable.txt",Knight_scanner);
+        if(Knight_scanner){
+          soundPipo();
+        } else {
+          soundPo();
+        }
+      });
     }
     { //テストボタン3
-      QPushButton *T3_Button = new QPushButton("test3");
+      QPushButton *T3_Button = new QPushButton("…");
       btns_layoutBB->addWidget(T3_Button);
       T3_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T3_Button->setContentsMargins(0, 0, 0, 0);
       T3_Button->setFixedHeight(90);
-      T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+      T3_Button->setStyleSheet(QString(btn_style0).arg(mButtonColors.at(false)));
     }
   }
 
@@ -543,7 +554,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(15, 0, 30, 30);
+  btns_layout->setContentsMargins(15, 0, 30, 30 * (1-bottom_btns));
 
   btns_layout0->addWidget(btns_wrapper,0,Qt::AlignVCenter);
 
@@ -2000,6 +2011,9 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       if(left_blinker || right_blinker){
         p.drawRect(rect_w * i / (n-1), h_pos - lane_change_height, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
       } else {
+        if(Knight_scanner == false){
+          continue;
+        }
         //ポリゴンで表示。
         float sx_a = rect_w * i / (n-1) - rect_w / 2;
         sx_a /= (rect_w / 2); // -1〜1
