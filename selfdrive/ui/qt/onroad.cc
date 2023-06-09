@@ -323,9 +323,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout00->setContentsMargins(0, 0, 0, 0);
   main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
 
-  int bottom_btns = 0;
+  int bottom_btns_none = 1;
   if(0){ //最下段ボタン
-    bottom_btns = 1;
+    bottom_btns_none = 0;
     QWidget *btns_wrapperBB = new QWidget;
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
     btns_layoutBB->setSpacing(0);
@@ -398,7 +398,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     forceOnePedalButton->setFixedWidth(rect_width);
     forceOnePedalButton->setFixedHeight(rect_height);
     //forceOnePedalButton->setWindowOpacity(0.2);
-    btns_layoutLL->addSpacing(30 * bottom_btns);
+    btns_layoutLL->addSpacing(30 * bottom_btns_none);
     btns_layoutLL->addWidget(forceOnePedalButton);
     forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
   }
