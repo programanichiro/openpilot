@@ -362,7 +362,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *btns_layoutLL  = new QVBoxLayout(btns_wrapperLL);
   btns_layoutLL->setSpacing(0);
   int forceOnePedalButton_height = 180 * 1.3;
-  btns_layoutLL->setContentsMargins(30+15, 430-172 - forceOnePedalButton_height -10, 15, 0);
+  btns_layoutLL->setContentsMargins(30+15, 430-172 - forceOnePedalButton_height -10, 15, 30 * bottom_btns_none);
 
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
   { //強制ワンペダルステルスボタン
