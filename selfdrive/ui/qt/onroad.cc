@@ -323,9 +323,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout00->setContentsMargins(0, 0, 0, 0);
   main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
 
-  int bottom_btns_none = 1;
+  int bottom_btns = 0;
   if(0){ //最下段ボタン
-    bottom_btns_none = 0;
+    bottom_btns = 1;
     QWidget *btns_wrapperBB = new QWidget;
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
     btns_layoutBB->setSpacing(0);
@@ -362,7 +362,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *btns_layoutLL  = new QVBoxLayout(btns_wrapperLL);
   btns_layoutLL->setSpacing(0);
   int forceOnePedalButton_height = 180 * 1.3;
-  btns_layoutLL->setContentsMargins(30+15, 430-172 - forceOnePedalButton_height -10, 15, 30 * bottom_btns_none);
+  btns_layoutLL->setContentsMargins(30+15, 430-172 - forceOnePedalButton_height -10, 15, 30 * (1-bottom_btns));
 
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
   { //強制ワンペダルステルスボタン
@@ -398,7 +398,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     forceOnePedalButton->setFixedWidth(rect_width);
     forceOnePedalButton->setFixedHeight(rect_height);
     //forceOnePedalButton->setWindowOpacity(0.2);
-    btns_layoutLL->addSpacing(30 * bottom_btns_none);
+    btns_layoutLL->addSpacing(30 * bottom_btns);
     btns_layoutLL->addWidget(forceOnePedalButton);
     forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
   }
