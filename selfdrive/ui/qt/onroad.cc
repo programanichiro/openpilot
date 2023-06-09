@@ -323,7 +323,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout00->setContentsMargins(0, 0, 0, 0);
   main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
 
-  { //最下段ボタン
+  if(0){ //最下段ボタン
     QWidget *btns_wrapperBB = new QWidget;
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
     btns_layoutBB->setSpacing(0);
