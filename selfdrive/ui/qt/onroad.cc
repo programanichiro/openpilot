@@ -343,7 +343,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T1_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
     }
     { //ナイトスキャナー非表示(テストボタン2)
-      QPushButton *T2_Button = new QPushButton("・・・");
+      QPushButton *T2_Button = new QPushButton("⚫︎⚫︎⚫︎");
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setContentsMargins(0, 0, 0, 0);
