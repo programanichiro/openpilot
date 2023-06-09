@@ -349,10 +349,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T2_Button->setContentsMargins(0, 0, 0, 0);
       T2_Button->setFixedHeight(90);
       T2_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(true)));
-      Knight_scanner = getButtonEnabled("/data/night_scanner_disable.txt");
+      Knight_scanner = getButtonEnabled("/data/knight_scanner_disable.txt");
       QObject::connect(T2_Button, &QPushButton::pressed, [=]() {
-        Knight_scanner = !getButtonEnabled("/data/night_scanner_disable.txt");
-        setButtonEnabled("/data/night_scanner_disable.txt",Knight_scanner);
+        Knight_scanner = !getButtonEnabled("/data/knight_scanner_disable.txt");
+        setButtonEnabled("/data/knight_scanner_disable.txt",Knight_scanner);
         if(Knight_scanner){
           soundPipo();
         } else {
