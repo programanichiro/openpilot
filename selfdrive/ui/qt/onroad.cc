@@ -330,6 +330,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
     btns_layoutBB->setSpacing(0);
     btns_layoutBB->setContentsMargins(0, 0, 0, 0);
+    QSpacerItem *spacerItem = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Expanding);
+    btns_layoutBB->addSpacerItem(spacerItem);
     main_layout->addWidget(btns_wrapperBB, 0, 0); //Alignは何も指定しない。
 
     { //テストボタン1
