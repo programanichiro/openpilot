@@ -328,6 +328,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     bottom_btns = 1;
     QWidget *btns_wrapperBB = new QWidget;
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
+    btns_layoutBB->addStretch(1); //伸縮
     btns_layoutBB->setSpacing(0);
     btns_layoutBB->setContentsMargins(0, 0, 0, 0);
     main_layout->addWidget(btns_wrapperBB, 0, 0); //Alignは何も指定しない。
