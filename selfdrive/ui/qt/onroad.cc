@@ -396,7 +396,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     forceOnePedalButton->setFixedWidth(rect_width);
     forceOnePedalButton->setFixedHeight(rect_height);
     //forceOnePedalButton->setWindowOpacity(0.2);
-    btns_layoutLL->addSpacing(0);
+    btns_layoutLL->addSpacing(30);
     btns_layoutLL->addWidget(forceOnePedalButton);
     forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
   }
@@ -421,7 +421,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     limitspeedButton->setFixedHeight(150*0.9);
     //limitspeedButton->setPalette(QColor(255,255,255,all_opac*255));
     //limitspeedButton->setAutoFillBackground(true);
-    btns_layoutLL->addSpacing(10+30);
+    btns_layoutLL->addSpacing(10);
     btns_layoutLL->addWidget(limitspeedButton);
     limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0)));
   }
