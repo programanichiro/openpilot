@@ -343,7 +343,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T1_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
     }
     { //ナイトスキャナー非表示(テストボタン2)
-      QPushButton *T2_Button = new QPushButton("…");
+      QPushButton *T2_Button = new QPushButton("・・・");
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setContentsMargins(0, 0, 0, 0);
@@ -467,7 +467,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper0U = new QWidget;
   QVBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
-  btns_layout0U->setContentsMargins(0, 430-200-70 - 50 * bottom_btns, 0, 0);
+  btns_layout0U->setContentsMargins(0, 430-200-70 - 30 * bottom_btns, 0, 0);
   btns_layout00->addWidget(btns_wrapper0U, 0, Qt::AlignTop);
 
   { //exp,long,ステルスボタン
@@ -554,7 +554,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper = new QWidget;
   QVBoxLayout *btns_layout  = new QVBoxLayout(btns_wrapper);
   btns_layout->setSpacing(0);
-  btns_layout->setContentsMargins(15, 0, 30, 30);
+  btns_layout->setContentsMargins(15, 0, 30, 30 * (1-bottom_btns));
 
   btns_layout0->addWidget(btns_wrapper,0,Qt::AlignVCenter);
 
