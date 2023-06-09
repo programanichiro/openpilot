@@ -332,9 +332,12 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     btns_layoutBB->setSpacing(0);
     btns_layoutBB->setContentsMargins(0, 0, 0, 0);
     main_layout->addWidget(btns_wrapperBB, 0, 0); //Alignは何も指定しない。
-
+    {
+        QSpacerItem *spacerItem = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Preferred);
+        btns_layoutBB->addSpacerItem(spacerItem);
+    }
     { //テストボタン1
-      QPushButton *T1_Button = new QPushButton(""); //拡張用
+      QPushButton *T1_Button = new QPushButton("⚫︎⚪︎●◯⬇︎"); //拡張用
       btns_layoutBB->addWidget(T1_Button);
       T1_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T1_Button->setContentsMargins(0, 0, 0, 0);
@@ -360,12 +363,16 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       });
     }
     { //テストボタン3
-      QPushButton *T3_Button = new QPushButton("");//拡張用
+      QPushButton *T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
       btns_layoutBB->addWidget(T3_Button);
       T3_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T3_Button->setContentsMargins(0, 0, 0, 0);
       T3_Button->setFixedHeight(90);
       T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+    }
+    {
+        QSpacerItem *spacerItem = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Preferred);
+        btns_layoutBB->addSpacerItem(spacerItem);
     }
   }
   btns_layout00->setContentsMargins(0, 30, 30 * bottom_btns, 0);
