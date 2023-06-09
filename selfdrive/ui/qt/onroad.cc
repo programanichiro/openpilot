@@ -421,7 +421,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     limitspeedButton->setFixedHeight(150*0.9);
     //limitspeedButton->setPalette(QColor(255,255,255,all_opac*255));
     //limitspeedButton->setAutoFillBackground(true);
-    btns_layoutLL->addSpacing(10);
+    btns_layoutLL->addSpacing(10+30);
     btns_layoutLL->addWidget(limitspeedButton);
     limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0)));
   }
