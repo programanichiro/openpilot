@@ -338,7 +338,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       btns_layoutBB->addWidget(T1_Button);
       T1_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T1_Button->setContentsMargins(0, 0, 0, 0);
-      T1_Button->setFixedHeight(60);
+      T1_Button->setFixedHeight(90);
       T1_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
     }
     { //テストボタン2
@@ -346,7 +346,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setContentsMargins(0, 0, 0, 0);
-      T2_Button->setFixedHeight(60);
+      T2_Button->setFixedHeight(90);
       T2_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(true)));
     }
     { //テストボタン3
@@ -354,7 +354,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       btns_layoutBB->addWidget(T3_Button);
       T3_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T3_Button->setContentsMargins(0, 0, 0, 0);
-      T3_Button->setFixedHeight(60);
+      T3_Button->setFixedHeight(90);
       T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
     }
   }
