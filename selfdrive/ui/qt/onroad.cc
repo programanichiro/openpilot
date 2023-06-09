@@ -312,6 +312,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
 // ButtonsWindow
 const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
+const static char *btn_styleb = "font-size: 45px; border-radius: 10px; border-color: %1";
 bool Long_enable = true;
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
@@ -321,6 +322,31 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout00->setSpacing(0);
   btns_layout00->setContentsMargins(0, 0, 0, 0);
   main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
+
+  { //最下段ボタン
+    QWidget *btns_wrapperBB = new QWidget;
+    QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
+    btns_layoutBB->setSpacing(0);
+    btns_layoutBB->setContentsMargins(0, 0, 0, 0);
+    btns_layoutBB->setFixedWidth(80);
+    main_layout->addWidget(btns_wrapperBB, 0, 0); //Alignは何も指定しない。
+
+    { //テストボタン1
+      QPushButton *T1_Button = new QPushButton("test1");
+      btns_layoutBB->addWidget(T1_Button);
+      T1_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+    }
+    { //テストボタン2
+      QPushButton *T2_Button = new QPushButton("test2");
+      btns_layoutBB->addWidget(T2_Button);
+      T2_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(true)));
+    }
+    { //テストボタン3
+      QPushButton *T3_Button = new QPushButton("test3");
+      btns_layoutBB->addWidget(T3_Button);
+      T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+    }
+  }
 
   QWidget *btns_wrapper0L = new QWidget;
   QHBoxLayout *btns_layout0L  = new QHBoxLayout(btns_wrapper0L);
@@ -335,7 +361,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layoutLL->setContentsMargins(30+15, 430-172 - forceOnePedalButton_height -10, 15, 30);
 
   btns_layout0L->addWidget(btns_wrapperLL,0,Qt::AlignVCenter);
-  {
+  { //強制ワンペダルステルスボタン
     //ブレーキで信号停止して、ACCレバーを上げた状態でこのボタンを押すと、
     //OP_ENABLE_v_cruise_kph = v_cruise_kph
     //OP_ENABLE_gas_speed = 1.0 / 3.6
@@ -373,7 +399,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
   }
 
-  {
+  { //制限速度標識ボタン
     // Handle Ctrl button（廃止準備。制限速度標識ボタンに変容予定）
     uiState()->scene.mLimitspeedButton = mLimitspeedButton = getButtonInt("/data/limitspeed_sw.txt",0);
     if(mLimitspeedButton <= 1){
@@ -398,7 +424,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0)));
   }
 
-  {
+  { //dXボタン
     // use lane button
     uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("/data/lane_sw_mode.txt" , true /*Params().getBool("EndToEndToggle")*/ ? 0 : 1);
     useLaneButton = new QPushButton("dX"); //ダイナミックexperimentalモード
@@ -422,7 +448,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout0U->setContentsMargins(0, 430-200-70, 0, 0);
   btns_layout00->addWidget(btns_wrapper0U, 0, Qt::AlignTop);
 
-  {
+  { //exp,long,ステルスボタン
     QWidget *btns_wrapperUU = new QWidget;
     QHBoxLayout *btns_layoutUU  = new QHBoxLayout(btns_wrapperUU);
     btns_layoutUU->setSpacing(0);
@@ -474,7 +500,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   btns_layout0->addWidget(btns_wrapperL,0,Qt::AlignVCenter);
 
   //const float all_opac = 0.2;
-  {
+  { // ターボボタン
     // turbo boost button
     uiState()->scene.mStartAccelPowerUpButton = mStartAccelPowerUpButton = getButtonEnabled0("/data/start_accel_power_up_disp_enable.txt");
     startAccelPowerUpButton = new QPushButton("⇧"); //⬆︎
@@ -488,7 +514,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
   }
 
-  {
+  { // ロックオンボタン
     // LockOn button
     uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("/data/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
@@ -510,7 +536,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   btns_layout0->addWidget(btns_wrapper,0,Qt::AlignVCenter);
 
-  {
+  { //前走車追従ボタン
     // Accel Ctrl button
     uiState()->scene.mAccelCtrlButton = mAccelCtrlButton = getButtonEnabled("/data/accel_ctrl_disable.txt");
     accelCtrlButton = new QPushButton("↑");
@@ -525,7 +551,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton)));
   }
 
-  {
+  { //カーブ減速ボタン
     // Decel Ctrl button
     uiState()->scene.mDecelCtrlButton = mDecelCtrlButton = getButtonEnabled("/data/decel_ctrl_disable.txt");
     decelCtrlButton = new QPushButton("↓");
@@ -540,7 +566,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
-  {
+  { // A,iPボタン
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("/data/accel_engaged.txt" , 0);
     if(mAccelEngagedButton == 3){
