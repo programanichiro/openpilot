@@ -322,7 +322,6 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QWidget *btns_wrapper00 = new QWidget;
   QHBoxLayout *btns_layout00  = new QHBoxLayout(btns_wrapper00);
   btns_layout00->setSpacing(0);
-  btns_layout00->setContentsMargins(0, 30, 30, 0);
   main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
 
   int bottom_btns = 0;
@@ -369,6 +368,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
     }
   }
+  btns_layout00->setContentsMargins(0, 30, 30 * bottom_btns, 0);
 
   QWidget *btns_wrapper0L = new QWidget;
   QHBoxLayout *btns_layout0L  = new QHBoxLayout(btns_wrapper0L);
