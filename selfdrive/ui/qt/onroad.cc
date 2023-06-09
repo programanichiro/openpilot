@@ -326,7 +326,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   main_layout->addWidget(btns_wrapper00, 0, 0); //Alignは何も指定しない。
 
   int bottom_btns = 0;
-  if(true){ //最下段ボタン
+  if(false){ //最下段ボタン
     bottom_btns = 1;
     QWidget *btns_wrapperBB = new QWidget;
     QHBoxLayout *btns_layoutBB  = new QHBoxLayout(btns_wrapperBB);
