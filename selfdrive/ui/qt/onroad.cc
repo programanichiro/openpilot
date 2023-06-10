@@ -385,6 +385,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     }
     { //テストボタン3
       QPushButton *T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
+      std::string longPsn_txt = Params().get("LongitudinalPersonality");
+      if(longPsn_txt.empty() == false){
+        DrivingPsn = std::stoi(longPsn_txt)
+      }
       if(DrivingPsn == 1){
         T3_Button->setText("⬆︎⬆︎");
       } else if(DrivingPsn == 2){
@@ -396,7 +400,19 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T3_Button->setFixedHeight(90);
       T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
       QObject::connect(T3_Button, &QPushButton::pressed, [=]() {
+        std::string longPsn_txt = Params().get("LongitudinalPersonality");
+        if(longPsn_txt.empty() == false){
+          DrivingPsn = std::stoi(longPsn_txt)
+        }
         DrivingPsn = (DrivingPsn + 1) % 3;
+#if 0
+        enum LongitudinalPersonality { == DrivingPsn
+          aggressive @0;
+          standard @1;
+          relaxed @2;
+        }
+#endif
+        Params().put("LongitudinalPersonality" , std::to_string(DrivingPsn));
         soundPipo();
         if(DrivingPsn == 0){
           T3_Button->setText("⬆︎⬆︎⬆︎");
@@ -405,6 +421,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         } else if(DrivingPsn == 2){
           T3_Button->setText("⬆︎");
         }
+        //onroad中にTogglesで変更したら、表示に反映しないので注意。
       });
     }
     {
