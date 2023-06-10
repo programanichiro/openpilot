@@ -505,7 +505,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
 
   { //dXボタン
     // use lane button
-    uiState()->scene.mUseDynmicExpButton = mUseDynmicExpButton = getButtonInt("/data/lane_sw_mode.txt" , true /*Params().getBool("EndToEndToggle")*/ ? 0 : 1);
+    uiState()->scene.mUseDynmicExpButton = mUseDynmicExpButton = getButtonInt("/data/dexp_sw_mode.txt" , true /*Params().getBool("EndToEndToggle")*/ ? 0 : 1);
     useDynmicExpButton = new QPushButton("dX"); //ダイナミックexperimentalモード
     QObject::connect(useDynmicExpButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mUseDynmicExpButton = (mUseDynmicExpButton + 1) % 2; //0->1->0
@@ -746,7 +746,7 @@ void ButtonsWindow::updateState(const UIState &s) {
     } else {
       useDynmicExpButton->setText("dX"); //どのケースでも"dX"
     }
-    setButtonInt("/data/lane_sw_mode.txt" , mUseDynmicExpButton);
+    setButtonInt("/data/dexp_sw_mode.txt" , mUseDynmicExpButton);
     soundButton(mUseDynmicExpButton);
     if(mUseDynmicExpButton == 0){
       //ここで"/tmp/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
