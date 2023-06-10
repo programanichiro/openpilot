@@ -60,7 +60,7 @@ class LanePlanner:
         with open('/tmp/lta_enable_sw.txt','r') as fp:
           lta_enable_sw_str = fp.read()
           if lta_enable_sw_str:
-            if int(lta_enable_sw_str) == 1: #ワンペダルモード
+            if int(lta_enable_sw_str) == 1: #LTA有効。
               lta_enable_sw = True
       except Exception as e:
         pass
