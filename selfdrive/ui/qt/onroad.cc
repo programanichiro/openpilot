@@ -355,11 +355,11 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         Limit_speed_mode = (Limit_speed_mode + 1) % 3;
         soundPipo();
         if(Limit_speed_mode == 0){
-          T3_Button->setText("⚪︎");
+          T1_Button->setText("⚪︎");
         } else if(Limit_speed_mode == 1){
-          T3_Button->setText("⚫︎");
+          T1_Button->setText("⚫︎");
         } else if(Limit_speed_mode == 2){
-          T3_Button->setText("⬇︎");
+          T1_Button->setText("⬇︎");
         }
       });
     }
