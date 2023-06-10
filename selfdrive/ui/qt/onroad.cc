@@ -315,6 +315,7 @@ const static char *btn_style = "font-size: 90px; border-radius: 20px; border-col
 const static char *btn_styleb = "font-size: 35px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
 bool Knight_scanner = true;
+int DrivingPsn = 0; //運転傾向
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
@@ -337,7 +338,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         btns_layoutBB->addSpacerItem(spacerItem);
     }
     { //テストボタン1
-      QPushButton *T1_Button = new QPushButton("⚫︎⚪︎●◯⬇︎"); //拡張用
+      QPushButton *T1_Button = new QPushButton("⚫︎⚪︎⬇︎🔛"); //拡張用 //●◯
       btns_layoutBB->addWidget(T1_Button);
       T1_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T1_Button->setContentsMargins(0, 0, 0, 0);
@@ -364,11 +365,26 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     }
     { //テストボタン3
       QPushButton *T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
+      if(DrivingPsn == 1){
+        T3_Button->setText("⬆︎⬆︎");
+      } else if(DrivingPsn == 2){
+        T3_Button->setText("⬆︎");
+      }
       btns_layoutBB->addWidget(T3_Button);
       T3_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T3_Button->setContentsMargins(0, 0, 0, 0);
       T3_Button->setFixedHeight(90);
       T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+      QObject::connect(T3_Button, &QPushButton::pressed, [=]() {
+        soundPipo();
+        if(DrivingPsn == 0){
+          T3_Button->setText("⬆︎⬆︎⬆︎");
+        } else if(DrivingPsn == 1){
+          T3_Button->setText("⬆︎⬆︎");
+        } else if(DrivingPsn == 2){
+          T3_Button->setText("⬆︎");
+        }
+      });
     }
     {
         QSpacerItem *spacerItem = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Preferred);
