@@ -55,7 +55,16 @@ class LanePlanner:
     #ここでlta_mode判定を行う。
     if self.frame_ct % 20 == 0:
       chill_enable = False #(sm['controlsState'].experimentalMode == False) #ここにsmはないので、experimentalMode判定を復活するなら一手間かかる。
-      self.lta_mode = (v_ego_car > 16/3.6 or chill_enable) and not params.get_bool("IsLdwEnabled") #LDWを「切る」とイチロウLTA発動。experimentalモードでも有効。
+      lta_enable_sw = False
+      try:
+        with open('/tmp/lta_enable_sw.txt','r') as fp:
+          lta_enable_sw_str = fp.read()
+          if lta_enable_sw_str:
+            if int(lta_enable_sw_str) == 1: #ワンペダルモード
+              lta_enable_sw = True
+      except Exception as e:
+        pass
+      self.lta_mode = (v_ego_car > 16/3.6 or chill_enable) and lta_enable_sw
 
     self.frame_ct += 1
     if self.lta_mode == False:

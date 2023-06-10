@@ -41,9 +41,9 @@ private:
   QPushButton *accelCtrlButton;
   QPushButton *decelCtrlButton;
   QPushButton *accelEngagedButton;
-  QPushButton *limitspeedButton;
+  QPushButton *LTA_EnableButton;
   QPushButton *startAccelPowerUpButton;
-  QPushButton *useLaneButton;
+  QPushButton *useDynmicExpButton;
 
   // int dfStatus = -1;  // always initialize style sheet and send msg
   // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
@@ -58,9 +58,9 @@ private:
   bool mAccelCtrlButton = true;  // triggers initialization
   bool mDecelCtrlButton = true;  // triggers initialization
   int mAccelEngagedButton = 0;  // triggers initialization
-  int mLimitspeedButton = 0;  // triggers initialization
+  int mLTA_EnableButton = 0;  // triggers initialization
   bool mStartAccelPowerUpButton = false;  // triggers initialization
-  int mUseLaneButton = 0;  // triggers initialization
+  int mUseDynmicExpButton = 0;  // triggers initialization
 
 public slots:
   void updateState(const UIState &s);

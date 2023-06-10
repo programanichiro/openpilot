@@ -339,12 +339,13 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         QSpacerItem *spacerItem = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Preferred);
         btns_layoutBB->addSpacerItem(spacerItem);
     }
-    { //テストボタン1
+    { //制限速度標識ボタン
       QPushButton *T1_Button = new QPushButton("⚪︎"); //"⚫︎⚪︎⬇︎" , 拡張用 //●◯
+      Limit_speed_mode = getButtonInt("/data/limitspeed_sw.txt",0);
       if(Limit_speed_mode == 1){
-        T1_Button->setText("⚫︎");
+        T1_Button->setText("⚫︎"); //自動設定モード
       } else if(Limit_speed_mode == 2){
-        T1_Button->setText("⬇︎");
+        T1_Button->setText("⬇︎"); //RECモード
       }
       btns_layoutBB->addWidget(T1_Button);
       T1_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -353,13 +354,14 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T1_Button->setStyleSheet(QString(btn_styleb2).arg(mButtonColors.at(false)));
       QObject::connect(T1_Button, &QPushButton::pressed, [=]() {
         Limit_speed_mode = (Limit_speed_mode + 1) % 3;
-        soundPipo();
+        setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
+        soundButton(Limit_speed_mode);
         if(Limit_speed_mode == 0){
           T1_Button->setText("⚪︎");
         } else if(Limit_speed_mode == 1){
-          T1_Button->setText("⚫︎");
+          T1_Button->setText("⚫︎"); //自動設定モード
         } else if(Limit_speed_mode == 2){
-          T1_Button->setText("⬇︎");
+          T1_Button->setText("⬇︎"); //RECモード
         }
       });
     }
@@ -463,47 +465,38 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     forceOnePedalButton->setStyleSheet(QString(btn_style0).arg("#909090")); //線の色はダミー。
   }
 
-  { //制限速度標識ボタン
+  { //LTA有効ボタン
     // Handle Ctrl button（廃止準備。制限速度標識ボタンに変容予定）
-    uiState()->scene.mLimitspeedButton = mLimitspeedButton = getButtonInt("/data/limitspeed_sw.txt",0);
-    if(mLimitspeedButton <= 1){
-      limitspeedButton = new QPushButton("○"); //この丸がセンターに出る。
-      //limitspeedButton = new QPushButton("◯"); //枠内いっぱいに出る大きな丸。
+    uiState()->scene.mLTA_EnableButton = mLTA_EnableButton = getButtonInt("/data/lta_enable_sw.txt",0);
+    if(mLTA_EnableButton <= 1){
+      LTA_EnableButton = new QPushButton("/ \\");
     } else {
-      limitspeedButton = new QPushButton("⬇︎"); //RECモード⇩
-      //limitspeedButton = new QPushButton("✖️"); //DELEモード
-      //limitspeedButton = new QPushButton("⬇︎⇩♻︎"); //DELEモード
-      //limitspeedButton = new QPushButton("✖︎"); //DELEモード
-      //limitspeedButton = new QPushButton("❌"); //DELEモード
+      LTA_EnableButton = new QPushButton("/ \\");
     }
-    QObject::connect(limitspeedButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mLimitspeedButton = (mLimitspeedButton + 1) % 3; //0->1>2->0
+    QObject::connect(LTA_EnableButton, &QPushButton::pressed, [=]() {
+      uiState()->scene.mLTA_EnableButton = (mLTA_EnableButton + 1) % 2; //0->1->0
     });
-    limitspeedButton->setFixedWidth(150);
-    limitspeedButton->setFixedHeight(150*0.9);
-    //limitspeedButton->setPalette(QColor(255,255,255,all_opac*255));
-    //limitspeedButton->setAutoFillBackground(true);
+    LTA_EnableButton->setFixedWidth(150);
+    LTA_EnableButton->setFixedHeight(150*0.9);
+    //LTA_EnableButton->setPalette(QColor(255,255,255,all_opac*255));
+    //LTA_EnableButton->setAutoFillBackground(true);
     btns_layoutLL->addSpacing(10);
-    btns_layoutLL->addWidget(limitspeedButton);
-    limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0)));
+    btns_layoutLL->addWidget(LTA_EnableButton);
+    LTA_EnableButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLTA_EnableButton > 0)));
   }
 
   { //dXボタン
     // use lane button
-    uiState()->scene.mUseLaneButton = mUseLaneButton = getButtonInt("/data/lane_sw_mode.txt" , true /*Params().getBool("EndToEndToggle")*/ ? 0 : 1);
-    useLaneButton = new QPushButton("dX"); //ダイナミックexperimentalモード
-    QObject::connect(useLaneButton, &QPushButton::pressed, [=]() {
-      // Params().putBool("EndToEndToggle",!Params().getBool("EndToEndToggle"));
-      // uiState()->scene.mUseLaneButton = !Params().getBool("EndToEndToggle");
-      // uiState()->scene.end_to_end = Params().getBool("EndToEndToggle");
-      //uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 4; //0->1->2->3->0
-      uiState()->scene.mUseLaneButton = (mUseLaneButton + 1) % 2; //0->1->0
+    uiState()->scene.mUseDynmicExpButton = mUseDynmicExpButton = getButtonInt("/data/lane_sw_mode.txt" , true /*Params().getBool("EndToEndToggle")*/ ? 0 : 1);
+    useDynmicExpButton = new QPushButton("dX"); //ダイナミックexperimentalモード
+    QObject::connect(useDynmicExpButton, &QPushButton::pressed, [=]() {
+      uiState()->scene.mUseDynmicExpButton = (mUseDynmicExpButton + 1) % 2; //0->1->0
     });
-    useLaneButton->setFixedWidth(150);
-    useLaneButton->setFixedHeight(150*0.9);
+    useDynmicExpButton->setFixedWidth(150);
+    useDynmicExpButton->setFixedHeight(150*0.9);
     btns_layoutLL->addSpacing(15);
-    btns_layoutLL->addWidget(useLaneButton);
-    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0)));
+    btns_layoutLL->addWidget(useDynmicExpButton);
+    useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0)));
   }
 
   QWidget *btns_wrapper0U = new QWidget;
@@ -708,20 +701,16 @@ void ButtonsWindow::updateState(const UIState &s) {
     soundButton(mAccelEngagedButton);
   }
 
-  if (mLimitspeedButton != s.scene.mLimitspeedButton) {  // update mLimitspeedButton
-    mLimitspeedButton = s.scene.mLimitspeedButton;
-    limitspeedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLimitspeedButton > 0 && fp_error==false)));
-    if(mLimitspeedButton <= 1){
-      limitspeedButton->setText("○");
-      //limitspeedButton->setText("◯"); //枠内いっぱいに出る大きな丸。
+  if (mLTA_EnableButton != s.scene.mLTA_EnableButton) {  // update mLTA_EnableButton
+    mLTA_EnableButton = s.scene.mLTA_EnableButton;
+    LTA_EnableButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLTA_EnableButton > 0 && fp_error==false)));
+    if(mLTA_EnableButton <= 1){
+      LTA_EnableButton->setText("/ \\");
     } else {
-      limitspeedButton->setText("⬇︎"); //RECモード
-      //limitspeedButton->setText("✖️"); //DELEモード
-      //limitspeedButton->setText("✖︎"); //DELEモード
-      //limitspeedButton->setText("❌"); //DELEモード
+      LTA_EnableButton->setText("⬇/ \\");
     }
-    setButtonInt("/data/limitspeed_sw.txt" , mLimitspeedButton);
-    soundButton(mLimitspeedButton);
+    setButtonInt("/data/lta_enable_sw.txt" , mLTA_EnableButton);
+    soundButton(mLTA_EnableButton);
   }
   
   if (mStartAccelPowerUpButton != s.scene.mStartAccelPowerUpButton) {  // update mStartAccelPowerUpButton
@@ -731,17 +720,17 @@ void ButtonsWindow::updateState(const UIState &s) {
     soundButton(mStartAccelPowerUpButton);
   }
   
-  if (mUseLaneButton != s.scene.mUseLaneButton) {  // update mUseLaneButton
-    mUseLaneButton = s.scene.mUseLaneButton;
-    useLaneButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseLaneButton > 0 && fp_error==false)));
-    if(mUseLaneButton >= 1){
-      useLaneButton->setText("dX");
+  if (mUseDynmicExpButton != s.scene.mUseDynmicExpButton) {  // update mUseDynmicExpButton
+    mUseDynmicExpButton = s.scene.mUseDynmicExpButton;
+    useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0 && fp_error==false)));
+    if(mUseDynmicExpButton >= 1){
+      useDynmicExpButton->setText("dX");
     } else {
-      useLaneButton->setText("dX"); //どのケースでも"dX"
+      useDynmicExpButton->setText("dX"); //どのケースでも"dX"
     }
-    setButtonInt("/data/lane_sw_mode.txt" , mUseLaneButton);
-    soundButton(mUseLaneButton);
-    if(mUseLaneButton == 0){
+    setButtonInt("/data/lane_sw_mode.txt" , mUseDynmicExpButton);
+    soundButton(mUseDynmicExpButton);
+    if(mUseDynmicExpButton == 0){
       //ここで"/tmp/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
     }
   }
@@ -1052,11 +1041,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   bool db_rec_mode = false;
   if(limit_speed_override == false){
     bool yellow_flag = false;
-    if(uiState()->scene.mLimitspeedButton == 2 && ms.toDouble() >= 30){
+    if(Limit_speed_mode == 2 && ms.toDouble() >= 30){
       p.setBrush(QColor::fromRgbF(0.4, 0.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
       db_rec_mode = true;
       yellow_flag = true;
-    } else if((uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1)){
+    } else if((Limit_speed_mode == 1 && limit_speed_auto_detect == 1)){
       if(maxspeed_org+12 <= ms.toDouble()){
         if(yellow_flash_ct %6 < 3){
           p.setBrush(QColor::fromRgbF(1.0, 1.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
@@ -1079,7 +1068,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
   }
   drawRoundedRect(p, set_speed_rect, top_radius, top_radius, bottom_radius, bottom_radius);
-  if(limit_speed_override == true || (uiState()->scene.mLimitspeedButton == 1 && limit_speed_auto_detect == 1)){
+  if(limit_speed_override == true || (Limit_speed_mode == 1 && limit_speed_auto_detect == 1)){
     //太い赤枠を内側に描画する。
     const int ls_w2 = 30;
     QRect set_speed_rect2(60 + default_rect_width / 2 - rect_width / 2 +ls_w2/2, 45 +y_ofs +ls_w2/2, rect_width - ls_w2, rect_height -ls_w2);
@@ -1359,7 +1348,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
           velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
         }
 #if 0 //保留。"○"ボタンONでは思い切って記録しないという選択もありか？
-        if(uiState()->scene.mLimitspeedButton == 2 && ms.toDouble() >= 30){
+        if(Limit_speed_mode == 2 && ms.toDouble() >= 30){
            velo = ms.toDouble(); //刈り取りモードではMAX値を記録する手もある。
         }
 #endif
@@ -1453,7 +1442,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     angle_steer = global_angle_steer0;
     if(1 /*vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)*/){
-      if(/*uiState()->scene.mLimitspeedButton == 1 &&*/ limit_speed_auto_detect == 1){ //インジケーターはACC自動設定時にするか、速度標識表示時にするか検討中
+      if(/*Limit_speed_mode == 1 &&*/ limit_speed_auto_detect == 1){ //インジケーターはACC自動設定時にするか、速度標識表示時にするか検討中
         a2 = 200;
       }
     }
@@ -1514,7 +1503,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   int long_base_angle0 = 45; //下中央から左右に何度か指定する。
   if((Long_enable || (*s->sm)["controlsState"].getControlsState().getExperimentalMode()) && global_engageable){
     const int arc_w = -8; //内側に描画
-    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode() || s->scene.mUseLaneButton == 3) ? 0 : 255, 180), abs(arc_w));
+    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     const float x = x_Long_enable;
@@ -1554,7 +1543,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     const int long_base_angle = long_base_angle0-3; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
-    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode() || s->scene.mUseLaneButton == 3) ? 0 : 255, 180), abs(arc_w_base));
+    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w_base));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     p.drawArc(x - btn_size / 2 -arc_w_base/2, y - btn_size / 2 -arc_w_base/2, btn_size+arc_w_base, btn_size+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
@@ -1753,12 +1742,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   // lanelines
   const bool chill_mode = false; //!sm["controlsState"].getControlsState().getExperimentalMode();
   const float v_ego_car = sm["carState"].getCarState().getVEgo();
-  static bool IsLdwEnabled = false;
-  static unsigned int IsLdwEnabled_ct = 0;
-  if(IsLdwEnabled_ct++ % 20 == 0){
-    IsLdwEnabled = Params().getBool("IsLdwEnabled");
-  }
-  const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && !IsLdwEnabled;
+  const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && mLTA_EnableButton;
   int lane_collision = -1;
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
 #if 0 //レーン依存率をカラーで表す。
