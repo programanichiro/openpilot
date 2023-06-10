@@ -313,9 +313,11 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
 const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
 const static char *btn_styleb = "font-size: 35px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+const static char *btn_styleb2 = "font-size: 50px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
 bool Knight_scanner = true;
 int DrivingPsn = 0; //運転傾向
+int Limit_speed_mode = 0; //標識
 ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
@@ -338,12 +340,28 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         btns_layoutBB->addSpacerItem(spacerItem);
     }
     { //テストボタン1
-      QPushButton *T1_Button = new QPushButton("⚫︎⚪︎⬇︎🔛"); //拡張用 //●◯
+      QPushButton *T1_Button = new QPushButton("⚪︎"); //"⚫︎⚪︎⬇︎" , 拡張用 //●◯
+      if(Limit_speed_mode == 1){
+        T1_Button->setText("⚫︎");
+      } else if(Limit_speed_mode == 2){
+        T1_Button->setText("⬇︎");
+      }
       btns_layoutBB->addWidget(T1_Button);
       T1_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T1_Button->setContentsMargins(0, 0, 0, 0);
       T1_Button->setFixedHeight(90);
-      T1_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+      T1_Button->setStyleSheet(QString(btn_styleb2).arg(mButtonColors.at(false)));
+      QObject::connect(T1_Button, &QPushButton::pressed, [=]() {
+        Limit_speed_mode = (Limit_speed_mode + 1) % 3;
+        soundPipo();
+        if(Limit_speed_mode == 0){
+          T3_Button->setText("⚪︎");
+        } else if(Limit_speed_mode == 1){
+          T3_Button->setText("⚫︎");
+        } else if(Limit_speed_mode == 2){
+          T3_Button->setText("⬇︎");
+        }
+      });
     }
     { //ナイトスキャナー非表示(テストボタン2)
       QPushButton *T2_Button = new QPushButton("⚫︎⚫︎⚫︎");
