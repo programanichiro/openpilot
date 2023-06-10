@@ -376,6 +376,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T3_Button->setFixedHeight(90);
       T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
       QObject::connect(T3_Button, &QPushButton::pressed, [=]() {
+        DrivingPsn = (DrivingPsn + 1) % 3;
         soundPipo();
         if(DrivingPsn == 0){
           T3_Button->setText("⬆︎⬆︎⬆︎");
