@@ -387,7 +387,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       QPushButton *T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
       std::string longPsn_txt = Params().get("LongitudinalPersonality");
       if(longPsn_txt.empty() == false){
-        DrivingPsn = std::stoi(longPsn_txt)
+        DrivingPsn = std::stoi(longPsn_txt);
       }
       if(DrivingPsn == 1){
         T3_Button->setText("⬆︎⬆︎");
@@ -402,7 +402,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       QObject::connect(T3_Button, &QPushButton::pressed, [=]() {
         std::string longPsn_txt = Params().get("LongitudinalPersonality");
         if(longPsn_txt.empty() == false){
-          DrivingPsn = std::stoi(longPsn_txt)
+          DrivingPsn = std::stoi(longPsn_txt);
         }
         DrivingPsn = (DrivingPsn + 1) % 3;
 #if 0
@@ -1759,7 +1759,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   // lanelines
   const bool chill_mode = false; //!sm["controlsState"].getControlsState().getExperimentalMode();
   const float v_ego_car = sm["carState"].getCarState().getVEgo();
-  const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && mLTA_EnableButton;
+  const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && scene.mLTA_EnableButton;
   int lane_collision = -1;
   for (int i = 0; i < std::size(scene.lane_line_vertices); ++i) {
 #if 0 //レーン依存率をカラーで表す。
