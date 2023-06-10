@@ -313,6 +313,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
 const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
 const static char *btn_styleb = "font-size: 35px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+const static char *btn_styleb1 = "font-size: 30px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_styleb2 = "font-size: 50px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
 bool Knight_scanner = true;
@@ -365,7 +366,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         }
       });
     }
-    { //ナイトスキャナー非表示(テストボタン2)
+    { //ナイトスキャナー非表示
       QPushButton *T2_Button = new QPushButton("⚫︎⚫︎⚫︎");
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
@@ -383,7 +384,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         }
       });
     }
-    { //テストボタン3
+    { //運転傾向
       QPushButton *T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
       std::string longPsn_txt = Params().get("LongitudinalPersonality");
       if(longPsn_txt.empty() == false){
@@ -398,7 +399,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       T3_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T3_Button->setContentsMargins(0, 0, 0, 0);
       T3_Button->setFixedHeight(90);
-      T3_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(false)));
+      T3_Button->setStyleSheet(QString(btn_styleb1).arg(mButtonColors.at(false)));
       QObject::connect(T3_Button, &QPushButton::pressed, [=]() {
         std::string longPsn_txt = Params().get("LongitudinalPersonality");
         if(longPsn_txt.empty() == false){
