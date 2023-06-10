@@ -1004,14 +1004,14 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   // max speed
   float max_disp_k = 1.8;
-  float max_disp_a = 50;
+  //float max_disp_a = 50;
   const int rect_w = rect().width();
   const int rect_h = rect().height();
   if(false && (float)rect_w / rect_h > 1.4f){
   } else {
     //こちらの大きさを採用。
-    max_disp_k = 1.3;
-    max_disp_a = 20;
+    max_disp_k = 1.2; //1.3;
+    //max_disp_a = 20;
   }
 
   // Draw outer box + border to contain set speed and speed limit
