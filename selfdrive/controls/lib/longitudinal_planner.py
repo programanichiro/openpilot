@@ -127,6 +127,7 @@ class LongitudinalPlanner:
     self.desired_path_x_rates = np.zeros(5)
     self.ac_vc_time = 0.0
     self.limitspeed_point = 0.0
+    self.limitspeed_point_avg = 0.0
     self.limitspeed_point_dim = []
 
     try:
@@ -584,15 +585,18 @@ class LongitudinalPlanner:
             self.limitspeed_point -= 0.1
             if target > self.limitspeed_point:
               self.limitspeed_point = target
+
+          self.limitspeed_point_dim.append(self.limitspeed_point)
+          if len(self.limitspeed_point_dim) > 3:
+            self.limitspeed_point_dim.pop(0)
+          self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近3個の平均。
+          
           with open('/tmp/limitspeed_sw.txt','r') as fp:
             limitspeed_sw_str = fp.read()
             if limitspeed_sw_str and limitspeed_data_str:
               if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
                 if limitspeed_flag == 999:
-                  self.limitspeed_point_dim.append(self.limitspeed_point)
-                  if len(self.limitspeed_point_dim) > 3:
-                    self.limitspeed_point_dim.pop(0)
-                  v_cruise_kph = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近3個の平均。
+                  v_cruise_kph = self.limitspeed_point_avg
                   # v_cruise_kph = self.limitspeed_point
                   limitspeed_set = True
     except Exception as e:
