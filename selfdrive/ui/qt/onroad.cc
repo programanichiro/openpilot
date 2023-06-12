@@ -2282,7 +2282,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
   //QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo}};
   float homebase_h = 12;
   if(mapVisible){
-    sz *= 0.65; //地図表示時はchevronを小さく。
+    sz *= 0.7; //地図表示時はchevronを小さく。
   }
   QPointF glow[] = {{x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h},{x + (sz * 1.35) + g_xo, y + sz + g_yo}, {x, y - g_yo}, {x - (sz * 1.35) - g_xo, y + sz + g_yo},{x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h}, {x, y + sz + homebase_h + g_yo + 10}};
   painter.setBrush(QColor(218, 202, 37, 210));
