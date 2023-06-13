@@ -587,9 +587,9 @@ class LongitudinalPlanner:
               self.limitspeed_point = target
 
           self.limitspeed_point_dim.append(self.limitspeed_point)
-          if len(self.limitspeed_point_dim) > 3:
+          if len(self.limitspeed_point_dim) > 10:
             self.limitspeed_point_dim.pop(0)
-          self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近3個の平均。
+          self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近10個の平均。
           
           with open('/tmp/limitspeed_sw.txt','r') as fp:
             limitspeed_sw_str = fp.read()
