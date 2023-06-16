@@ -16,6 +16,12 @@ struct Map(Key, Value) {
     value @1 :Value;
   }
 }
+  
+enum LongitudinalPersonality {
+    aggressive @0;
+    standard @1;
+    relaxed @2;
+  }
 
 enum LongitudinalPersonality {
   aggressive @0;
