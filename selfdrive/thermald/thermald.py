@@ -22,6 +22,7 @@ from selfdrive.controls.lib.alertmanager import set_offroad_alert
 from system.hardware import HARDWARE, TICI, AGNOS
 from system.loggerd.config import get_available_percent
 from selfdrive.statsd import statlog
+from selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
 from system.swaglog import cloudlog
 from selfdrive.thermald.power_monitoring import PowerMonitoring
 from selfdrive.thermald.fan_controller import TiciFanController
@@ -48,7 +49,7 @@ THERMAL_BANDS = OrderedDict({
 })
 
 # Override to highest thermal band when offroad and above this temp
-OFFROAD_DANGER_TEMP = 77
+OFFROAD_DANGER_TEMP = 79.5
 
 prev_offroad_states: Dict[str, Tuple[bool, Optional[str]]] = {}
 
@@ -167,8 +168,7 @@ def thermald_thread(end_event, hw_queue):
   off_ts = None
   started_ts = None
   started_seen = False
-  startup_blocked_ts = None
-  thermal_status = ThermalStatus.yellow
+  thermal_status = ThermalStatus.green
 
   last_hw_state = HardwareState(
     network_type=NetworkType.none,
@@ -180,8 +180,8 @@ def thermald_thread(end_event, hw_queue):
     modem_temps=[],
   )
 
-  all_temp_filter = FirstOrderFilter(0., TEMP_TAU, DT_TRML, initialized=False)
-  offroad_temp_filter = FirstOrderFilter(0., TEMP_TAU, DT_TRML, initialized=False)
+  all_temp_filter = FirstOrderFilter(0., TEMP_TAU, DT_TRML)
+  offroad_temp_filter = FirstOrderFilter(0., TEMP_TAU, DT_TRML)
   should_start_prev = False
   in_car = False
   engaged_prev = False
@@ -243,7 +243,7 @@ def thermald_thread(end_event, hw_queue):
 
     msg.deviceState.screenBrightnessPercent = HARDWARE.get_screen_brightness()
 
-    # this subset is only used for offroad
+    # this one is only used for offroad
     temp_sources = [
       msg.deviceState.memoryTempC,
       max(msg.deviceState.cpuTempC),
@@ -254,15 +254,14 @@ def thermald_thread(end_event, hw_queue):
     # this drives the thermal status while onroad
     temp_sources.append(max(msg.deviceState.pmicTempC))
     all_comp_temp = all_temp_filter.update(max(temp_sources))
-    msg.deviceState.maxTempC = all_comp_temp
 
     if fan_controller is not None:
       msg.deviceState.fanSpeedPercentDesired = fan_controller.update(all_comp_temp, onroad_conditions["ignition"])
 
     is_offroad_for_5_min = (started_ts is None) and ((not started_seen) or (off_ts is None) or (sec_since_boot() - off_ts > 60 * 5))
     if is_offroad_for_5_min and offroad_comp_temp > OFFROAD_DANGER_TEMP:
-      # if device is offroad and already hot without the extra onroad load,
-      # we want to cool down first before increasing load
+      # If device is offroad we want to cool down before going onroad
+      # since going onroad increases load and can make temps go over 107
       thermal_status = ThermalStatus.danger
     else:
       current_band = THERMAL_BANDS[thermal_status]
@@ -275,13 +274,15 @@ def thermald_thread(end_event, hw_queue):
     # **** starting logic ****
 
     # Ensure date/time are valid
-    now = datetime.datetime.utcnow()
-    startup_conditions["time_valid"] = now > MIN_DATE
-    set_offroad_alert_if_changed("Offroad_InvalidTime", (not startup_conditions["time_valid"]))
+    if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID:
+      now = datetime.datetime.utcnow()
+      startup_conditions["time_valid"] = now > MIN_DATE
+      set_offroad_alert_if_changed("Offroad_InvalidTime", (not startup_conditions["time_valid"]))
 
     startup_conditions["up_to_date"] = params.get("Offroad_ConnectivityNeeded") is None or params.get_bool("DisableUpdates") or params.get_bool("SnoozeUpdate")
     startup_conditions["not_uninstalling"] = not params.get_bool("DoUninstall")
     startup_conditions["accepted_terms"] = params.get("HasAcceptedTerms") == terms_version
+    startup_conditions["offroad_min_time"] = (not started_seen) or ((off_ts is not None) and (sec_since_boot() - off_ts) > 5.)
 
     # with 2% left, we killall, otherwise the phone will take a long time to boot
     startup_conditions["free_space"] = msg.deviceState.freeSpacePercent > 2
@@ -340,16 +341,10 @@ def thermald_thread(end_event, hw_queue):
       if started_ts is None:
         started_ts = sec_since_boot()
         started_seen = True
-        if startup_blocked_ts is not None:
-          cloudlog.event("Startup after block", block_duration=(sec_since_boot() - startup_blocked_ts),
-                         startup_conditions=startup_conditions, onroad_conditions=onroad_conditions,
-                         startup_conditions_prev=startup_conditions_prev, error=True)
-      startup_blocked_ts = None
     else:
       if onroad_conditions["ignition"] and (startup_conditions != startup_conditions_prev):
         cloudlog.event("Startup blocked", startup_conditions=startup_conditions, onroad_conditions=onroad_conditions, error=True)
         startup_conditions_prev = startup_conditions.copy()
-        startup_blocked_ts = sec_since_boot()
 
       started_ts = None
       if off_ts is None:
