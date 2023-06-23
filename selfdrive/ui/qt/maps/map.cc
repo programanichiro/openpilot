@@ -865,7 +865,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     speed = new QLabel;
     speed->setAlignment(Qt::AlignCenter);
     speed->setStyleSheet("font-weight:600");
-    this->updateLimitspeed(static_cast<QWidget*>(parent())->width());
+    this->updateLimitspeed(0);
     speed->setText("━");
 
     layout->addWidget(speed);
@@ -892,6 +892,7 @@ int limit_speed_auto_detect; //onroad.ccから参照あり
 int limit_speed_num;
 
 void MapLimitspeed::updateLimitspeed(int map_width) {
+  map_width = static_cast<QWidget*>(parent())->width(); //ここで取得。
 
   std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
   if(limitspeed_data_txt.empty() == false){
