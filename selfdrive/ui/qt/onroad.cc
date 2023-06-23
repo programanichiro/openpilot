@@ -1864,7 +1864,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   int offset = bdr_s + btn_size / 2;
   int x = false /*rightHandDM*/ ? width() - offset : offset;
   int y = height() - offset;
-  float opacity = dmActive ? 0.65 : 0.2;
+  float opacity = dmActive ? 0.65 : 0.2; y -= 18;
   drawIcon(painter, x, y, dm_img, blackColor(70), opacity , 0);
   if(rightHandDM){ //ボタンを移動できないので、アイコンはそのまま、左肩に"R"を表示。
     configFont(painter, FONT_OPEN_SANS, 70, "Bold");

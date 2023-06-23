@@ -94,9 +94,9 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
   map_limitspeed = new MapLimitspeed(this);
   QObject::connect(this, &MapWindow::LimitspeedChanged, map_limitspeed, &MapLimitspeed::updateLimitspeed);
 
-  map_limitspeed->setFixedHeight(200);
-  map_limitspeed->setFixedWidth(200);
-//  map_limitspeed->move(30, 1080 - 60 - 30 - 200);
+  map_limitspeed->setFixedHeight(170);
+  map_limitspeed->setFixedWidth(170);
+//  map_limitspeed->move(30, 1080 - 60 - 30 - 170);
   map_limitspeed->setVisible(true);
 
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
@@ -864,7 +864,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     QHBoxLayout *layout = new QHBoxLayout;
     speed = new QLabel;
     speed->setAlignment(Qt::AlignCenter);
-    speed->setStyleSheet("font-weight:600");
+    speed->setStyleSheet("font-weight:450");
     this->updateLimitspeed(0);
     speed->setText("━");
 
@@ -921,14 +921,14 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
     g_stand_still = std::stoi(stand_still_txt) ? true : false;
   }
 
-  float r = 200 / 2;
+  float r = 170 / 2;
   int stand_still_height = 0;
   if(g_stand_still){
     stand_still_height = 270;
   }
 
-  if (map_width == 0 || uiState()->scene.map_on_left) {
-    this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height);
+  if (false && (map_width == 0 || uiState()->scene.map_on_left)) {
+    this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。
   } else {
     this->move(map_width - r*2 - 30, 1080 - 60 - 30 - r*2 - stand_still_height);
   }
@@ -936,7 +936,7 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
 
 void MapLimitspeed::paintEvent(QPaintEvent *event) {
 
-  float r = 200 / 2;
+  float r = 170 / 2;
   QPainter p(this);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
