@@ -93,10 +93,10 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
 
   map_limitspeed = new MapLimitspeed(this);
   QObject::connect(this, &MapWindow::LimitspeedChanged, map_limitspeed, &MapLimitspeed::updateLimitspeed);
-
-  map_limitspeed->setFixedHeight(170);
-  map_limitspeed->setFixedWidth(170);
-//  map_limitspeed->move(30, 1080 - 60 - 30 - 170);
+#define LS_SIZE 180
+  map_limitspeed->setFixedHeight(LS_SIZE);
+  map_limitspeed->setFixedWidth(LS_SIZE);
+//  map_limitspeed->move(30, 1080 - 60 - 30 - LS_SIZE);
   map_limitspeed->setVisible(true);
 
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
@@ -864,8 +864,8 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     QHBoxLayout *layout = new QHBoxLayout;
     speed = new QLabel;
     speed->setAlignment(Qt::AlignCenter);
-    speed->setStyleSheet("font-weight:450");
-    this->updateLimitspeed(0);
+    speed->setStyleSheet("font-weight:600");
+    this->updateLimitspeed(static_cast<QWidget*>(parent())->width());
     speed->setText("━");
 
     layout->addWidget(speed);
@@ -876,7 +876,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     * {
       color: #2457A1;
       font-family: "Inter";
-      font-size: 90px;
+      font-size: 65px;
     }
   )");
 /*
@@ -921,7 +921,7 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
     g_stand_still = std::stoi(stand_still_txt) ? true : false;
   }
 
-  float r = 170 / 2;
+  float r = LS_SIZE / 2;
   int stand_still_height = 0;
   if(g_stand_still){
     stand_still_height = 270;
@@ -936,15 +936,15 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
 
 void MapLimitspeed::paintEvent(QPaintEvent *event) {
 
-  float r = 170 / 2;
+  float r = LS_SIZE / 2;
   QPainter p(this);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   p.drawEllipse(0,0,r*2,r*2);
 
-  int arc_w = -20; //内側に描画
+  int arc_w = -LS_SIZE * 25 / 200; //内側に描画
   if(limit_speed_num >= 100){
-    arc_w = -15; ///枠と数字が被らないように枠を細くする。
+    arc_w = (int)(arc_w * 0.7); ///枠と数字が被らないように枠を細くする。
   }
   QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
