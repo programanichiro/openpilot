@@ -97,7 +97,7 @@ MapWindow::MapWindow(const QMapboxGLSettings &settings) : m_settings(settings), 
   map_limitspeed->setFixedHeight(LS_SIZE);
   map_limitspeed->setFixedWidth(LS_SIZE);
 //  map_limitspeed->move(30, 1080 - 60 - 30 - LS_SIZE);
-  map_limitspeed->setVisible(true);
+  map_limitspeed->setVisible(false);
 
   auto last_gps_position = coordinate_from_param("LastGPSPosition");
   if (last_gps_position.has_value()) {
@@ -930,6 +930,7 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
   if (map_width == 0 || (false && uiState()->scene.map_on_left)) {
     this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。
   } else {
+    this->setVisible(true);
     this->move(map_width - r*2 - 30, 1080 - 60 - 30 - r*2 - stand_still_height);
   }
 }
