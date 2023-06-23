@@ -258,6 +258,7 @@ void MapWindow::updateState(const UIState &s) {
 
       static unsigned int LimitspeedChanged_ct;
       if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
+        map_limitspeed->setVisible(true);
         emit LimitspeedChanged(rect().width());
       }
     }
@@ -930,7 +931,6 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
   if (map_width == 0 || (false && uiState()->scene.map_on_left)) {
     this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。
   } else {
-    this->setVisible(true);
     this->move(map_width - r*2 - 30, 1080 - 60 - 30 - r*2 - stand_still_height);
   }
 }
