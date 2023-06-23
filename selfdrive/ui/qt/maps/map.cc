@@ -865,7 +865,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     speed = new QLabel;
     speed->setAlignment(Qt::AlignCenter);
     speed->setStyleSheet("font-weight:600");
-    this->updateLimitspeed(0);
+    //this->updateLimitspeed(0);
     speed->setText("━");
 
     layout->addWidget(speed);
@@ -876,7 +876,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     * {
       color: #2457A1;
       font-family: "Inter";
-      font-size: 65px;
+      font-size: 75px;
     }
   )");
 /*
@@ -892,7 +892,6 @@ int limit_speed_auto_detect; //onroad.ccから参照あり
 int limit_speed_num;
 
 void MapLimitspeed::updateLimitspeed(int map_width) {
-  map_width = static_cast<QWidget*>(parent())->width(); //ここで取得。
 
   std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
   if(limitspeed_data_txt.empty() == false){
@@ -928,7 +927,7 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
     stand_still_height = 270;
   }
 
-  if (false && (map_width == 0 || uiState()->scene.map_on_left)) {
+  if (map_width == 0 || (false && uiState()->scene.map_on_left)) {
     this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。
   } else {
     this->move(map_width - r*2 - 30, 1080 - 60 - 30 - r*2 - stand_still_height);
