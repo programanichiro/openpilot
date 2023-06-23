@@ -258,6 +258,7 @@ void MapWindow::updateState(const UIState &s) {
 
       static unsigned int LimitspeedChanged_ct;
       if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
+        map_limitspeed->setVisible(true);
         emit LimitspeedChanged(rect().width());
       }
     }
@@ -265,7 +266,7 @@ void MapWindow::updateState(const UIState &s) {
   static bool emit_LimitspeedChanged_first_set = false;
   if(emit_LimitspeedChanged_first_set == false){
     emit_LimitspeedChanged_first_set = true;
-    map_limitspeed->setVisible(true);
+    //このタイミングではrect().width()の値がおかしい。
     emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
   }
 
