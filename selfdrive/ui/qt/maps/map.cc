@@ -942,9 +942,9 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   p.drawEllipse(0,0,r*2,r*2);
 
-  int arc_w = -30; //内側に描画
+  int arc_w = -20; //内側に描画
   if(limit_speed_num >= 100){
-    arc_w = -20; ///枠と数字が被らないように枠を細くする。
+    arc_w = -15; ///枠と数字が被らないように枠を細くする。
   }
   QPen pen = QPen(QColor(205, 44, 38, 255), abs(arc_w));
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
