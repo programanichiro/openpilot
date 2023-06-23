@@ -1981,7 +1981,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //
       lane_change_height = 270;
     }
-#else
+#elif 0 //メッセージUIの表示手法変更で、下の隙間から見えるので、lane_change_height持ち上げはひとまず取りやめ。
     auto lp = (*s->sm)["lateralPlan"].getLateralPlan();
     if( lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::PRE_LANE_CHANGE ||
         lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定

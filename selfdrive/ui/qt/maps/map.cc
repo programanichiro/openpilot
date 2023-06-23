@@ -889,7 +889,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 */
 }
 
-static bool g_stand_still;
+//static bool g_stand_still;
 int limit_speed_auto_detect; //onroad.ccから参照あり
 int limit_speed_num;
 
@@ -916,19 +916,20 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
       limit_speed_auto_detect = 1;
     }
   }
-
+#if 0
   std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
   g_stand_still = false;
   if(stand_still_txt.empty() == false){
     g_stand_still = std::stoi(stand_still_txt) ? true : false;
   }
-
+#endif
   float r = LS_SIZE / 2;
   int stand_still_height = 0;
+#if 0 //持ち上げはひとまず取りやめ。
   if(g_stand_still){
     stand_still_height = 270;
   }
-
+#endif
   if (map_width == 0 || (false && uiState()->scene.map_on_left)) {
     this->move(30, 1080 - 60 - 30 - r*2 - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。
   } else {
