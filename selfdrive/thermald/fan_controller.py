@@ -3,6 +3,9 @@ from abc import ABC, abstractmethod
 import os
 import sqlite3
 import datetime
+import threading
+import requests
+import math
 
 from common.realtime import DT_TRML
 from common.numpy_fast import interp
@@ -101,6 +104,95 @@ class TiciFanController(BaseFanController):
     # # カーソルと接続を閉じる
     # self.cur.close()
     # self.conn.close()
+
+    self.thread = None
+    self.th_id = 0
+    self.th_ct = 0
+    #江ノ島付近
+    #self.latitude = 35.308772
+    #self.longitude = 139.483487
+    self.distance = 100
+
+  def query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max):
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    query = f"""
+    [out:json];
+    way({lat_min},{lon_min},{lat_max},{lon_max})["highway"];
+    out body;
+    """
+    response = requests.get(overpass_url, params={'data': query})
+    data = response.json()
+    return data
+
+  def query_node_location(node_id):
+    overpass_url = "http://overpass-api.de/api/interpreter"
+    query = f"""
+    [out:json];
+    node({node_id});
+    out;
+    """
+    response = requests.get(overpass_url, params={'data': query})
+    data = response.json()
+    print("node_id :", node_id)
+    print("node_id data:", data)
+    return data
+
+  def osm_fetch(self):
+
+    self.th_id += 1
+    self.th_ct += 1
+    #print("スレッドct:", th_ct)
+
+    # 矩形領域内の道路データをクエリ
+    lat_diff = self.distance / 111111  # 緯度1度あたりの距離
+    lon_diff = self.distance / (111111 * math.cos(math.radians(self.latitude)))  # 経度1度あたりの距離
+
+    lat_min = self.latitude - lat_diff
+    lat_max = self.latitude + lat_diff
+    lon_min = self.longitude - lon_diff
+    lon_max = self.longitude + lon_diff
+
+    response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
+
+    # print("allall:", response_data)
+
+    # 道路の位置情報を抽出
+    road_info_list = []
+    if "elements" in response_data:
+      for element in response_data["elements"]:
+        if element["type"] == "way":
+            road_coordinates = []
+            if "nodes" in element:
+                road_coords = []
+                for node_id in element["nodes"]:
+                    #node_data = self.query_node_location(node_id) #ノードに対する座標は取れるが遅すぎる。maxspeedデータが取れたらで妥協するしかないか。
+                    #road_coords.append(node_data)
+                    road_coords.append(node_id)
+                road_coordinates = road_coords
+            else:
+                road_coordinates = "NA"
+            road_name = element.get("tags", {}).get("name", "N/A")
+            speed_limit = element.get("tags", {}).get("maxspeed", "N/A")
+            if speed_limit != "N/A":
+              road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+
+    with open('/tmp/debug_out_o.txt','w') as fp:
+      fp.write('th_id:%s\n' % (self.th_id))
+      for road_info in road_info_list:
+        road_name = road_info["road_name"]
+        speed_limit = road_info["speed_limit"]
+        coords = road_info["coords"]
+        #print("all:", road_info["all"])
+        fp.write(' road_name:%s\n' % (road_name))
+        fp.write(' speed_max:%s\n' % (speed_limit))
+        #print("座標インデックス:", coords)
+      if len(road_info_list) == 0:
+        fp.write(' road_name:%s\n' % ("--"))
+        fp.write(' speed_max:%s\n' % (0))
+
+    self.th_ct -= 1
+    self.thread = None
+    #print("スレッドct x:", th_ct)
 
   def __del__(self):
     # カーソルと接続を閉じる
@@ -323,6 +415,12 @@ class TiciFanController(BaseFanController):
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
     # # 変更を保存
     # self.conn.commit()
+
+    if self.thread == None and self.latitude != 0 and self.longitude != 0:
+      self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+      self.thread = threading(target=self.osm_fetch,args=[self])
+      #self.thread.setDaemon(True)
+      self.thread.start()
 
     return fan_pwr_out
 
