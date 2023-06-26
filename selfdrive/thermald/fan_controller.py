@@ -3,9 +3,9 @@ from abc import ABC, abstractmethod
 import os
 import sqlite3
 import datetime
-import threading
-import requests
-import math
+# import threading
+# import requests
+# import math
 
 from common.realtime import DT_TRML
 from common.numpy_fast import interp
@@ -416,13 +416,13 @@ class TiciFanController(BaseFanController):
     # # 変更を保存
     # self.conn.commit()
 
-    if self.thread == None and self.latitude != 0 and self.longitude != 0:
-      self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
-      # self.thread = threading(target=self.osm_fetch,args=[self])
-      # #self.thread.setDaemon(True)
-      # self.thread.start()
-      #同期でテスト。
-      self.osm_fetch(self)
+    # if self.thread == None and self.latitude != 0 and self.longitude != 0:
+    #   self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+    #   # self.thread = threading(target=self.osm_fetch,args=[self])
+    #   # #self.thread.setDaemon(True)
+    #   # self.thread.start()
+    #   #同期でテスト。
+    #   self.osm_fetch(self)
 
     return fan_pwr_out
 
