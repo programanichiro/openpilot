@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 import os
 import sqlite3
 import datetime
-# import threading
+import threading
 import requests
 import math
 
@@ -418,11 +418,11 @@ class TiciFanController(BaseFanController):
 
     if self.thread == None and self.latitude != 0 and self.longitude != 0:
       self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
-      # self.thread = threading(target=self.osm_fetch,args=[self])
-      # #self.thread.setDaemon(True)
-      # self.thread.start()
+      self.thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
+      #self.thread.setDaemon(True)
+      self.thread.start()
       #同期でテスト。
-      self.osm_fetch()
+      #self.osm_fetch()
 
     return fan_pwr_out
 
