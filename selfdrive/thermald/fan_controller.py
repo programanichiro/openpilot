@@ -416,7 +416,8 @@ class TiciFanController(BaseFanController):
     # # 変更を保存
     # self.conn.commit()
 
-    if self.thread == None and self.latitude != 0 and self.longitude != 0:
+    #osmアクセスで制限速度を取得する試み。
+    if self.thread == None and (self.latitude != 0 or self.longitude != 0):
       self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
       self.thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
       #self.thread.setDaemon(True)
