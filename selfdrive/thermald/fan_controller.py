@@ -4,8 +4,8 @@ import os
 import sqlite3
 import datetime
 # import threading
-# import requests
-# import math
+import requests
+import math
 
 from common.realtime import DT_TRML
 from common.numpy_fast import interp
@@ -113,7 +113,7 @@ class TiciFanController(BaseFanController):
     #self.longitude = 139.483487
     self.distance = 100
 
-  def query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max):
+  def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
     overpass_url = "http://overpass-api.de/api/interpreter"
     query = f"""
     [out:json];
@@ -124,7 +124,7 @@ class TiciFanController(BaseFanController):
     data = response.json()
     return data
 
-  def query_node_location(node_id):
+  def query_node_location(self,node_id):
     overpass_url = "http://overpass-api.de/api/interpreter"
     query = f"""
     [out:json];
@@ -416,13 +416,13 @@ class TiciFanController(BaseFanController):
     # # 変更を保存
     # self.conn.commit()
 
-    # if self.thread == None and self.latitude != 0 and self.longitude != 0:
-    #   self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
-    #   # self.thread = threading(target=self.osm_fetch,args=[self])
-    #   # #self.thread.setDaemon(True)
-    #   # self.thread.start()
-    #   #同期でテスト。
-    #   self.osm_fetch(self)
+    if self.thread == None and self.latitude != 0 and self.longitude != 0:
+      # self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+      # self.thread = threading(target=self.osm_fetch,args=[self])
+      # #self.thread.setDaemon(True)
+      # self.thread.start()
+      #同期でテスト。
+      self.osm_fetch()
 
     return fan_pwr_out
 
