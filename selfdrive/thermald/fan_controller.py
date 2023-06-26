@@ -176,7 +176,7 @@ class TiciFanController(BaseFanController):
             if True: #speed_limit != "N/A":
               road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
-    with open('/tmp/debug_out_o.txt','w') as fp:
+    with open('/tmp/debug_out_o','w') as fp:
       fp.write('th_id:%s\n' % (self.th_id))
       for road_info in road_info_list:
         road_name = road_info["road_name"]
