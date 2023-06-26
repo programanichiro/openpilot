@@ -173,7 +173,7 @@ class TiciFanController(BaseFanController):
                 road_coordinates = "NA"
             road_name = element.get("tags", {}).get("name", "N/A")
             speed_limit = element.get("tags", {}).get("maxspeed", "N/A")
-            if speed_limit != "N/A":
+            if True: #speed_limit != "N/A":
               road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
     with open('/tmp/debug_out_o.txt','w') as fp:
