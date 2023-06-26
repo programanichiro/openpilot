@@ -171,9 +171,9 @@ class TiciFanController(BaseFanController):
                 road_coordinates = road_coords
             else:
                 road_coordinates = "NA"
-            road_name = element.get("tags", {}).get("name", "N/A")
+            road_name = element.get("tags", {}).get("name", "---")
             speed_limit = element.get("tags", {}).get("maxspeed", "N/A")
-            if True: #speed_limit != "N/A":
+            if speed_limit != "N/A":
               road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
     with open('/tmp/debug_out_o','w') as fp:
@@ -417,7 +417,7 @@ class TiciFanController(BaseFanController):
     # self.conn.commit()
 
     if self.thread == None and self.latitude != 0 and self.longitude != 0:
-      # self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+      self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
       # self.thread = threading(target=self.osm_fetch,args=[self])
       # #self.thread.setDaemon(True)
       # self.thread.start()
