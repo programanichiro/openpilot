@@ -139,66 +139,68 @@ class TiciFanController(BaseFanController):
     return data
 
   def osm_fetch(self):
+    try:
+      self.th_id += 1
+      self.th_ct += 1
+      #print("スレッドct:", th_ct)
 
-    self.th_id += 1
-    self.th_ct += 1
-    #print("スレッドct:", th_ct)
+      # 矩形領域内の道路データをクエリ
+      lat_diff = self.distance / 111111  # 緯度1度あたりの距離
+      lon_diff = self.distance / (111111 * math.cos(math.radians(self.latitude)))  # 経度1度あたりの距離
 
-    # 矩形領域内の道路データをクエリ
-    lat_diff = self.distance / 111111  # 緯度1度あたりの距離
-    lon_diff = self.distance / (111111 * math.cos(math.radians(self.latitude)))  # 経度1度あたりの距離
+      lat_min = self.latitude - lat_diff
+      lat_max = self.latitude + lat_diff
+      lon_min = self.longitude - lon_diff
+      lon_max = self.longitude + lon_diff
 
-    lat_min = self.latitude - lat_diff
-    lat_max = self.latitude + lat_diff
-    lon_min = self.longitude - lon_diff
-    lon_max = self.longitude + lon_diff
+      response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
 
-    response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
+      # print("allall:", response_data)
 
-    # print("allall:", response_data)
+      # 道路の位置情報を抽出
+      road_info_list = []
+      if "elements" in response_data:
+        for element in response_data["elements"]:
+          if element["type"] == "way":
+              road_coordinates = []
+              if "nodes" in element:
+                  road_coords = []
+                  for node_id in element["nodes"]:
+                      #node_data = self.query_node_location(node_id) #ノードに対する座標は取れるが遅すぎる。maxspeedデータが取れたらで妥協するしかないか。
+                      #road_coords.append(node_data)
+                      road_coords.append(node_id)
+                  road_coordinates = road_coords
+              else:
+                  road_coordinates = "NA"
+              road_name = element.get("tags", {}).get("name", "---")
+              speed_limit = element.get("tags", {}).get("maxspeed", "0")
+              if speed_limit != "0" or road_name != "---":
+                road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
-    # 道路の位置情報を抽出
-    road_info_list = []
-    if "elements" in response_data:
-      for element in response_data["elements"]:
-        if element["type"] == "way":
-            road_coordinates = []
-            if "nodes" in element:
-                road_coords = []
-                for node_id in element["nodes"]:
-                    #node_data = self.query_node_location(node_id) #ノードに対する座標は取れるが遅すぎる。maxspeedデータが取れたらで妥協するしかないか。
-                    #road_coords.append(node_data)
-                    road_coords.append(node_id)
-                road_coordinates = road_coords
-            else:
-                road_coordinates = "NA"
-            road_name = element.get("tags", {}).get("name", "---")
-            speed_limit = element.get("tags", {}).get("maxspeed", "0")
-            if speed_limit != "0" or road_name != "---":
-              road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
-
-    with open('/tmp/road_info.txt','w') as fp:
-      # fp.write('th_id:%s\n' % (self.th_id))
-      if len(road_info_list) != 0:
-        self.road_info_list_select += 1
-        self.road_info_list_select %= len(road_info_list)
-      road_info_list_select_ct = 0
-      for road_info in road_info_list:
-        if road_info_list_select_ct == self.road_info_list_select:
-          road_name = road_info["road_name"]
-          speed_limit = road_info["speed_limit"]
-          fp.write('%d,%s,%s\n' % (self.th_id , speed_limit , road_name))
-          break
-        road_info_list_select_ct += 1
-        # coords = road_info["coords"]
-        #print("all:", road_info["all"])
-        # fp.write(' road_name:%s\n' % (road_name))
-        # fp.write(' speed_max:%s\n' % (speed_limit))
-        #print("座標インデックス:", coords)
-      if len(road_info_list) == 0:
-        fp.write('%d,0,--\n' % (self.th_id))
-        # fp.write(' road_name:%s\n' % ("--"))
-        # fp.write(' speed_max:%s\n' % (0))
+      with open('/tmp/road_info.txt','w') as fp:
+        # fp.write('th_id:%s\n' % (self.th_id))
+        if len(road_info_list) != 0:
+          self.road_info_list_select += 1
+          self.road_info_list_select %= len(road_info_list)
+        road_info_list_select_ct = 0
+        for road_info in road_info_list:
+          if road_info_list_select_ct == self.road_info_list_select:
+            road_name = road_info["road_name"]
+            speed_limit = road_info["speed_limit"]
+            fp.write('%d,%s,%s\n' % (self.th_id , speed_limit , road_name))
+            break
+          road_info_list_select_ct += 1
+          # coords = road_info["coords"]
+          #print("all:", road_info["all"])
+          # fp.write(' road_name:%s\n' % (road_name))
+          # fp.write(' speed_max:%s\n' % (speed_limit))
+          #print("座標インデックス:", coords)
+        if len(road_info_list) == 0:
+          fp.write('%d,0,--\n' % (self.th_id))
+          # fp.write(' road_name:%s\n' % ("--"))
+          # fp.write(' speed_max:%s\n' % (0))
+    except Exception as e:
+      pass
 
     self.th_ct -= 1
     self.thread = None

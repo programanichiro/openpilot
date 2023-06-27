@@ -1400,10 +1400,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       road_info_txt_flag = false;
     } else {
       road_info_txt_flag = true;
+      configFont(p, FONT_OPEN_SANS, 33, "Bold");
       drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 150);
     }
   }
   if(road_info_txt_flag == false){
+    configFont(p, FONT_OPEN_SANS, 33, "SemiBold");
     drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
   }
   configFont(p, FONT_OPEN_SANS, 33, "Bold");
