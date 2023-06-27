@@ -1405,7 +1405,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     } else {
       road_info_txt_flag = true;
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
-      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(kmh+"km/h,"+token), 150);
+      if(kmh != "0"){
+        token = kmh+"-"+token;
+      }
+      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 150);
     }
   }
   if(road_info_txt_flag == false){

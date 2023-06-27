@@ -187,7 +187,7 @@ class TiciFanController(BaseFanController):
           if road_info_list_select_ct == self.road_info_list_select:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
-            fp.write('%d,%s,%s\n' % (self.th_id , speed_limit , road_name))
+            fp.write('%d,%s,%s' % (self.th_id , speed_limit , road_name))
             break
           road_info_list_select_ct += 1
           # coords = road_info["coords"]
@@ -196,7 +196,7 @@ class TiciFanController(BaseFanController):
           # fp.write(' speed_max:%s\n' % (speed_limit))
           #print("座標インデックス:", coords)
         if len(road_info_list) == 0:
-          fp.write('%d,0,--\n' % (self.th_id))
+          fp.write('%d,0,--' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
     except Exception as e:
