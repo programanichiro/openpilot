@@ -108,6 +108,7 @@ class TiciFanController(BaseFanController):
     self.thread = None
     self.th_id = 0
     self.th_ct = 0
+    self.road_info_list_select = 0
     #江ノ島付近
     #self.latitude = 35.308772
     #self.longitude = 139.483487
@@ -176,13 +177,20 @@ class TiciFanController(BaseFanController):
             if speed_limit != "0" or road_name != "---":
               road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
-    with open('/tmp/debug_out_o','w') as fp:
+    with open('/tmp/road_info.txt','w') as fp:
       # fp.write('th_id:%s\n' % (self.th_id))
+      if len(road_info_list) != 0:
+        self.road_info_list_select += 1
+        self.road_info_list_select %= len(road_info_list)
+      road_info_list_select_ct = 0
       for road_info in road_info_list:
-        road_name = road_info["road_name"]
-        speed_limit = road_info["speed_limit"]
-        coords = road_info["coords"]
-        fp.write('%d,%s,%s\n' % (self.th_id , speed_limit , road_name))
+        if road_info_list_select_ct == self.road_info_list_select:
+          road_name = road_info["road_name"]
+          speed_limit = road_info["speed_limit"]
+          fp.write('%d,%s,%s\n' % (self.th_id , speed_limit , road_name))
+          break
+        road_info_list_select_ct += 1
+        # coords = road_info["coords"]
         #print("all:", road_info["all"])
         # fp.write(' road_name:%s\n' % (road_name))
         # fp.write(' speed_max:%s\n' % (speed_limit))

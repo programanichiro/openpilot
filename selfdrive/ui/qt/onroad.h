@@ -107,6 +107,7 @@ private:
   void drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity , float ang);
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false);
   void drawText(QPainter &p, int x, int y, const QString &text, const QColor &col);
+  void drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false);
 
   ButtonsWindow *buttons;
   QPixmap engage_img;

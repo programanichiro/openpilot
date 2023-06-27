@@ -1387,7 +1387,24 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
   }
   configFont(p, FONT_OPEN_SANS, 33, "SemiBold");
-  drawText(p, rect().right()-275, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
+  bool road_info_txt_flag = false;
+  std::string road_info_txt = util::read_file("/tmp/road_info.txt");
+  if(road_info_txt.empty() == false){
+    std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+      i++; // インデックスを1つ進める
+    }
+    if(token.empty() == true ||  == "--" || token == "---"){
+      road_info_txt_flag = false;
+    } else {
+      road_info_txt_flag = true;
+      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 150);
+    }
+  }
+  if(road_info_txt_flag == false){
+    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
+  }
   configFont(p, FONT_OPEN_SANS, 33, "Bold");
   float angle_steer = 0;
   std::string angle_steer0_txt = util::read_file("/tmp/steer_ang_info.txt");
@@ -1649,6 +1666,22 @@ void AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &t
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
   p.setPen(col);
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+}
+
+void AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
+  QRect real_rect = getTextRect(p, 0, text);
+  real_rect.moveCenter({x - real_rect.width() / 2, y - real_rect.height() / 2});
+
+  if(brakeLight == false){
+    p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  } else {
+    alpha += 100;
+    if(alpha > 255){
+      alpha = 255;
+    }
+    p.setPen(QColor(0xff, 0, 0, alpha));
+  }
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
