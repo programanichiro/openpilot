@@ -890,6 +890,7 @@ static bool global_engageable;
 static float vc_speed;
 static int tss_type = 0;
 static float maxspeed_org;
+std::string road_info_txt;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
   int SET_SPEED_NA = 557; //255;
   const SubMaster &sm = *(s.sm);
@@ -1381,14 +1382,17 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     drawText(p, rect().left()+140, 55, "COMMA.AI", 150);
     configFont(p, FONT_OPEN_SANS, 55, "SemiBold");
     if(tss_type <= 1){
-      drawText(p, rect().right()-150, 60, "PHV 2017", 150);
+      drawText(p, rect().right()-150, 60, "PHV TSSP", 150);
     } else {
-      drawText(p, rect().right()-150, 60, "PHV 2021", 150);
+      drawText(p, rect().right()-150, 60, "PHV TSS2", 150);
     }
   }
   configFont(p, FONT_OPEN_SANS, 33, "SemiBold");
   bool road_info_txt_flag = false;
-  std::string road_info_txt = util::read_file("/tmp/road_info.txt");
+  static unsigned int road_info_txt_ct = 0;
+  if(road_info_txt_ct++ % 20 == 0){
+    road_info_txt = util::read_file("/tmp/road_info.txt");
+  }
   if(road_info_txt.empty() == false){
     int i = 0; // インデックス
     std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
