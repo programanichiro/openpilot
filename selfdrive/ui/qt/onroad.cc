@@ -1408,7 +1408,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       if(kmh != "0"){
         token = kmh+"K"+token;
       }
-      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 150);
+      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
     }
   }
   if(road_info_txt_flag == false){
