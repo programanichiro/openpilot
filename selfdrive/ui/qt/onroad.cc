@@ -1392,16 +1392,20 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(road_info_txt.empty() == false){
     int i = 0; // インデックス
     std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
+    std::string kmh; // 一時的にトークンを格納する変数
     std::string token; // 一時的にトークンを格納する変数
-    while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+    while (i < 3 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
+      if(i == 1){
+        kmh = token;
+      }
       i++; // インデックスを1つ進める
     }
-    if(token.empty() == true || token == "--" || token == "---"){
+    if(token.empty() == true || (token == "--" && kmh != "0")){
       road_info_txt_flag = false;
     } else {
       road_info_txt_flag = true;
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
-      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 150);
+      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(kmh+"km/h,"+token), 150);
     }
   }
   if(road_info_txt_flag == false){
