@@ -1400,7 +1400,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       }
       i++; // インデックスを1つ進める
     }
-    if(token.empty() == true || (token == "--" && kmh != "0")){
+    if(token.empty() == true || (token == "--" && kmh == "0")){
       road_info_txt_flag = false;
     } else {
       road_info_txt_flag = true;
