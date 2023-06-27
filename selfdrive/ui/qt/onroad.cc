@@ -1194,7 +1194,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawText(sign_rect.adjusted(0, 22*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
     p.drawText(sign_rect.adjusted(0, 51*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
     configFont(p, "Inter", 70*max_disp_k, "Bold");
-    p.drawText(speed_limit_rect, Qt::AlignCenter, speedLimitStr);
+    p.drawText(sign_rect.adjusted(0, 85*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
   }
 
   // EU (Vienna style) sign
