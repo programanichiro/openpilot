@@ -112,7 +112,7 @@ class TiciFanController(BaseFanController):
     #江ノ島付近
     #self.latitude = 35.308772
     #self.longitude = 139.483487
-    self.distance = 100
+    self.distance = 50
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
     overpass_url = "http://overpass-api.de/api/interpreter"
@@ -430,7 +430,7 @@ class TiciFanController(BaseFanController):
 
     #osmアクセスで制限速度を取得する試み。
     if self.thread == None and (self.latitude != 0 or self.longitude != 0):
-      self.distance = 100 * interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+      self.distance = 50 * interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
       self.thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
       #self.thread.setDaemon(True)
       self.thread.start()

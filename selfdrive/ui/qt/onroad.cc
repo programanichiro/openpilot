@@ -1406,7 +1406,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       road_info_txt_flag = true;
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
       if(kmh != "0"){
-        token = kmh+"-"+token;
+        token = kmh+"K"+token;
       }
       drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 150);
     }
