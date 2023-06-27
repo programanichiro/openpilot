@@ -1396,7 +1396,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
       i++; // インデックスを1つ進める
     }
-    if(token.empty() == true ||  == "--" || token == "---"){
+    if(token.empty() == true || token == "--" || token == "---"){
       road_info_txt_flag = false;
     } else {
       road_info_txt_flag = true;
