@@ -1390,6 +1390,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   bool road_info_txt_flag = false;
   std::string road_info_txt = util::read_file("/tmp/road_info.txt");
   if(road_info_txt.empty() == false){
+    int i = 0; // インデックス
     std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
     std::string token; // 一時的にトークンを格納する変数
     while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
