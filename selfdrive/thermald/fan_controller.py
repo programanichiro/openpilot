@@ -172,23 +172,25 @@ class TiciFanController(BaseFanController):
             else:
                 road_coordinates = "NA"
             road_name = element.get("tags", {}).get("name", "---")
-            speed_limit = element.get("tags", {}).get("maxspeed", "N/A")
-            if speed_limit != "N/A":
+            speed_limit = element.get("tags", {}).get("maxspeed", "0")
+            if speed_limit != "0" or road_name != "---":
               road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
     with open('/tmp/debug_out_o','w') as fp:
-      fp.write('th_id:%s\n' % (self.th_id))
+      # fp.write('th_id:%s\n' % (self.th_id))
       for road_info in road_info_list:
         road_name = road_info["road_name"]
         speed_limit = road_info["speed_limit"]
         coords = road_info["coords"]
+        fp.write('%d,%s,%s\n' % (self.th_id , speed_limit , road_name))
         #print("all:", road_info["all"])
-        fp.write(' road_name:%s\n' % (road_name))
-        fp.write(' speed_max:%s\n' % (speed_limit))
+        # fp.write(' road_name:%s\n' % (road_name))
+        # fp.write(' speed_max:%s\n' % (speed_limit))
         #print("座標インデックス:", coords)
       if len(road_info_list) == 0:
-        fp.write(' road_name:%s\n' % ("--"))
-        fp.write(' speed_max:%s\n' % (0))
+        fp.write('%d,0,--\n' % (self.th_id))
+        # fp.write(' road_name:%s\n' % ("--"))
+        # fp.write(' speed_max:%s\n' % (0))
 
     self.th_ct -= 1
     self.thread = None
