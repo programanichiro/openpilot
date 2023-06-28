@@ -1421,7 +1421,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   if(road_info_txt_flag == false){
     configFont(p, FONT_OPEN_SANS, 33, "SemiBold");
-    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO"/*, myname_transl*/ , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200);
+    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO"/*, myname_transl*/ , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 5);
   }
   configFont(p, FONT_OPEN_SANS, 33, "Bold");
   float angle_steer = 0;
