@@ -1398,13 +1398,24 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
     std::string kmh; // 一時的にトークンを格納する変数
     std::string token; // 一時的にトークンを格納する変数
+    static int road_th_ct_ct = 0;
+    static int before_road_th_ct = 0;
     while (i < 3 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
+      if(i == 0){
+        int road_th_ct = std::stoi(token);
+        if(road_th_ct == before_road_th_ct){
+          road_th_ct_ct ++; //road_th_ctが変化しなければカウントアップし続ける
+        } else {
+          road_th_ct_ct = 0; //30秒以上ゼロに戻らなければ、road_info_txt_flag = falseにして、道路名は出さない。
+        }
+        before_road_th_ct = road_th_ct;
+      }
       if(i == 1){
         kmh = token;
       }
       i++; // インデックスを1つ進める
     }
-    if(token.empty() == true || (token == "--" && kmh == "0")){
+    if(token.empty() == true || (token == "--" && kmh == "0") || road_th_ct_ct > 30 * 20){
       road_info_txt_flag = false;
     } else {
       road_info_txt_flag = true;
