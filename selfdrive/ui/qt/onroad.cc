@@ -1415,7 +1415,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
       int next_x = drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
       if(kmh != "0"){
-        drawTextRight(p, next_x, rect().bottom() - 10 , QString::fromStdString(kmh+"K") , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 7);
+        drawTextRight(p, next_x-4, rect().bottom() - 10 , QString::fromStdString(kmh+"K") , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 7);
       }
     }
   }
