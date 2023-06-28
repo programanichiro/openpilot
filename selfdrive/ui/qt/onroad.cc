@@ -1718,7 +1718,7 @@ int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStrin
     }
     p.setPen(QColor(0xff, 0, 0, alpha));
   }
-  p.setBrush(QColor(0xff, 0, 0, 200))
+  p.setBrush(QColor(0xff, 0, 0, 200));
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 
   return x - real_rect.width(); //続けて並べるxposを返す。
