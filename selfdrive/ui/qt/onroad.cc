@@ -1413,10 +1413,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     } else {
       road_info_txt_flag = true;
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
+      int next_x = drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
       if(kmh != "0"){
-        token = kmh+"K"+token;
+        drawTextRight(p, next_x, rect().bottom() - 10 , QString::fromStdString(kmh+"K"), 220 , false , 255 , 128 , 0);
       }
-      drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
     }
   }
   if(road_info_txt_flag == false){
@@ -1705,12 +1705,12 @@ int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString
   return x + real_rect.width(); //続けて並べるxposを返す。
 }
 
-int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
+int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn) {
   QRect real_rect = getTextRect(p, 0, text);
   real_rect.moveCenter({x - real_rect.width() / 2, y - real_rect.height() / 2});
 
   if(brakeLight == false){
-    p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+    p.setPen(QColor(red, blu, grn, alpha));
   } else {
     alpha += 100;
     if(alpha > 255){
