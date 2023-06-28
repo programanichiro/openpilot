@@ -175,7 +175,24 @@ class TiciFanController(BaseFanController):
               road_name = element.get("tags", {}).get("name", "---")
               speed_limit = element.get("tags", {}).get("maxspeed", "0")
               if speed_limit != "0" or road_name != "---":
-                road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+                dup = False
+                if speed_limit == "0":
+                  for road_info_tmp in road_info_list: #速度を持たない同じ名前の道の登録は弾く。
+                    if road_info_tmp["road_name"] == road_name:
+                      dup = True
+                      break
+                else:
+                  road_info_list_ct = 0
+                  for road_info_tmp in road_info_list: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
+                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
+                      dup = True #速度と名前が同じでも弾く。
+                      break
+                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
+                      del road_info_list[road_info_list_ct]
+                      break
+                    road_info_list_ct += 1
+                if dup == False:
+                  road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
       with open('/tmp/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
