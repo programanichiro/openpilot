@@ -1687,7 +1687,25 @@ void AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &t
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
-void AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
+int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
+  QRect real_rect = getTextRect(p, 0, text);
+  real_rect.moveCenter({x + real_rect.width() / 2, y - real_rect.height() / 2});
+
+  if(brakeLight == false){
+    p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  } else {
+    alpha += 100;
+    if(alpha > 255){
+      alpha = 255;
+    }
+    p.setPen(QColor(0xff, 0, 0, alpha));
+  }
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return x + real_rect.width(); //続けて並べるxposを返す。
+}
+
+int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
   QRect real_rect = getTextRect(p, 0, text);
   real_rect.moveCenter({x - real_rect.width() / 2, y - real_rect.height() / 2});
 
@@ -1701,6 +1719,8 @@ void AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStri
     p.setPen(QColor(0xff, 0, 0, alpha));
   }
   p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return x - real_rect.width(); //続けて並べるxposを返す。
 }
 
 void AnnotatedCameraWidget::drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity , float ang) {
@@ -2184,10 +2204,12 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 #endif
   configFont(p, FONT_OPEN_SANS, 44, "SemiBold");
   p.setPen(QColor(0xdf, 0xdf, 0x00 , 200));
+  //int debug_disp_xpos = 0+20;
   {
     //float vegostopping = (*s->sm)["carParams"].getCarParams().getVEgoStopping();
     //QString debug_disp = QString("Stop:") + QString::number(vegostopping,'f',0);
     QString debug_disp = QString("↓:") + QString::number(cv,'f',0);
+    //drawTextLeft(p , debug_disp_xpos , rect_h - 46 , debug_disp , 200); //色を反映できない。
     p.drawText(QRect(0+20, rect_h - 46, 130, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   if(0){
