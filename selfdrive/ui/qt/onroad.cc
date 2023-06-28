@@ -1415,12 +1415,12 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
       int next_x = drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
       if(kmh != "0"){
-        drawTextRight(p, next_x, rect().bottom() - 10 , QString::fromStdString(kmh+"K") , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200);
+        drawTextRight(p, next_x, rect().bottom() - 10 , QString::fromStdString(kmh+"K") , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 5);
       }
     }
   }
   if(road_info_txt_flag == false){
-    configFont(p, FONT_OPEN_SANS, 100, "SemiBold");
+    configFont(p, FONT_OPEN_SANS, 33, "SemiBold");
     drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO"/*, myname_transl*/ , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200);
   }
   configFont(p, FONT_OPEN_SANS, 33, "Bold");
@@ -1705,14 +1705,14 @@ int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString
   return x + real_rect.width(); //続けて並べるxposを返す。
 }
 
-int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp) {
+int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs) {
   QRect real_rect = getTextRect(p, 0, text);
   real_rect.moveCenter({x - real_rect.width() / 2, y - real_rect.height() / 2});
 
   if(bk_alp > 0){
     //バックを塗る。
     p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
-    p.drawRect(real_rect);
+    p.drawRect(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
   }
 
   if(brakeLight == false){
