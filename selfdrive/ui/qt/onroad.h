@@ -108,7 +108,7 @@ private:
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false);
   void drawText(QPainter &p, int x, int y, const QString &text, const QColor &col);
   int drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false , int red=255, int blu=255, int grn=255);
-  int drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false , int red=255, int blu=255, int grn=255 , int bk_red=0, int bk_blu=0, int bk_grn=0, int bk_alp=0, int bk_yofs/*塗りつぶしを縦にずらす*/);
+  int drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false , int red=255, int blu=255, int grn=255 , int bk_red=0, int bk_blu=0, int bk_grn=0, int bk_alp=0, int bk_yofs=0/*塗りつぶしを縦にずらす*/);
 
   ButtonsWindow *buttons;
   QPixmap engage_img;
