@@ -1393,6 +1393,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(road_info_txt_ct++ % 20 == 0){
     road_info_txt = util::read_file("/tmp/road_info.txt");
   }
+  int myname_transl = 150;
   if(road_info_txt.empty() == false){
     int i = 0; // インデックス
     std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
@@ -1406,6 +1407,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     if(token.empty() == true || (token == "--" && kmh == "0")){
       road_info_txt_flag = false;
+      if(token.empty() == false){
+        myname_transl = 220; //osmサーバーと一度でも通信すれば、濃くする。
+      }
     } else {
       road_info_txt_flag = true;
       configFont(p, FONT_OPEN_SANS, 33, "Bold");
@@ -1417,7 +1421,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   if(road_info_txt_flag == false){
     configFont(p, FONT_OPEN_SANS, 33, "SemiBold");
-    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150);
+    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", myname_transl);
   }
   configFont(p, FONT_OPEN_SANS, 33, "Bold");
   float angle_steer = 0;
