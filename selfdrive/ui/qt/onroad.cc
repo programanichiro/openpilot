@@ -1712,7 +1712,7 @@ int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStrin
   if(bk_alp > 0){
     //バックを塗る。
     p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
-    p.drawRect(real_rect)
+    p.drawRect(real_rect);
   }
 
   if(brakeLight == false){
