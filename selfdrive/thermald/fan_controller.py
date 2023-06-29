@@ -113,6 +113,7 @@ class TiciFanController(BaseFanController):
     #self.latitude = 35.308772
     #self.longitude = 139.483487
     self.distance = 50
+    self.min_road_v_kph = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
     overpass_url = "http://overpass-api.de/api/interpreter"
@@ -159,6 +160,7 @@ class TiciFanController(BaseFanController):
 
       # 道路の位置情報を抽出
       road_info_list = []
+      min_road_v_kph0 = 0
       if "elements" in response_data:
         for element in response_data["elements"]:
           if element["type"] == "way":
@@ -174,6 +176,10 @@ class TiciFanController(BaseFanController):
                   road_coordinates = "NA"
               road_name = element.get("tags", {}).get("name", "---")
               speed_limit = element.get("tags", {}).get("maxspeed", "0")
+              if speed_limit != "0":
+                speed_limit_num = int(speed_limit)
+                if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
+                  min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
               if speed_limit != "0" or road_name != "---":
                 dup = False
                 if speed_limit == "0":
@@ -194,6 +200,7 @@ class TiciFanController(BaseFanController):
                 if dup == False:
                   road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
+      self.min_road_v_kph = min_road_v_kph0
       with open('/tmp/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
         if len(road_info_list) != 0:
@@ -435,8 +442,13 @@ class TiciFanController(BaseFanController):
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
+      if get_limitspeed < self.min_road_v_kph:
+        get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
+    elif self.min_road_v_kph > 0:
+      with open('/tmp/limitspeed_data.txt','w') as fp:
+        fp.write('%d,%.2f,999,%d,%.1fm,=%d,-%d' % (int(self.min_road_v_kph/10) * 10 , self.min_road_v_kph , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
     else:
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,111,%d,%.1fm,=%d,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
