@@ -377,6 +377,11 @@ void MapWindow::initializeGL() {
 
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
+    std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
+    if(last_bearing_info_str.empty() == false){
+      last_bearing = std::stof(last_bearing_info_str);
+      if (last_bearing) m_map->setBearing(*last_bearing);
+    }
   } else {
     m_map->setCoordinateZoom(QMapbox::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
