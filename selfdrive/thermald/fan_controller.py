@@ -224,7 +224,7 @@ class TiciFanController(BaseFanController):
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
     except Exception as e:
-      pass
+      self.min_road_v_kph = 0
 
     self.th_ct -= 1
     self.thread = None
