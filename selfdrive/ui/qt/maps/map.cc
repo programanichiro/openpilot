@@ -518,12 +518,6 @@ void MapWindow::offroadTransition(bool offroad) {
   } else {
     auto dest = coordinate_from_param("NavDestination");
     emit requestVisible(dest.has_value());
-
-    std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
-    if(last_bearing_info_str.empty() == false){
-      last_bearing = std::stof(last_bearing_info_str);
-      if (last_bearing) m_map->setBearing(*last_bearing);
-    }
   }
   //last_bearing = {}; これがあると最終状態保持がキャンセルされる？
 }
