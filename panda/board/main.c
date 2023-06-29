@@ -6,11 +6,11 @@
 #include "drivers/gmlan_alt.h"
 #include "drivers/kline_init.h"
 #include "drivers/simple_watchdog.h"
+#include "drivers/logging.h"
 
 #include "early_init.h"
 #include "provision.h"
 
-#include "power_saving.h"
 #include "safety.h"
 
 #include "health.h"
@@ -22,6 +22,8 @@
 #else
   #include "drivers/bxcan.h"
 #endif
+
+#include "power_saving.h"
 
 #include "obj/gitversion.h"
 
@@ -182,6 +184,7 @@ void tick_handler(void) {
 
       // tick drivers at 1Hz
       harness_tick();
+      logging_tick();
 
       const bool recent_heartbeat = heartbeat_counter == 0U;
       current_board->board_tick(check_started(), usb_enumerated, recent_heartbeat, ((harness.status != previous_harness_status) && (harness.status != HARNESS_STATUS_NC)));
@@ -328,6 +331,7 @@ int main(void) {
   peripherals_init();
   detect_board_type();
   adc_init();
+  logging_init();
 
   // print hello
   print("\n\n\n************************ MAIN START ************************\n");
@@ -346,6 +350,8 @@ int main(void) {
 
   // panda has an FPU, let's use it!
   enable_fpu();
+
+  log("main start");
 
   if (current_board->has_gps) {
     uart_init(&uart_ring_gps, 9600);
