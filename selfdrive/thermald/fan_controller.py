@@ -290,6 +290,9 @@ class TiciFanController(BaseFanController):
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
+          if rec_mode == False and self.min_road_v_kph > 0:
+            if self.velocity > 24 and self.velocity < self.min_road_v_kph:
+              self.velocity = self.min_road_v_kph
           if rec_mode == True and rec_speed >= 30 and self.velocity >= limitspeed_min:
             self.velocity = rec_speed
           if self.tss_type < 2 and self.velocity > 119:
@@ -442,11 +445,9 @@ class TiciFanController(BaseFanController):
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
-      if get_limitspeed < self.min_road_v_kph:
-        get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
-    elif self.min_road_v_kph > 0:
+    elif (rec_mode == True or self.velocity < 1) and self.min_road_v_kph > 0:
       with open('/tmp/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,999,%d,%.1fm,=%d,-%d' % (int(self.min_road_v_kph/10) * 10 , self.min_road_v_kph , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
     else:
