@@ -126,18 +126,88 @@ class TiciFanController(BaseFanController):
     data = response.json()
     return data
 
-  def query_node_location(self,node_id):
-    overpass_url = "http://overpass-api.de/api/interpreter"
-    query = f"""
-    [out:json];
-    node({node_id});
-    out;
+  def get_node_coordinates(node_ids):
     """
-    response = requests.get(overpass_url, params={'data': query})
+    Overpass APIを使用して、指定されたノードIDの座標を取得する関数
+    """
+    # Overpass APIのエンドポイントURL
+    overpass_url = "http://overpass-api.de/api/interpreter"
+
+    # ノードIDをunionで結合して文字列に変換。うまくいった？
+    union_query = "".join(f"node({node_id});" for node_id in node_ids)
+
+    # Overpass Queryを作成
+    overpass_query = f"""
+        [out:json];
+        (
+            {union_query}
+        );
+        out;
+    """
+
+    # Overpass APIにリクエストを送信してデータを取得
+    response = requests.get(overpass_url, params={"data": overpass_query})
     data = response.json()
-    print("node_id :", node_id)
-    print("node_id data:", data)
-    return data
+
+    # ノードの情報を処理して座標を取得
+    coordinates = []
+    if True:
+      for node_id in node_ids:
+        for element in data["elements"]:
+          if element["type"] == "node":
+            if node_id == element["id"]:
+              latitude = element["lat"]
+              longitude = element["lon"]
+              coordinates.append((latitude, longitude))
+              break
+
+    return coordinates
+
+  def calculate_bearing(lat1, lon1, lat2, lon2):
+    """
+    2つの緯度経度から方位を計算する関数
+    """
+    # 緯度経度をラジアンに変換
+    lat1_rad = math.radians(lat1)
+    lon1_rad = math.radians(lon1)
+    lat2_rad = math.radians(lat2)
+    lon2_rad = math.radians(lon2)
+
+    # 方位を計算
+    delta_lon = lon2_rad - lon1_rad
+    y = math.sin(delta_lon) * math.cos(lat2_rad)
+    x = math.cos(lat1_rad) * math.sin(lat2_rad) - math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(delta_lon)
+    bearing_rad = math.atan2(y, x)
+
+    # ラジアンを度に変換して0〜360の範囲に補正
+    bearing_deg = math.degrees(bearing_rad)
+    bearing_deg = (bearing_deg + 360) % 360
+
+    return bearing_deg
+
+  def find_nearest_coordinate(target_lat, target_lon, coordinates):
+    """
+    座標配列から最も近い座標のインデックスを返す関数
+    """
+    min_distance = math.inf  # 初期値として無限大を設定
+    nearest_index = None
+
+    for i, (lat, lon) in enumerate(coordinates):
+        # 2つの座標間の距離を計算
+        distance = (target_lat - lat) ** 2 + (target_lon - lon) ** 2 #math.sqrtしなくても良い
+
+        # より近い座標が見つかった場合、最小距離とインデックスを更新
+        if distance < min_distance:
+            min_distance = distance
+            nearest_index = i
+    if nearest_index == 0:
+      return 1
+    return nearest_index
+
+  def check_angle_match(road_bear , car_bear):
+          abs_bear = math.fabs(road_bear - car_bear)
+          diff_bear = 360 - abs_bear if abs_bear > 180 else abs_bear
+          return diff_bear < 10 or diff_bear >= 170
 
   def osm_fetch(self):
     try:
@@ -149,6 +219,9 @@ class TiciFanController(BaseFanController):
       lat_diff = self.distance / 111111  # 緯度1度あたりの距離
       lon_diff = self.distance / (111111 * math.cos(math.radians(self.latitude)))  # 経度1度あたりの距離
 
+      now_latitude = self.latitude
+      now_longitude = self.longitude
+      now_car_bear = self.bearing
       lat_min = self.latitude - lat_diff
       lat_max = self.latitude + lat_diff
       lon_min = self.longitude - lon_diff
@@ -160,7 +233,6 @@ class TiciFanController(BaseFanController):
 
       # 道路の位置情報を抽出
       road_info_list = []
-      min_road_v_kph0 = 0
       if "elements" in response_data:
         for element in response_data["elements"]:
           if element["type"] == "way":
@@ -168,18 +240,12 @@ class TiciFanController(BaseFanController):
               if "nodes" in element:
                   road_coords = []
                   for node_id in element["nodes"]:
-                      #node_data = self.query_node_location(node_id) #ノードに対する座標は取れるが遅すぎる。maxspeedデータが取れたらで妥協するしかないか。
-                      #road_coords.append(node_data)
                       road_coords.append(node_id)
                   road_coordinates = road_coords
               else:
                   road_coordinates = "NA"
               road_name = element.get("tags", {}).get("name", "---")
               speed_limit = element.get("tags", {}).get("maxspeed", "0")
-              if speed_limit != "0":
-                speed_limit_num = int(speed_limit)
-                if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
-                  min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
               if speed_limit != "0" or road_name != "---":
                 dup = False
                 if speed_limit == "0":
@@ -198,7 +264,54 @@ class TiciFanController(BaseFanController):
                       break
                     road_info_list_ct += 1
                 if dup == False:
-                  road_info_list.append({"all":element, "road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+                  road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+
+      road_nodes_all = []
+      for road_info in road_info_list:
+        road_nodes_all += road_info["coords"]
+      #print(road_nodes_all)
+      road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
+      #print(road_coords_all)
+      index_range = 0
+      for road_info in road_info_list:
+        length = len(road_info["coords"])
+        road_coords = road_coords_all[index_range:index_range+length]
+        if True:
+          road_coords2 = []
+          road_bear = []
+          latlon_ct = 0
+          latlon_before = (0,0)
+          for latlon in road_coords:
+            if latlon_ct == 0:
+              latlon_before = latlon
+              road_coords2.append(latlon)
+              road_bear.append(-1)
+            else:
+              bear = self.calculate_bearing(latlon_before[0] , latlon_before[1] , latlon[0] , latlon[1])
+              road_coords2.append(latlon)
+              road_bear.append(int(bear))
+              latlon_before = latlon
+            latlon_ct += 1
+          road_info["bears"] = road_bear
+          road_info["coords"] = road_coords2
+        index_range += length
+
+      #方位マッチしない道路を取り除く。
+      road_info_list2 = []
+      min_road_v_kph0 = 0
+      for road_info in road_info_list:
+        #road_name = road_info["road_name"]
+        speed_limit = road_info["speed_limit"]
+        coords = road_info["coords"]
+        bears = road_info["bears"]
+        idx = self.find_nearest_coordinate(now_latitude,now_longitude,coords)
+        if self.check_angle_match(bears[idx],now_car_bear):
+          road_info_list2.append(road_info)
+          if speed_limit != "0":
+            speed_limit_num = int(speed_limit)
+            if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
+              min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
+      road_info_list = road_info_list2
 
       self.min_road_v_kph = min_road_v_kph0
       with open('/tmp/road_info.txt','w') as fp:
@@ -215,7 +328,7 @@ class TiciFanController(BaseFanController):
             break
           road_info_list_select_ct += 1
           # coords = road_info["coords"]
-          #print("all:", road_info["all"])
+          #ないので注意。print("all:", road_info["all"])
           # fp.write(' road_name:%s\n' % (road_name))
           # fp.write(' speed_max:%s\n' % (speed_limit))
           #print("座標インデックス:", coords)
