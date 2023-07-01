@@ -73,7 +73,6 @@ void OnroadWindow::updateState(const UIState &s) {
   // update spacing
   bool navDisabledNow = (*s.sm)["controlsState"].getControlsState().getEnabled() &&
                         !(*s.sm)["modelV2"].getModelV2().getNavEnabled();
-  navDisabledNow = false;
   if (navDisabled != navDisabledNow) {
     split->setSpacing(navDisabledNow ? bdr_s * 2 : 0);
     if (map) {
@@ -118,9 +117,6 @@ void OnroadWindow::offroadTransition(bool offroad) {
 
       QObject::connect(m, &MapPanel::mapWindowShown, this, &OnroadWindow::mapWindowShown);
 
-#if 1 //地図のサイズ制御が変わるみたいなので、一旦mb_width_rateを保留。
-      m->setFixedWidth(topWidget(this)->width() / 2 - bdr_s);
-#else
       std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
       if(my_mapbox_width.empty() == false){
         float w_rate = std::stof(my_mapbox_width);
@@ -129,7 +125,6 @@ void OnroadWindow::offroadTransition(bool offroad) {
         //m->setFixedWidth((topWidget(this)->width() - bdr_s * 2) * 0.5);
         m->setFixedWidth(topWidget(this)->width() / 2 - bdr_s);
       }
-#endif
       split->insertWidget(0, m);
 
       // hidden by default, made visible when navRoute is published
