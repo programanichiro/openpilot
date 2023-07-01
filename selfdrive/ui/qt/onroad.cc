@@ -456,7 +456,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
         btns_layoutBB->addSpacerItem(spacerItem);
     }
   }
-  btns_layout00->setContentsMargins(0, 30, 30 * bottom_btns, 0);
+  btns_layout00->setContentsMargins(0, 30, 0, 0);
 
   QWidget *btns_wrapper0L = new QWidget;
   QHBoxLayout *btns_layout0L  = new QHBoxLayout(btns_wrapper0L);
