@@ -176,7 +176,7 @@ private:
   void mousePressEvent(QMouseEvent* e) override;
   OnroadAlerts *alerts;
   AnnotatedCameraWidget *nvg;
-//  ButtonsWindow *buttons;
+  float mb_width_rate = 0;
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QWidget *map = nullptr;
   QHBoxLayout* split;

@@ -77,9 +77,8 @@ void OnroadWindow::updateState(const UIState &s) {
     split->setSpacing(navDisabledNow ? bdr_s * 2 : 0);
     if (map) {
       std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
-      if(my_mapbox_width.empty() == false){
-        float w_rate = std::stof(my_mapbox_width);
-        map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * w_rate);
+      if(this->mb_width_rate != 0){
+        map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * this->mb_width_rate);
       } else {
         //map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * 0.5);
         map->setFixedWidth(topWidget(this)->width() / 2 - bdr_s * (navDisabledNow ? 2 : 1));
@@ -126,8 +125,8 @@ void OnroadWindow::offroadTransition(bool offroad) {
 
       std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
       if(my_mapbox_width.empty() == false){
-        float w_rate = std::stof(my_mapbox_width);
-        m->setFixedWidth((topWidget(this)->width() - bdr_s * 2) * w_rate);
+        this->mb_width_rate = std::stof(my_mapbox_width);
+        m->setFixedWidth((topWidget(this)->width() - bdr_s * 2) * this->mb_width_rate);
       } else {
         //m->setFixedWidth((topWidget(this)->width() - bdr_s * 2) * 0.5);
         m->setFixedWidth(topWidget(this)->width() / 2 - bdr_s);
@@ -147,10 +146,10 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   p.fillRect(rect(), QColor(bg.red(), bg.green(), bg.blue(), 255));
 
-  if (isMapVisible() && navDisabled) { //ここは塗ってるだけなので手抜きして何もしない。
+  if (isMapVisible() && navDisabled) {
     QRect map_r = uiState()->scene.map_on_left
-                    ? QRect(0, 0, width() / 2, height())
-                    : QRect(width() / 2, 0, width() / 2, height());
+                    ? QRect(0, 0, (int)(width() * this->mb_width_rate), height())
+                    : QRect((int)(width() * (1.0-this->mb_width_rate)), 0, (int)(width() * this->mb_width_rate), height());
     p.fillRect(map_r, bg_colors[STATUS_DISENGAGED]);
   }
 }
