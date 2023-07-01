@@ -126,7 +126,7 @@ class TiciFanController(BaseFanController):
     data = response.json()
     return data
 
-  def get_node_coordinates(node_ids):
+  def get_node_coordinates(self,node_ids):
     """
     Overpass APIを使用して、指定されたノードIDの座標を取得する関数
     """
@@ -163,7 +163,7 @@ class TiciFanController(BaseFanController):
 
     return coordinates
 
-  def calculate_bearing(lat1, lon1, lat2, lon2):
+  def calculate_bearing(self,lat1, lon1, lat2, lon2):
     """
     2つの緯度経度から方位を計算する関数
     """
@@ -185,7 +185,7 @@ class TiciFanController(BaseFanController):
 
     return bearing_deg
 
-  def find_nearest_coordinate(target_lat, target_lon, coordinates):
+  def find_nearest_coordinate(self,target_lat, target_lon, coordinates):
     """
     座標配列から最も近い座標のインデックスを返す関数
     """
@@ -204,7 +204,7 @@ class TiciFanController(BaseFanController):
       return 1
     return nearest_index
 
-  def check_angle_match(road_bear , car_bear):
+  def check_angle_match(self,road_bear , car_bear):
           abs_bear = math.fabs(road_bear - car_bear)
           diff_bear = 360 - abs_bear if abs_bear > 180 else abs_bear
           return diff_bear < 10 or diff_bear >= 170
@@ -271,7 +271,7 @@ class TiciFanController(BaseFanController):
           road_nodes_all += road_info["coords"]
         #print(road_nodes_all)
         road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
-      if False:
+
         #print(road_coords_all)
         index_range = 0
         for road_info in road_info_list:
