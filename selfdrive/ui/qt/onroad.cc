@@ -76,7 +76,6 @@ void OnroadWindow::updateState(const UIState &s) {
   if (navDisabled != navDisabledNow) {
     split->setSpacing(navDisabledNow ? bdr_s * 2 : 0);
     if (map) {
-      std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
       if(this->mb_width_rate != 0){
         map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * this->mb_width_rate);
       } else {
@@ -147,7 +146,12 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
   p.fillRect(rect(), QColor(bg.red(), bg.green(), bg.blue(), 255));
 
   if (isMapVisible() && navDisabled) {
-    int w = (width() - bdr_s * 2) * this->mb_width_rate + bdr_s;
+    int w;
+    if(this->mb_width_rate != 0){
+      w = (width() - bdr_s * 2) * this->mb_width_rate + bdr_s;
+    } else {
+      w = (width() - bdr_s * 2) /2 + bdr_s;
+    }
     QRect map_r = uiState()->scene.map_on_left
                     ? QRect(0, 0, w, height())
                     : QRect(width() - w, 0, w, height());
