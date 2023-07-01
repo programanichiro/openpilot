@@ -9,6 +9,13 @@
 
 QString get_mapbox_token() {
   // Valid for 4 weeks since we can't swap tokens on the fly
+  std::string my_mapbox_token = util::read_file("../../../mb_token.txt");
+  if(my_mapbox_token.empty() == false){
+    while(my_mapbox_token.c_str()[my_mapbox_token.length()-1] == 0x0a){
+      my_mapbox_token = my_mapbox_token.substr(0,my_mapbox_token.length()-1);
+    }
+    return QString(my_mapbox_token.c_str());
+  }
   return MAPBOX_TOKEN.isEmpty() ? CommaApi::create_jwt({}, 4 * 7 * 24 * 3600) : MAPBOX_TOKEN;
 }
 
@@ -18,7 +25,16 @@ QMapboxGLSettings get_mapbox_settings() {
   if (!Hardware::PC()) {
     settings.setCacheDatabasePath(MAPS_CACHE_PATH);
   }
-  settings.setApiBaseUrl(MAPS_HOST);
+  bool mapbox_extra = false;
+  std::string my_mapbox_token = util::read_file("../../../mb_token.txt");
+  if(my_mapbox_token.empty() == false){
+    mapbox_extra = true;
+  }
+  if(mapbox_extra == true){
+    settings.setApiBaseUrl("https://api.mapbox.com");
+  } else {
+    settings.setApiBaseUrl(MAPS_HOST);
+  }
   settings.setAccessToken(get_mapbox_token());
 
   return settings;
