@@ -109,9 +109,6 @@ class TiciFanController(BaseFanController):
     self.th_id = 0
     self.th_ct = 0
     self.road_info_list_select = 0
-    #江ノ島付近
-    #self.latitude = 35.308772
-    #self.longitude = 139.483487
     self.distance = 50
     self.min_road_v_kph = 0
 
@@ -212,7 +209,7 @@ class TiciFanController(BaseFanController):
   def osm_fetch(self):
     try:
       self.th_id += 1
-      self.th_ct += 1
+      #self.th_ct += 1
       #print("スレッドct:", th_ct)
 
       # 矩形領域内の道路データをクエリ
@@ -265,14 +262,13 @@ class TiciFanController(BaseFanController):
                     road_info_list_ct += 1
                 if dup == False:
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
-      if True:
+
+      if len(road_info_list) > 0:
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["coords"]
-        #print(road_nodes_all)
         road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
 
-        #print(road_coords_all)
         index_range = 0
         for road_info in road_info_list:
           length = len(road_info["coords"])
@@ -329,11 +325,6 @@ class TiciFanController(BaseFanController):
             fp.write('%d,%s,%s' % (self.th_id , speed_limit , road_name))
             break
           road_info_list_select_ct += 1
-          # coords = road_info["coords"]
-          #ないので注意。print("all:", road_info["all"])
-          # fp.write(' road_name:%s\n' % (road_name))
-          # fp.write(' speed_max:%s\n' % (speed_limit))
-          #print("座標インデックス:", coords)
         if len(road_info_list) == 0:
           fp.write('%d,0,--' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
@@ -341,9 +332,8 @@ class TiciFanController(BaseFanController):
     except Exception as e:
       self.min_road_v_kph = 0
 
-    self.th_ct -= 1
+    #self.th_ct -= 1
     self.thread = None
-    #print("スレッドct x:", th_ct)
 
   def __del__(self):
     # カーソルと接続を閉じる
