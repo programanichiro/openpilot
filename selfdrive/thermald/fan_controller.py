@@ -265,12 +265,13 @@ class TiciFanController(BaseFanController):
                     road_info_list_ct += 1
                 if dup == False:
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
-      if False:
+      if True:
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["coords"]
         #print(road_nodes_all)
         road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
+      if False:
         #print(road_coords_all)
         index_range = 0
         for road_info in road_info_list:
