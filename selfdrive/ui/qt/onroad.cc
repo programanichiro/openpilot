@@ -77,7 +77,14 @@ void OnroadWindow::updateState(const UIState &s) {
   if (navDisabled != navDisabledNow) {
     split->setSpacing(navDisabledNow ? bdr_s * 2 : 0);
     if (map) {
-      map->setFixedWidth(topWidget(this)->width() / 2 - bdr_s * (navDisabledNow ? 2 : 1));
+      std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
+      if(my_mapbox_width.empty() == false){
+        float w_rate = std::stof(my_mapbox_width);
+        map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * w_rate);
+      } else {
+        //map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * 0.5);
+        map->setFixedWidth(topWidget(this)->width() / 2 - bdr_s * (navDisabledNow ? 2 : 1));
+      }
     }
   }
 
@@ -141,7 +148,7 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   p.fillRect(rect(), QColor(bg.red(), bg.green(), bg.blue(), 255));
 
-  if (isMapVisible() && navDisabled) {
+  if (isMapVisible() && navDisabled) { //ここは塗ってるだけなので手抜きして何もしない。
     QRect map_r = uiState()->scene.map_on_left
                     ? QRect(0, 0, width() / 2, height())
                     : QRect(width() / 2, 0, width() / 2, height());
