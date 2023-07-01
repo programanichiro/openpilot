@@ -147,9 +147,10 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
   p.fillRect(rect(), QColor(bg.red(), bg.green(), bg.blue(), 255));
 
   if (isMapVisible() && navDisabled) {
+    int w = (width() - bdr_s * 2) * this->mb_width_rate + bdr_s * 2;
     QRect map_r = uiState()->scene.map_on_left
-                    ? QRect(0, 0, (int)(width() * this->mb_width_rate), height())
-                    : QRect((int)(width() * (1.0-this->mb_width_rate)), 0, (int)(width() * this->mb_width_rate), height());
+                    ? QRect(0, 0, w, height())
+                    : QRect(width() - w, 0, w, height());
     p.fillRect(map_r, bg_colors[STATUS_DISENGAGED]);
   }
 }
@@ -1914,10 +1915,10 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   painter.save();
 
   // base icon
-  int offset = bdr_s + btn_size / 2;
+  int offset = bdr_s + (30-bdr_s) + btn_size / 2;
   int x = false /*rightHandDM*/ ? width() - offset : offset;
   int y = height() - offset;
-  float opacity = dmActive ? 0.65 : 0.2; y -= 18;
+  float opacity = dmActive ? 0.65 : 0.2; y -= 18 + (30-bdr_s)*2;
   drawIcon(painter, x, y, dm_img, blackColor(70), opacity , 0);
   if(rightHandDM){ //ボタンを移動できないので、アイコンはそのまま、左肩に"R"を表示。
     configFont(painter, FONT_OPEN_SANS, 70, "Bold");
