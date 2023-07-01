@@ -73,6 +73,7 @@ void OnroadWindow::updateState(const UIState &s) {
   // update spacing
   bool navDisabledNow = (*s.sm)["controlsState"].getControlsState().getEnabled() &&
                         !(*s.sm)["modelV2"].getModelV2().getNavEnabled();
+  navDisabledNow = true;
   if (navDisabled != navDisabledNow) {
     split->setSpacing(navDisabledNow ? bdr_s * 2 : 0);
     if (map) {
