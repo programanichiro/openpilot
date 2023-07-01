@@ -265,55 +265,56 @@ class TiciFanController(BaseFanController):
                     road_info_list_ct += 1
                 if dup == False:
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+      if False:
+        road_nodes_all = []
+        for road_info in road_info_list:
+          road_nodes_all += road_info["coords"]
+        #print(road_nodes_all)
+        road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
+        #print(road_coords_all)
+        index_range = 0
+        for road_info in road_info_list:
+          length = len(road_info["coords"])
+          road_coords = road_coords_all[index_range:index_range+length]
+          if True:
+            road_coords2 = []
+            road_bear = []
+            latlon_ct = 0
+            latlon_before = (0,0)
+            for latlon in road_coords:
+              if latlon_ct == 0:
+                latlon_before = latlon
+                road_coords2.append(latlon)
+                road_bear.append(-1)
+              else:
+                bear = self.calculate_bearing(latlon_before[0] , latlon_before[1] , latlon[0] , latlon[1])
+                road_coords2.append(latlon)
+                road_bear.append(int(bear))
+                latlon_before = latlon
+              latlon_ct += 1
+            road_info["bears"] = road_bear
+            road_info["coords"] = road_coords2
+          index_range += length
 
-      road_nodes_all = []
-      for road_info in road_info_list:
-        road_nodes_all += road_info["coords"]
-      #print(road_nodes_all)
-      road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
-      #print(road_coords_all)
-      index_range = 0
-      for road_info in road_info_list:
-        length = len(road_info["coords"])
-        road_coords = road_coords_all[index_range:index_range+length]
-        if True:
-          road_coords2 = []
-          road_bear = []
-          latlon_ct = 0
-          latlon_before = (0,0)
-          for latlon in road_coords:
-            if latlon_ct == 0:
-              latlon_before = latlon
-              road_coords2.append(latlon)
-              road_bear.append(-1)
-            else:
-              bear = self.calculate_bearing(latlon_before[0] , latlon_before[1] , latlon[0] , latlon[1])
-              road_coords2.append(latlon)
-              road_bear.append(int(bear))
-              latlon_before = latlon
-            latlon_ct += 1
-          road_info["bears"] = road_bear
-          road_info["coords"] = road_coords2
-        index_range += length
+        #方位マッチしない道路を取り除く。
+        road_info_list2 = []
+        min_road_v_kph0 = 0
+        for road_info in road_info_list:
+          #road_name = road_info["road_name"]
+          speed_limit = road_info["speed_limit"]
+          coords = road_info["coords"]
+          bears = road_info["bears"]
+          idx = self.find_nearest_coordinate(now_latitude,now_longitude,coords)
+          if self.check_angle_match(bears[idx],now_car_bear):
+            road_info_list2.append(road_info)
+            if speed_limit != "0":
+              speed_limit_num = int(speed_limit)
+              if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
+                min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
+        road_info_list = road_info_list2
 
-      #方位マッチしない道路を取り除く。
-      road_info_list2 = []
-      min_road_v_kph0 = 0
-      for road_info in road_info_list:
-        #road_name = road_info["road_name"]
-        speed_limit = road_info["speed_limit"]
-        coords = road_info["coords"]
-        bears = road_info["bears"]
-        idx = self.find_nearest_coordinate(now_latitude,now_longitude,coords)
-        if self.check_angle_match(bears[idx],now_car_bear):
-          road_info_list2.append(road_info)
-          if speed_limit != "0":
-            speed_limit_num = int(speed_limit)
-            if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
-              min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
-      road_info_list = road_info_list2
+        self.min_road_v_kph = min_road_v_kph0
 
-      self.min_road_v_kph = min_road_v_kph0
       with open('/tmp/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
         if len(road_info_list) != 0:
