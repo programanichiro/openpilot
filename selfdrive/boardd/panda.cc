@@ -10,8 +10,16 @@
 #include "common/util.h"
 
 Panda::Panda(std::string serial, uint32_t bus_offset) : bus_offset(bus_offset) {
-  handle = std::make_unique<PandaUsbHandle>(serial);
-  LOGW("connected to %s over USB", serial.c_str());
+  // try USB first, then SPI
+  try {
+    handle = std::make_unique<PandaUsbHandle>(serial);
+    LOGW("connected to %s over USB", serial.c_str());
+  } catch (std::exception &e) {
+#ifndef __APPLE__
+    handle = std::make_unique<PandaSpiHandle>(serial);
+    LOGW("connected to %s over SPI", serial.c_str());
+#endif
+  }
 
   hw_type = get_hw_type();
 
@@ -39,7 +47,7 @@ std::string Panda::hw_serial() {
 std::vector<std::string> Panda::list(bool usb_only) {
   std::vector<std::string> serials = PandaUsbHandle::list();
 
-#if 0
+#ifndef __APPLE__
   if (!usb_only) {
     for (auto s : PandaSpiHandle::list()) {
       if (std::find(serials.begin(), serials.end(), s) == serials.end()) {
