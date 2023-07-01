@@ -147,7 +147,7 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
   p.fillRect(rect(), QColor(bg.red(), bg.green(), bg.blue(), 255));
 
   if (isMapVisible() && navDisabled) {
-    int w = (width() - bdr_s * 2) * this->mb_width_rate + bdr_s * 2;
+    int w = (width() - bdr_s * 2) * this->mb_width_rate + bdr_s;
     QRect map_r = uiState()->scene.map_on_left
                     ? QRect(0, 0, w, height())
                     : QRect(width() - w, 0, w, height());
