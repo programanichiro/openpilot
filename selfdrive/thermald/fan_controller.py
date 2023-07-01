@@ -244,24 +244,7 @@ class TiciFanController(BaseFanController):
               road_name = element.get("tags", {}).get("name", "---")
               speed_limit = element.get("tags", {}).get("maxspeed", "0")
               if speed_limit != "0" or road_name != "---":
-                dup = False
-                if speed_limit == "0":
-                  for road_info_tmp in road_info_list: #速度を持たない同じ名前の道の登録は弾く。
-                    if road_info_tmp["road_name"] == road_name:
-                      dup = True
-                      break
-                else:
-                  road_info_list_ct = 0
-                  for road_info_tmp in road_info_list: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
-                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
-                      dup = True #速度と名前が同じでも弾く。
-                      break
-                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
-                      del road_info_list[road_info_list_ct]
-                      break
-                    road_info_list_ct += 1
-                if dup == False:
-                  road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+                road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
 
       if len(road_info_list) > 0:
         road_nodes_all = []
@@ -297,17 +280,35 @@ class TiciFanController(BaseFanController):
         road_info_list2 = []
         min_road_v_kph0 = 0
         for road_info in road_info_list:
-          #road_name = road_info["road_name"]
+          road_name = road_info["road_name"]
           speed_limit = road_info["speed_limit"]
           coords = road_info["coords"]
           bears = road_info["bears"]
           idx = self.find_nearest_coordinate(now_latitude,now_longitude,coords)
           if self.check_angle_match(bears[idx],now_car_bear):
-            road_info_list2.append(road_info)
-            if speed_limit != "0":
-              speed_limit_num = int(speed_limit)
-              if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
-                min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
+            dup = False
+            if True:
+              if speed_limit == "0":
+                for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
+                  if road_info_tmp["road_name"] == road_name:
+                    dup = True
+                    break
+              else:
+                road_info_list_ct = 0
+                for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
+                  if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
+                    dup = True #速度と名前が同じでも弾く。
+                    break
+                  if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
+                    del road_info_list2[road_info_list_ct]
+                    break
+                  road_info_list_ct += 1
+            if dup == False:
+              road_info_list2.append(road_info)
+              if speed_limit != "0":
+                speed_limit_num = int(speed_limit)
+                if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
+                  min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
