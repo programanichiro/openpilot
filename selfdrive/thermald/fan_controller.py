@@ -111,6 +111,7 @@ class TiciFanController(BaseFanController):
     self.road_info_list_select = 0
     self.distance = 50
     self.min_road_v_kph = 0
+    self.before_road_info_list = None
     self.before_road_nodes_all = []
     self.before_road_coords_all = []
     self.road_nodes_all_ct = 0
@@ -228,28 +229,31 @@ class TiciFanController(BaseFanController):
       lon_min = self.longitude - lon_diff
       lon_max = self.longitude + lon_diff
 
-      response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
-
-      # print("allall:", response_data)
-
       # 道路の位置情報を抽出
       road_info_list = []
-      if "elements" in response_data:
-        for element in response_data["elements"]:
-          if element["type"] == "way":
-              road_coordinates = []
-              if "nodes" in element:
-                  road_coords = []
-                  for node_id in element["nodes"]:
-                      road_coords.append(node_id)
-                  road_coordinates = road_coords
-              else:
-                  road_coordinates = "NA"
-              road_name = element.get("tags", {}).get("name", "---")
-              speed_limit = element.get("tags", {}).get("maxspeed", "0")
-              if speed_limit != "0" or road_name != "---":
-                road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+      if self.velocity > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
+        response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
 
+        if "elements" in response_data:
+          for element in response_data["elements"]:
+            if element["type"] == "way":
+                road_coordinates = []
+                if "nodes" in element:
+                    road_coords = []
+                    for node_id in element["nodes"]:
+                        road_coords.append(node_id)
+                    road_coordinates = road_coords
+                else:
+                    road_coordinates = "NA"
+                road_name = element.get("tags", {}).get("name", "---")
+                speed_limit = element.get("tags", {}).get("maxspeed", "0")
+                if speed_limit != "0" or road_name != "---":
+                  road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
+        self.before_road_info_list = road_info_list
+      else:
+         #停止時は前回のをそのまま使う。
+         road_info_list = self.before_road_info_list
+      
       if len(road_info_list) > 0:
         road_nodes_all = []
         for road_info in road_info_list:
