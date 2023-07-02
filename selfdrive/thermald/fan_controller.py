@@ -113,6 +113,7 @@ class TiciFanController(BaseFanController):
     self.min_road_v_kph = 0
     self.before_road_nodes_all = []
     self.before_road_coords_all = []
+    self.road_nodes_all_ct = 0
     self.before_road_nodes_all_ct = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
@@ -257,12 +258,13 @@ class TiciFanController(BaseFanController):
         if self.before_road_nodes_all == road_nodes_all:
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
           self.before_road_nodes_all_ct += 1
-          with open('/tmp/debug_out_o','w') as fp:
-            fp.write('before_road_nodes_all_ct:%d' % (self.before_road_nodes_all_ct))
         else:
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
+          self.road_nodes_all_ct = 0
+        with open('/tmp/debug_out_o','w') as fp:
+          fp.write('before_road_nodes:%d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct))
 
         index_range = 0
         for road_info in road_info_list:
