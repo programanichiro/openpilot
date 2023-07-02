@@ -268,7 +268,7 @@ class TiciFanController(BaseFanController):
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
           self.road_nodes_all_ct += 1
         with open('/tmp/debug_out_o','w') as fp:
-          fp.write('before_road_nodes:%d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct))
+          fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
         index_range = 0
         for road_info in road_info_list:
