@@ -262,7 +262,7 @@ class TiciFanController(BaseFanController):
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
-          self.road_nodes_all_ct = 0
+          self.road_nodes_all_ct += 1
         with open('/tmp/debug_out_o','w') as fp:
           fp.write('before_road_nodes:%d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct))
 
