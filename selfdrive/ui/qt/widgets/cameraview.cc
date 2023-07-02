@@ -228,7 +228,7 @@ void CameraWidget::updateFrameMat() {
 
         intrinsic_matrix = ECAM_INTRINSIC_MATRIX;
         intrinsic_matrix.v[5] -= 70 * zoom_transition; //中心位置がズレるのを誤魔化す。
-        const float ecam_to_fcam_zoom = fcam_intrinsic_matrix.v[0] / ecam_intrinsic_matrix.v[0]; // zoom multiplier between cameras
+        const float ecam_to_fcam_zoom = FCAM_INTRINSIC_MATRIX.v[0] / ECAM_INTRINSIC_MATRIX.v[0]; // zoom multiplier between cameras
         zoom = util::map_val(zoom_transition, 0.0f, 1.0f, ecam_zoom, ecam_to_fcam_zoom * fcam_zoom);
       } else {
         intrinsic_matrix = FCAM_INTRINSIC_MATRIX;
