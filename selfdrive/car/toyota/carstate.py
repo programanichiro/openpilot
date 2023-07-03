@@ -148,8 +148,8 @@ class CarState(CarStateBase):
     if self.lead_dist_lines_init == False or self.lead_dist_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
       self.lead_dist_lines_init = True #初回は通す。
       self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
-      with open('/tmp/debug_out_q','w') as fp:
-        fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
+      # with open('/tmp/debug_out_q','w') as fp:
+      #   fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
 
     # some TSS2 cars have low speed lockout permanently set, so ignore on those cars
     # these cars are identified by an ACC_TYPE value of 2.
