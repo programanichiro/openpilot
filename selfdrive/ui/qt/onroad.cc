@@ -1444,7 +1444,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       }
       i++; // インデックスを1つ進める
     }
-    if(token.empty() == true || (token == "--" && kmh == "0") || road_th_ct_ct > 30 * 20){
+    int road_th_ct_ct_limit = 30; //30秒無通信チェック。
+    if(velo_for_trans < 0.1){
+      road_th_ct_ct_limit = 180; //停止時は3分まで伸ばす。
+    }
+    if(token.empty() == true || (token == "--" && kmh == "0") || road_th_ct_ct > road_th_ct_ct_limit * 20){
       road_info_txt_flag = false;
     } else {
       road_info_txt_flag = true;
