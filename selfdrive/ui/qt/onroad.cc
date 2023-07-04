@@ -77,9 +77,9 @@ void OnroadWindow::updateState(const UIState &s) {
     split->setSpacing(navDisabledNow ? bdr_s * 2 : 0);
     if (map) {
       if(this->mb_width_rate != 0){
-        map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * this->mb_width_rate);
+        map->setFixedWidth((topWidget(this)->width() * this->mb_width_rate - bdr_s * (navDisabledNow ? 2 : 1)));
       } else {
-        //map->setFixedWidth((topWidget(this)->width() - bdr_s * (navDisabledNow ? 2 : 1) * 2) * 0.5);
+        //map->setFixedWidth(topWidget(this)->width() * 0.5 - bdr_s * (navDisabledNow ? 2 : 1));
         map->setFixedWidth(topWidget(this)->width() / 2 - bdr_s * (navDisabledNow ? 2 : 1));
       }
     }
@@ -125,9 +125,9 @@ void OnroadWindow::offroadTransition(bool offroad) {
       std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
       if(my_mapbox_width.empty() == false){
         this->mb_width_rate = std::stof(my_mapbox_width);
-        m->setFixedWidth((topWidget(this)->width() - bdr_s * 2) * this->mb_width_rate);
+        m->setFixedWidth((topWidget(this)->width() * this->mb_width_rate - bdr_s));
       } else {
-        //m->setFixedWidth((topWidget(this)->width() - bdr_s * 2) * 0.5);
+        //m->setFixedWidth((topWidget(this)->width() * 0.5 - bdr_s));
         m->setFixedWidth(topWidget(this)->width() / 2 - bdr_s);
       }
       split->insertWidget(0, m);
