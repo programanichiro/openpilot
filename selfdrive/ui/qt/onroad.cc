@@ -148,7 +148,7 @@ void OnroadWindow::paintEvent(QPaintEvent *event) {
   if (isMapVisible() && navDisabled) {
     int w;
     if(this->mb_width_rate != 0){
-      w = (int)((width() - bdr_s * 2) * this->mb_width_rate) + bdr_s;
+      w = (int)((width() - bdr_s * 2) * this->mb_width_rate) + bdr_s -1;
     } else {
       w = (width() - bdr_s * 2) /2 + bdr_s;
     }
