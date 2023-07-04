@@ -116,6 +116,8 @@ class TiciFanController(BaseFanController):
     self.before_road_coords_all = []
     self.road_nodes_all_ct = 0
     self.before_road_nodes_all_ct = 0
+    self.min_road_v_kph_ct1 = 0
+    self.min_road_v_kph_ct2 = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
     overpass_url = "http://overpass-api.de/api/interpreter"
@@ -330,6 +332,7 @@ class TiciFanController(BaseFanController):
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
+        self.min_road_v_kph_ct1 += 1
 
       with open('/tmp/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
@@ -350,6 +353,7 @@ class TiciFanController(BaseFanController):
           # fp.write(' speed_max:%s\n' % (0))
     except Exception as e:
       self.min_road_v_kph = 0
+      self.min_road_v_kph_ct2 += 1
 
     #self.th_ct -= 1
     self.thread = None
@@ -566,7 +570,7 @@ class TiciFanController(BaseFanController):
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
     self.get_limitspeed_old = get_limitspeed
     with open('/tmp/debug_out_o','w') as fp:
-      fp.write('min_road_v_kph:%d' % (int(self.min_road_v_kph)))
+      fp.write('min_road_v_kph:%d/%d,%d' % (int(self.min_road_v_kph,self.min_road_v_kph_ct1,self.min_road_v_kph_ct2)))
     if get_limitspeed > 0:
       if get_limitspeed < self.min_road_v_kph:
         get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
