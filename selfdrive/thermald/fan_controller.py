@@ -251,8 +251,8 @@ class TiciFanController(BaseFanController):
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
-         #停止時は前回のをそのまま使う。
-         road_info_list = self.before_road_info_list
+        #停止時は前回のをそのまま使う。
+        road_info_list = self.before_road_info_list
       
       if len(road_info_list) > 0:
         road_nodes_all = []
@@ -565,6 +565,8 @@ class TiciFanController(BaseFanController):
 
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
     self.get_limitspeed_old = get_limitspeed
+    with open('/tmp/debug_out_o','w') as fp:
+      fp.write('min_road_v_kph:%d' % (int(self.min_road_v_kph)))
     if get_limitspeed > 0:
       if get_limitspeed < self.min_road_v_kph:
         get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
