@@ -933,9 +933,9 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
   }
 #endif
   if (map_width == 0 || (false && uiState()->scene.map_on_left)) {
-    this->move(30, 1080 - r*2 - bdr_s - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。
+    this->move(30, 1080 - bdr_s*2 - r*2 - bdr_s - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。
   } else {
-    this->move(map_width - r*2 - bdr_s, 1080 - r*2 - bdr_s - stand_still_height);
+    this->move(map_width - r*2 - bdr_s, 1080 - bdr_s*2 - r*2 - bdr_s - stand_still_height);
   }
 }
 
