@@ -570,7 +570,7 @@ class TiciFanController(BaseFanController):
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
     self.get_limitspeed_old = get_limitspeed
     with open('/tmp/debug_out_o','w') as fp:
-      fp.write('min_road_v_kph:%d/%d,%d' % (int(self.min_road_v_kph,self.min_road_v_kph_ct1,self.min_road_v_kph_ct2)))
+      fp.write('min_road_v_kph:%d/%d,%d' % (int(self.min_road_v_kph),self.min_road_v_kph_ct1,self.min_road_v_kph_ct2))
     if get_limitspeed > 0:
       if get_limitspeed < self.min_road_v_kph:
         get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
