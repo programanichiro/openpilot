@@ -345,6 +345,7 @@ class TiciFanController(BaseFanController):
             break
           road_info_list_select_ct += 1
         if len(road_info_list) == 0:
+          self.min_road_v_kph = 0
           fp.write('%d,0,--' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
