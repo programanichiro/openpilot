@@ -246,20 +246,23 @@ class TiciFanController(BaseFanController):
                         road_coords.append(node_id)
                     road_coordinates = road_coords
                 else:
-                    road_coordinates = "NA"
+                    road_coordinates = [] #"NA"
                 road_name = element.get("tags", {}).get("name", "---")
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
                 if speed_limit != "0" or road_name != "---":
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
+        self.min_road_v_kph_ct1 = 111
         #停止時は前回のをそのまま使う。
         road_info_list = self.before_road_info_list
       
+      self.min_road_v_kph_ct1 = 222
       if len(road_info_list) > 0:
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["coords"]
+        self.min_road_v_kph_ct1 = 333
 
         if self.before_road_nodes_all == road_nodes_all:
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
@@ -272,6 +275,7 @@ class TiciFanController(BaseFanController):
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
+        self.min_road_v_kph_ct1 = 444
         index_range = 0
         for road_info in road_info_list:
           length = len(road_info["coords"])
@@ -295,6 +299,8 @@ class TiciFanController(BaseFanController):
             road_info["bears"] = road_bear
             road_info["coords"] = road_coords2
           index_range += length
+
+        self.min_road_v_kph_ct1 = 555
 
         #方位マッチしない道路を取り除く。
         road_info_list2 = []
@@ -329,11 +335,12 @@ class TiciFanController(BaseFanController):
                 speed_limit_num = int(speed_limit)
                 if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
                   min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
+        self.min_road_v_kph_ct1 = 666
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
-        self.min_road_v_kph_ct1 += 1
 
+      self.min_road_v_kph_ct1 = 777
       with open('/tmp/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
         if len(road_info_list) != 0:
