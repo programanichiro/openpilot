@@ -265,12 +265,19 @@ class TiciFanController(BaseFanController):
         self.min_road_v_kph_ct1 = 333
 
         if self.before_road_nodes_all == road_nodes_all:
+          self.min_road_v_kph_ct1 = 3331
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
+          self.min_road_v_kph_ct1 = 3332
           self.before_road_nodes_all_ct += 1
+          self.min_road_v_kph_ct1 = 3333
         else:
+          self.min_road_v_kph_ct1 = 3334
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
+          self.min_road_v_kph_ct1 = 3335
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
+          self.min_road_v_kph_ct1 = 3336
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
+          self.min_road_v_kph_ct1 = 3337
           self.road_nodes_all_ct += 1
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
