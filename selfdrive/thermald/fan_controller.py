@@ -251,11 +251,11 @@ class TiciFanController(BaseFanController):
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
                 if speed_limit != "0" or road_name != "---":
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
-        self.before_road_info_list = road_info_list.copy() #coordsを座標に入れ替えるため、ここではコピー必須。
+        self.before_road_info_list = road_info_list.copy() #coordsを座標に入れ替えるためコピー必須。
       else:
         self.min_road_v_kph_ct1 = 111
         #停止時は前回のをそのまま使う。
-        road_info_list = self.before_road_info_list
+        road_info_list = self.before_road_info_list.copy() #coordsを座標に入れ替えるためコピー必須。
       
       self.min_road_v_kph_ct1 = 222
       if len(road_info_list) > 0:
