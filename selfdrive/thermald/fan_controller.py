@@ -250,18 +250,18 @@ class TiciFanController(BaseFanController):
                 road_name = element.get("tags", {}).get("name", "---")
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
                 if speed_limit != "0" or road_name != "---":
-                  road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "coords": road_coordinates})
-        self.before_road_info_list = road_info_list.copy() #coordsを座標に入れ替えるためコピー必須。
+                  road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
+        self.before_road_info_list = road_info_list
       else:
         self.min_road_v_kph_ct1 = 111
         #停止時は前回のをそのまま使う。
-        road_info_list = self.before_road_info_list.copy() #coordsを座標に入れ替えるためコピー必須。
+        road_info_list = self.before_road_info_list
       
       self.min_road_v_kph_ct1 = 222
       if len(road_info_list) > 0:
         road_nodes_all = []
         for road_info in road_info_list:
-          road_nodes_all += road_info["coords"]
+          road_nodes_all += road_info["nodes"]
         self.min_road_v_kph_ct1 = 333
 
         if self.before_road_nodes_all == road_nodes_all:
@@ -289,7 +289,7 @@ class TiciFanController(BaseFanController):
         self.min_road_v_kph_ct1 = 444
         index_range = 0
         for road_info in road_info_list:
-          length = len(road_info["coords"])
+          length = len(road_info["nodes"])
           road_coords = road_coords_all[index_range:index_range+length]
           if True:
             road_coords2 = []
@@ -308,7 +308,7 @@ class TiciFanController(BaseFanController):
                 latlon_before = latlon
               latlon_ct += 1
             road_info["bears"] = road_bear
-            road_info["coords"] = road_coords2
+            road_info["coords"] = road_coords2 #"nodes"は再利用するため"coords"に名前を変える。
           index_range += length
 
         self.min_road_v_kph_ct1 = 555
