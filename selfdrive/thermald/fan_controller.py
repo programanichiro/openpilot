@@ -116,8 +116,6 @@ class TiciFanController(BaseFanController):
     self.before_road_coords_all = []
     self.road_nodes_all_ct = 0
     self.before_road_nodes_all_ct = 0
-    self.min_road_v_kph_ct1 = 0
-    self.min_road_v_kph_ct2 = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
     overpass_url = "http://overpass-api.de/api/interpreter"
@@ -253,40 +251,25 @@ class TiciFanController(BaseFanController):
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
-        self.min_road_v_kph_ct1 = 111
         #停止時は前回のをそのまま使う。
         road_info_list = self.before_road_info_list
       
-      self.min_road_v_kph_ct1 = 222
       if len(road_info_list) > 0:
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["nodes"]
-        self.min_road_v_kph_ct1 = 333
 
         if self.before_road_nodes_all == road_nodes_all:
-          self.min_road_v_kph_ct1 = 3331
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
-          self.min_road_v_kph_ct1 = 3332
           self.before_road_nodes_all_ct += 1
-          self.min_road_v_kph_ct1 = 3333
         else:
-          self.min_road_v_kph_ct1 = 33341
-          self.min_road_v_kph_ct1 = 3330000+len(road_nodes_all)
-          with open('/tmp/debug_out_q','w') as fp:
-            for node in road_nodes_all:
-              fp.write(f"{node};")
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
-          self.min_road_v_kph_ct1 = 3335
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
-          self.min_road_v_kph_ct1 = 3336
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
-          self.min_road_v_kph_ct1 = 3337
           self.road_nodes_all_ct += 1
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
-        self.min_road_v_kph_ct1 = 444
         index_range = 0
         for road_info in road_info_list:
           length = len(road_info["nodes"])
@@ -310,8 +293,6 @@ class TiciFanController(BaseFanController):
             road_info["bears"] = road_bear
             road_info["coords"] = road_coords2 #"nodes"は再利用するため"coords"に名前を変える。
           index_range += length
-
-        self.min_road_v_kph_ct1 = 555
 
         #方位マッチしない道路を取り除く。
         road_info_list2 = []
@@ -346,12 +327,10 @@ class TiciFanController(BaseFanController):
                 speed_limit_num = int(speed_limit)
                 if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
                   min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
-        self.min_road_v_kph_ct1 = 666
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
 
-      self.min_road_v_kph_ct1 = 777
       with open('/tmp/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
         if len(road_info_list) != 0:
@@ -371,7 +350,6 @@ class TiciFanController(BaseFanController):
           # fp.write(' speed_max:%s\n' % (0))
     except Exception as e:
       self.min_road_v_kph = 0
-      self.min_road_v_kph_ct2 += 1
 
     #self.th_ct -= 1
     self.thread = None
@@ -587,8 +565,6 @@ class TiciFanController(BaseFanController):
 
     #制限速度があれば"/tmp/limitspeed_data.txt"へ数値で書き込む。なければ"/tmp/limitspeed_data.txt"を消す。
     self.get_limitspeed_old = get_limitspeed
-    with open('/tmp/debug_out_o','w') as fp:
-      fp.write('min_road_v_kph:%d/%d,%d' % (int(self.min_road_v_kph),self.min_road_v_kph_ct1,self.min_road_v_kph_ct2))
     if get_limitspeed > 0:
       if get_limitspeed < self.min_road_v_kph:
         get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
