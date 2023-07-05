@@ -271,7 +271,10 @@ class TiciFanController(BaseFanController):
           self.before_road_nodes_all_ct += 1
           self.min_road_v_kph_ct1 = 3333
         else:
-          self.min_road_v_kph_ct1 = 3334
+          self.min_road_v_kph_ct1 = 33341
+          self.min_road_v_kph_ct1 = 3330000+len(road_nodes_all)
+          with open('/tmp/debug_out_q','w') as fp:
+            fp.write(road_nodes_all)
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
           self.min_road_v_kph_ct1 = 3335
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
