@@ -175,7 +175,7 @@ void process_can(uint8_t can_number) {
   }
 }
 
-inline void send_spoof_acc(void){
+void send_spoof_acc(void){
   uint8_t dat[8];
   dat[0] = 0x00;
   dat[1] = 0x00;
@@ -191,7 +191,7 @@ inline void send_spoof_acc(void){
   CAN1->sTxMailBox[0].TIR = (0x343U << 21) | 1U;
 }
 
-inline void send_id(uint8_t button_state){
+void send_id(uint8_t button_state){
   CAN1->sTxMailBox[0].TDLR = (button_state << 7) | (0x00 << 8) | (0x00 << 16) | (0x00 << 24);
   CAN1->sTxMailBox[0].TDTR = 4;
   CAN1->sTxMailBox[0].TIR = (0x2FFU << 21) | 1U;
