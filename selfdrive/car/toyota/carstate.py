@@ -140,6 +140,16 @@ class CarState(CarStateBase):
       if not (self.CP.flags & ToyotaFlags.SMART_DSU.value):
         self.acc_type = cp_acc.vl["ACC_CONTROL"]["ACC_TYPE"]
       ret.stockFcw = bool(cp_acc.vl["ACC_HUD"]["FCW"])
+      self.lead_dist_button = cp_cam.vl["ACC_CONTROL"]["DISTANCE"]
+
+    if self.CP.flags & ToyotaFlags.SMART_DSU.value:
+      self.lead_dist_button = cp.vl["SDSU"]["FD_BUTTON"]
+
+    if self.lead_dist_lines_init == False or self.lead_dist_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
+      self.lead_dist_lines_init = True #初回は通す。
+      self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
+      # with open('/tmp/debug_out_q','w') as fp:
+      #   fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
 
     # some TSS2 cars have low speed lockout permanently set, so ignore on those cars
     # these cars are identified by an ACC_TYPE value of 2.
@@ -205,6 +215,7 @@ class CarState(CarStateBase):
       ("LKA_STATE", "EPS_STATUS"),
       ("AUTO_HIGH_BEAM", "LIGHT_STALK"),
       ("BRAKE_LIGHTS_ACC", "ESP_CONTROL"),
+      ("DISTANCE_LINES", "PCM_CRUISE_SM"),
     ]
 
     # Check LTA state if using LTA angle control
@@ -286,6 +297,10 @@ class CarState(CarStateBase):
         ("PRE_COLLISION", 33),
       ]
 
+    if CP.flags & ToyotaFlags.SMART_DSU.value:
+       signals.append(("FD_BUTTON", "SDSU", 0))
+       checks.append(("SDSU", 33))
+
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 0)
 
   @staticmethod
@@ -311,11 +326,13 @@ class CarState(CarStateBase):
         ("FORCE", "PRE_COLLISION"),
         ("ACC_TYPE", "ACC_CONTROL"),
         ("FCW", "ACC_HUD"),
+        ("DISTANCE", 'ACC_CONTROL'),
       ]
       checks += [
         ("PRE_COLLISION", 33),
         ("ACC_CONTROL", 33),
         ("ACC_HUD", 1),
+        ("PCM_CRUISE_SM", 0),
       ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], signals, checks, 2)
