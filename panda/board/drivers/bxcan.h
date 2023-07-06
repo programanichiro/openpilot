@@ -175,31 +175,6 @@ void process_can(uint8_t can_number) {
   }
 }
 
-inline void send_spoof_acc(void){
-  uint8_t dat[8];
-  dat[0] = 0x00;
-  dat[1] = 0x00;
-  dat[2] = 0x63;
-  dat[3] = 0xc0;
-  dat[4] = 0x00;
-  dat[5] = 0x00;
-  dat[6] = 0x00;
-  dat[7] = 0x71;
-  CAN1->sTxMailBox[0].TDLR = dat[0] | (dat[1] << 8) | (dat[2] << 16) | (dat[3] << 24);
-  CAN1->sTxMailBox[0].TDHR = dat[4] | (dat[5] << 8) | (dat[6] << 16) | (dat[7] << 24);
-  CAN1->sTxMailBox[0].TDTR = 8;
-  CAN1->sTxMailBox[0].TIR = (0x343U << 21) | 1U;
-}
-
-inline void send_id(uint8_t button_state){
-  CAN1->sTxMailBox[0].TDLR = (button_state << 7) | (0x00 << 8) | (0x00 << 16) | (0x00 << 24);
-  CAN1->sTxMailBox[0].TDTR = 4;
-  CAN1->sTxMailBox[0].TIR = (0x2FFU << 21) | 1U;
-}
-
-static uint32_t startedtime = 0;
-static bool onboot = 0;
-
 // CANx_RX0 IRQ Handler
 // blink blue when we are receiving CAN messages
 void can_rx(uint8_t can_number) {
@@ -227,23 +202,6 @@ void can_rx(uint8_t can_number) {
 
     // forwarding (panda only)
     int bus_fwd_num = safety_fwd_hook(bus_number, to_push.addr);
-    if(bus_number == 2){
-      // lock rate to stock 0x343. better have a working DSU!
-      if (to_push.addr == 0x343){
-        uint8_t button_state = (GET_BYTE(&to_push, 2) >> 4U);
-        send_id(button_state);
-      }
-      // block cruise message only if it's already being sent on bus 0
-      if(!onboot){
-        startedtime = TIM2->CNT;
-        onboot = 1;
-      }
-      // DSU normally sends nothing for 2 sec, causing the cruise fault so spam the fake msg
-      bool boot_done = (TIM2->CNT > (startedtime + 2000000));
-      if (!boot_done){
-        send_spoof_acc();
-      }
-    }
     if (bus_fwd_num != -1) {
       CANPacket_t to_send;
 
