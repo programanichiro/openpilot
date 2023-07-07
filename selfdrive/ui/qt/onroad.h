@@ -35,6 +35,7 @@ class ButtonsWindow : public QWidget {
 
 public:
   ButtonsWindow(QWidget* parent = 0);
+  void psn_update();
 
 private:
   QPushButton *lockOnButton;
@@ -44,6 +45,7 @@ private:
   QPushButton *LTA_EnableButton;
   QPushButton *startAccelPowerUpButton;
   QPushButton *useDynmicExpButton;
+  QPushButton *T3_Button; //⬆︎⬆︎⬆︎
 
   // int dfStatus = -1;  // always initialize style sheet and send msg
   // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
