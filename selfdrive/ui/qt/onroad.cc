@@ -415,7 +415,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
       });
     }
     { //運転傾向
-      QPushButton *T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
+      T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
       std::string longPsn_txt = Params().get("LongitudinalPersonality");
       if(longPsn_txt.empty() == false){
         DrivingPsn = std::stoi(longPsn_txt);
@@ -785,6 +785,31 @@ void ButtonsWindow::updateState(const UIState &s) {
   
 }
 
+void ButtonsWindow::psn_update(){
+  static unsigned int psn_update_ct = 0;
+  psn_update_ct = (psn_update_ct + 1) % 10;
+  if(psn_update_ct == 0){
+    return;
+  }
+  //int DrivingPsn = 0; //運転傾向
+  int new_DrivingPsn = 0; //運転傾向変更を検出
+  std::string longPsn_txt = Params().get("LongitudinalPersonality");
+  if(longPsn_txt.empty() == false){
+    new_DrivingPsn = std::stoi(longPsn_txt);
+  }
+  if(new_DrivingPsn != DrivingPsn){
+    DrivingPsn = new_DrivingPsn;
+    soundPipo();
+    if(DrivingPsn == 0){
+      T3_Button->setText("⬆︎⬆︎⬆︎");
+    } else if(DrivingPsn == 1){
+      T3_Button->setText("⬆︎⬆︎");
+    } else if(DrivingPsn == 2){
+      T3_Button->setText("⬆︎");
+    }
+  }
+}
+
 // OnroadAlerts
 void OnroadAlerts::updateAlert(const Alert &a) {
   if (!alert.equal(a)) {
@@ -1001,6 +1026,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // update engageability/experimental mode button
 //  experimental_btn->updateState(s);
+  buttons->psn_update();
   global_engageable = (cs.getEngageable() || cs.getEnabled());
 
   // update DM icon
