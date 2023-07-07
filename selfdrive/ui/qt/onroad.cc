@@ -1954,7 +1954,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   float opacity = dmActive ? 0.65 : 0.2; y -= 18 + (30-UI_BORDER_SIZE)*2;
   drawIcon(painter, x, y, dm_img, blackColor(70), opacity , 0);
   if(rightHandDM){ //ボタンを移動できないので、アイコンはそのまま、左肩に"R"を表示。
-    p.setFont(InterFont(70, QFont::Bold));
+    painter.setFont(InterFont(70, QFont::Bold));
     drawText(painter, x - btn_size / 2, y - btn_size / 4, "R" , dmActive ? 200 : 100);
   }
 
@@ -2405,7 +2405,7 @@ void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState
 //    dist += QString::number(t_rel,'f',1) + "t";
 //    dist += QString::number(y_rel,'f',1) + "y";
 //    dist += QString::number(a_rel,'f',1) + "a";
-    p.setFont(InterFont(44, QFont::DemiBold));
+    painter.setFont(InterFont(44, QFont::DemiBold));
     painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
     float lock_indicator_dx = 2; //下向きの十字照準を避ける。
     painter.drawText(QRect(x+2+lock_indicator_dx, y-50+2, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
@@ -2523,7 +2523,7 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   float y1 = leadcar_lockon[1].x * leadcar_lockon[1].d;
 #endif
 
-  p.setFont(InterFont(38, QFont::DemiBold));
+  painter.setFont(InterFont(38, QFont::DemiBold));
   if(num == 0 && uiState()->scene.mLockOnButton){
     //推論1番
     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
