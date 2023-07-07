@@ -16,7 +16,7 @@
 #include "common/params.h"
 #include "common/timing.h"
 
-const int UI_BORDER_SIZE = 30;
+const int UI_BORDER_SIZE = 30 / 1.5;
 const int UI_HEADER_HEIGHT = 420;
 
 const int UI_FREQ = 20; // Hz
@@ -134,6 +134,16 @@ typedef struct UIScene {
   float light_sensor;
   bool started, ignition, is_metric, map_on_left, longitudinal_control;
   uint64_t started_frame;
+
+  // PI button statuses
+  bool mLockOnButton = true;
+  bool mAccelCtrlButton = true;
+  bool mDecelCtrlButton = true;
+  int mAccelEngagedButton = 0;
+  int mLTA_EnableButton = 0;
+  bool mStartAccelPowerUpButton = false;
+  int mUseDynmicExpButton = 0;
+
 } UIScene;
 
 class UIState : public QObject {
