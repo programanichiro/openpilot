@@ -149,7 +149,8 @@ class CarState(CarStateBase):
 
     if self.lead_dist_lines_init == False or self.lead_dist_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
       self.lead_dist_lines_init = True #初回は通す。
-      if self.lead_dist_lines != 0 and cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0:
+      # if self.lead_dist_lines != 0 and cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0:
+      if cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0: #TSSPでも初回にリラックスに設定されるかチェック。
         #ボタン切り替えの可能性が高い
         self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
         #button(3,2,1) -> LongitudinalPersonality(2,1,0)
@@ -157,8 +158,8 @@ class CarState(CarStateBase):
       else:
         # Ready OFFなどはこちら？
         self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
-      # with open('/tmp/debug_out_q','w') as fp:
-      #   fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
+      with open('/tmp/debug_out_q','w') as fp:
+        fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
 
     # some TSS2 cars have low speed lockout permanently set, so ignore on those cars
     # these cars are identified by an ACC_TYPE value of 2.
