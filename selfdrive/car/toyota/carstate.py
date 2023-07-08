@@ -149,8 +149,7 @@ class CarState(CarStateBase):
 
     if self.lead_dist_lines_init == False or self.lead_dist_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
       self.lead_dist_lines_init = True #初回は通す。
-      # if self.lead_dist_lines != 0 and cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0:
-      if cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0: #TSSPでも初回にリラックスに設定されるかチェック。
+      if self.lead_dist_lines != 0 and cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0:
         #ボタン切り替えの可能性が高い
         self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
         #button(3,2,1) -> LongitudinalPersonality(2,1,0)
