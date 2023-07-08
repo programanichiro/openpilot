@@ -154,12 +154,12 @@ class CarState(CarStateBase):
         #ボタン切り替えの可能性が高い
         self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
         #button(3,2,1) -> LongitudinalPersonality(2,1,0)
-        #self.params.put("LongitudinalPersonality", self.lead_dist_lines-1)
+        self.params.put("LongitudinalPersonality", int(self.lead_dist_lines)-1)
       else:
         # Ready OFFなどはこちら？
         self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
-      with open('/tmp/debug_out_q','w') as fp:
-        fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
+      # with open('/tmp/debug_out_q','w') as fp:
+      #   fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
 
     # some TSS2 cars have low speed lockout permanently set, so ignore on those cars
     # these cars are identified by an ACC_TYPE value of 2.
