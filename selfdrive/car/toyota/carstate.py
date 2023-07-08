@@ -154,7 +154,7 @@ class CarState(CarStateBase):
         #ボタン切り替えの可能性が高い
         self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
         #button(3,2,1) -> LongitudinalPersonality(2,1,0)
-        self.params.put("LongitudinalPersonality", self.lead_dist_lines-1)
+        #self.params.put("LongitudinalPersonality", self.lead_dist_lines-1)
       else:
         # Ready OFFなどはこちら？
         self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
