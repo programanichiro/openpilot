@@ -67,6 +67,7 @@ void OnroadWindow::updateState(const UIState &s) {
   }
 
   nvg->updateState(s);
+  mapVisible = isMapVisible();
 
   if (bg != bgColor) {
     // repaint border
