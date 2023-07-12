@@ -585,6 +585,9 @@ class LongitudinalPlanner:
             self.limitspeed_point -= 0.1
             if target > self.limitspeed_point:
               self.limitspeed_point = target
+          
+          if limitspeed_flag != 999:
+            self.limitspeed_point = v_ego * 3.6
 
           self.limitspeed_point_dim.append(self.limitspeed_point)
           if len(self.limitspeed_point_dim) > 10:
@@ -600,6 +603,7 @@ class LongitudinalPlanner:
                   # v_cruise_kph = self.limitspeed_point
                   limitspeed_set = True
     except Exception as e:
+      self.limitspeed_point = v_ego * 3.6
       pass
 
 #  struct LeadData {
