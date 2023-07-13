@@ -138,5 +138,5 @@ public slots:
 signals:
   void LimitspeedChanged(int map_width);
   void requestVisible(bool visible);
-  void openSettings();
+  void requestSettings(bool settings);
 };
