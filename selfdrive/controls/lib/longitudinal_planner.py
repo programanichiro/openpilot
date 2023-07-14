@@ -206,12 +206,14 @@ class LongitudinalPlanner:
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
+      tss_type = 1
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
-      v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 3 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph
+      v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 2 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph #最大119 -> 114に。
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
           fp.write('%d' % (1))
     else:
+      tss_type = 2
       min_acc_speed = 30
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
@@ -803,6 +805,8 @@ class LongitudinalPlanner:
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
     if limitspeed_set == True and cruise_info_power_up == False and self.v_desired_filter.x > self.limitspeed_point / 3.6: #増速した時を除く
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
+    if tss_type < 2 and self.v_desired_filter.x > 119.0 / 3.6:
+      self.v_desired_filter.x = 119.0 / 3.6
     # Compute model v_ego error
     self.v_model_error = get_speed_error(sm['modelV2'], v_ego)
 
