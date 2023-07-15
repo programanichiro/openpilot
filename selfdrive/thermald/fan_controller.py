@@ -228,10 +228,11 @@ class TiciFanController(BaseFanController):
       lat_max = self.latitude + lat_diff
       lon_min = self.longitude - lon_diff
       lon_max = self.longitude + lon_diff
+      car_v_kph = self.velocity #km/h
 
       # 道路の位置情報を抽出
       road_info_list = []
-      if self.velocity > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
+      if car_v_kph > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
         response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
 
         if "elements" in response_data:
@@ -325,8 +326,8 @@ class TiciFanController(BaseFanController):
               road_info_list2.append(road_info)
               if speed_limit != "0":
                 speed_limit_num = int(speed_limit)
-                if min_road_v_kph0 == 0 or speed_limit_num < min_road_v_kph0:
-                  min_road_v_kph0 = speed_limit_num #リストの中の最低の速度を取る。
+                if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
+                  min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
