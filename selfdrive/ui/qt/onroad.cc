@@ -914,7 +914,7 @@ static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
-  int SET_SPEED_NA = 557; //255;
+  int SET_SPEED_NA = 406; //557; //255;
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
