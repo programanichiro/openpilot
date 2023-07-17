@@ -914,7 +914,7 @@ static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
-  int SET_SPEED_NA = 406; //557; //255;
+  int SET_SPEED_NA = 409; //406; //557; //255;
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
@@ -939,7 +939,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   if(PI0_DEBUG == false && tss_type <= 1){
     //これまでと互換。tss_type_infoがなければTSSP
     maxspeed = maxspeed < (55 - 4) ? (55 - (55 - (maxspeed+4)) * 2 - 4) : maxspeed;
-    maxspeed = maxspeed > (110 - 6) ? (110 + ((maxspeed+6) - 110) * 2 - 6) : maxspeed; //最大119 -> 114に。
+    maxspeed = maxspeed > (107 - 6) ? (107 + ((maxspeed+6) - 107) * 2 - 6) : maxspeed; //最大119 -> 114 -> 117に。
   } else if(PI0_DEBUG == true || tss_type == 2){
     SET_SPEED_NA = 255; //TSS2では戻す。
   }
