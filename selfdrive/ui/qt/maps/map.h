@@ -60,6 +60,20 @@ private:
   Params param;
 };
 
+class MapLimitspeed : public QWidget {
+  Q_OBJECT
+
+private:
+  void paintEvent(QPaintEvent *event) override;
+  QLabel *speed;
+
+public:
+  MapLimitspeed(QWidget * parent=nullptr);
+
+public slots:
+  void updateLimitspeed(int map_width);
+};
+
 class MapWindow : public QOpenGLWidget {
   Q_OBJECT
 
@@ -109,6 +123,7 @@ private:
   MapETA* map_eta;
   QPushButton *settings_btn;
   QPixmap directions_icon, settings_icon;
+  MapLimitspeed* map_limitspeed;
 
   void clearRoute();
   void updateDestinationMarker();
@@ -121,6 +136,7 @@ public slots:
   void offroadTransition(bool offroad);
 
 signals:
+  void LimitspeedChanged(int map_width);
   void requestVisible(bool visible);
   void requestSettings(bool settings);
 };
