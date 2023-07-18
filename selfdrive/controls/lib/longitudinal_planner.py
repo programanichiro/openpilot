@@ -807,8 +807,10 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     # if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
     #   self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
-    if tss_type < 2 and self.v_desired_filter.x > 119.0 / 3.6:
-      self.v_desired_filter.x = 119.0 / 3.6
+    # if tss_type < 2 and self.v_desired_filter.x > 119.0 / 3.6:
+    #   self.v_desired_filter.x = 119.0 / 3.6
+    if tss_type < 2 and self.v_desired_filter.x > 20.0 / 3.6:
+      self.v_desired_filter.x = 20.0 / 3.6
     # Compute model v_ego error
     self.v_model_error = get_speed_error(sm['modelV2'], v_ego)
 
