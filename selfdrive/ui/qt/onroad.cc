@@ -1361,8 +1361,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   int th_tmp1 = 47;
   int th_tmp2 = 55;
   if(Hardware::TICI()){
-    th_tmp1 = 58;
-    th_tmp2 = 64;
+    th_tmp1 = 60; //ここから黄色
+    th_tmp2 = 70; //ここから赤
   }
 
   QRect temp_rc(rect().left()+65-27, rect().top()+110+6, 233+27*2-5, 54);
