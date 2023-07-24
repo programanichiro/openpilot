@@ -124,7 +124,7 @@ class TiciFanController(BaseFanController):
     way({lat_min},{lon_min},{lat_max},{lon_max})["highway"];
     out body;
     """
-    response = requests.get(overpass_url, params={'data': query})
+    response = requests.get(overpass_url, params={'data': query}, timeout=10)
     data = response.json()
     return data
 
@@ -148,7 +148,7 @@ class TiciFanController(BaseFanController):
     """
 
     # Overpass APIにリクエストを送信してデータを取得
-    response = requests.get(overpass_url, params={"data": overpass_query})
+    response = requests.get(overpass_url, params={"data": overpass_query}, timeout=10)
     data = response.json()
 
     # ノードの情報を処理して座標を取得
@@ -584,6 +584,8 @@ class TiciFanController(BaseFanController):
     # self.conn.commit()
 
     #osmアクセスで制限速度を取得する試み。
+    # with open('/tmp/debug_out_o','w') as fp:
+    #   fp.write('osm_fetch:%d, %.5f, %.5f' % (self.thread == None,self.latitude,self.longitude))
     if self.thread == None and (self.latitude != 0 or self.longitude != 0):
       try:
         self.distance = 50 * interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
