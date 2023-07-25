@@ -23,6 +23,20 @@
 #include "selfdrive/ui/qt/maps/map_eta.h"
 #include "selfdrive/ui/qt/maps/map_instructions.h"
 
+class MapLimitspeed : public QWidget {
+  Q_OBJECT
+
+private:
+  void paintEvent(QPaintEvent *event) override;
+  QLabel *speed;
+
+public:
+  MapLimitspeed(QWidget * parent=nullptr);
+
+public slots:
+  void updateLimitspeed(int map_width);
+};
+
 class MapWindow : public QOpenGLWidget {
   Q_OBJECT
 
@@ -75,6 +89,7 @@ private:
   QColor getNavPathColor(bool nav_enabled) {
     return nav_enabled ? QColor("#31ee73") : QColor("#31a1ee");
   }
+  MapLimitspeed* map_limitspeed;
 
   void clearRoute();
   void updateDestinationMarker();
@@ -87,6 +102,7 @@ public slots:
   void offroadTransition(bool offroad);
 
 signals:
+  void LimitspeedChanged(int map_width);
   void requestVisible(bool visible);
   void requestSettings(bool settings);
 };
