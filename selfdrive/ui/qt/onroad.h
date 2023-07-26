@@ -34,7 +34,7 @@ class ButtonsWindow : public QWidget {
   Q_OBJECT
 
 public:
-  ButtonsWindow(QWidget* parent = 0);
+  ButtonsWindow(QWidget *parent = 0 , MapSettingsButton *map_settings_btn = 0);
   void psn_update();
 
 private:
