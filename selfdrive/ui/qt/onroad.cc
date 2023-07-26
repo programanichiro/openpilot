@@ -624,9 +624,28 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
   }
 
-  { //ナビボタン仮
+  { // A,iPボタン
+    // Accel Engage button
+    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("/data/accel_engaged.txt" , 0);
+    if(mAccelEngagedButton == 3){
+      accelEngagedButton = new QPushButton("iP"); //3ならイチロウペダル（インテリジェントペダルモード）
+    } else if(mAccelEngagedButton == 2){
+      accelEngagedButton = new QPushButton("AA"); //2ならAA(ALL ACCEL)
+    } else {
+      accelEngagedButton = new QPushButton("A");
+    }
+    QObject::connect(accelEngagedButton, &QPushButton::pressed, [=]() {
+      //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2・・・にすれば良い
+      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0
+      setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
+      setButtonEnabled0("/tmp/force_low_engage.txt" , false);
+    });
+    accelEngagedButton->setFixedWidth(150);
+    accelEngagedButton->setFixedHeight(150);
+    //accelEngagedButton->setWindowOpacity(all_opac);
     btns_layoutL->addSpacing(15);
-    btns_layoutL->addWidget(map_settings_btn);
+    btns_layoutL->addWidget(accelEngagedButton);
+    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
   }
 
   QWidget *btns_wrapper = new QWidget;
@@ -666,28 +685,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
-  { // A,iPボタン
-    // Accel Engage button
-    uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("/data/accel_engaged.txt" , 0);
-    if(mAccelEngagedButton == 3){
-      accelEngagedButton = new QPushButton("iP"); //3ならイチロウペダル（インテリジェントペダルモード）
-    } else if(mAccelEngagedButton == 2){
-      accelEngagedButton = new QPushButton("AA"); //2ならAA(ALL ACCEL)
-    } else {
-      accelEngagedButton = new QPushButton("A");
-    }
-    QObject::connect(accelEngagedButton, &QPushButton::pressed, [=]() {
-      //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2・・・にすれば良い
-      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0
-      setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
-      setButtonEnabled0("/tmp/force_low_engage.txt" , false);
-    });
-    accelEngagedButton->setFixedWidth(150);
-    accelEngagedButton->setFixedHeight(150);
-    //accelEngagedButton->setWindowOpacity(all_opac);
+  { //ナビボタン
     btns_layout->addSpacing(15);
-    btns_layout->addWidget(accelEngagedButton);
-    accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0)));
+    btns_layout->addWidget(map_settings_btn);
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
@@ -921,7 +921,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 
 // MapSettingsButton
 MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
-  setFixedSize(img_size, img_size);
+  setFixedSize(img_size+10, img_size+10);
   settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size, img_size});
 
   // hidden by default, made visible if map is created (has prime or mapbox token)
@@ -939,10 +939,10 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
   p.setBrush(QColor(0, 0, 0, 166));
   //p.drawEllipse(center, btn_size / 2, btn_size / 2);
-  QRect temp_rc(0,0,img_size,img_size);
+  QRect temp_rc(0,0,img_size+10,img_size+10);
   p.drawRoundedRect(temp_rc, 20, 20);
   p.setOpacity(isDown() ? 0.6 : 1.0);
-  p.drawPixmap((img_size - img_size) / 2, (img_size - img_size) / 2, settings_img);
+  p.drawPixmap((img_size+10 - img_size) / 2, (img_size+10 - img_size) / 2, settings_img);
 }
 
 
