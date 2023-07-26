@@ -1069,10 +1069,11 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
 
   // hide map settings button for alerts and flip for right hand DM
-  if (map_settings_btn->isEnabled()) {
-    map_settings_btn->setVisible(!hideBottomIcons);
-    //main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
-  }
+  // if (map_settings_btn->isEnabled()) {
+  //   map_settings_btn->setVisible(!hideBottomIcons);
+  //   main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
+  // }
+  map_settings_btn->setVisible(true); //他のボタンの位置へ影響するので、出しっぱなしにする。
 }
 
 static bool all_brake_light = false;
