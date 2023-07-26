@@ -315,6 +315,7 @@ const static char *btn_style = "font-size: 90px; border-radius: 20px; border-col
 const static char *btn_styleb = "font-size: 35px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_styleb1 = "font-size: 30px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_styleb2 = "font-size: 50px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+const static char *btn_styleb3 = "font-size: 40px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
 bool Knight_scanner = true;
 int DrivingPsn = 0; //運転傾向
@@ -440,7 +441,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       lockOnButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       lockOnButton->setContentsMargins(0, 0, 0, 0);
       lockOnButton->setFixedHeight(90);
-      lockOnButton->setStyleSheet(QString(btn_styleb2).arg(mButtonColors.at(false)));
+      lockOnButton->setStyleSheet(QString(btn_styleb3).arg(mButtonColors.at(false)));
     }
 #if 0
     {
@@ -920,7 +921,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 
 // MapSettingsButton
 MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
-  setFixedSize(btn_size, btn_size);
+  setFixedSize(img_size, img_size);
   settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size, img_size});
 
   // hidden by default, made visible if map is created (has prime or mapbox token)
@@ -932,14 +933,16 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   p.setRenderHint(QPainter::Antialiasing);
 
-  QPoint center(btn_size / 2, btn_size / 2);
+  //QPoint center(btn_size / 2, btn_size / 2);
 
   p.setOpacity(1.0);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor(0, 0, 0, 166));
-  p.drawEllipse(center, btn_size / 2, btn_size / 2);
+  //p.drawEllipse(center, btn_size / 2, btn_size / 2);
+  QRect temp_rc(0,0,img_size,img_size);
+  p.drawRoundedRect(temp_rc, 20, 20);
   p.setOpacity(isDown() ? 0.6 : 1.0);
-  p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, settings_img);
+  p.drawPixmap((img_size - img_size) / 2, (img_size - img_size) / 2, settings_img);
 }
 
 
