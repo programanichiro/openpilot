@@ -341,7 +341,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         btns_layoutBB->addSpacerItem(spacerItem);
     }
     { //制限速度標識ボタン
-      QPushButton *T1_Button = new QPushButton("⚪︎"); //"⚫︎⚪︎⬇︎" , 拡張用 //●◯
+      QPushButton *T1_Button = new QPushButton("⚪︎"); //"⚫︎⚪︎⬇︎"
       Limit_speed_mode = getButtonInt("/data/limitspeed_sw.txt",0);
       if(Limit_speed_mode == 1){
         T1_Button->setText("⚫︎"); //自動設定モード
@@ -385,7 +385,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       });
     }
     { //運転傾向
-      T3_Button = new QPushButton("⬆︎⬆︎⬆︎");//拡張用
+      T3_Button = new QPushButton("⬆︎⬆︎⬆︎");
       std::string longPsn_txt = Params().get("LongitudinalPersonality");
       if(longPsn_txt.empty() == false){
         DrivingPsn = std::stoi(longPsn_txt);
@@ -425,10 +425,29 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         //onroad中にTogglesで変更したら、表示に反映しないので注意。
       });
     }
+    { //ロックオンボタン
+      uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("/data/lockon_disp_disable.txt");
+      lockOnButton = new QPushButton("□");
+      QObject::connect(lockOnButton, &QPushButton::pressed, [=]() {
+        uiState()->scene.mLockOnButton = !mLockOnButton;
+      });
+      if(mLockOnButton == false){
+        lockOnButton->setText("□");
+      } else if(mLockOnButton == true){
+        lockOnButton->setText("■");
+      }
+      btns_layoutBB->addWidget(lockOnButton);
+      lockOnButton->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
+      lockOnButton->setContentsMargins(0, 0, 0, 0);
+      lockOnButton->setFixedHeight(90);
+      lockOnButton->setStyleSheet(QString(btn_styleb2).arg(mButtonColors.at(false)));
+    }
+#if 0
     {
         QSpacerItem *spacerItem = new QSpacerItem(0, 0, QSizePolicy::Expanding, QSizePolicy::Preferred);
         btns_layoutBB->addSpacerItem(spacerItem);
     }
+#endif
   }
   btns_layout00->setContentsMargins(0, 30, 0, 0);
 
@@ -517,8 +536,6 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0)));
   }
 
-  btns_layout0L->addWidget(map_settings_btn,0,Qt::AlignVCenter); //仮に表示だけしてみる。
-
   QWidget *btns_wrapper0U = new QWidget;
   QVBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
@@ -591,7 +608,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
   }
 
-  { // ロックオンボタン
+  if(false){ // ロックオンボタン->下段に移動
     // LockOn button
     uiState()->scene.mLockOnButton = mLockOnButton = getButtonEnabled("/data/lockon_disp_disable.txt");
     lockOnButton = new QPushButton("□");
@@ -604,6 +621,11 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     btns_layoutL->addSpacing(15);
     btns_layoutL->addWidget(lockOnButton);
     lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton)));
+  }
+
+  { //ナビボタン仮
+    btns_layoutL->addSpacing(15);
+    btns_layoutL->addWidget(map_settings_btn);
   }
 
   QWidget *btns_wrapper = new QWidget;
@@ -687,7 +709,12 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
 void ButtonsWindow::updateState(const UIState &s) {
   if (mLockOnButton != s.scene.mLockOnButton) {  // update mLockOnButton
     mLockOnButton = s.scene.mLockOnButton;
-    lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
+    //lockOnButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mLockOnButton && fp_error==false)));
+    if(mLockOnButton == false){
+      lockOnButton->setText("□");
+    } else if(mLockOnButton == true){
+      lockOnButton->setText("■");
+    }
     setButtonEnabled("/data/lockon_disp_disable.txt" , mLockOnButton);
     soundButton(mLockOnButton);
   }
