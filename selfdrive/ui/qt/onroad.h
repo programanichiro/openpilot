@@ -30,6 +30,7 @@ private:
   Alert alert = {};
 };
 
+class MapSettingsButton;
 class ButtonsWindow : public QWidget {
   Q_OBJECT
 
