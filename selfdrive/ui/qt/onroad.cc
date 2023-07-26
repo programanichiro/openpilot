@@ -102,7 +102,10 @@ void OnroadWindow::offroadTransition(bool offroad) {
       map = m;
 
       QObject::connect(m, &MapPanel::mapPanelRequested, this, &OnroadWindow::mapPanelRequested);
-
+#if 0
+      QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
+      nvg->map_settings_btn->setEnabled(true);
+#endif
       std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
       if(my_mapbox_width.empty() == false){
         this->mb_width_rate = std::stof(my_mapbox_width);
@@ -887,17 +890,45 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 }
 
 
+// MapSettingsButton
+MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
+  setFixedSize(btn_size, btn_size);
+  settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size, img_size});
+
+  // hidden by default, made visible if map is created (has prime or mapbox token)
+  setVisible(false);
+  setEnabled(false);
+}
+
+void MapSettingsButton::paintEvent(QPaintEvent *event) {
+  QPainter p(this);
+  p.setRenderHint(QPainter::Antialiasing);
+
+  QPoint center(btn_size / 2, btn_size / 2);
+
+  p.setOpacity(1.0);
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor(0, 0, 0, 166));
+  p.drawEllipse(center, btn_size / 2, btn_size / 2);
+  p.setOpacity(isDown() ? 0.6 : 1.0);
+  p.drawPixmap((btn_size - img_size) / 2, (btn_size - img_size) / 2, settings_img);
+}
+
+
 // Window that shows camera view and variety of info drawn on top
 AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* parent) : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraWidget("camerad", type, true, parent) {
   pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"uiDebug"});
 
-  QVBoxLayout *main_layout  = new QVBoxLayout(this);
+  main_layout = new QVBoxLayout(this);
 /*
   main_layout->setMargin(UI_BORDER_SIZE);
   main_layout->setSpacing(0);
 
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
+ 
+  map_settings_btn = new MapSettingsButton(this);
+  main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
 */
   buttons = new ButtonsWindow(this); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
   QObject::connect(uiState(), &UIState::uiUpdate, buttons, &ButtonsWindow::updateState);
@@ -989,7 +1020,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("maxSpeed", maxspeed_str);
   setProperty("setSpeed", set_speed);
   setProperty("speedUnit", s.scene.is_metric ? tr("km/h") : tr("mph"));
-  setProperty("hideDM", (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE));
+  setProperty("hideBottomIcons", (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE));
   setProperty("status", s.status);
 
   // update engageability/experimental mode button
@@ -1003,6 +1034,13 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("rightHandDM", dm_state.getIsRHD());
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
+#if 0
+  // hide map settings button for alerts and flip for right hand DM
+  if (map_settings_btn->isEnabled()) {
+    map_settings_btn->setVisible(!hideBottomIcons);
+    main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
+  }
+#endif
 }
 
 static bool all_brake_light = false;
@@ -2762,7 +2800,7 @@ void AnnotatedCameraWidget::paintGL() {
   }
 
   // DMoji
-  if (!hideDM && (sm.rcv_frame("driverStateV2") > s->scene.started_frame)) {
+  if (!hideBottomIcons && (sm.rcv_frame("driverStateV2") > s->scene.started_frame)) {
     update_dmonitoring(s, sm["driverStateV2"].getDriverStateV2(), dm_fade_state, rightHandDM);
     drawDriverState(painter, s);
   }
