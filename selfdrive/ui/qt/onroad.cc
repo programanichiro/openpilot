@@ -102,10 +102,9 @@ void OnroadWindow::offroadTransition(bool offroad) {
       map = m;
 
       QObject::connect(m, &MapPanel::mapPanelRequested, this, &OnroadWindow::mapPanelRequested);
-#if 0
       QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
       nvg->map_settings_btn->setEnabled(true);
-#endif
+
       std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
       if(my_mapbox_width.empty() == false){
         this->mb_width_rate = std::stof(my_mapbox_width);
@@ -320,7 +319,7 @@ bool Long_enable = true;
 bool Knight_scanner = true;
 int DrivingPsn = 0; //運転傾向
 int Limit_speed_mode = 0; //標識
-ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
+ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_btn) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
 
@@ -517,6 +516,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     btns_layoutLL->addWidget(useDynmicExpButton);
     useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0)));
   }
+
+  btns_layout0L->addWidget(map_settings_btn,0,Qt::AlignVCenter); //仮に表示だけしてみる。
 
   QWidget *btns_wrapper0U = new QWidget;
   QVBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
@@ -930,7 +931,9 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   map_settings_btn = new MapSettingsButton(this);
   main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
 */
-  buttons = new ButtonsWindow(this); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
+  map_settings_btn = new MapSettingsButton(this);
+
+  buttons = new ButtonsWindow(this , map_settings_btn); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
   QObject::connect(uiState(), &UIState::uiUpdate, buttons, &ButtonsWindow::updateState);
   main_layout->addWidget(buttons);
 
@@ -1034,13 +1037,12 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   setProperty("rightHandDM", dm_state.getIsRHD());
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
-#if 0
+
   // hide map settings button for alerts and flip for right hand DM
   if (map_settings_btn->isEnabled()) {
     map_settings_btn->setVisible(!hideBottomIcons);
     main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
   }
-#endif
 }
 
 static bool all_brake_light = false;
