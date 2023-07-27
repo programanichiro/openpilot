@@ -12,6 +12,7 @@
 #include <cmath>
 #include <cstdio>
 #include <cstring>
+#include <sstream>
 
 #include "media/cam_defs.h"
 #include "media/cam_isp.h"
@@ -535,6 +536,7 @@ void CameraState::camera_set_parameters() {
     dc_gain_off_grey = DC_GAIN_OFF_GREY_AR0231;
     exposure_time_min = EXPOSURE_TIME_MIN_AR0231;
     exposure_time_max = EXPOSURE_TIME_MAX_AR0231;
+    //exposure_time_min += (exposure_time_max - exposure_time_min) / 50; //c3のカメラはこっち。画面が白飛びするが、LED発光を捉える時間は増える。
     analog_gain_min_idx = ANALOG_GAIN_MIN_IDX_AR0231;
     analog_gain_rec_idx = ANALOG_GAIN_REC_IDX_AR0231;
     analog_gain_max_idx = ANALOG_GAIN_MAX_IDX_AR0231;
@@ -554,6 +556,7 @@ void CameraState::camera_set_parameters() {
     dc_gain_off_grey = DC_GAIN_OFF_GREY_OX03C10;
     exposure_time_min = EXPOSURE_TIME_MIN_OX03C10;
     exposure_time_max = EXPOSURE_TIME_MAX_OX03C10;
+    //exposure_time_min += (exposure_time_max - exposure_time_min) / 50;
     analog_gain_min_idx = ANALOG_GAIN_MIN_IDX_OX03C10;
     analog_gain_rec_idx = ANALOG_GAIN_REC_IDX_OX03C10;
     analog_gain_max_idx = ANALOG_GAIN_MAX_IDX_OX03C10;
@@ -1130,7 +1133,26 @@ void CameraState::set_camera_exposure(float grey_frac) {
 
       // Compute optimal time for given gain
       int t = std::clamp(int(std::round(desired_ev / gain)), exposure_time_min, exposure_time_max);
+#if 0
+      const int new_exposure_time_min = exposure_time_min + (exposure_time_max - exposure_time_min) / 50;
+      float vego_kph = 0;
+      std::string limitspeed_info_txt = util::read_file("/tmp/limitspeed_info.txt");
+      if(limitspeed_info_txt.empty() == false){
+        float output[5]; // float型の配列
+        int i = 0; // インデックス
 
+        std::stringstream ss(limitspeed_info_txt); // 入力文字列をstringstreamに変換
+        std::string token; // 一時的にトークンを格納する変数
+        while (std::getline(ss, token, ',') && i < 5) { // カンマで分割し、一つずつ処理する
+          output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
+          i++; // インデックスを1つ進める
+        }
+        vego_kph = (float)output[3]; //車速km/h
+      }
+      if(vego_kph < 0.5 && t < new_exposure_time_min){
+        t = new_exposure_time_min;
+      }
+#endif
       // Only go below recommended gain when absolutely necessary to not overexpose
       if (g < analog_gain_rec_idx && t > 20 && g < gain_idx) {
         continue;
