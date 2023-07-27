@@ -17,7 +17,7 @@ EventName = car.CarEvent.EventName
 
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
-  if is_comma_remote() and is_tested_branch():
+  if True: #is_comma_remote() and is_tested_branch():
     event = EventName.startup
   else:
     event = EventName.startupMaster
@@ -83,6 +83,8 @@ def fingerprint(logcan, sendcan, num_pandas):
   ecu_rx_addrs = set()
   params = Params()
 
+  Params().put_bool('DisengageOnAccelerator',False) #アクセル解除ボタン強制OFF
+
   if not skip_fw_query:
     # Vin query only reliably works through OBDII
     bus = 1
@@ -126,7 +128,12 @@ def fingerprint(logcan, sendcan, num_pandas):
   finger = gen_empty_fingerprint()
   candidate_cars = {i: all_legacy_fingerprint_cars() for i in [0, 1]}  # attempt fingerprint on both bus 0 and 1
   frame = 0
-  frame_fingerprint = 100  # 1s
+  if os.environ['DONGLE_ID'] in ('252ef8652ee6c9d3'):
+    frame_fingerprint = 120  # 1.2s , 一部のsmartDSUで起動が間に合わないのにスペシャル対応。
+  elif os.environ['DONGLE_ID'] in ('cdcb457f7528673b'):
+    frame_fingerprint = 500  # 1.2s , 一部のsmartDSUで起動が間に合わないのにスペシャル対応。
+  else:
+    frame_fingerprint = 100  #公式で100になった模様
   car_fingerprint = None
   done = False
 
@@ -157,7 +164,7 @@ def fingerprint(logcan, sendcan, num_pandas):
         car_fingerprint = candidate_cars[b][0]
 
     # bail if no cars left or we've been waiting for more than 2s
-    failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or frame > 200
+    failed = (all(len(cc) == 0 for cc in candidate_cars.values()) and frame > frame_fingerprint) or (frame > (200 if os.environ['DONGLE_ID'] not in ('cdcb457f7528673b') else 500))
     succeeded = car_fingerprint is not None
     done = failed or succeeded
 
