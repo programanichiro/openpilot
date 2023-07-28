@@ -937,11 +937,11 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
 
   p.setOpacity(1.0);
   p.setPen(Qt::NoPen);
-  p.setBrush(QColor(0, 0, 0, 166));
+  p.setBrush(QColor(0, 0, 0, 133));
   //p.drawEllipse(center, btn_size / 2, btn_size / 2);
   QRect temp_rc(0,0,152,152);
   p.drawRoundedRect(temp_rc, 20, 20);
-  p.setOpacity(isDown() ? 0.6 : 1.0);
+  p.setOpacity(isDown() ? 0.6 : 0.9);
   p.drawPixmap((152 - (img_size-20)) / 2, (152 - (img_size-20)) / 2, settings_img);
 }
 
