@@ -592,7 +592,7 @@ class LongitudinalPlanner:
             self.limitspeed_point = v_ego * 3.6
 
           self.limitspeed_point_dim.append(self.limitspeed_point)
-          if len(self.limitspeed_point_dim) > 10:
+          if len(self.limitspeed_point_dim) > 50:
             self.limitspeed_point_dim.pop(0)
           self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近10個の平均。
           
