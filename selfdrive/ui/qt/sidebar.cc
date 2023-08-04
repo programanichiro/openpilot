@@ -85,12 +85,13 @@ void Sidebar::updateState(const UIState &s) {
     connectStatus = ItemStatus{{tr("CONNECT"), tr("OFFLINE")}, warning_color};
   } else {
     connectStatus = nanos_since_boot() - last_ping < 80e9 ? ItemStatus{{tr("CONNECT"), tr("ONLINE")}, good_color} : ItemStatus{{tr("CONNECT"), tr("ERROR")}, danger_color};
-    //端末起動後にWifi接続されたときネットメーターが中々反映しないのを調査。
-    if(strength == 0){
-      setProperty("netStrength", 1);
-    }
-    if(net_type == "--"){
-      setProperty("netType", "Ping");
+    if(nanos_since_boot() - last_ping < 80e9){//端末起動後にWifi接続されたときネットメーターが中々反映しないのを調査。
+      if(strength == 0){
+        setProperty("netStrength", 1);
+      }
+      if(net_type == "--"){
+        setProperty("netType", "Ping");
+      }
     }
   }
   setProperty("connectStatus", QVariant::fromValue(connectStatus));
