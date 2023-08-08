@@ -597,7 +597,6 @@ void CameraState::camera_map_bufs(MultiCameraState *s) {
   enqueue_req_multi(1, FRAME_BUF_COUNT, 0);
 }
 
-int camera0_id = -1,camera1_id = -1,camera2_id = -1;
 void CameraState::camera_init(MultiCameraState *s, VisionIpcServer * v, int camera_id_, unsigned int fps, cl_device_id device_id, cl_context ctx, VisionStreamType yuv_type) {
   if (!enabled) return;
   camera_id = camera_id_;
@@ -612,14 +611,19 @@ void CameraState::camera_init(MultiCameraState *s, VisionIpcServer * v, int came
 
   camera_set_parameters();
 
-  //camera_numにcamera_idを記録する。
+  //camera_numにcamera_idを書く
+  FILE *fp = NULL;
   if(camera_num == 0){
-    camera0_id = camera_id; //ワイドカメラ
+    fp = fopen("/tmp/camera0_info.txt","w");
   } else if(camera_num == 1){
-    camera1_id = camera_id; //望遠カメラ
+    fp = fopen("/tmp/camera1_info.txt","w");
   } else if(camera_num == 2){
-    camera2_id = camera_id; //ドライバーカメラ
+    fp = fopen("/tmp/camera2_info.txt","w");
   }
+  if(fp != NULL){
+    fprintf(fp,"%d",camera_id);
+    fclose(fp);
+  }  
   buf.init(device_id, ctx, this, v, FRAME_BUF_COUNT, yuv_type);
   camera_map_bufs(s);
 }

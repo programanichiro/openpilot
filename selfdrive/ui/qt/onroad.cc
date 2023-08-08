@@ -2388,8 +2388,9 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
+#if 0
   {
-    extern int camera0_id,camera1_id,camera2_id; //搭載カメラの種類を表示。
+    extern int camera0_id,camera1_id,camera2_id; //搭載カメラの種類を表示。camera_qcom2.ccは別コマンドなのでリンクできない。
     QString debug_disp = QString(",");
     debug_disp += camera0_id == 8 ? QString("A") : (camera0_id == 9 ? QString("O") : QString("X")); //ワイドカメラ
     debug_disp += camera1_id == 8 ? QString("A") : (camera0_id == 9 ? QString("O") : QString("X")); //望遠カメラ
@@ -2397,7 +2398,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
-
+#endif
 #endif
 }
 
