@@ -2342,7 +2342,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
     }
     double mar = (autopilot_ct * 100) / (autopilot_ct + manual_ct); //manual auto rate
-    QString debug_disp = QString(",Amr:") + QString::number((int)mar) + "%";
+    QString debug_disp = QString(",AP:") + QString::number((int)mar) + "%";
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   } else {
@@ -2372,7 +2372,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     // double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
     // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     double ahr = (h_autopilot_dist * 100) / (h_autopilot_dist + h_manual_dist); //autopilot hybrid rate
-    QString debug_disp = QString(",Amr:") + QString::number((int)ahr) + "%";
+    QString debug_disp = QString(",AP:") + QString::number((int)ahr) + "%";
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
     // FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
@@ -2388,6 +2388,16 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
+  {
+    extern int camera0_id,camera1_id,camera2_id; //搭載カメラの種類を表示。
+    QString debug_disp = QString(",");
+    debug_disp += camera0_id == 8 ? QString("A") : (camera0_id == 9 ? QString("O") : QString("X")); //ワイドカメラ
+    debug_disp += camera1_id == 8 ? QString("A") : (camera0_id == 9 ? QString("O") : QString("X")); //望遠カメラ
+    debug_disp += camera2_id == 8 ? QString("A") : (camera0_id == 9 ? QString("O") : QString("X")); //ドライバーカメラ
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
+    //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  }
+
 #endif
 }
 
