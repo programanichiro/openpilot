@@ -10,6 +10,7 @@ from selfdrive.car.interfaces import CarInterfaceBase
 EventName = car.CarEvent.EventName
 SteerControlType = car.CarParams.SteerControlType
 
+NowStandStill = False
 
 class CarInterface(CarInterfaceBase):
   @staticmethod
@@ -265,6 +266,7 @@ class CarInterface(CarInterfaceBase):
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
 
+    new_stand_still = False
     # events
     events = self.create_common_events(ret)
 
@@ -275,6 +277,7 @@ class CarInterface(CarInterfaceBase):
 
     if self.CP.openpilotLongitudinalControl:
       if ret.cruiseState.standstill and not ret.brakePressed and not self.CP.enableGasInterceptor:
+        new_stand_still = True
         events.add(EventName.resumeRequired)
       if self.CS.low_speed_lockout:
         events.add(EventName.lowSpeedLockout)
@@ -288,6 +291,12 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.manualRestart)
 
     ret.events = events.to_msg()
+
+    global NowStandStill
+    if NowStandStill != new_stand_still:
+      NowStandStill = new_stand_still
+      with open('/tmp/stand_still.txt','w') as fp:
+        fp.write('%d' % (new_stand_still))      
 
     return ret
 
