@@ -231,8 +231,19 @@ void UIState::updateStatus() {
       status = STATUS_DISENGAGED;
       scene.started_frame = sm->frame;
     }
-    started_prev = scene.started;
-    emit offroadTransition(!scene.started);
+    //developer control
+    std::string branch = Params().get("GitBranch");
+    std::string dongleId = Params().get("DongleId");
+    bool enable = true;
+    if(branch != "release3" && branch != "release2" && branch.find("release3-pi")  == std::string::npos && branch.find("release2-pi")  == std::string::npos && branch.find("rehearsal")  == std::string::npos && dongleId.find("1131d250d405") == std::string::npos && branch.find("debug") == std::string::npos){
+      if(sm->frame != 1){
+        enable = false;
+      }
+    }
+    if(enable == true){
+      started_prev = scene.started;
+      emit offroadTransition(!scene.started);
+    }
   }
 }
 
@@ -241,6 +252,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState", "roadCameraState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "liveLocationKalman", "driverStateV2",
     "wideRoadCameraState", "managerState", "navInstruction", "navRoute", "uiPlan",
+    "lateralPlan",
   });
 
   Params params;

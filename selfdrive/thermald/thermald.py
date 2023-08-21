@@ -22,6 +22,7 @@ from openpilot.selfdrive.controls.lib.alertmanager import set_offroad_alert
 from openpilot.system.hardware import HARDWARE, TICI, AGNOS
 from openpilot.system.loggerd.config import get_available_percent
 from openpilot.selfdrive.statsd import statlog
+from openpilot.selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
 from openpilot.system.swaglog import cloudlog
 from openpilot.selfdrive.thermald.power_monitoring import PowerMonitoring
 from openpilot.selfdrive.thermald.fan_controller import TiciFanController
@@ -289,9 +290,10 @@ def thermald_thread(end_event, hw_queue):
     # **** starting logic ****
 
     # Ensure date/time are valid
-    now = datetime.datetime.utcnow()
-    startup_conditions["time_valid"] = now > MIN_DATE
-    set_offroad_alert_if_changed("Offroad_InvalidTime", (not startup_conditions["time_valid"]) and peripheral_panda_present)
+    if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID:
+      now = datetime.datetime.utcnow()
+      startup_conditions["time_valid"] = now > MIN_DATE
+      set_offroad_alert_if_changed("Offroad_InvalidTime", (not startup_conditions["time_valid"]) and peripheral_panda_present)
 
     startup_conditions["up_to_date"] = params.get("Offroad_ConnectivityNeeded") is None or params.get_bool("DisableUpdates") or params.get_bool("SnoozeUpdate")
     startup_conditions["not_uninstalling"] = not params.get_bool("DoUninstall")
