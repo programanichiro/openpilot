@@ -418,7 +418,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         } else {
           btn_str += "✖︎";
         }
-        T2_Button->setText("btn_str.c_str()");
+        T2_Button->setText(btn_str.c_str());
         if(Knight_scanner){
           soundPipo();
         } else {
