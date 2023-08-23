@@ -409,7 +409,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       } else {
         btn_str += "✖︎";
       }
-      QPushButton *T2_Button = new QPushButton(btn_str); //⚫︎⚫︎⚫︎(OX) , ⚪︎⚪︎⚪︎(AR) , ✖︎✖︎✖︎(カメラ不明)
+      QPushButton *T2_Button = new QPushButton(btn_str.c_str()); //⚫︎⚫︎⚫︎(OX) , ⚪︎⚪︎⚪︎(AR) , ✖︎✖︎✖︎(カメラ不明)
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setContentsMargins(0, 0, 0, 0);
