@@ -383,7 +383,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       });
     }
     { //ナイトスキャナー非表示
-      QPushButton *T2_Button = new QPushButton("⚫︎⚫︎⚫︎"); //⚪︎⚪︎⚪︎(AR) , ✖︎✖︎✖︎(カメラ不明)
+      QPushButton *T2_Button = new QPushButton("⚫︎⚫︎⚫︎");
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setContentsMargins(0, 0, 0, 0);
@@ -393,6 +393,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       QObject::connect(T2_Button, &QPushButton::pressed, [=]() {
         Knight_scanner = !getButtonEnabled("/data/knight_scanner_disable.txt");
         setButtonEnabled("/data/knight_scanner_disable.txt",Knight_scanner);
+#if 0
         std::string btn_str = "";
         std::string txt0 = util::read_file("/tmp/camera0_info.txt");
         if(txt0 == "8"){
@@ -418,7 +419,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         } else {
           btn_str += "✖︎";
         }
-        T2_Button->setText(btn_str.c_str());
+        T2_Button->setText(btn_str.c_str()); //⚫︎⚫︎⚫︎(OX) , ⚪︎⚪︎⚪︎(AR) , ✖︎✖︎✖︎(カメラ不明)
+#endif
         if(Knight_scanner){
           soundPipo();
         } else {
