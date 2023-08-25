@@ -264,7 +264,7 @@ void MapWindow::updateState(const UIState &s) {
         last_position = QMapbox::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
         last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
       }
-      velocity_filter.update(std::max(10.0, locationd_velocity.getValue()[0]));
+      velocity_filter.update(std::max(5.0, locationd_velocity.getValue()[0]));
 
       static unsigned int LimitspeedChanged_ct;
       if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
