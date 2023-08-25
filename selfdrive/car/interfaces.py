@@ -1,6 +1,5 @@
 import yaml
 import os
-import time
 from abc import abstractmethod, ABC
 from typing import Any, Dict, Optional, Tuple, List, Callable
 
@@ -243,7 +242,19 @@ class CarInterfaceBase(ABC):
        cs_out.gearShifter not in extra_gears):
       events.add(EventName.wrongGear)
     if cs_out.gearShifter == GearShifter.reverse:
-      events.add(EventName.reverseGear)
+      one_pedal = False
+      try:
+        with open('/tmp/accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 3: #ワンペダルモード
+              one_pedal = True
+      except Exception as e:
+        pass
+      if one_pedal == True and cs_out.vEgo < 5/3.6 and cs_out.cruiseState.enabled:
+        events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前でも可)にバックに入れたらディスエンゲージ
+      else:
+        events.add(EventName.reverseGear)
     if not cs_out.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
@@ -285,9 +296,11 @@ class CarInterfaceBase(ABC):
         # if the user overrode recently, show a less harsh alert
         if self.silent_steer_warning or cs_out.standstill or self.steering_unpressed < int(1.5 / DT_CTRL):
           self.silent_steer_warning = True
-          events.add(EventName.steerTempUnavailableSilent)
+          if (cs_out.gasPressed == False and cs_out.vEgo > 18/3.6) or cs_out.vEgo > 24/3.6:
+            events.add(EventName.steerTempUnavailableSilent)
         else:
-          events.add(EventName.steerTempUnavailable)
+          if (self.steering_unpressed >= int(1.0 / DT_CTRL) and cs_out.vEgo > 24/3.6) or cs_out.vEgo > 37/3.6: #ハンドル手放しが１秒以上かつ時速24km/h以上, または時速37km/h以上に限定。
+            events.add(EventName.steerTempUnavailable)
     else:
       self.no_steer_warning = False
       self.silent_steer_warning = False
@@ -310,14 +323,9 @@ class RadarInterfaceBase(ABC):
     self.rcp = None
     self.pts = {}
     self.delay = 0
-    self.radar_ts = CP.radarTimeStep
-    self.no_radar_sleep = 'NO_RADAR_SLEEP' in os.environ
 
   def update(self, can_strings):
-    ret = car.RadarData.new_message()
-    if not self.no_radar_sleep:
-      time.sleep(self.radar_ts)  # radard runs on RI updates
-    return ret
+    pass
 
 
 class CarStateBase(ABC):
@@ -334,6 +342,10 @@ class CarStateBase(ABC):
     self.right_blinker_prev = False
     self.cluster_speed_hyst_gap = 0.0
     self.cluster_min_speed = 0.0  # min speed before dropping to 0
+
+    self.lead_dist_button = 0
+    self.lead_dist_lines = 0
+    self.lead_dist_lines_init = False
 
     # Q = np.matrix([[0.0, 0.0], [0.0, 100.0]])
     # R = 0.3
