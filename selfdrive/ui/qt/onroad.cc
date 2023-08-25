@@ -1061,7 +1061,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     SET_SPEED_NA = 255; //TSS2では戻す。
   }
 
-  float setSpeed = cs_alive ? v_cruise : SET_SPEED_NA;
+  setSpeed = cs_alive ? v_cruise : SET_SPEED_NA;
   is_cruise_set = setSpeed > 0 && (int)setSpeed != SET_SPEED_NA;
   if (is_cruise_set && !s.scene.is_metric) {
     setSpeed *= KM_TO_MILE;
