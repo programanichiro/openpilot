@@ -313,8 +313,8 @@ class CarInterface(CarInterfaceBase):
     global NowStandStill
     if NowStandStill != new_stand_still:
       NowStandStill = new_stand_still
-      with open('/tmp/stand_still.txt','w') as fp:
-        fp.write('%d' % (new_stand_still))      
+      # with open('/tmp/stand_still.txt','w') as fp:
+      #   fp.write('%d' % (new_stand_still))      
 
     return ret
 
