@@ -261,7 +261,7 @@ class CarState(CarStateBase):
         ("PRE_COLLISION", 33),
         ("ACC_CONTROL", 33),
         ("PCS_HUD", 1),
-        ("PCM_CRUISE_SM", 0),
+        # ("PCM_CRUISE_SM", 0),
       ]
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 2)
