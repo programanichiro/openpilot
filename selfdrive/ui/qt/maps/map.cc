@@ -259,6 +259,15 @@ void MapWindow::updateState(const UIState &s) {
     bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
 #else
     bool pos_accurate_enough = true;
+    FILE *fp = fopen("/tmp/pos_accurate_info.txt","w");
+    if(fp != NULL){
+      char buf[64];
+      auto pos_ecef_std = locationd_location.getPositionECEF().getStd();
+      double pos_accurate = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2));
+      sprintf(buf,"gps(%d,%d,%d):%.1f",locationd_pos.getValid(),locationd_orientation.getValid(),locationd_velocity.getValid(),pos_accurate);
+      fwrite(buf,strlen(buf),1,fp);
+      fclose(fp);
+    }
 #endif
 
     locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && pos_accurate_enough);
