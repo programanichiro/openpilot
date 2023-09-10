@@ -314,7 +314,7 @@ class STBootloaderSPIHandle(BaseSTBootloaderHandle):
 
       self._mcu_type = MCU_TYPE_BY_IDCODE[self.get_chip_id()]
     except PandaSpiException:
-      raise PandaSpiException("failed to connect to panda")  # pylint: disable=W0707
+      raise PandaSpiException("failed to connect to panda") from None
 
   def _get_ack(self, spi, timeout=1.0):
     data = 0x00
@@ -421,7 +421,7 @@ class STBootloaderSPIHandle(BaseSTBootloaderHandle):
   def program(self, address, dat):
     bs = 256  # max block size for writing to flash over SPI
     dat += b"\xFF" * ((bs - len(dat)) % bs)
-    for i in range(0, len(dat) // bs):
+    for i in range(len(dat) // bs):
       block = dat[i * bs:(i + 1) * bs]
       self._cmd(0x31, data=[
         struct.pack('>I', address + i*bs),
