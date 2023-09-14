@@ -227,7 +227,7 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     OffroadHome > QLabel {
       font-size: 55px;
     }
-    #poweroff_btn {font-size: 60px; font-weight: bold; height: 120px; border-radius: 15px; background-color: #E22C2C; }
+    #poweroff_btn {font-size: 60px; font-weight: bold; height: 120px; border-radius: 5px; background-color: #E22C2C; }
     #poweroff_btn:pressed { background-color: #FF2424; }
   )");
 }
