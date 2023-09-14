@@ -190,12 +190,8 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
 
     QPushButton *poweroff_btn = new QPushButton(tr("Power Off"));
     poweroff_btn->setObjectName("poweroff_btn");
-    right_column->addWidget(poweroff_btn);
+    right_column->addWidget(poweroff_btn , 1);
     QObject::connect(poweroff_btn, &QPushButton::clicked, this, &OffroadHome::poweroff);
-    setStyleSheet(R"(
-      #poweroff_btn { height: 120px; border-radius: 15px; background-color: #E22C2C; }
-      #poweroff_btn:pressed { background-color: #FF2424; }
-    )");
 
     home_layout->addWidget(right_widget, 1);
   }
@@ -231,6 +227,8 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     OffroadHome > QLabel {
       font-size: 55px;
     }
+    #poweroff_btn { height: 120px; border-radius: 15px; background-color: #E22C2C; }
+    #poweroff_btn:pressed { background-color: #FF2424; }
   )");
 }
 
