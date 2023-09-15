@@ -20,7 +20,7 @@ EventName = car.CarEvent.EventName
 
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
-  if is_comma_remote() and is_tested_branch():
+  if True: #is_comma_remote() and is_tested_branch():
     event = EventName.startup
   else:
     event = EventName.startupMaster
@@ -127,6 +127,8 @@ def fingerprint(logcan, sendcan, num_pandas):
   params = Params()
 
   start_time = time.monotonic()
+  Params().put_bool('DisengageOnAccelerator',False) #アクセル解除ボタン強制OFF
+
   if not skip_fw_query:
     # Vin query only reliably works through OBDII
     bus = 1
