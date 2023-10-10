@@ -211,7 +211,7 @@ class CarState(CarStateBase):
       ("STEER_TORQUE_SENSOR", 50),
     ]
 
-    # ichiropilot
+    #ichiropilot
     if CP.flags & ToyotaFlags.HYBRID:
       messages.append(("GAS_PEDAL_HYBRID", 33))
     else:
