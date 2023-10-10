@@ -5,6 +5,7 @@ from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import mean
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_CTRL
+from openpilot.common.params import Params
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from openpilot.selfdrive.car.interfaces import CarStateBase
@@ -40,6 +41,9 @@ class CarState(CarStateBase):
     self.accurate_steer_angle_seen = False
     self.angle_offset = FirstOrderFilter(None, 60.0, DT_CTRL, initialized=False)
 
+    self.brake_state = False
+    self.params = Params()
+
     self.low_speed_lockout = False
     self.acc_type = 1
     self.lkas_hud = {}
@@ -60,6 +64,8 @@ class CarState(CarStateBase):
     else:
       # TODO: find a common gas pedal percentage signal
       ret.gasPressed = cp.vl["PCM_CRUISE"]["GAS_RELEASED"] == 0
+#      msg = "GAS_PEDAL_HYBRID" if (self.CP.flags & ToyotaFlags.HYBRID) else "GAS_PEDAL"
+#      ret.gas = cp.vl[msg]["GAS_PEDAL"]
 
     ret.wheelSpeeds = self.get_wheel_speeds(
       cp.vl["WHEEL_SPEEDS"]["WHEEL_SPEED_FL"],
@@ -109,6 +115,12 @@ class CarState(CarStateBase):
       ret.steerFaultTemporary = ret.steerFaultTemporary or cp.vl["EPS_STATUS"]["LTA_STATE"] in TEMP_STEER_FAULTS
       ret.steerFaultPermanent = ret.steerFaultPermanent or cp.vl["EPS_STATUS"]["LTA_STATE"] in PERM_STEER_FAULTS
 
+    new_brake_state = bool(cp.vl["ESP_CONTROL"]['BRAKE_LIGHTS_ACC'] or cp.vl["BRAKE_MODULE"]["BRAKE_PRESSED"] != 0)
+    if self.brake_state != new_brake_state:
+      self.brake_state = new_brake_state
+      with open('/tmp/brake_light_state.txt','w') as fp:
+        fp.write('%d' % (new_brake_state))
+
     if self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
       # TODO: find the bit likely in DSU_CRUISE that describes an ACC fault. one may also exist in CLUTCH
       ret.cruiseState.available = cp.vl["DSU_CRUISE"]["MAIN_ON"] != 0
@@ -132,6 +144,23 @@ class CarState(CarStateBase):
       if not (self.CP.flags & ToyotaFlags.SMART_DSU.value):
         self.acc_type = cp_acc.vl["ACC_CONTROL"]["ACC_TYPE"]
       ret.stockFcw = bool(cp_acc.vl["PCS_HUD"]["FCW"])
+      self.lead_dist_button = cp_cam.vl["ACC_CONTROL"]["DISTANCE"]
+
+    if self.CP.flags & ToyotaFlags.SMART_DSU.value:
+      self.lead_dist_button = cp.vl["SDSU"]["FD_BUTTON"]
+
+    if self.lead_dist_lines_init == False or self.lead_dist_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
+      self.lead_dist_lines_init = True #初回は通す。
+      if self.lead_dist_lines != 0 and cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0:
+        #ボタン切り替えの可能性が高い
+        self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
+        #button(3,2,1) -> LongitudinalPersonality(2,1,0)
+        self.params.put("LongitudinalPersonality", str(int(self.lead_dist_lines)-1))
+      else:
+        # Ready OFFなどはこちら？
+        self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
+      # with open('/tmp/debug_out_q','w') as fp:
+      #   fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
 
     # some TSS2 cars have low speed lockout permanently set, so ignore on those cars
     # these cars are identified by an ACC_TYPE value of 2.
@@ -207,6 +236,9 @@ class CarState(CarStateBase):
       messages += [
         ("PRE_COLLISION", 33),
       ]
+
+    if CP.flags & ToyotaFlags.SMART_DSU.value:
+      messages.append(("SDSU", 33))
 
     return CANParser(DBC[CP.carFingerprint]["pt"], messages, 0)
 
