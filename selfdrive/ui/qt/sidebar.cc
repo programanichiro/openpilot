@@ -83,17 +83,31 @@ void Sidebar::updateState(const UIState &s) {
   auto last_ping = deviceState.getLastAthenaPingTime();
   if (last_ping == 0) {
     connectStatus = ItemStatus{{tr("CONNECT"), tr("OFFLINE")}, warning_color};
+    setProperty("netStrength", 0);
   } else {
     connectStatus = nanos_since_boot() - last_ping < 80e9
                         ? ItemStatus{{tr("CONNECT"), tr("ONLINE")}, good_color}
                         : ItemStatus{{tr("CONNECT"), tr("ERROR")}, danger_color};
+    if(nanos_since_boot() - last_ping < 80e9){//端末起動後にWifi接続されたときネットメーターが中々反映しないのを調査。
+      if(strength == 0){
+        setProperty("netStrength", 1);
+      }
+      if(net_type == "--"){
+        setProperty("netType", "Ping");
+      }
+    } else {
+      setProperty("netStrength", 0);
+    }
   }
   setProperty("connectStatus", QVariant::fromValue(connectStatus));
 
   ItemStatus tempStatus = {{tr("TEMP"), tr("HIGH")}, danger_color};
   auto ts = deviceState.getThermalStatus();
   if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
-    tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
+    int temp = (int)deviceState.getAmbientTempC();
+    QString good_disp = QString::number(temp) + "°C";
+    tempStatus = {{tr("TEMP"), tr(good_disp.toUtf8().data())}, good_color};
+    //tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
   } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
     tempStatus = {{tr("TEMP"), tr("OK")}, warning_color};
   }
