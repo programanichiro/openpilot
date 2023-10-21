@@ -174,7 +174,7 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   if(ipaddress[0] == 0){
     p.drawText(r, Qt::AlignCenter, net_type);
   } else {
-    p.drawText(QRect(50, 247, 180, 50), Qt::AlignLeft, net_type + ipaddress);
+    p.drawText(QRect(60, 247, 180, 50), Qt::AlignLeft, net_type + ipaddress);
   }
 
   // metrics
