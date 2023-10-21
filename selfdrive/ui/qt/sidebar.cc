@@ -107,8 +107,8 @@ void Sidebar::updateState(const UIState &s) {
           if (begin == std::string::npos) break;
 
           begin += inetaddrr.length();
-          begin = result.find('.', begin);
-          begin = result.find('.', begin);
+          begin = result.find('.', begin)+1;
+          begin = result.find('.', begin)+1;
           begin = result.find('.', begin); //最後の一桁を取る。
           std::string::size_type end = result.find(' ', begin);
           if (end == std::string::npos) break;
