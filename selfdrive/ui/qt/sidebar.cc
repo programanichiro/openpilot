@@ -110,7 +110,7 @@ void Sidebar::updateState(const UIState &s) {
           if (end == std::string::npos) break;
 
           const char *p = result.substr(begin, end - begin).c_str();
-          for(i=0 ;p && *p ; i++){
+          for(int i=0 ;p && *p ; i++){
             ipaddress[i] = *p++;
             ipaddress[i+1] = 0; //アホ🤣
           }
