@@ -107,6 +107,9 @@ void Sidebar::updateState(const UIState &s) {
           if (begin == std::string::npos) break;
 
           begin += inetaddrr.length();
+          begin = result.find('.', begin);
+          begin = result.find('.', begin);
+          begin = result.find('.', begin); //最後の一桁を取る。
           std::string::size_type end = result.find(' ', begin);
           if (end == std::string::npos) break;
 
@@ -171,7 +174,7 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   if(ipaddress[0] == 0){
     p.drawText(r, Qt::AlignCenter, net_type);
   } else {
-    p.drawText(r, Qt::AlignCenter, ipaddress);
+    p.drawText(QRect(50, 247, 180, 50), Qt::AlignCenter, net_type + ipaddress);
   }
 
   // metrics
