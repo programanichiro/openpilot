@@ -97,20 +97,21 @@ void Sidebar::updateState(const UIState &s) {
         setProperty("netType", "Ping");
 #if 1
       } else if(net_type == "Wi-Fi"){
-        if(ipaddress == nullptr){
+        while(ipaddress == nullptr){
           std::string result = util::check_output("ifconfig wlan0");
-          if (result.empty()) return "";
+          if (result.empty()) break;
 
           const std::string inetaddrr = "inet addr:";
           std::string::size_type begin = result.find(inetaddrr);
-          if (begin == std::string::npos) return "";
+          if (begin == std::string::npos) break;
 
           begin += inetaddrr.length();
           std::string::size_type end = result.find(' ', begin);
-          if (end == std::string::npos) return "";
+          if (end == std::string::npos) break;
 
           ipaddress = result.substr(begin, end - begin).c_str();
           //net_type = QString(ipaddress);
+          break;
         }
 #endif
       }
