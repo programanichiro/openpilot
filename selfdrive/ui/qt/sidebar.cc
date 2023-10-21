@@ -69,7 +69,7 @@ void Sidebar::offroadTransition(bool offroad) {
   update();
 }
 
-static const char *ipaddress = nullptr;
+static const char ipaddress[32];
 void Sidebar::updateState(const UIState &s) {
   if (!isVisible()) return;
 
@@ -97,7 +97,7 @@ void Sidebar::updateState(const UIState &s) {
         setProperty("netType", "Ping");
 #if 1
       } else if(net_type == "Wi-Fi"){
-        while(ipaddress == nullptr){
+        while(ipaddress[0] == 0){
           std::string result = util::check_output("ifconfig wlan0");
           if (result.empty()) break;
 
@@ -109,7 +109,7 @@ void Sidebar::updateState(const UIState &s) {
           std::string::size_type end = result.find(' ', begin);
           if (end == std::string::npos) break;
 
-          ipaddress = result.substr(begin, end - begin).c_str();
+          strpcy(ipaddress , result.substr(begin, end - begin).c_str());
           //net_type = QString(ipaddress);
           break;
         }
