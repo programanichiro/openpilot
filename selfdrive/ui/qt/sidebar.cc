@@ -3,6 +3,7 @@
 #include <QMouseEvent>
 
 #include "selfdrive/ui/qt/util.h"
+#include <string.h>
 
 void Sidebar::drawMetric(QPainter &p, const QPair<QString, QString> &label, QColor c, int y) {
   const QRect rect = {30, y, 240, 126};
@@ -109,11 +110,7 @@ void Sidebar::updateState(const UIState &s) {
           std::string::size_type end = result.find(' ', begin);
           if (end == std::string::npos) break;
 
-          const char *p = result.substr(begin, end - begin).c_str();
-          for(int i=0 ;p && *p ; i++){
-            ipaddress[i] = *p++;
-            ipaddress[i+1] = 0; //アホ🤣
-          }
+          strcpy(ipaddress,result.substr(begin, end - begin).c_str());
           break;
         }
 #endif
