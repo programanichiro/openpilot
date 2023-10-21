@@ -69,6 +69,7 @@ void Sidebar::offroadTransition(bool offroad) {
   update();
 }
 
+static char *ipaddress = nullptr;
 void Sidebar::updateState(const UIState &s) {
   if (!isVisible()) return;
 
@@ -94,6 +95,24 @@ void Sidebar::updateState(const UIState &s) {
       }
       if(net_type == "--"){
         setProperty("netType", "Ping");
+#if 1
+      } else if(net_type == "Wi-Fi"){
+        if(ipaddress == nullptr){
+          std::string result = util::check_output("ifconfig wlan0");
+          if (result.empty()) return "";
+
+          const std::string inetaddrr = "inet addr:";
+          std::string::size_type begin = result.find(inetaddrr);
+          if (begin == std::string::npos) return "";
+
+          begin += inetaddrr.length();
+          std::string::size_type end = result.find(' ', begin);
+          if (end == std::string::npos) return "";
+
+          ipaddress = result.substr(begin, end - begin).c_str();
+          //net_type = QString(ipaddress);
+        }
+#endif
       }
     } else {
       setProperty("netStrength", 0);
@@ -148,7 +167,11 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   p.setFont(InterFont(35));
   p.setPen(QColor(0xff, 0xff, 0xff));
   const QRect r = QRect(50, 247, 100, 50);
-  p.drawText(r, Qt::AlignCenter, net_type);
+  if(ipaddress == nullptr){
+    p.drawText(r, Qt::AlignCenter, net_type);
+  } else {
+    p.drawText(r, Qt::AlignCenter, ipaddress);
+  }
 
   // metrics
   drawMetric(p, temp_status.first, temp_status.second, 338);
