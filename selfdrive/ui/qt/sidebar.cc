@@ -109,8 +109,11 @@ void Sidebar::updateState(const UIState &s) {
           std::string::size_type end = result.find(' ', begin);
           if (end == std::string::npos) break;
 
-          strpcy(ipaddress , result.substr(begin, end - begin).c_str());
-          //net_type = QString(ipaddress);
+          const char *p = result.substr(begin, end - begin).c_str();
+          for(i=0 ;p && *p ; i++){
+            ipaddress[i] = *p++;
+            ipaddress[i+1] = 0; //アホ🤣
+          }
           break;
         }
 #endif
