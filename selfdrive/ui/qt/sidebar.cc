@@ -69,7 +69,7 @@ void Sidebar::offroadTransition(bool offroad) {
   update();
 }
 
-static char *ipaddress = nullptr;
+static const char *ipaddress = nullptr;
 void Sidebar::updateState(const UIState &s) {
   if (!isVisible()) return;
 
