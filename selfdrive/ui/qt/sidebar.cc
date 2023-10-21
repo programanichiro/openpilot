@@ -101,7 +101,7 @@ void Sidebar::updateState(const UIState &s) {
           std::string result = util::check_output("ifconfig wlan0");
           if (result.empty()) break;
 
-          const std::string inetaddrr = "inet addr:";
+          const std::string inetaddrr = "inet "; //inet addr:
           std::string::size_type begin = result.find(inetaddrr);
           if (begin == std::string::npos) break;
 
