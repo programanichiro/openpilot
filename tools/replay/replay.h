@@ -1,13 +1,21 @@
 #pragma once
 
+#include <algorithm>
+#include <map>
+#include <memory>
 #include <optional>
+#include <set>
+#include <string>
+#include <tuple>
+#include <vector>
+#include <utility>
 
 #include <QThread>
 
 #include "tools/replay/camera.h"
 #include "tools/replay/route.h"
 
-const QString DEMO_ROUTE = "4cf7a6ad03080c90|2021-09-29--13-46-36";
+const QString DEMO_ROUTE = "a2a0ccea32023010|2023-07-27--13-01-19";
 
 // one segment uses about 100M of memory
 constexpr int MIN_SEGMENTS_CACHE = 5;
@@ -36,6 +44,7 @@ enum class FindFlag {
 
 enum class TimelineType { None, Engaged, AlertInfo, AlertWarning, AlertCritical, UserFlag };
 typedef bool (*replayEventFilter)(const Event *, void *);
+Q_DECLARE_METATYPE(std::shared_ptr<LogReader>);
 
 class Replay : public QObject {
   Q_OBJECT
@@ -72,7 +81,7 @@ public:
   inline void setSpeed(float speed) { speed_ = speed; }
   inline float getSpeed() const { return speed_; }
   inline const std::vector<Event *> *events() const { return events_.get(); }
-  inline const std::map<int, std::unique_ptr<Segment>> &segments() const { return segments_; };
+  inline const std::map<int, std::unique_ptr<Segment>> &segments() const { return segments_; }
   inline const std::string &carFingerprint() const { return car_fingerprint_; }
   inline const std::vector<std::tuple<double, double, TimelineType>> getTimeline() {
     std::lock_guard lk(timeline_lock);
@@ -83,6 +92,7 @@ signals:
   void streamStarted();
   void segmentsMerged();
   void seekedTo(double sec);
+  void qLogLoaded(int segnum, std::shared_ptr<LogReader> qlog);
 
 protected slots:
   void segmentLoadFinished(bool success);
