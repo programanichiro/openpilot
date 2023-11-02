@@ -244,7 +244,19 @@ class CarInterfaceBase(ABC):
        cs_out.gearShifter not in extra_gears):
       events.add(EventName.wrongGear)
     if cs_out.gearShifter == GearShifter.reverse:
-      events.add(EventName.reverseGear)
+      one_pedal = False
+      try:
+        with open('/tmp/accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) == 3: #ワンペダルモード
+              one_pedal = True
+      except Exception as e:
+        pass
+      if one_pedal == True and cs_out.vEgo < 5/3.6 and cs_out.cruiseState.enabled:
+        events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前でも可)にバックに入れたらディスエンゲージ
+      else:
+        events.add(EventName.reverseGear)
     if not cs_out.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if cs_out.espDisabled:
@@ -286,9 +298,11 @@ class CarInterfaceBase(ABC):
         # if the user overrode recently, show a less harsh alert
         if self.silent_steer_warning or cs_out.standstill or self.steering_unpressed < int(1.5 / DT_CTRL):
           self.silent_steer_warning = True
-          events.add(EventName.steerTempUnavailableSilent)
+          if (cs_out.gasPressed == False and cs_out.vEgo > 18/3.6) or cs_out.vEgo > 24/3.6:
+            events.add(EventName.steerTempUnavailableSilent)
         else:
-          events.add(EventName.steerTempUnavailable)
+          if (self.steering_unpressed >= int(1.0 / DT_CTRL) and cs_out.vEgo > 24/3.6) or cs_out.vEgo > 37/3.6: #ハンドル手放しが１秒以上かつ時速24km/h以上, または時速37km/h以上に限定。
+            events.add(EventName.steerTempUnavailable)
     else:
       self.no_steer_warning = False
       self.silent_steer_warning = False
@@ -343,6 +357,10 @@ class CarStateBase(ABC):
     x0=[[0.0], [0.0]]
     K = get_kalman_gain(DT_CTRL, np.array(A), np.array(C), np.array(Q), R)
     self.v_ego_kf = KF1D(x0=x0, A=A, C=C[0], K=K)
+
+    self.lead_dist_button = 0
+    self.lead_dist_lines = 0
+    self.lead_dist_lines_init = False
 
   def update_speed_kf(self, v_ego_raw):
     if abs(v_ego_raw - self.v_ego_kf.x[0][0]) > 2.0:  # Prevent large accelerations when car starts at non zero speed
