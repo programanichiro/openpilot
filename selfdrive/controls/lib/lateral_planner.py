@@ -1,8 +1,24 @@
+import time
 import numpy as np
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed_error
+from openpilot.common.params import Params
+from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
 from openpilot.selfdrive.controls.lib.desire_helper import DesireHelper
 import cereal.messaging as messaging
 from cereal import log
+
+STEERING_CENTER_calibration = []
+STEERING_CENTER_calibration_update_count = 0
+params = Params()
+try:
+  with open('../../../handle_center_info.txt','r') as fp:
+    handle_center_info_str = fp.read()
+    if handle_center_info_str:
+      STEERING_CENTER = float(handle_center_info_str)
+      with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+        fp.write('%0.2f' % (STEERING_CENTER) )
+except Exception as e:
+  pass
 
 TRAJECTORY_SIZE = 33
 CAMERA_OFFSET = 0.04
@@ -17,6 +33,8 @@ class LateralPlanner:
     self.last_cloudlog_t = 0
     self.solution_invalid_cnt = 0
 
+    self.LP = LanePlanner(True) #widw_camera常にONで呼び出す。
+    self.t_idxs = np.arange(TRAJECTORY_SIZE)
     self.path_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.velocity_xyz = np.zeros((TRAJECTORY_SIZE, 3))
     self.v_plan = np.zeros((TRAJECTORY_SIZE,))
@@ -32,13 +50,44 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
+    self.LP.parse_model(md,v_ego_car) #ichiropilot,lta_mode判定をこの中で行う。
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
       self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+      self.t_idxs = np.array(md.position.t)
       self.velocity_xyz = np.column_stack([md.velocity.x, md.velocity.y, md.velocity.z])
       car_speed = np.linalg.norm(self.velocity_xyz, axis=1) - get_speed_error(md, v_ego_car)
       self.v_plan = np.clip(car_speed, MIN_SPEED, np.inf)
       self.v_ego = self.v_plan[0]
       self.x_sol = np.column_stack([md.lateralPlannerSolution.x, md.lateralPlannerSolution.y, md.lateralPlannerSolution.yaw, md.lateralPlannerSolution.yawRate])
+
+    STEER_CTRL_Y = sm['carState'].steeringAngleDeg
+    path_y = self.path_xyz[:,1]
+    max_yp = 0
+    for yp in path_y:
+      max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+    STEERING_CENTER_calibration_max = 300 #3秒
+    if abs(max_yp) / 2.5 < 0.1 and self.v_ego > 20/3.6 and abs(STEER_CTRL_Y) < 8:
+      STEERING_CENTER_calibration.append(STEER_CTRL_Y)
+      if len(STEERING_CENTER_calibration) > STEERING_CENTER_calibration_max:
+        STEERING_CENTER_calibration.pop(0)
+    if len(STEERING_CENTER_calibration) > 0:
+      value_STEERING_CENTER_calibration = sum(STEERING_CENTER_calibration) / len(STEERING_CENTER_calibration)
+    else:
+      value_STEERING_CENTER_calibration = 0
+    handle_center = 0 #STEERING_CENTER
+    global STEERING_CENTER_calibration_update_count
+    STEERING_CENTER_calibration_update_count += 1
+    if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
+      handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
+      if STEERING_CENTER_calibration_update_count % 100 == 0:
+        with open('../../../handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+      if STEERING_CENTER_calibration_update_count % 10 == 5:
+        with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+    else:
+      with open('../../../handle_calibct_info.txt','w') as fp:
+        fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
 
     # Lane change logic
     desire_state = md.meta.desireState
@@ -47,6 +96,11 @@ class LateralPlanner:
       self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
     lane_change_prob = self.l_lane_change_prob + self.r_lane_change_prob
     self.DH.update(sm['carState'], sm['carControl'].latActive, lane_change_prob)
+
+    if self.LP.lta_mode and self.DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。
+      ypf = STEER_CTRL_Y
+      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      self.path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('lateralPlan')
