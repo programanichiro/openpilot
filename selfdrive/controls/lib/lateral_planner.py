@@ -1,6 +1,7 @@
 import time
 import numpy as np
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed_error
+from openpilot.selfdrive.controls.lib.lateral_mpc_lib.lat_mpc import N as LAT_MPC_N
 from openpilot.common.params import Params
 from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
 from openpilot.selfdrive.controls.lib.desire_helper import DesireHelper
@@ -109,8 +110,8 @@ class LateralPlanner:
 
     lateralPlan = plan_send.lateralPlan
     lateralPlan.modelMonoTime = sm.logMonoTime['modelV2']
-    lateralPlan.dPathPoints = self.path_xyz[:,1].tolist()
-    #lateralPlan.dPathPoints = self.path_xyz[:LAT_MPC_N+1, 1].tolist()
+    # lateralPlan.dPathPoints = self.path_xyz[:,1].tolist()
+    lateralPlan.dPathPoints = self.path_xyz[:LAT_MPC_N+1, 1].tolist()
 
     lateralPlan.psis = self.x_sol[0:CONTROL_N, 2].tolist()
 
