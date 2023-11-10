@@ -59,7 +59,7 @@ class LateralPlanner:
       self.v_plan = np.clip(car_speed, MIN_SPEED, np.inf)
       self.v_ego = self.v_plan[0]
       self.x_sol = np.column_stack([md.lateralPlannerSolution.x, md.lateralPlannerSolution.y, md.lateralPlannerSolution.yaw, md.lateralPlannerSolution.yawRate])
-      #横制御に介入するのはおそらくこのlateralPlannerSolution.xへの修正？
+      #横制御に介入するのはおそらくこのlateralPlannerSolution.yへの修正？
 
     STEER_CTRL_Y = sm['carState'].steeringAngleDeg
     path_y = self.path_xyz[:,1]
@@ -102,9 +102,9 @@ class LateralPlanner:
       ypf = STEER_CTRL_Y
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       self.path_xyz , lane_d = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
-      if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
-        # self.x_sol[:,0] += lane_d * 2
-        self.x_sol[:,0] *= 0
+      #if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
+        # self.x_sol[:,1] += lane_d * 2
+        # self.x_sol[:,1] *= 0 #,0は縦だった。しかし表示だけ？
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('lateralPlan')
