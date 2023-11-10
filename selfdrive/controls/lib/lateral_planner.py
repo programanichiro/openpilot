@@ -103,7 +103,8 @@ class LateralPlanner:
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       self.path_xyz , lane_d = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
-        self.x_sol[:,0] += lane_d * 2
+        # self.x_sol[:,0] += lane_d * 2
+        self.x_sol[:,0] *= 0
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('lateralPlan')
