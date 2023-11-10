@@ -102,7 +102,6 @@ class LateralPlanner:
       ypf = STEER_CTRL_Y
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       self.path_xyz = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
-      # y_pts = self.path_xyz[:LAT_MPC_N+1, 1]
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('lateralPlan')
@@ -110,8 +109,7 @@ class LateralPlanner:
 
     lateralPlan = plan_send.lateralPlan
     lateralPlan.modelMonoTime = sm.logMonoTime['modelV2']
-    # lateralPlan.dPathPoints = self.path_xyz[:,1].tolist()
-    lateralPlan.dPathPoints = self.path_xyz[:LAT_MPC_N+1, 1].tolist()
+    lateralPlan.dPathPoints = self.path_xyz[:,1].tolist()
 
     lateralPlan.psis = self.x_sol[0:CONTROL_N, 2].tolist()
 
