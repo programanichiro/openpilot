@@ -61,7 +61,6 @@ class LateralPlanner:
       self.x_sol = np.column_stack([md.lateralPlannerSolution.x, md.lateralPlannerSolution.y, md.lateralPlannerSolution.yaw, md.lateralPlannerSolution.yawRate])
       #横制御に介入するのはおそらくこのlateralPlannerSolution.xへの修正？
 
-
     STEER_CTRL_Y = sm['carState'].steeringAngleDeg
     path_y = self.path_xyz[:,1]
     max_yp = 0
