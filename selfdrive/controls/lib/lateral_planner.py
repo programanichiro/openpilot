@@ -113,7 +113,6 @@ class LateralPlanner:
     lateralPlan = plan_send.lateralPlan
     lateralPlan.modelMonoTime = sm.logMonoTime['modelV2']
     lateralPlan.dPathPoints = self.path_xyz[:,1].tolist()
-
     lateralPlan.psis = self.x_sol[0:CONTROL_N, 2].tolist()
 
     lateralPlan.curvatures = (self.x_sol[0:CONTROL_N, 3]/self.v_ego).tolist()
