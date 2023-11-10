@@ -127,6 +127,7 @@ class LanePlanner:
     # self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
     safe_idxs = np.isfinite(self.ll_t)
     new_lane_collision = 0 #bit0:left , bit1:right
+    lane_d = 0
     if safe_idxs[0]:
       # lane_path_y = (l_prob * path_from_left_lane + r_prob * path_from_right_lane) / (l_prob + r_prob + 0.0001)
       # lane_path_y_interp = np.interp(path_t, self.ll_t[safe_idxs], lane_path_y[safe_idxs])
@@ -168,6 +169,7 @@ class LanePlanner:
             diff_l *= l_prob/prob_max #prob_max以下の場合は押し戻す距離を減らす
           if diff_l > 0:
             path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            lane_d = diff_l * diff_mul +diff_add
             new_lane_collision |= 1
         if r_prob > prob_min: #レーン右からはみ出さないように。
           # path_xyz[:,1] = [min(a, b) for a, b in zip(lane_path_y_interp_right, path_xyz[:,1])]
@@ -176,6 +178,7 @@ class LanePlanner:
             diff_r *= r_prob/prob_max #prob_max以下の場合は押し戻す距離を減らす
           if diff_r < 0:
             path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            lane_d = diff_r * diff_mul -diff_add
             new_lane_collision |= 2
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
@@ -187,7 +190,7 @@ class LanePlanner:
       with open('/tmp/lane_collision.txt','w') as fp:
         fp.write('%d' % (new_lane_collision))
         self.lane_collision = new_lane_collision
-    return path_xyz
+    return path_xyz , lane_d
 
 #関数を最後に追加,dcm(ダイナミックカメラマージン？)名前がおかしいが、コーナーのイン側に寄せるオフセットである。早晩、こちらはlateral_planner.pyへ引っ越し予定。
   def calc_dcm(self, st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob):

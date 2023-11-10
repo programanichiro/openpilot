@@ -74,7 +74,6 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
   # lateral planning
   solution = modelV2.lateralPlannerSolution
   solution.x, solution.y, solution.yaw, solution.yawRate = [net_output_data['lat_planner_solution'][0,:,i].tolist() for i in range(4)]
-  #横制御に介入するのはおそらくこのsolution.xへの修正？
   solution.xStd, solution.yStd, solution.yawStd, solution.yawRateStd = [net_output_data['lat_planner_solution_stds'][0,:,i].tolist() for i in range(4)]
 
   # times at X_IDXS according to model plan
