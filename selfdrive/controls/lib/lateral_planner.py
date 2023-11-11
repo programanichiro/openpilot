@@ -105,6 +105,8 @@ class LateralPlanner:
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
         self.x_sol[:,1] -= lane_d * 0.15 #変更したパスを維持するため？
         self.x_sol[:,2] += lane_d * 0.02 #yaw（ハンドル制御の元値）をレーンの反対へ戻す
+        with open('/tmp/debug_out_v','w') as fp:
+          fp.write("%+.3f/%+.3f , %+.3f/%+.3f" % (lane_d * 0.02 ,self.x_sol[CONTROL_N,2],-lane_d * 0.15,self.x_sol[CONTROL_N,1]))
         # self.x_sol[:,0] *= 0 #レーン表示の縦が伸びない。しかし表示だけ
         # self.x_sol[:,1] *= 0 #パス表示が直進になる。しかし表示だけ
         # self.x_sol[:,2] *= 0 #yawを無効に。ハンドル制御できる確認。
