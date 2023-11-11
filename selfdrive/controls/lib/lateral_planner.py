@@ -103,11 +103,11 @@ class LateralPlanner:
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       self.path_xyz , lane_d = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
+        self.x_sol[:,2] += lane_d * 0.1 #yaw（ハンドル制御の元値）をレーンの反対へ戻す
         # self.x_sol[:,1] += lane_d * 2
         # self.x_sol[:,0] *= 0 #レーン表示の縦が伸びない。しかし表示だけ
         # self.x_sol[:,1] *= 0 #パス表示が直進になる。しかし表示だけ
         # self.x_sol[:,2] *= 0 #yawを無効に。
-        self.x_sol[:,2] += lane_d * 0.5 #yaw（ハンドル制御の元値）をレーンの反対へ戻す
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('lateralPlan')
