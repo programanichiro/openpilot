@@ -106,7 +106,8 @@ class LateralPlanner:
         # self.x_sol[:,1] += lane_d * 2
         # self.x_sol[:,0] *= 0 #レーン表示の縦が伸びない。しかし表示だけ
         # self.x_sol[:,1] *= 0 #パス表示が直進になる。しかし表示だけ
-        self.x_sol[:,2] *= 0 #yawを無効に。
+        # self.x_sol[:,2] *= 0 #yawを無効に。
+        self.x_sol[:,2] += lane_d * 0.5 #yaw（ハンドル制御の元値）をレーンの反対へ戻す
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('lateralPlan')
