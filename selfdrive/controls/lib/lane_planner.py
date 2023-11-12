@@ -151,6 +151,7 @@ class LanePlanner:
             diff_r *= r_prob/prob_max #prob_max以下の場合は押し戻す距離を減らす
           if diff_r < 0:
             path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            lane_d = diff_r * diff_mul -diff_add
             new_lane_collision |= 2
         if l_prob > prob_min: #レーン左からはみ出さないように。
           # path_xyz[:,1] = [max(a, b) for a, b in zip(lane_path_y_interp_left, path_xyz[:,1])]
@@ -159,6 +160,7 @@ class LanePlanner:
             diff_l *= l_prob/prob_max #prob_max以下の場合は押し戻す距離を減らす
           if diff_l > 0:
             path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            lane_d = diff_l * diff_mul +diff_add
             new_lane_collision |= 1
       else:
         #右に曲がる時は左->右の順番で検査する。カーブの内側に切り込まないように。
