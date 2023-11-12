@@ -104,7 +104,7 @@ class LateralPlanner:
       self.path_xyz , lane_d = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
         pred_angle = (-max_yp / 2.5)
-        k = np.interp(abs(pred_angle), [0, 20], [1.0, 2]) #旋回中は多めに戻す。
+        k = np.interp(abs(pred_angle), [0, 7], [1.0, 2]) #旋回中は多めに戻す。
         # self.x_sol[:,1] -= lane_d * 0.15 #変更したパスを維持するため？
         self.x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
         with open('/tmp/debug_out_v','w') as fp:
