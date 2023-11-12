@@ -182,6 +182,14 @@ class LanePlanner:
             #不要path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
             lane_d = diff_r * diff_mul -diff_add
             new_lane_collision |= 2
+
+      if new_lane_collision == 3: #両脇に接触した例外処理
+        #中央値を取る
+        center_y = (lane_path_y_interp_right[0] + lane_path_y_interp_left[0]) * 0.5
+        # center_y = (r_prob * lane_path_y_interp_right[0] + l_prob * lane_path_y_interp_left[0]) / (l_prob + r_prob + 0.0001) #probを考慮
+        lane_d = center_y - path_xyz[:,1][0]
+        #もしくはlane_d=0にするのも手か。
+
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
