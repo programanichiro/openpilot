@@ -188,8 +188,8 @@ class LanePlanner:
         #中央値を取る
         center_y = (lane_path_y_interp_right[0] + lane_path_y_interp_left[0]) * 0.5
         # center_y = (r_prob * lane_path_y_interp_right[0] + l_prob * lane_path_y_interp_left[0]) / (l_prob + r_prob + 0.0001) #probを考慮
-        lane_d = center_y - org_path_y_0
-        #もしくはlane_d=0にするのも手か。
+        # lane_d = center_y - org_path_y_0
+        lane_d = 0 #もしくはlane_d=0にするのも手か。
 
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
