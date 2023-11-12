@@ -159,7 +159,7 @@ class LanePlanner:
           if l_prob < prob_max:
             diff_l *= l_prob/prob_max #prob_max以下の場合は押し戻す距離を減らす
           if diff_l > 0:
-            path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            #不要path_xyz[:,1] += diff_l * diff_mul +diff_add #lane_path_y_interp_leftのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
             lane_d = diff_l * diff_mul +diff_add
             new_lane_collision |= 1
       else:
@@ -179,7 +179,7 @@ class LanePlanner:
           if r_prob < prob_max:
             diff_r *= r_prob/prob_max #prob_max以下の場合は押し戻す距離を減らす
           if diff_r < 0:
-            path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
+            #不要path_xyz[:,1] += diff_r * diff_mul -diff_add #lane_path_y_interp_rightのカーブ形状が使えないとなると、path_xyzを活かさなければならない。
             lane_d = diff_r * diff_mul -diff_add
             new_lane_collision |= 2
     else:
@@ -192,7 +192,8 @@ class LanePlanner:
       with open('/tmp/lane_collision.txt','w') as fp:
         fp.write('%d' % (new_lane_collision))
         self.lane_collision = new_lane_collision
-    return path_xyz , lane_d
+    #return path_xyz , lane_d #パスは戻り値に要らない。
+    return lane_d
 
 #関数を最後に追加,dcm(ダイナミックカメラマージン？)名前がおかしいが、コーナーのイン側に寄せるオフセットである。早晩、こちらはlateral_planner.pyへ引っ越し予定。
   def calc_dcm(self, st_angle, pred_angle , org_angle , v_ego,clipped_lane_width,l_prob,r_prob):

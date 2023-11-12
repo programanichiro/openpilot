@@ -101,9 +101,9 @@ class LateralPlanner:
     if self.LP.lta_mode and self.DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。
       ypf = STEER_CTRL_Y
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
-      self.path_xyz , lane_d = self.LP.get_d_path(STEER_CTRL_Y , (-max_yp / 2.5) , ypf , self.v_ego, self.t_idxs, self.path_xyz)
+      pred_angle = (-max_yp / 2.5)
+      lane_d = self.LP.get_d_path(STEER_CTRL_Y , pred_angle , ypf , self.v_ego, self.t_idxs, self.path_xyz) #self.path_xyzは戻り値から外した。
       if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
-        pred_angle = (-max_yp / 2.5)
         k = np.interp(abs(pred_angle), [0, 7], [1.0, 2]) #旋回中は多めに戻す。
         # self.x_sol[:,1] -= lane_d * 0.15 #変更したパスを維持するため？
         self.x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
