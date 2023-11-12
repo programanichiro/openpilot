@@ -142,6 +142,7 @@ class LanePlanner:
       diff_add = 0.05 * lane_speed_margin #さらに押し戻す距離[m]
       prob_max = 0.5 #レーン確率がこれ以上だと全て信用する。
       prob_min = 0.3 #レーン確率がこれ以上だと若干信用する。
+      org_path_y_0 = path_xyz[:,1][0]
       if pred_angle > 0:
         #左に曲がる時は右->左の順番で検査する。カーブの内側に切り込まないように。
         if r_prob > prob_min: #レーン右からはみ出さないように。
@@ -187,7 +188,7 @@ class LanePlanner:
         #中央値を取る
         center_y = (lane_path_y_interp_right[0] + lane_path_y_interp_left[0]) * 0.5
         # center_y = (r_prob * lane_path_y_interp_right[0] + l_prob * lane_path_y_interp_left[0]) / (l_prob + r_prob + 0.0001) #probを考慮
-        lane_d = center_y - path_xyz[:,1][0]
+        lane_d = center_y - org_path_y_0
         #もしくはlane_d=0にするのも手か。
 
     else:
