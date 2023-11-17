@@ -812,9 +812,6 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
-    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or self.v_desired_filter.x < 115.0 / 3.6):
-      #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
-      self.v_desired_filter.x = int(self.v_desired_filter.x * 3.6 / 5) * 5 / 3.6
     if tss_type < 2 and self.v_desired_filter.x > 117.0 / 3.6:
       self.v_desired_filter.x = 117.0 / 3.6
     # Compute model v_ego error
@@ -914,6 +911,9 @@ class LongitudinalPlanner:
         #ワンペダル停止の減速を強めてみる。
         a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
+    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6):
+      #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
+      v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     # with open('/tmp/debug_out_v','w') as fp:
     #   fp.write("v_desired=%.2fkm/h" % (self.v_desired_filter.x*3.6))
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,a_desired_mul,cruise_info_power_up,vl*3.6,vd))
