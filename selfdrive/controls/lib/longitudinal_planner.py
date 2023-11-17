@@ -744,6 +744,9 @@ class LongitudinalPlanner:
             if cruise_info_power_up:
               fp.write('%d;' % (vo))
             elif limitspeed_set == True:
+              #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
+              if add_v_by_lead == False and (tss_type >= 2 or self.v_desired_filter.x < 115.0 / 3.6):
+                vo = int(vo / 5) * 5
               fp.write(';%d' % (vo))
             else:
               fp.write('%d' % (vo))
@@ -809,6 +812,9 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
+    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or self.v_desired_filter.x < 115.0 / 3.6):
+      #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
+      self.v_desired_filter.x = int(self.v_desired_filter.x * 3.6 / 5) * 5 / 3.6
     if tss_type < 2 and self.v_desired_filter.x > 117.0 / 3.6:
       self.v_desired_filter.x = 117.0 / 3.6
     # Compute model v_ego error
