@@ -745,7 +745,7 @@ class LongitudinalPlanner:
               fp.write('%d;' % (vo))
             elif limitspeed_set == True:
               #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
-              if add_v_by_lead == False and (tss_type >= 2 or self.v_desired_filter.x < 115.0 / 3.6):
+              if add_v_by_lead == False and (tss_type >= 2 or vo < 115.0) and vo >= 30:
                 vo = int(vo / 5) * 5
               fp.write(';%d' % (vo))
             else:
@@ -911,7 +911,7 @@ class LongitudinalPlanner:
         #ワンペダル停止の減速を強めてみる。
         a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
-    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6):
+    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     # with open('/tmp/debug_out_v','w') as fp:
