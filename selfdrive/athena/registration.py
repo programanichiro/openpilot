@@ -88,11 +88,17 @@ def register(show_spinner=False) -> Optional[str]:
       if time.monotonic() - start_time > 60 and show_spinner:
         spinner.update(f"registering device - serial: {serial}, IMEI: ({imei1}, {imei2})")
 
+      if time.monotonic() - start_time > 70 and show_spinner:
+        dongle_id = UNREGISTERED_DONGLE_ID #互換機でException無限ループした場合の対処
+        break
+
     if show_spinner:
       spinner.close()
 
   if dongle_id:
     params.put("DongleId", dongle_id)
+
+  if dongle_id and dongle_id != UNREGISTERED_DONGLE_ID:
     set_offroad_alert("Offroad_UnofficialHardware", (dongle_id == UNREGISTERED_DONGLE_ID) and not PC)
   return dongle_id
 
