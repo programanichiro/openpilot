@@ -135,6 +135,7 @@ class LongitudinalPlanner:
     self.v_cruise_kph_1_15 = 0 #前走車まで追従する速度
     self.lead_v_abs = []
     self.a_desired_mul = 1.0
+    self.v_cruise_onep_k = 1.0
 
     try:
       with open('/tmp/dexp_sw_mode.txt','r') as fp:
@@ -683,7 +684,7 @@ class LongitudinalPlanner:
               add_v_by_lead = False
     if add_v_by_lead == False and self.v_cruise_kph_1_15 > 0:
       if self.ac_vc_time > 0:
-        self.ac_vc_time -= 0.002 #解除はセットの10倍時間をかける
+        self.ac_vc_time -= 0.003 #解除はセット(0.02)の何倍も時間をかける
         test_v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
         if v_ego <= 1*3.6 or OP_ENABLE_v_cruise_kph != 0 or int(test_v_cruise_kph) <= int(v_cruise_kph):
           self.ac_vc_time -= 0.02 #停車時やワンペダル操作では早く終わらせる。数字が元の速度と同じ時も同様。
@@ -800,8 +801,13 @@ class LongitudinalPlanner:
       v_cruise *= red_signal_speed_down
     
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
-      #v_cruise = 0 #ワンペダル停止処理
-      v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す
+      v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
+      #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
+      # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
+      self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
+    else:
+      self.v_cruise_onep_k = 1.0
+
       # if red_signal_scan_span > 0: これでブレーキングの強さが変わったら制御しづらいのでやめる。
       #   v_cruise *= interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
 
@@ -971,9 +977,9 @@ class LongitudinalPlanner:
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.logMonoTime['modelV2']
 
     if g_tss_type < 2:
-      longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory, 119/3.6).tolist() #全要素を119km/h以下にする
+      longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory * self.v_cruise_onep_k, 119/3.6).tolist() #全要素を119km/h以下にする
     else:
-      longitudinalPlan.speeds = self.v_desired_trajectory.tolist()
+      longitudinalPlan.speeds = (self.v_desired_trajectory * self.v_cruise_onep_k).tolist()
     # with open('/tmp/long_e2e_ready.txt','w') as fp:
       # fp.write('v%f / %f' % (self.v_desired_trajectory[0],self.v_desired_filter.x)) #long e2eに備えて、確認してみる。v_desired_filter.xへの扱いはv_desired_trajectoryを直に改変で代用できるか？、基本的にはオーバースピードさせないためにだけ使っている。
       # fp.write('V%f / %f' % (self.v_desired_trajectory[CONTROL_N-1],self.v_desired_filter.x))
