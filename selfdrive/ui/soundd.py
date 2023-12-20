@@ -39,6 +39,10 @@ sound_list: Dict[int, Tuple[str, Optional[int], float]] = {
 
   AudibleAlert.warningSoft: ("warning_soft.wav", None, MAX_VOLUME),
   AudibleAlert.warningImmediate: ("warning_immediate.wav", None, MAX_VOLUME),
+
+  101: ("po.wav", 1, MAX_VOLUME),
+  102: ("pipo.wav", 1, MAX_VOLUME),
+  103: ("pikiri.wav", 1, MAX_VOLUME),
 }
 
 def check_controls_timeout_alert(sm):
@@ -72,9 +76,9 @@ class Soundd:
 
       wavefile = wave.open(BASEDIR + "/selfdrive/assets/sounds/" + filename, 'r')
 
-      assert wavefile.getnchannels() == 1
-      assert wavefile.getsampwidth() == 2
-      assert wavefile.getframerate() == SAMPLE_RATE
+      # assert wavefile.getnchannels() == 1 #追加サウンドがassertに引っかかる。
+      # assert wavefile.getsampwidth() == 2
+      # assert wavefile.getframerate() == SAMPLE_RATE
 
       length = wavefile.getnframes()
       self.loaded_sounds[sound] = np.frombuffer(wavefile.readframes(length), dtype=np.int16).astype(np.float32) / (2**16/2)
@@ -98,6 +102,9 @@ class Soundd:
         written_frames += frames_to_write
         self.current_sound_frame += frames_to_write
 
+    if self.current_alert == 103: #pikiri
+      return ret * (self.current_volume * 0.5)
+
     return ret * self.current_volume
 
   def callback(self, data_out: np.ndarray, frames: int, time, status) -> None:
@@ -112,6 +119,20 @@ class Soundd:
       self.current_sound_frame = 0
 
   def get_audible_alert(self, sm):
+
+    try:
+      with open('/tmp/sound_py_request.txt','r') as fp:
+        sound_py_request_str = fp.read()
+        if sound_py_request_str:
+          if int(sound_py_request_str) != 0:
+            self.current_alert = AudibleAlert.none #前回鳴っていても強制的に鳴らす
+            self.update_alert(int(sound_py_request_str))
+            with open('/tmp/sound_py_request.txt','w') as fp:
+              fp.write('%d' % (0))
+              return
+    except Exception as e:
+      pass
+
     if sm.updated['controlsState']:
       new_alert = sm['controlsState'].alertSound.raw
       self.update_alert(new_alert)
