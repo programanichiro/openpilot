@@ -64,6 +64,8 @@ void MapInstructions::buildPixmapCache() {
       pixmap_cache["rhd_" + key.replace("_left", "_right")] = pm.transformed(QTransform().scale(-1, 1));
     } else if (key.contains("_right")) {
       pixmap_cache["rhd_" + key.replace("_right", "_left")] = pm.transformed(QTransform().scale(-1, 1));
+    } else if (key.contains("_uturn")) {
+      pixmap_cache["rhd_" + key.replace("_uturn", "_uturn")] = pm.transformed(QTransform().scale(-1, 1));
     }
   }
 }
@@ -91,7 +93,7 @@ void MapInstructions::updateInstructions(cereal::NavInstruction::Reader instruct
       fn += "_" + modifier;
     }
     fn = fn.replace(' ', '_');
-    bool rhd = is_rhd && (fn.contains("_left") || fn.contains("_right"));
+    bool rhd = is_rhd && (fn.contains("_left") || fn.contains("_right") || fn.contains("_uturn"));
     icon_01->setPixmap(pixmap_cache[!rhd ? fn : "rhd_" + fn]);
     icon_01->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Fixed));
     icon_01->setVisible(true);
