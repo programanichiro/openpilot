@@ -561,7 +561,7 @@ class LongitudinalPlanner:
         with open('/tmp/red_signal_scan_flag.txt','w') as fp:
           fp.write('%d' % (red_signal_scan_flag))
     if OP_ENABLE_v_cruise_kph != 0:
-      v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う
+      v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う,MAX=1もここで入ってくる。
     if CVS_FRAME % 5 == 4:
       try:
         with open('/tmp/handle_center_info.txt','r') as fp:

@@ -401,6 +401,9 @@ class TiciFanController(BaseFanController):
             with open('/tmp/cruise_info.txt','r') as fp:
               cruise_info_str = fp.read()
               if cruise_info_str:
+                #",30"とかの状況を考慮
+                if cruise_info_str.startswith(','):
+                    cruise_info_str = cruise_info_str[1:]  # 先頭のカンマを取り除く
                 rec_speed = int(cruise_info_str) #MAX km/h
     except Exception as e:
       pass
