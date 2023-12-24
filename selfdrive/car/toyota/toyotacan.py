@@ -36,22 +36,23 @@ def create_lta_steer_command(packer, steer_control_type, steer_angle, steer_req,
 #def create_accel_command(packer, accel, pcm_cancel, standstill_req, lead, acc_type, fcw_alert, distance):
 def create_accel_command(packer, accel, accel_raw, pcm_cancel, standstill_req, lead, acc_type, fcw_alert, should_compensate, distance):
   # TODO: find the exact canceling bit that does not create a chime
-  do_one_pedal = False
-  try:
-    with open('/tmp/cruise_info.txt','r') as fp:
-      cruise_info_str = fp.read()
-      if cruise_info_str:
-        if cruise_info_str == "1" or cruise_info_str == ",1":
-          do_one_pedal = True
-  except Exception as e:
-    pass
+  # do_one_pedal = False
+  # try:
+  #   with open('/tmp/cruise_info.txt','r') as fp:
+  #     cruise_info_str = fp.read()
+  #     if cruise_info_str:
+  #       if cruise_info_str == "1" or cruise_info_str == ",1":
+  #         do_one_pedal = True
+  # except Exception as e:
+  #   pass
 
   values = {
     "ACCEL_CMD": accel,
     "ACC_TYPE": acc_type,
     "DISTANCE": distance,
     "MINI_CAR": lead,
-    "PERMIT_BRAKING": 1 if accel < 0.3 or do_one_pedal else 0,
+    # "PERMIT_BRAKING": 1 if accel < 0.3 or do_one_pedal else 0,
+    "PERMIT_BRAKING": 1,
     "RELEASE_STANDSTILL": not standstill_req,
     "CANCEL_REQ": pcm_cancel,
     "ALLOW_LONG_PRESS": 1,
