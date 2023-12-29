@@ -52,6 +52,7 @@ class LateralPlanner:
 
     # Parse model predictions
     md = sm['modelV2']
+    STEER_CTRL_Y = sm['carState'].steeringAngleDeg
     self.LP.parse_model(md,v_ego_car) #ichiropilot,lta_mode判定をこの中で行う。
     if len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
       self.path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
@@ -62,11 +63,9 @@ class LateralPlanner:
       self.v_ego = self.v_plan[0]
       self.x_sol = np.column_stack([md.lateralPlannerSolution.x, md.lateralPlannerSolution.y, md.lateralPlannerSolution.yaw, md.lateralPlannerSolution.yawRate])
       if self.flag_47700:
-        self.x_sol[:,2] *= 0.95 #曲がり過ぎるのを調整してみる。
+        # self.x_sol[:,2] *= 0.95 #曲がり過ぎるのを調整してみる。↓ハンドルが回るほどヨー角を浅く
+        self.x_sol[:,2] *= np.interp(abs(STEER_CTRL_Y), [0, 40, 60 , 180], [1.0, 0.95 , 0.85 , 0.6])
 
-      #横制御に介入するのはおそらくこのlateralPlannerSolution.yへの修正？
-
-    STEER_CTRL_Y = sm['carState'].steeringAngleDeg
     path_y = self.path_xyz[:,1]
     max_yp = 0
     for yp in path_y:
