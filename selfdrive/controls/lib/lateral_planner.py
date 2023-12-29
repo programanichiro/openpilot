@@ -1,4 +1,5 @@
 import time
+import os
 import numpy as np
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, MIN_SPEED, get_speed_error
 from openpilot.common.params import Params
@@ -43,6 +44,7 @@ class LateralPlanner:
     self.l_lane_change_prob = 0.0
     self.r_lane_change_prob = 0.0
 
+    self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID']) #曲がり過ぎるのを調整してみる。
     self.debug_mode = debug
 
   def update(self, sm):
@@ -59,6 +61,9 @@ class LateralPlanner:
       self.v_plan = np.clip(car_speed, MIN_SPEED, np.inf)
       self.v_ego = self.v_plan[0]
       self.x_sol = np.column_stack([md.lateralPlannerSolution.x, md.lateralPlannerSolution.y, md.lateralPlannerSolution.yaw, md.lateralPlannerSolution.yawRate])
+      if self.flag_47700:
+        self.x_sol[:,2] *= 0.95 #曲がり過ぎるのを調整してみる。
+
       #横制御に介入するのはおそらくこのlateralPlannerSolution.yへの修正？
 
     STEER_CTRL_Y = sm['carState'].steeringAngleDeg
