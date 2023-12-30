@@ -64,7 +64,7 @@ class LateralPlanner:
       self.x_sol = np.column_stack([md.lateralPlannerSolution.x, md.lateralPlannerSolution.y, md.lateralPlannerSolution.yaw, md.lateralPlannerSolution.yawRate])
       if self.flag_47700:
         # self.x_sol[:,2] *= 0.95 #曲がり過ぎるのを調整してみる。↓ハンドルが回るほどヨー角を浅く
-        self.x_sol[:,2] *= np.interp(abs(STEER_CTRL_Y), [0, 40, 60 , 180], [1.0, 0.95 , 0.85 , 0.6])
+        self.x_sol[:,2] *= np.interp(abs(STEER_CTRL_Y), [0, 40, 60 , 180], [1.0, 0.95 , 0.9 , 0.7])
 
     path_y = self.path_xyz[:,1]
     max_yp = 0
