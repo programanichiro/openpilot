@@ -40,9 +40,9 @@ sound_list: Dict[int, Tuple[str, Optional[int], float]] = {
   AudibleAlert.warningSoft: ("warning_soft.wav", None, MAX_VOLUME),
   AudibleAlert.warningImmediate: ("warning_immediate.wav", None, MAX_VOLUME),
 
-  101: ("po.wav", 1, MAX_VOLUME),
-  102: ("pipo.wav", 1, MAX_VOLUME),
-  103: ("pikiri.wav", 1, MAX_VOLUME),
+  101: ("po.wave", 1, MAX_VOLUME),
+  102: ("pipo.wave", 1, MAX_VOLUME),
+  103: ("pikiri.wave", 1, MAX_VOLUME),
 }
 
 def check_controls_timeout_alert(sm):
