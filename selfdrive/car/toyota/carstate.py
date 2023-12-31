@@ -44,6 +44,7 @@ class CarState(CarStateBase):
 
     self.brake_state = False
     self.params = Params()
+    self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
 
     self.low_speed_lockout = False
     self.acc_type = 1
@@ -87,7 +88,7 @@ class CarState(CarStateBase):
 
     # On some cars, the angle measurement is non-zero while initializing
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
-      self.accurate_steer_angle_seen = not ('1131d250d405' in os.environ['DONGLE_ID']) #True , 自分だけFalseにする
+      self.accurate_steer_angle_seen = not self.flag_47700 #True , 自分だけFalseにする
 
     if self.accurate_steer_angle_seen:
       # Offset seems to be invalid for large steering angles and high angle rates
