@@ -384,7 +384,6 @@ class TiciFanController(BaseFanController):
           if tss_type_str:
             if int(tss_type_str) == 2: #TSS2
               self.tss_type = 2
-              dc_get_lag_adjusted_curvature = True
             elif int(tss_type_str) == 1: #TSSP
               self.tss_type = 1
       except Exception as e:
