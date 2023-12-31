@@ -2287,7 +2287,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     }
   }
   if(global_engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)){
-    float h = rect_h * curvature / (tss_type < 2 ? 0.03 : 0.05);
+    float h = rect_h * curvature / (/*tss_type*/2 < 2 ? 0.03 : 0.05);
     float wp1 = 25;
     //float wpa = 10;
     p.setBrush(QColor(245, 245, 0, 200));
@@ -2311,7 +2311,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 
     p.setCompositionMode(QPainter::CompositionMode_SourceOver);
     for(float yy=0.01; yy<0.05; yy+=0.01){
-      float hhy = rect_h * yy / (tss_type < 2 ? 0.03 : 0.05);
+      float hhy = rect_h * yy / (/*tss_type*/2 < 2 ? 0.03 : 0.05);
       p.setBrush(QColor(245, 0, 0, 200));
       p.drawRect(QRect(0 , rect_h - hhy , wp1 , 5));
     }
