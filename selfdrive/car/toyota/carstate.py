@@ -1,4 +1,5 @@
 import copy
+import os
 
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
@@ -85,8 +86,8 @@ class CarState(CarStateBase):
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
     # On some cars, the angle measurement is non-zero while initializing
-    if False: #47700test,# abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
-      self.accurate_steer_angle_seen = True
+    if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
+      self.accurate_steer_angle_seen = not ('1131d250d405' in os.environ['DONGLE_ID']) #True , 自分だけFalseにする
 
     if self.accurate_steer_angle_seen:
       # Offset seems to be invalid for large steering angles and high angle rates
