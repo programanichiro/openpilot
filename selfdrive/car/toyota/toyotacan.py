@@ -56,7 +56,7 @@ def create_accel_command(packer, accel, accel_raw, pcm_cancel, standstill_req, l
     "CANCEL_REQ": pcm_cancel,
     "ALLOW_LONG_PRESS": 1,
     "ACC_CUT_IN": fcw_alert,  # only shown when ACC enabled
-    "ACCEL_CMD_ALT": accel_raw,
+    "ACCEL_CMD_ALT": accel_raw if not do_one_pedal else accel,
   }
   return packer.make_can_msg("ACC_CONTROL", 0, values)
 
