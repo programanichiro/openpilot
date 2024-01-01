@@ -686,8 +686,10 @@ class LongitudinalPlanner:
       if self.ac_vc_time > 0:
         self.ac_vc_time -= 0.003 #解除はセット(0.02)の何倍も時間をかける
         test_v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-        if v_ego <= 1*3.6 or OP_ENABLE_v_cruise_kph != 0 or int(test_v_cruise_kph) <= int(v_cruise_kph):
-          self.ac_vc_time -= 0.02 #停車時やワンペダル操作では早く終わらせる。数字が元の速度と同じ時も同様。
+        if v_ego <= 1*3.6 or int(test_v_cruise_kph) <= int(v_cruise_kph):
+          self.ac_vc_time -= 0.02 #停車時では早く終わらせる。数字が元の速度と同じ時も同様。
+        if OP_ENABLE_v_cruise_kph != 0:
+          self.ac_vc_time = 0 #ワンペダル操作では直に終わらせる。
       self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
       if self.ac_vc_time <= 0:
         self.v_cruise_kph_1_15 = 0
