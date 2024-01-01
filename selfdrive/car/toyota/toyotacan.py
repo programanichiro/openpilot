@@ -43,7 +43,8 @@ def create_accel_command(packer, accel, accel_raw, pcm_cancel, standstill_req, l
       if cruise_info_str:
         if cruise_info_str == "1" or cruise_info_str == ",1":
           do_one_pedal = True
-          accel = 0
+          if accel > 0:
+            accel = 0
           accel_raw = 0
   except Exception as e:
     pass
