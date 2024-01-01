@@ -128,6 +128,7 @@ class CarController:
     else:
       interceptor_gas_cmd = 0.
 
+    actuators_accel = actuators.accel
     do_one_pedal = False
     try:
       with open('/tmp/cruise_info.txt','r') as fp:
@@ -135,6 +136,7 @@ class CarController:
         if cruise_info_str:
           if cruise_info_str == "1" or cruise_info_str == ",1":
             do_one_pedal = True
+            actuators_accel = 0
     except Exception as e:
       pass
 
@@ -185,7 +187,7 @@ class CarController:
         can_sends.append(toyotacan.create_acc_cancel_command(self.packer))
       elif self.CP.openpilotLongitudinalControl:
       # can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type, fcw_alert, CS.lead_dist_button))
-        can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, actuators.accel, pcm_cancel_cmd,
+        can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, actuators_accel, pcm_cancel_cmd,
                                                         self.standstill_req, lead, CS.acc_type, fcw_alert, CS.lead_dist_button))
         self.accel = pcm_accel_cmd
       else:
