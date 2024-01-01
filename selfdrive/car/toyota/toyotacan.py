@@ -43,6 +43,8 @@ def create_accel_command(packer, accel, accel_raw, pcm_cancel, standstill_req, l
       if cruise_info_str:
         if cruise_info_str == "1" or cruise_info_str == ",1":
           do_one_pedal = True
+          accel = 0
+          accel_raw = 0
   except Exception as e:
     pass
 
@@ -56,7 +58,7 @@ def create_accel_command(packer, accel, accel_raw, pcm_cancel, standstill_req, l
     "CANCEL_REQ": pcm_cancel,
     "ALLOW_LONG_PRESS": 1,
     "ACC_CUT_IN": fcw_alert,  # only shown when ACC enabled
-    "ACCEL_CMD_ALT": accel_raw if not do_one_pedal else accel,
+    "ACCEL_CMD_ALT": accel_raw,
   }
   return packer.make_can_msg("ACC_CONTROL", 0, values)
 
