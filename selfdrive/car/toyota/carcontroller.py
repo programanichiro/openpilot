@@ -128,11 +128,21 @@ class CarController:
     else:
       interceptor_gas_cmd = 0.
 
-    if CC.longActive:
+    do_one_pedal = False
+    try:
+      with open('/tmp/cruise_info.txt','r') as fp:
+        cruise_info_str = fp.read()
+        if cruise_info_str:
+          if cruise_info_str == "1" or cruise_info_str == ",1":
+            do_one_pedal = True
+    except Exception as e:
+      pass
+
+    if CC.longActive and do_one_pedal == False:
       accel_offset = CS.pcm_neutral_force / self.CP.mass
     else:
       accel_offset = 0.
-    if not CS.out.gasPressed:
+    if not CS.out.gasPressed and do_one_pedal == False:
       pcm_accel_cmd = clip(actuators.accel + accel_offset, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
     else:
       pcm_accel_cmd = 0.
