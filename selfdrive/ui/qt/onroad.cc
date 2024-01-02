@@ -791,7 +791,7 @@ void ButtonsWindow::updateState(const UIState &s) {
     if(mLTA_EnableButton <= 1){
       LTA_EnableButton->setText("/ \\");
     } else {
-      LTA_EnableButton->setText("⬇/ \\");
+      LTA_EnableButton->setText("⬇/ \\"); //ここには来ない
     }
     setButtonInt("/data/lta_enable_sw.txt" , mLTA_EnableButton);
     soundButton(mLTA_EnableButton);
@@ -843,6 +843,15 @@ void ButtonsWindow::psn_update(){
     } else if(DrivingPsn == 2){
       T3_Button->setText("⬆︎");
     }
+  }
+
+  bool lever_mAccelCtrlButton = getButtonEnabled("/tmp/accel_ctrl_disable.txt");
+  if (lever_mAccelCtrlButton != uiState()->scene.mAccelCtrlButton) {  // update mAccelCtrlButton
+    mAccelCtrlButton = lever_mAccelCtrlButton;
+    uiState()->scene.mAccelCtrlButton = lever_mAccelCtrlButton
+    accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton && fp_error==false)));
+    setButtonEnabled("/data/accel_ctrl_disable.txt" , mAccelCtrlButton);
+    soundButton(mAccelCtrlButton);
   }
 }
 

@@ -499,6 +499,14 @@ class LongitudinalPlanner:
         red_signal_scan_ct = 0 if red_signal_scan_ct < 1000 else red_signal_scan_ct - 1000
       self.old_red_signal_path_xs = sum_red_signal_path_xs
 
+    lever_up_down = 0
+    if ((hasLead == True and distLead_near == True) or v_ego > 30/3.6): #ここではlimitspeed_setは判定できないand limitspeed_set == True:
+      if before_v_cruise_kph_max_1 > 0 and before_v_cruise_kph_max_1 < 200:
+        if v_cruise_kph < before_v_cruise_kph_max_1:
+          lever_up_down = -1
+        elif v_cruise_kph > before_v_cruise_kph_max_1:
+          lever_up_down = 1
+
     if (hasLead == True and distLead_near == True) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         red_signal_scan_flag_1 = 0
@@ -616,6 +624,10 @@ class LongitudinalPlanner:
     except Exception as e:
       self.limitspeed_point = v_ego * 3.6
       pass
+
+    if lever_up_down != 0: # and limitspeed_set == True:
+      with open('/tmp/accel_ctrl_disable.txt','w') as fp:
+        fp.write('%d' % (0 if lever_up_down > 0 else 1))
 
 #  struct LeadData {
 #    dRel @0 :Float32;
