@@ -500,7 +500,7 @@ class LongitudinalPlanner:
       self.old_red_signal_path_xs = sum_red_signal_path_xs
 
     lever_up_down = 0
-    if ((hasLead == True and distLead_near == True) or v_ego > 30/3.6): #ここではlimitspeed_setは判定できないand limitspeed_set == True:
+    if ((hasLead == True and distLead_near == True): # or v_ego > 30/3.6): #ここではlimitspeed_setは判定できないand limitspeed_set == True:
       if before_v_cruise_kph_max_1 > 0 and before_v_cruise_kph_max_1 < 200:
         if v_cruise_kph < before_v_cruise_kph_max_1:
           lever_up_down = -1
