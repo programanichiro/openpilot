@@ -848,7 +848,7 @@ void ButtonsWindow::psn_update(){
   bool lever_mAccelCtrlButton = getButtonEnabled("/tmp/accel_ctrl_disable.txt");
   if (lever_mAccelCtrlButton != uiState()->scene.mAccelCtrlButton) {  // update mAccelCtrlButton
     mAccelCtrlButton = lever_mAccelCtrlButton;
-    uiState()->scene.mAccelCtrlButton = lever_mAccelCtrlButton
+    uiState()->scene.mAccelCtrlButton = lever_mAccelCtrlButton;
     accelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelCtrlButton && fp_error==false)));
     setButtonEnabled("/data/accel_ctrl_disable.txt" , mAccelCtrlButton);
     soundButton(mAccelCtrlButton);
