@@ -1,3 +1,4 @@
+import os
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
 from panda import Panda
@@ -11,6 +12,7 @@ from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 EventName = car.CarEvent.EventName
 SteerControlType = car.CarParams.SteerControlType
 
+NowStandStill = False
 
 class CarInterface(CarInterfaceBase):
   @staticmethod
@@ -52,7 +54,8 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3045. * CV.LB_TO_KG
       # Only give steer angle deadzone to for bad angle sensor prius
       for fw in car_fw:
-        if fw.ecu == "eps" and not fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00':
+        if fw.ecu == "eps" and ((not fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00') or '1131d250d405' in os.environ['DONGLE_ID']):
+          #自分はパワステモーター47700(8965B47060)でバッドアングルセンサー
           ret.steerActuatorDelay = 0.25
           CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.2)
 
@@ -252,27 +255,24 @@ class CarInterface(CarInterfaceBase):
     if not ret.openpilotLongitudinalControl:
       ret.safetyConfigs[0].safetyParam |= Panda.FLAG_TOYOTA_STOCK_LONGITUDINAL
 
+    if True: #candidate in EV_HYBRID_CAR: #ichiropilot,決め打ち
+      ret.flags |= ToyotaFlags.HYBRID.value
+
     # min speed to enable ACC. if car can do stop and go, then set enabling speed
     # to a negative value, so it won't matter.
     ret.minEnableSpeed = -1. if (stop_and_go or ret.enableGasInterceptor) else MIN_ACC_SPEED
 
+    # on stock Toyota this is -2.5
+    ret.stopAccel = -2.5
+    ret.stoppingDecelRate = 0.1
+
     tune = ret.longitudinalTuning
     tune.deadzoneBP = [0., 9.]
     tune.deadzoneV = [.0, .15]
-    if candidate in TSS2_CAR or ret.enableGasInterceptor:
-      tune.kpBP = [0., 5., 20.]
-      tune.kpV = [1.3, 1.0, 0.7]
-      tune.kiBP = [0., 5., 12., 20., 27.]
-      tune.kiV = [.35, .23, .20, .17, .1]
-      if candidate in TSS2_CAR:
-        ret.vEgoStopping = 0.25
-        ret.vEgoStarting = 0.25
-        ret.stoppingDecelRate = 0.3  # reach stopping target smoothly
-    else:
-      tune.kpBP = [0., 5., 35.]
-      tune.kiBP = [0., 35.]
-      tune.kpV = [3.6, 2.4, 1.5]
-      tune.kiV = [0.54, 0.36]
+    tune.kpBP = [0.,]
+    tune.kiBP = [0., 3.]
+    tune.kpV = [1.]
+    tune.kiV = [.3, 1.]
 
     return ret
 
@@ -287,6 +287,7 @@ class CarInterface(CarInterfaceBase):
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
 
+    new_stand_still = False
     # events
     events = self.create_common_events(ret)
 
@@ -297,6 +298,7 @@ class CarInterface(CarInterfaceBase):
 
     if self.CP.openpilotLongitudinalControl:
       if ret.cruiseState.standstill and not ret.brakePressed and not self.CP.enableGasInterceptor:
+        new_stand_still = True
         events.add(EventName.resumeRequired)
       if self.CS.low_speed_lockout:
         events.add(EventName.lowSpeedLockout)
@@ -310,6 +312,12 @@ class CarInterface(CarInterfaceBase):
           events.add(EventName.manualRestart)
 
     ret.events = events.to_msg()
+
+    global NowStandStill
+    if NowStandStill != new_stand_still:
+      NowStandStill = new_stand_still
+      # with open('/tmp/stand_still.txt','w') as fp:
+      #   fp.write('%d' % (new_stand_still))      
 
     return ret
 

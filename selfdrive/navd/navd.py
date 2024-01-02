@@ -59,6 +59,13 @@ class RouteEngine:
         self.mapbox_token = ""
       self.mapbox_host = "https://maps.comma.ai"
 
+    try:
+      with open('../../../mb_token.txt','r') as fp:
+        self.mapbox_token = fp.read().rstrip()
+        self.mapbox_host = "https://api.mapbox.com"
+    except Exception as e:
+      pass    
+
   def update(self):
     self.sm.update(0)
 
@@ -99,6 +106,20 @@ class RouteEngine:
       cloudlog.warning(f"Got new destination from NavDestination param {new_destination}")
       should_recompute = True
 
+    if self.recompute_countdown == 0:
+      try:
+        with open('/tmp/route_style_reload.txt','r') as fp:
+          route_style_reload_str = fp.read()
+          if route_style_reload_str:
+            if int(route_style_reload_str) == 1:
+              should_recompute = True
+              self.recompute_countdown = 0
+        if should_recompute == True:
+          with open('/tmp/route_style_reload.txt','w') as fp:
+            fp.write('%d' % (0))
+      except Exception as e:
+        pass    
+
     # Don't recompute when GPS drifts in tunnels
     if not self.gps_ok and self.step_idx is not None:
       return
@@ -116,6 +137,8 @@ class RouteEngine:
     self.nav_destination = destination
 
     lang = self.params.get('LanguageSetting', encoding='utf8')
+    if '1131d250d405' in os.environ['DONGLE_ID']:
+      lang = "main_ja"
     if lang is not None:
       lang = lang.replace('main_', '')
 
@@ -128,6 +151,8 @@ class RouteEngine:
       'banner_instructions': 'true',
       'alternatives': 'false',
       'language': lang,
+      'max_width': '2.4',
+      'max_weight': '2.5',
     }
 
     # TODO: move waypoints into NavDestination param?
