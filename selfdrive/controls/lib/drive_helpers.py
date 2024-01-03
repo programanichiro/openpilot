@@ -39,7 +39,7 @@ k_vs =     [1.00, 1.00, 1.00] #TSS2と同じ、公式の値に介入しない(�
 k_vs_org = [0   , 0.01, 0.05]
 k2_vs =     [1.0, 1.0  , 1.0] #TSS2用減少補正。 舵力減少させないでテスト。
 k2_vs_org = [0  , 0.033, 0.05]
-flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
+flag_47700 = False #('1131d250d405' in os.environ['DONGLE_ID'])
 k_vs_47700 =     [1.0, 0.93, 0.78, 0.75 ] #47700用減少補正。
 k_vs_org_47700 = [0  , 0.01, 0.02, 0.035]
 with open('/tmp/curvature_info.txt','w') as fp:
