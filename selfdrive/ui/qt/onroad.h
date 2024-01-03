@@ -39,6 +39,7 @@ class ButtonsWindow : public QWidget {
 public:
   ButtonsWindow(QWidget *parent = 0 , MapSettingsButton *map_settings_btn = 0);
   void psn_update();
+  void MAX_touch();
 
 private:
   QPushButton *lockOnButton;
@@ -48,6 +49,7 @@ private:
   QPushButton *LTA_EnableButton;
   QPushButton *startAccelPowerUpButton;
   QPushButton *useDynmicExpButton;
+  QPushButton *T1_Button; //⚫︎⚪︎⬇︎
   QPushButton *T3_Button; //⬆︎⬆︎⬆︎
 
   // int dfStatus = -1;  // always initialize style sheet and send msg

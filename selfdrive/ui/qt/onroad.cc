@@ -350,7 +350,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         btns_layoutBB->addSpacerItem(spacerItem);
     }
     { //制限速度標識ボタン
-      QPushButton *T1_Button = new QPushButton("⚪︎"); //"⚫︎⚪︎⬇︎"
+      T1_Button = new QPushButton("⚪︎"); //"⚫︎⚪︎⬇︎"
       Limit_speed_mode = getButtonInt("/data/limitspeed_sw.txt",0);
       if(Limit_speed_mode == 1){
         T1_Button->setText("⚫︎"); //自動設定モード
@@ -363,16 +363,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       T1_Button->setFixedHeight(90);
       T1_Button->setStyleSheet(QString(btn_styleb2).arg(mButtonColors.at(false)));
       QObject::connect(T1_Button, &QPushButton::pressed, [=]() {
-        Limit_speed_mode = (Limit_speed_mode + 1) % 3;
-        setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
-        soundButton(Limit_speed_mode);
-        if(Limit_speed_mode == 0){
-          T1_Button->setText("⚪︎");
-        } else if(Limit_speed_mode == 1){
-          T1_Button->setText("⚫︎"); //自動設定モード
-        } else if(Limit_speed_mode == 2){
-          T1_Button->setText("⬇︎"); //RECモード
-        }
+        MAX_touch();
       });
     }
     { //ナイトスキャナー非表示
@@ -516,7 +507,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
               setButtonEnabled0("/tmp/force_one_pedal.txt" , true); //これがセットされる条件をなるべく絞る。
             } else {
               //⚫︎ボタンの代わりに動作する
-              soundPo(); //操作不能音として鳴らす。
+              //soundPo(); //操作不能音として鳴らす。
+              MAX_touch();
             }
           } else {
             //MAX=1でタッチ(↑ボタン効果で",1"も含む)
@@ -525,12 +517,14 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
               setButtonEnabled0("/tmp/force_low_engage.txt" , true);
             } else {
               //⚫︎ボタンの代わりに動作する
-              soundPo(); //操作不能音として鳴らす。
+              //soundPo(); //操作不能音として鳴らす。
+              MAX_touch();
             }
           }
         }
       } else {
         //⚫︎ボタンの代わりに動作する
+        MAX_touch();
       }
     });
     int rect_width = 190 * 1.3;
@@ -823,6 +817,19 @@ void ButtonsWindow::updateState(const UIState &s) {
     }
   }
   
+}
+
+void ButtonsWindow::MAX_touch(){
+  Limit_speed_mode = (Limit_speed_mode + 1) % 3;
+  setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
+  soundButton(Limit_speed_mode);
+  if(Limit_speed_mode == 0){
+    T1_Button->setText("⚪︎");
+  } else if(Limit_speed_mode == 1){
+    T1_Button->setText("⚫︎"); //自動設定モード
+  } else if(Limit_speed_mode == 2){
+    T1_Button->setText("⬇︎"); //RECモード
+  }
 }
 
 void ButtonsWindow::psn_update(){
