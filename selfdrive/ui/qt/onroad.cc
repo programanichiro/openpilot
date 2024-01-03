@@ -515,6 +515,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
             if((*(uiState()->sm))["carState"].getCarState().getVEgo() < 0.1/3.6){ //スピードが出ていない時
               setButtonEnabled0("/tmp/force_one_pedal.txt" , true); //これがセットされる条件をなるべく絞る。
             } else {
+              //⚫︎ボタンの代わりに動作する
               soundPo(); //操作不能音として鳴らす。
             }
           } else {
@@ -523,10 +524,13 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
             if(vego > 3/3.6 && vego <= 30/3.6){ //スピードが3〜30km/hのとき
               setButtonEnabled0("/tmp/force_low_engage.txt" , true);
             } else {
+              //⚫︎ボタンの代わりに動作する
               soundPo(); //操作不能音として鳴らす。
             }
           }
         }
+      } else {
+        //⚫︎ボタンの代わりに動作する
       }
     });
     int rect_width = 190 * 1.3;
