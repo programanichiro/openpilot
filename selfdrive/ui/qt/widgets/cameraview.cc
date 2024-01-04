@@ -359,6 +359,7 @@ bool CameraWidget::receiveFrame(uint64_t request_frame_id) {
       qDebug().nospace() << "connecting to stream" << requested_stream_type
                          << (vipc_client ? QString(", was connected to %1").arg(vipc_client->type) : "");
       vipc_client.reset(new VisionIpcClient(stream_name, requested_stream_type, false));
+      active_stream_type = requested_stream_type;
     }
 #endif
   if (!vipc_client->connected) {

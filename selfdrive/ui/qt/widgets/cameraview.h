@@ -37,7 +37,7 @@ public:
   void disconnectVipc();
   void setBackgroundColor(const QColor &color) { bg = color; }
   void setStreamType(VisionStreamType type) { requested_stream_type = type; }
-  inline VisionStreamType streamType() const { return requested_stream_type; }
+  inline VisionStreamType streamType() const { return active_stream_type; }
   inline const std::set<VisionStreamType> &availableStreams() const { return available_streams; }
   bool receiveFrame(uint64_t request_frame_id = 0);
 
@@ -75,6 +75,7 @@ protected:
   int stream_stride = 0;
   bool ready_to_switch_stream = true;  // stream transition may be delayed by a zoom animation
   float zoom_transition = 0;
+  VisionStreamType active_stream_type;
   VisionStreamType requested_stream_type;
   std::set<VisionStreamType> available_streams;
   std::unique_ptr<VisionIpcClient> vipc_client;
