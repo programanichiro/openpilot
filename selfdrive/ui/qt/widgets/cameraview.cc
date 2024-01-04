@@ -346,7 +346,7 @@ void CameraWidget::vipcConnected() {
 }
 
 bool CameraWidget::receiveFrame(uint64_t request_frame_id) {
-#if 1
+#if 0
   if (!vipc_client || vipc_client->type != requested_stream_type) {
     qDebug().nospace() << "connecting to stream" << requested_stream_type
                        << (vipc_client ? QString(", was connected to %1").arg(vipc_client->type) : "");
