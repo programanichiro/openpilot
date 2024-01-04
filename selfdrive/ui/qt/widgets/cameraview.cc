@@ -6,6 +6,8 @@
 #include <GLES3/gl3.h>
 #endif
 
+#include <cmath>
+
 namespace {
 
 const char frame_vertex_shader[] =
