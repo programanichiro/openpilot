@@ -348,20 +348,13 @@ void CameraWidget::vipcConnected() {
 }
 
 bool CameraWidget::receiveFrame(uint64_t request_frame_id) {
-#if 0
-  if (!vipc_client || vipc_client->type != requested_stream_type) {
+  if (!vipc_client || vipc_client->type != requested_stream_type && ready_to_switch_stream) {
     qDebug().nospace() << "connecting to stream" << requested_stream_type
                        << (vipc_client ? QString(", was connected to %1").arg(vipc_client->type) : "");
     vipc_client.reset(new VisionIpcClient(stream_name, requested_stream_type, false));
+    active_stream_type = requested_stream_type;
   }
-#else
-    if (!vipc_client || vipc_client->type != requested_stream_type && ready_to_switch_stream) {
-      qDebug().nospace() << "connecting to stream" << requested_stream_type
-                         << (vipc_client ? QString(", was connected to %1").arg(vipc_client->type) : "");
-      vipc_client.reset(new VisionIpcClient(stream_name, requested_stream_type, false));
-      active_stream_type = requested_stream_type;
-    }
-#endif
+
   if (!vipc_client->connected) {
     frame = nullptr;
     recent_frames.clear();
