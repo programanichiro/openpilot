@@ -46,12 +46,12 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   split->addWidget(nvg);
 
   if (getenv("DUAL_CAMERA_VIEW")) {
-    CameraWidget *arCam = new CameraWidget("camerad", VISION_STREAM_ROAD, true, this);
+    CameraWidget *arCam = new CameraView("camerad", VISION_STREAM_ROAD, true, this);
     split->insertWidget(0, arCam);
   }
 
   if (getenv("MAP_RENDER_VIEW")) {
-    CameraWidget *map_render = new CameraWidget("navd", VISION_STREAM_MAP, false, this);
+    CameraWidget *map_render = new CameraView("navd", VISION_STREAM_MAP, false, this);
     split->insertWidget(0, map_render);
   }
 
@@ -142,6 +142,7 @@ void OnroadWindow::offroadTransition(bool offroad) {
 #endif
 
   alerts->updateAlert({});
+  nvg->disconnectVipc();
 }
 
 void OnroadWindow::primeChanged(bool prime) {
@@ -1122,6 +1123,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   //   main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
   // }
   map_settings_btn->setVisible(true); //他のボタンの位置へ影響するので、出しっぱなしにする。
+
+  update();
 }
 
 static bool all_brake_light = false;
@@ -2807,21 +2810,6 @@ void AnnotatedCameraWidget::paintGL() {
 
   // draw camera frame
   {
-    std::lock_guard lk(frame_lock);
-
-    if (frames.empty()) {
-      if (skip_frame_count > 0) {
-        skip_frame_count--;
-        qDebug() << "skipping frame, not ready";
-        return;
-      }
-    } else {
-      // skip drawing up to this many frames if we're
-      // missing camera frames. this smooths out the
-      // transitions from the narrow and wide cameras
-      skip_frame_count = 5;
-    }
-
     // Wide or narrow cam dependent on speed
     bool has_wide_cam = available_streams.count(VISION_STREAM_WIDE_ROAD);
     if (has_wide_cam) {
@@ -2837,14 +2825,18 @@ void AnnotatedCameraWidget::paintGL() {
     }
     CameraWidget::setStreamType(wide_cam_requested ? VISION_STREAM_WIDE_ROAD : VISION_STREAM_ROAD);
 
-    s->scene.wide_cam = CameraWidget::getStreamType() == VISION_STREAM_WIDE_ROAD;
+    s->scene.wide_cam = CameraWidget::streamType() == VISION_STREAM_WIDE_ROAD;
     if (s->scene.calibration_valid) {
       auto calib = s->scene.wide_cam ? s->scene.view_from_wide_calib : s->scene.view_from_calib;
       CameraWidget::updateCalibration(calib);
     } else {
       CameraWidget::updateCalibration(DEFAULT_CALIBRATION);
     }
-    CameraWidget::setFrameId(model.getFrameId());
+
+    if (!CameraWidget::receiveFrame(sm["uiPlan"].getUiPlan().getFrameId())) {
+      qDebug() << "skipping frame, not ready";
+      return;
+    }
     CameraWidget::paintGL();
   }
 
