@@ -500,7 +500,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     //強制的にワンペダルモードとなる。
     QPushButton *forceOnePedalButton = new QPushButton(""); //表示文字も無し。
     QObject::connect(forceOnePedalButton, &QPushButton::pressed, [=]() {
-      if(getButtonInt("/tmp/accel_engaged.txt" , 0) == 3 && is_cruise_set){ //ワンペダルのみ
+      if(getButtonInt("/tmp/accel_engaged.txt" , 0) == 3 /*&& is_cruise_set*/){ //ワンペダルのみ
         std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
         if(stdstr_txt.empty() == false){
           if(stdstr_txt != "1" && stdstr_txt != ",1"){ //MAXが1ではない時
