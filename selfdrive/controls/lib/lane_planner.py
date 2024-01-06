@@ -191,6 +191,18 @@ class LanePlanner:
         # lane_d = center_y - org_path_y_0
         lane_d = 0 #もしくはlane_d=0にするのも手か。
 
+      lane_w = -999
+      if r_prob > prob_min and l_prob > prob_min:
+        lane_l = lane_path_y_interp_left[0]
+        if l_prob < prob_max:
+          lane_l *= l_prob/prob_max
+        lane_r = lane_path_y_interp_right[0]
+        if r_prob < prob_max:
+          lane_r *= r_prob/prob_max
+        lane_w = lane_l - lane_r
+      with open('/tmp/debug_out_o','w') as fp:
+        fp.write('%.3f' % (lane_w))
+
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
       pass
