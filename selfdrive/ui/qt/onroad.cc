@@ -1213,9 +1213,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   bool db_rec_mode = false;
   if(limit_speed_override == false){
     bool yellow_flag = false;
-    if(Limit_speed_mode == 2 && ms.toDouble() >= 30){
-      p.setBrush(QColor::fromRgbF(0.4, 0.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
-      db_rec_mode = true;
+    if(Limit_speed_mode == 2){
+      p.setBrush(QColor::fromRgbF(0.4, 0.0, 0, 1.0));
+      if(ms.toDouble() >= 30){
+        db_rec_mode = true;
+      }
       yellow_flag = true;
     } else if((Limit_speed_mode == 1 && limit_speed_auto_detect == 1)){
       if(maxspeed_org+12 <= ms.toDouble() && maxspeed_org+5 < vc_speed * 3.6){
