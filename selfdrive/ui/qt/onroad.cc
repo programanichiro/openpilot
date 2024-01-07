@@ -1977,15 +1977,21 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
           if(lane_collision_txt.empty() == false){
             lane_collision = std::stoi(lane_collision_txt);
           } else {
-            lane_collision = 0x04; //lane_collision.txtが無い。
+            lane_collision = 0x80; //lane_collision.txtが無い。
           }
       }
-      if((i == 1 && (lane_collision & 0x01))/*左レーン*/ || (i == 0x02 && (lane_collision & 2))/*右レーン*/){
+      if((i == 1 && (lane_collision & 0x01))/*左レーン*/ || (i == 2 && (lane_collision & 0x02))/*右レーン*/){
         float lane_prob = scene.lane_line_probs[i];
         if(lane_prob > 0.5){
           lane_prob = 1.0;
         } else {
           lane_prob *= 2; //50％以下でも多少の影響を視覚化。
+        }
+        if(lane_collision & 0x04){
+          //ALDP無視状態
+          painter.setBrush(QColor::fromRgbF(0.5, 0.5, 0.5, lane_prob));
+        } else {
+          painter.setBrush(QColor::fromRgbF(1.0, 0.5, 0, lane_prob));
         }
         painter.setBrush(QColor::fromRgbF(1.0, 0.5, 0, lane_prob));
       } else {

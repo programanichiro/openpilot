@@ -190,8 +190,9 @@ class LanePlanner:
         # center_y = (r_prob * lane_path_y_interp_right[0] + l_prob * lane_path_y_interp_left[0]) / (l_prob + r_prob + 0.0001) #probを考慮
         # lane_d = center_y - org_path_y_0
         lane_d = 0 #もしくはlane_d=0にするのも手か。
+        new_lane_collision |= 4 #無視状態をUIに表示
 
-      lane_w = -99
+      lane_w = -99 #右がプラスの数字
       if r_prob > prob_min and l_prob > prob_min:
         lane_l = self.lll_y[0]
         if l_prob < prob_max:
@@ -199,7 +200,10 @@ class LanePlanner:
         lane_r = self.rll_y[0]
         if r_prob < prob_max:
           lane_r *= r_prob/prob_max
-        lane_w = lane_l - lane_r #これでメートル的なイメージになる？
+        lane_w = lane_r - lane_l #これでメートル的なイメージになる？
+        if lane_w < 1.9:
+          lane_d = 0 #操舵しない
+          new_lane_collision |= 4 #無視状態をUIに表示
       with open('/tmp/debug_out_o','w') as fp:
         fp.write('%.1fm' % (lane_w))
 
