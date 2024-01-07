@@ -29,16 +29,16 @@ class LanePlanner:
     self.ll_x = np.zeros((TRAJECTORY_SIZE,))
     self.lll_y = np.zeros((TRAJECTORY_SIZE,))
     self.rll_y = np.zeros((TRAJECTORY_SIZE,))
-    self.lane_width_estimate = FirstOrderFilter(3.7, 9.95, DT_MDL)
-    self.lane_width_certainty = FirstOrderFilter(1.0, 0.95, DT_MDL)
-    self.lane_width = 3.7
+    # self.lane_width_estimate = FirstOrderFilter(3.7, 9.95, DT_MDL)
+    # self.lane_width_certainty = FirstOrderFilter(1.0, 0.95, DT_MDL)
+    # self.lane_width = 3.7
 
     self.lll_prob = 0.
     self.rll_prob = 0.
-    self.d_prob = 0.
+    # self.d_prob = 0.
 
-    self.lll_std = 0.
-    self.rll_std = 0.
+    # self.lll_std = 0.
+    # self.rll_std = 0.
 
     # self.l_lane_change_prob = 0.
     # self.r_lane_change_prob = 0.
@@ -79,8 +79,8 @@ class LanePlanner:
       self.rll_y = np.array(lane_lines[2].y) + self.camera_offset
       self.lll_prob = md.laneLineProbs[1]
       self.rll_prob = md.laneLineProbs[2]
-      self.lll_std = md.laneLineStds[1]
-      self.rll_std = md.laneLineStds[2]
+      # self.lll_std = md.laneLineStds[1]
+      # self.rll_std = md.laneLineStds[2]
 
     # desire_state = md.meta.desireState
     # if len(desire_state):
