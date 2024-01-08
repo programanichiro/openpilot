@@ -96,13 +96,13 @@ protected:
   uint32_t draw_frame_id = 0;
   uint32_t prev_frame_id = 0;
 
+  const float ecam_zoom = 2.0;
+  const float fcam_zoom = 1.1;
+
 protected slots:
   void vipcConnected(VisionIpcClient *vipc_client);
   void vipcFrameReceived();
   void availableStreamsUpdated(std::set<VisionStreamType> streams);
-
-  const float ecam_zoom = 2.0;
-  const float fcam_zoom = 1.1;
 };
 
 Q_DECLARE_METATYPE(std::set<VisionStreamType>);
