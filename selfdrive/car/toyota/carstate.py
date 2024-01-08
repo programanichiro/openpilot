@@ -1,5 +1,6 @@
 import copy
 import os
+import numpy as np
 
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
@@ -45,6 +46,7 @@ class CarState(CarStateBase):
     self.brake_state = False
     self.params = Params()
     self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
+    self.steeringAngleDegs = np.zeros(10) #角度を過去0.1秒の平均としてみる。
 
     self.low_speed_lockout = False
     self.acc_type = 1
@@ -82,7 +84,11 @@ class CarState(CarStateBase):
 
     ret.standstill = ret.vEgoRaw == 0
 
-    ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
+    # ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
+    _steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
+    self.steeringAngleDegs = np.append(self.steeringAngleDegs,_steeringAngleDeg)
+    self.steeringAngleDegs = np.delete(self.steeringAngleDegs , [0])
+    ret.steeringAngleDeg = np.sum(self.steeringAngleDegs) / self.steeringAngleDegs.size
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
