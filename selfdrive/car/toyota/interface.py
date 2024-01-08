@@ -57,6 +57,9 @@ class CarInterface(CarInterfaceBase):
         if fw.ecu == "eps" and (not fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00'):
           ret.steerActuatorDelay = 0.25
           CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.2)
+      if '1131d250d405' in os.environ['DONGLE_ID']:
+        #自分はパワステモーター47700(8965B47060)でバッドアングルセンサー、ret.steerActuatorDelayは0.12のままsteering_angle_deadzone_deg=0.2だけ適用。
+        CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.2)
 
     elif candidate == CAR.PRIUS_V:
       stop_and_go = True
