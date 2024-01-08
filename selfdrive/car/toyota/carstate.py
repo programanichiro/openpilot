@@ -45,7 +45,6 @@ class CarState(CarStateBase):
     self.brake_state = False
     self.params = Params()
     self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
-    self.steeringAngleDegs = []
 
     self.low_speed_lockout = False
     self.acc_type = 1
@@ -83,23 +82,7 @@ class CarState(CarStateBase):
 
     ret.standstill = ret.vEgoRaw == 0
 
-    # ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
-    steeringAngleDeg0 = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
-    self.steeringAngleDegs.append(float(steeringAngleDeg0))
-    if len(self.steeringAngleDegs) > 10:
-      self.steeringAngleDegs.pop(0)
-      # 過去10フレームの角度から、角速度と角加速度の平均を求める。
-      angVs = [self.steeringAngleDegs[i + 1] - self.steeringAngleDegs[i] for i in range(len(self.steeringAngleDegs) - 1)] #過去９回の角速度
-      angAs = [angVs[i + 1] - angVs[i] for i in range(len(angVs) - 1)] #過去８回の角加速度
-      angV = sum(angVs) / len(angVs)
-      angA = sum(angAs) / len(angAs)
-      for i in range(25): #25ループ後のハンドル角度を予想。
-        angV += angA
-        steeringAngleDeg0 += angV
-      ret.steeringAngleDeg = steeringAngleDeg0
-    else:
-      ret.steeringAngleDeg = sum(self.steeringAngleDegs) / len(self.steeringAngleDegs) #直近の平均
-
+    ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
