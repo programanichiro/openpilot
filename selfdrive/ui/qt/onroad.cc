@@ -590,6 +590,20 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       QPushButton *LongEnablrButton = new QPushButton(""); //表示文字も無し。
       Long_enable = getButtonEnabled("/data/long_speeddown_disable.txt");
       QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
+        if(mUseDynmicExpButton){
+          mUseDynmicExpButton = (mUseDynmicExpButton + 1) % 2; //0->1->0
+          uiState()->scene.mUseDynmicExpButton = mUseDynmicExpButton;
+          setButtonInt("/data/dexp_sw_mode.txt" , mUseDynmicExpButton);
+          useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0 && fp_error==false)));
+
+          UIState *s = uiState();
+          if((*s->sm)["controlsState"].getControlsState().getExperimentalMode()){
+            setButtonEnabled("/data/long_speeddown_disable.txt",false);
+          } else {
+            setButtonEnabled("/data/long_speeddown_disable.txt",true);
+          }
+        }
+
         Long_enable = !getButtonEnabled("/data/long_speeddown_disable.txt");
         setButtonEnabled("/data/long_speeddown_disable.txt",Long_enable);
         if(Long_enable){
