@@ -45,7 +45,6 @@ class CarState(CarStateBase):
     self.brake_state = False
     self.params = Params()
     self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
-    self.steeringAngleDegs = []
 
     self.low_speed_lockout = False
     self.acc_type = 1
@@ -83,12 +82,7 @@ class CarState(CarStateBase):
 
     ret.standstill = ret.vEgoRaw == 0
 
-    # ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
-    steeringAngleDeg0 = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
-    self.steeringAngleDegs.append(float(steeringAngleDeg0))
-    if len(self.steeringAngleDegs) > 10:
-      self.steeringAngleDegs.pop(0)
-    ret.steeringAngleDeg = sum(self.steeringAngleDegs) / len(self.steeringAngleDegs) #直近10個の平均
+    ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
