@@ -54,8 +54,7 @@ class CarInterface(CarInterfaceBase):
       ret.mass = 3045. * CV.LB_TO_KG
       # Only give steer angle deadzone to for bad angle sensor prius
       for fw in car_fw:
-        if fw.ecu == "eps" and ((not fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00') or '1131d250d405' in os.environ['DONGLE_ID']):
-          #自分はパワステモーター47700(8965B47060)でバッドアングルセンサー
+        if fw.ecu == "eps" and (not fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00'):
           ret.steerActuatorDelay = 0.25
           CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.2)
 
