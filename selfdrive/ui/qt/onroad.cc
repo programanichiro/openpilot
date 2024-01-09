@@ -2004,7 +2004,6 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
         } else {
           painter.setBrush(QColor::fromRgbF(1.0, 0.5, 0, lane_prob));
         }
-        painter.setBrush(QColor::fromRgbF(1.0, 0.5, 0, lane_prob));
       } else {
         painter.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, std::clamp<float>(scene.lane_line_probs[i], 0.0, 0.7)));
       }
