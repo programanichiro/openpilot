@@ -204,8 +204,8 @@ class LanePlanner:
         if lane_w <= 1.9:
           lane_d = 0 #操舵しない
           new_lane_collision |= 4 #無視状態をUIに表示
-      with open('/tmp/debug_out_o','w') as fp:
-        fp.write('%.1fm' % (lane_w))
+      # with open('/tmp/debug_out_o','w') as fp:
+      #   fp.write('%.1fm' % (lane_w))
 
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
