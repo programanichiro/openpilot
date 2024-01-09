@@ -201,7 +201,7 @@ class LanePlanner:
         if r_prob < prob_max:
           lane_r *= r_prob/prob_max
         lane_w = lane_r - lane_l #これでメートル的なイメージになる？
-        if lane_w < 2.9:
+        if lane_w <= 1.9:
           lane_d = 0 #操舵しない
           new_lane_collision |= 4 #無視状態をUIに表示
       with open('/tmp/debug_out_o','w') as fp:
