@@ -45,6 +45,8 @@ class CarState(CarStateBase):
     self.brake_state = False
     self.params = Params()
     self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
+    self.before_ang = 0
+    self.before_ang_ct = 0
 
     self.low_speed_lockout = False
     self.acc_type = 1
@@ -83,8 +85,13 @@ class CarState(CarStateBase):
     ret.standstill = ret.vEgoRaw == 0
 
     ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
-    # with open('/tmp/debug_out_v','w') as fp:
-    #   fp.write("%+.2f,a:%.2f,f:%.2f" % (float(ret.steeringAngleDeg),float(cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"]),float(cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"])))
+    if self.before_ang != ret.steeringAngleDeg:
+      self.before_ang_ct = 0
+    else:
+      self.before_ang_ct += 1
+    self.before_ang = ret.steeringAngleDeg
+    with open('/tmp/debug_out_v','w') as fp:
+      fp.write("ct:%d,%+.2f" % (self.before_ang_ct,float(ret.steeringAngleDeg)))
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
