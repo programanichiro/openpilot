@@ -90,7 +90,7 @@ class CarState(CarStateBase):
     self.steeringAngleDegs.append(float(steeringAngleDeg0))
     angV = 0
     angA = 0
-    if len(self.steeringAngleDegs) > 10:
+    if len(self.steeringAngleDegs) > 19:
       self.steeringAngleDegs.pop(0)
       # 過去10フレーム(0.1秒)の角度から、角速度と角加速度の平均を求める。
       angVs = [self.steeringAngleDegs[i + 1] - self.steeringAngleDegs[i] for i in range(len(self.steeringAngleDegs) - 1)] #過去９回の角速度
@@ -106,6 +106,7 @@ class CarState(CarStateBase):
     self.before_ang = ret.steeringAngleDeg
     with open('/tmp/debug_out_v','w') as fp:
       fp.write("ct:%d,%+.2f,%+.2f,%+.2f,%+.4f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+prob_ang,angV,angA))
+    ret.steeringAngleDeg += prob_ang
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
