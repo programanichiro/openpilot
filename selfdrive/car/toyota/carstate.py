@@ -104,7 +104,7 @@ class CarState(CarStateBase):
       self.before_ang_ct += 1
     self.before_ang = ret.steeringAngleDeg
     with open('/tmp/debug_out_v','w') as fp:
-      fp.write("ct:%d,%+.2f,%+.2f,%+.4f" % (self.before_ang_ct,float(ret.steeringAngleDeg,angV,angA)))
+      fp.write("ct:%d,%+.2f,%+.2f,%+.4f" % (self.before_ang_ct,float(ret.steeringAngleDeg),angV,angA))
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
