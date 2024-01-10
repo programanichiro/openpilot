@@ -154,7 +154,7 @@ class LongitudinalPlanner:
       self.dexp_mode_min = 20/3.6
       self.dexp_mode_max = 23/3.6
 
-    if self.CP.carFingerprint not in TSS2_CAR:
+    if self.CP.carFingerprint not in TSS2_CAR or ('1131d250d405' in os.environ['DONGLE_ID']): #47700の自分もこちら。ツインウェイブでさらに減速したい。
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
 
   def read_param(self):
