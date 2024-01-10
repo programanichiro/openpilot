@@ -92,7 +92,7 @@ class CarState(CarStateBase):
     angA = 0
     if len(self.steeringAngleDegs) > 19:
       self.steeringAngleDegs.pop(0)
-      # 過去10フレーム(0.1秒)の角度から、角速度と角加速度の平均を求める。
+      # 過去19フレーム(0.19秒)の角度から、角速度と角加速度の平均を求める。
       angVs = [self.steeringAngleDegs[i + 1] - self.steeringAngleDegs[i] for i in range(len(self.steeringAngleDegs) - 1)] #過去９回の角速度
       angAs = [angVs[i + 1] - angVs[i] for i in range(len(angVs) - 1)] #過去８回の角加速度
       angV = sum(angVs) / len(angVs)
