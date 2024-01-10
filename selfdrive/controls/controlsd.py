@@ -184,6 +184,7 @@ class Controls:
     self.v_cruise_helper = VCruiseHelper(self.CP)
     self.recalibrating_seen = False
 
+    self.curvature_hist = []
     with open('/tmp/red_signal_scan_flag.txt','w') as fp:
       fp.write('%d' % (0))
 
@@ -658,6 +659,12 @@ class Controls:
                                                                              self.steer_limited, self.desired_curvature,
                                                                              self.desired_curvature_rate, self.sm['liveLocationKalman'])
       actuators.curvature = self.desired_curvature
+
+      self.curvature_hist.append(self.desired_curvature)
+      if len(self.curvature_hist) > 5:
+        self.curvature_hist.pop(0)
+        with open('/tmp/debug_out_z','w') as fp:
+          fp.write("%+.5f,%+.5f,%+.5f" % (self.curvature_hist[4]-self.curvature_hist[3],self.curvature_hist[3]-self.curvature_hist[2],self.curvature_hist[2]-self.curvature_hist[1]))
     else:
       lac_log = log.ControlsState.LateralDebugState.new_message()
       if self.sm.rcv_frame['testJoystick'] > 0:
