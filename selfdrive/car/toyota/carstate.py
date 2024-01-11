@@ -95,7 +95,7 @@ class CarState(CarStateBase):
         self.curvature_hist.pop(0)
         cVs = [self.curvature_hist[i + 1] - self.curvature_hist[i] for i in range(len(self.curvature_hist) - 1)] #過去のカーブ増加率
         cV = sum(cVs) / len(cVs)
-        dAng = cV / 0.000005 #0.000005で1度増す
+        dAng = cV / 0.00005 #0.00005で1度増す
         if dAng > 5:
           dAng = 5
         elif dAng < -5:
