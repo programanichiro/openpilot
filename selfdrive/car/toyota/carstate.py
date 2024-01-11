@@ -89,20 +89,20 @@ class CarState(CarStateBase):
 
     ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
     if self.flag_47700:
-      #ハンドルは右見回すとマイナス、カーブは右に曲がるとプラス
-      self.curvature_hist.append(actuators.curvature)
-      if len(self.curvature_hist) > 5:
-        self.curvature_hist.pop(0)
-        cVs = [self.curvature_hist[i + 1] - self.curvature_hist[i] for i in range(len(self.curvature_hist) - 1)] #過去のカーブ増加率
-        cV = sum(cVs) / len(cVs)
-        dAng = cV / 0.00005 #0.00005で1度増す
-        if dAng > 5:
-          dAng = 5
-        elif dAng < -5:
-          dAng = -5
-        ret.steeringAngleDeg -= dAng
-        with open('/tmp/debug_out_z','w') as fp:
-          fp.write("%+.2f,d:%+.3f" % (ret.steeringAngleDeg,-dAng))
+      #ハンドルは右に回すとマイナス、カーブは右に曲がるとプラス
+      # self.curvature_hist.append(actuators.curvature)
+      # if len(self.curvature_hist) > 5:
+      #   self.curvature_hist.pop(0)
+      #   cVs = [self.curvature_hist[i + 1] - self.curvature_hist[i] for i in range(len(self.curvature_hist) - 1)] #過去のカーブ増加率
+      #   cV = sum(cVs) / len(cVs)
+      #   dAng = cV / 0.00005 #0.00005で1度増す
+      #   if dAng > 5:
+      #     dAng = 5
+      #   elif dAng < -5:
+      #     dAng = -5
+      #   ret.steeringAngleDeg -= dAng #先読みの角度を与えて、ハンドル回しを打ち消すという考えは合ってそうだ。
+      #   with open('/tmp/debug_out_z','w') as fp:
+      #     fp.write("%+.2f,d:%+.3f" % (ret.steeringAngleDeg,-dAng))
 
         # with open('/tmp/debug_out_z','w') as fp:
         #   fp.write("cv:%+.10f,(%+.10f)\n" % (self.curvature_hist[4] , sum(self.curvature_hist)/len(self.curvature_hist)))
@@ -131,6 +131,7 @@ class CarState(CarStateBase):
       # with open('/tmp/debug_out_v','w') as fp:
       #   fp.write("ct:%d,%+.2f,%+.2f,%+.2f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,angV))
       # ret.steeringAngleDeg += self.prob_ang
+      pass
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 

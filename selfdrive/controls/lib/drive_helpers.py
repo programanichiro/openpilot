@@ -224,16 +224,16 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
 
   if flag_47700 == True and CT_get_lag_adjusted_curvature % 100 == 51:
     try:
-      with open('/tmp/lta_enable_sw.txt','r') as fp: #ひとまずハボタンに連動
-        lta_enable_sw_str = fp.read()
-        if lta_enable_sw_str:
-          lta_enable_sw = int(lta_enable_sw_str)
-          if lta_enable_sw >= 1:
+      with open('/tmp/knight_scanner_disable.txt','r') as fp: #ひとまずナイトスキャナーボタンに連動
+        knight_scanner_disable_str = fp.read()
+        if knight_scanner_disable_str:
+          lknight_scanner_disable = int(knight_scanner_disable_str)
+          if lknight_scanner_disable == 0:
             dc_get_lag_adjusted_curvature = True
           else:
             dc_get_lag_adjusted_curvature = False
     except Exception as e:
-      dc_get_lag_adjusted_curvature = False #デフォルト
+      dc_get_lag_adjusted_curvature = True #デフォルト
   CT_get_lag_adjusted_curvature += 1
   
   k_v = 1.0
