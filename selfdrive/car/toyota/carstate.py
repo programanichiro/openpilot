@@ -92,33 +92,33 @@ class CarState(CarStateBase):
       self.curvature_hist.append(actuators.curvature)
       if len(self.curvature_hist) > 5:
         self.curvature_hist.pop(0)
-        with open('/tmp/debug_out_z','w') as fp:
-          fp.write("cv:%+.10f,(%+.10f)\n" % (self.curvature_hist[4] , sum(self.curvature_hist)/len(self.curvature_hist)))
-          fp.write("%+.8f,%+.8f,%+.8f" % (self.curvature_hist[4]-self.curvature_hist[3],self.curvature_hist[3]-self.curvature_hist[2],self.curvature_hist[2]-self.curvature_hist[1]))
+        # with open('/tmp/debug_out_z','w') as fp:
+        #   fp.write("cv:%+.10f,(%+.10f)\n" % (self.curvature_hist[4] , sum(self.curvature_hist)/len(self.curvature_hist)))
+        #   fp.write("%+.8f,%+.8f,%+.8f" % (self.curvature_hist[4]-self.curvature_hist[3],self.curvature_hist[3]-self.curvature_hist[2],self.curvature_hist[2]-self.curvature_hist[1]))
 
-      # steeringAngleDeg0 = ret.steeringAngleDeg
-      # self.steeringAngleDegs.append(float(steeringAngleDeg0))
-      # angV = 0
-      # #angA = 0
-      # if len(self.steeringAngleDegs) > 17:
-      #   self.steeringAngleDegs.pop(0)
-      #   # 過去17フレーム(0.17秒)の角度から、角速度と角加速度の平均を求める。
-      #   angVs = [self.steeringAngleDegs[i + 1] - self.steeringAngleDegs[i] for i in range(len(self.steeringAngleDegs) - 1)] #過去９回の角速度
-      #   #angAs = [angVs[i + 1] - angVs[i] for i in range(len(angVs) - 1)] #過去８回の角加速度
-      #   angV = sum(angVs) / len(angVs)
-      #   #angA = sum(angAs) / len(angAs)
-      #   self.prob_ang += angV
+      steeringAngleDeg0 = ret.steeringAngleDeg
+      self.steeringAngleDegs.append(float(steeringAngleDeg0))
+      angV = 0
+      #angA = 0
+      if len(self.steeringAngleDegs) > 17:
+        self.steeringAngleDegs.pop(0)
+        # 過去17フレーム(0.17秒)の角度から、角速度と角加速度の平均を求める。
+        angVs = [self.steeringAngleDegs[i + 1] - self.steeringAngleDegs[i] for i in range(len(self.steeringAngleDegs) - 1)] #過去９回の角速度
+        #angAs = [angVs[i + 1] - angVs[i] for i in range(len(angVs) - 1)] #過去８回の角加速度
+        angV = sum(angVs) / len(angVs)
+        #angA = sum(angAs) / len(angAs)
+        self.prob_ang += angV
 
-      # if self.before_ang != ret.steeringAngleDeg:
-      #   self.before_ang_ct = 0
-      #   self.prob_ang = 0
-      # else:
-      #   self.before_ang_ct += 1
-      # # prob_ang = self.before_ang_ct * angV + (self.before_ang_ct-1) * self.before_ang_ct / 2 * angA
-      # self.before_ang = ret.steeringAngleDeg
-      # # with open('/tmp/debug_out_v','w') as fp:
-      # #   fp.write("ct:%d,%+.2f,%+.2f,%+.2f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,angV))
-      # ret.steeringAngleDeg += self.prob_ang
+      if self.before_ang != ret.steeringAngleDeg:
+        self.before_ang_ct = 0
+        self.prob_ang = 0
+      else:
+        self.before_ang_ct += 1
+      # prob_ang = self.before_ang_ct * angV + (self.before_ang_ct-1) * self.before_ang_ct / 2 * angA
+      self.before_ang = ret.steeringAngleDeg
+      # with open('/tmp/debug_out_v','w') as fp:
+      #   fp.write("ct:%d,%+.2f,%+.2f,%+.2f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,angV))
+      ret.steeringAngleDeg += self.prob_ang
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
