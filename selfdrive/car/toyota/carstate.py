@@ -49,12 +49,13 @@ class CarState(CarStateBase):
     self.before_ang_ct = 0
     self.prob_ang = 0
     self.steeringAngleDegs = []
+    self.curvature_hist = []
 
     self.low_speed_lockout = False
     self.acc_type = 1
     self.lkas_hud = {}
 
-  def update(self, cp, cp_cam):
+  def update(self, cp, cp_cam , actuators):
     ret = car.CarState.new_message()
 
     ret.doorOpen = any([cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FR"],
@@ -88,6 +89,13 @@ class CarState(CarStateBase):
 
     ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
     if self.flag_47700:
+      self.curvature_hist.append(actuators.curvature)
+      if len(self.curvature_hist) > 5:
+        self.curvature_hist.pop(0)
+        with open('/tmp/debug_out_z','w') as fp:
+          fp.write("cv:%+.10f,(%+.10f)\n" % (self.curvature_hist[4] , sum(self.curvature_hist)/len(self.curvature_hist)))
+          fp.write("%+.8f,%+.8f,%+.8f" % (self.curvature_hist[4]-self.curvature_hist[3],self.curvature_hist[3]-self.curvature_hist[2],self.curvature_hist[2]-self.curvature_hist[1]))
+
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
       angV = 0

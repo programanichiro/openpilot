@@ -291,8 +291,7 @@ class CarInterface(CarInterfaceBase):
 
   # returns a car.CarState
   def _update(self, c):
-    #c.actuators.curvatureでdesired_curvatureが取れる？
-    ret = self.CS.update(self.cp, self.cp_cam)
+    ret = self.CS.update(self.cp, self.cp_cam , c.actuators)
 
     new_stand_still = False
     # events
