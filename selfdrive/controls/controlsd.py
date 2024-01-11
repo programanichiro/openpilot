@@ -664,6 +664,7 @@ class Controls:
       if len(self.curvature_hist) > 5:
         self.curvature_hist.pop(0)
         with open('/tmp/debug_out_z','w') as fp:
+          fp.write("cv:%+.10f\n" % (self.curvature_hist[4]))
           fp.write("%+.8f,%+.8f,%+.8f" % (self.curvature_hist[4]-self.curvature_hist[3],self.curvature_hist[3]-self.curvature_hist[2],self.curvature_hist[2]-self.curvature_hist[1]))
     else:
       lac_log = log.ControlsState.LateralDebugState.new_message()
