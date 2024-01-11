@@ -1,6 +1,5 @@
 import copy
 import os
-import numpy as np
 
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
@@ -96,7 +95,11 @@ class CarState(CarStateBase):
         self.curvature_hist.pop(0)
         cVs = [self.curvature_hist[i + 1] - self.curvature_hist[i] for i in range(len(self.curvature_hist) - 1)] #過去のカーブ増加率
         cV = sum(cVs) / len(cVs)
-        dAng = np.clip(cV / 0.000005 , -5 , 5) #0.000005で1度増す
+        dAng = cV / 0.000005 #0.000005で1度増す
+        if dAng > 5:
+          dAng = 5
+        elif dAng < -5:
+          dAng = -5
         ret.steeringAngleDeg -= dAng
         with open('/tmp/debug_out_z','w') as fp:
           fp.write("%+.2f,d:%+.3f" % (ret.steeringAngleDeg,-dAng))
