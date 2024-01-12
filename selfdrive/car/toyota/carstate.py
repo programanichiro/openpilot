@@ -145,6 +145,9 @@ class CarState(CarStateBase):
       if len(self.steeringAngleDegs) > 10:
         self.steeringAngleDegs.pop(0)
         #5〜ct〜55 -> 1〜10回の平均
+        l = int(self.before_ang_ct) / 5
+        l = 1 if l < 1 else (l if l < 10 else 10)
+        sum_ang = 0
       # ret.steeringAngleDeg += self.prob_ang
       pass
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
