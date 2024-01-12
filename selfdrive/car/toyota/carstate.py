@@ -131,7 +131,7 @@ class CarState(CarStateBase):
       # with open('/tmp/debug_out_v','w') as fp:
       #   fp.write("ct:%d,%+.2f,%+.2f,%+.2f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,angV))
       # ret.steeringAngleDeg += self.prob_ang
-      if abs(self.before_ang - ret.steeringAngleDeg) > 3:
+      if abs(self.before_ang - ret.steeringAngleDeg) > 3.0/100: #1秒で3度以上
         # ハンドルが大きく動いたら
         self.before_ang_ct *= 0.9
         self.prob_ang *= 0.9
