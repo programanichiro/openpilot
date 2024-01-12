@@ -395,7 +395,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       T2_Button->setFixedHeight(90);
       T2_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(true)));
       QObject::connect(T2_Button, &QPushButton::pressed, [=]() {
-        Knight_scanner = (getButtonInt("/data/knight_scanner_bit3.txt") + 1) % 8;
+        Knight_scanner = (getButtonInt("/data/knight_scanner_bit3.txt",7) + 1) % 8;
         setButtonInt("/data/knight_scanner_bit3.txt",Knight_scanner);
         std::string btn_str = "";
         if(Knight_scanner & 0x1){
