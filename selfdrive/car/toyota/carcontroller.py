@@ -77,7 +77,7 @@ class CarController:
       apply_steer = 0
 
     with open('/tmp/debug_out_z','w') as fp:
-      fp.write("%+.2f,%+.2f,%+.2f" % (apply_steer-CS.out.steeringAngleDeg,apply_steer,CS.out.steeringAngleDeg))
+      fp.write("%+.2f,%+.2f,%+.2f" % (new_steer-CS.out.steeringAngleDeg,new_steer,CS.out.steeringAngleDeg))
     # *** steer angle ***
     if self.CP.steerControlType == SteerControlType.angle:
       # If using LTA control, disable LKA and set steering angle command
