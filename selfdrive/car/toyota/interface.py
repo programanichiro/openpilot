@@ -291,7 +291,7 @@ class CarInterface(CarInterfaceBase):
 
   # returns a car.CarState
   def _update(self, c):
-    ret = self.CS.update(self.cp, self.cp_cam , c.actuators)
+    ret = self.CS.update(self.cp, self.cp_cam)
 
     new_stand_still = False
     # events
