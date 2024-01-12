@@ -45,11 +45,6 @@ class CarState(CarStateBase):
     self.brake_state = False
     self.params = Params()
     self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
-    self.before_ang = 0
-    self.before_ang_ct = 0
-    self.prob_ang = 0
-    self.steeringAngleDegs = []
-    self.curvature_hist = []
 
     self.low_speed_lockout = False
     self.acc_type = 1
