@@ -144,7 +144,7 @@ class CarState(CarStateBase):
       else:
         self.prob_ang *= 0.9
       with open('/tmp/debug_out_v','w') as fp:
-        fp.write("ct:%d,%+.2f,%+.2f,a(%+.3f)" % (int(self.before_ang_ct),ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,self.prob_ang,actuators.steer))
+        fp.write("ct:%d,%+.2f,%+.2f,%+.2f,a(%+.3f)" % (int(self.before_ang_ct),ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,self.prob_ang,actuators.steer))
       # ret.steeringAngleDeg += self.prob_ang
       pass
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
