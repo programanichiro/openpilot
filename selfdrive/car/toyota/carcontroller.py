@@ -1,3 +1,5 @@
+import os
+
 from cereal import car
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, \
@@ -54,6 +56,10 @@ class CarController:
           self.lock_speed = int(lock_speed_str);
     except Exception as e:
       pass
+    self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
+    self.before_ang = 0
+    self.before_ang_ct = 0
+    self.new_steers = []
 
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
@@ -67,6 +73,28 @@ class CarController:
 
     # *** steer torque ***
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
+    if self.flag_47700:
+      if abs(self.before_ang - CS.out.steeringAngleDeg) > 3.0/100: #1秒で3度以上
+        # ハンドルが大きく動いたら
+        self.before_ang_ct *= 0.9
+      else:
+        if self.before_ang_ct < 100:
+          self.before_ang_ct += 1
+      self.before_ang = CS.out.steeringAngleDeg
+
+      new_steer0 = new_steer
+      self.new_steers.append(float(new_steer0))
+      if len(self.new_steers) > 10:
+        self.new_steers.pop(0)
+        #5〜ct〜55 -> 1〜10回の平均
+        l = int(self.before_ang_ct) / 5
+        l = int(1 if l < 1 else (l if l < 10 else 10))
+        sum_steer = 0
+        for i in range(l): #i=0..9
+          sum_steer += self.new_steers[9-i]
+        new_steer = sum_steer / l
+        # with open('/tmp/debug_out_v','w') as fp:
+        #   fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),new_steer,new_steer0,new_steer-new_steer0))
     apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.params)
 
     # >100 degree/sec steering fault prevention
