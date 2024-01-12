@@ -131,29 +131,27 @@ class CarState(CarStateBase):
       # with open('/tmp/debug_out_v','w') as fp:
       #   fp.write("ct:%d,%+.2f,%+.2f,%+.2f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,angV))
       # ret.steeringAngleDeg += self.prob_ang
-      if abs(self.before_ang - ret.steeringAngleDeg) > 3.0/100: #1秒で3度以上
-        # ハンドルが大きく動いたら
-        self.before_ang_ct *= 0.9
-        self.prob_ang *= 0.9
-      else:
-        if self.before_ang_ct < 100:
-          self.before_ang_ct += 1
-      self.before_ang = ret.steeringAngleDeg
+      # if abs(self.before_ang - ret.steeringAngleDeg) > 3.0/100: #1秒で3度以上
+      #   # ハンドルが大きく動いたら
+      #   self.before_ang_ct *= 0.9
+      # else:
+      #   if self.before_ang_ct < 100:
+      #     self.before_ang_ct += 1
+      # self.before_ang = ret.steeringAngleDeg
 
-      steeringAngleDeg0 = ret.steeringAngleDeg
-      self.steeringAngleDegs.append(float(steeringAngleDeg0))
-      if len(self.steeringAngleDegs) > 10:
-        self.steeringAngleDegs.pop(0)
-        #5〜ct〜55 -> 1〜10回の平均
-        l = int(self.before_ang_ct) / 5
-        l = 1 if l < 1 else (l if l < 10 else 10)
-        sum_ang = 0
-        for i in range(int(l)): #i=0..9
-          sum_ang += self.steeringAngleDegs[9-i]
-        ret.steeringAngleDeg = sum_ang / l
-        with open('/tmp/debug_out_v','w') as fp:
-          fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),ret.steeringAngleDeg,steeringAngleDeg0,ret.steeringAngleDeg-steeringAngleDeg0))
-      # ret.steeringAngleDeg += self.prob_ang
+      # steeringAngleDeg0 = ret.steeringAngleDeg
+      # self.steeringAngleDegs.append(float(steeringAngleDeg0))
+      # if len(self.steeringAngleDegs) > 10:
+      #   self.steeringAngleDegs.pop(0)
+      #   #5〜ct〜55 -> 1〜10回の平均
+      #   l = int(self.before_ang_ct) / 5
+      #   l = 1 if l < 1 else (l if l < 10 else 10)
+      #   sum_ang = 0
+      #   for i in range(int(l)): #i=0..9
+      #     sum_ang += self.steeringAngleDegs[9-i]
+      #   ret.steeringAngleDeg = sum_ang / l
+      #   with open('/tmp/debug_out_v','w') as fp:
+      #     fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),ret.steeringAngleDeg,steeringAngleDeg0,ret.steeringAngleDeg-steeringAngleDeg0))
       pass
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
