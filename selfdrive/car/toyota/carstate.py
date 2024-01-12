@@ -148,12 +148,11 @@ class CarState(CarStateBase):
         l = int(self.before_ang_ct) / 5
         l = 1 if l < 1 else (l if l < 10 else 10)
         sum_ang = 0
-        for i in range(9, 10-l-1, -1):
-          sum_ang += 10
-        #   sum_ang += self.steeringAngleDegs[i]
-        # ret.steeringAngleDeg = sum_ang / l
-        # with open('/tmp/debug_out_v','w') as fp:
-        #   fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),ret.steeringAngleDeg,steeringAngleDeg0,ret.steeringAngleDeg-steeringAngleDeg0))
+        for i in range(l): #i=0..9
+          sum_ang += self.steeringAngleDegs[9-i]
+        ret.steeringAngleDeg = sum_ang / l
+        with open('/tmp/debug_out_v','w') as fp:
+          fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),ret.steeringAngleDeg,steeringAngleDeg0,ret.steeringAngleDeg-steeringAngleDeg0))
       # ret.steeringAngleDeg += self.prob_ang
       pass
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
