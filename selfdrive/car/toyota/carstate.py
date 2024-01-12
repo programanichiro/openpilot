@@ -148,7 +148,8 @@ class CarState(CarStateBase):
         l = int(self.before_ang_ct) / 5
         l = 1 if l < 1 else (l if l < 10 else 10)
         sum_ang = 0
-        # for i in range(l): #i=0..9
+        for i in range(l): #i=0..9
+          sum_ang += 3
         #   sum_ang += self.steeringAngleDegs[9-i]
         ret.steeringAngleDeg = sum_ang / l
         with open('/tmp/debug_out_v','w') as fp:
