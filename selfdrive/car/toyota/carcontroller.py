@@ -76,8 +76,6 @@ class CarController:
     if not CC.latActive:
       apply_steer = 0
 
-    with open('/tmp/debug_out_z','w') as fp:
-      fp.write("%+.2f,%+.2f,%+.2f" % (new_steer/self.params.STEER_MAX-CS.out.steeringAngleDeg,new_steer/self.params.STEER_MAX,CS.out.steeringAngleDeg))
     # *** steer angle ***
     if self.CP.steerControlType == SteerControlType.angle:
       # If using LTA control, disable LKA and set steering angle command

@@ -108,6 +108,8 @@ class CarState(CarStateBase):
         #   fp.write("cv:%+.10f,(%+.10f)\n" % (self.curvature_hist[4] , sum(self.curvature_hist)/len(self.curvature_hist)))
         #   fp.write("%+.8f,%+.8f,%+.8f" % (self.curvature_hist[4]-self.curvature_hist[3],self.curvature_hist[3]-self.curvature_hist[2],self.curvature_hist[2]-self.curvature_hist[1]))
 
+      with open('/tmp/debug_out_z','w') as fp:
+        fp.write("%+.3f" % (actuators.steer*1500))
       # steeringAngleDeg0 = ret.steeringAngleDeg
       # self.steeringAngleDegs.append(float(steeringAngleDeg0))
       # angV = 0
