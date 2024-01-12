@@ -224,11 +224,11 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
 
   if flag_47700 == True and CT_get_lag_adjusted_curvature % 100 == 51:
     try:
-      with open('/tmp/knight_scanner_disable.txt','r') as fp: #ひとまずナイトスキャナーボタンに連動
-        knight_scanner_disable_str = fp.read()
-        if knight_scanner_disable_str:
-          lknight_scanner_disable = int(knight_scanner_disable_str)
-          if lknight_scanner_disable == 0:
+      with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ひとまずナイトスキャナーボタンに連動
+        knight_scanner_bit3_str = fp.read()
+        if knight_scanner_bit3_str:
+          knight_scanner_bit3 = int(knight_scanner_bit3_str)
+          if (knight_scanner_bit3 & 0x01) != 0: #1ビット（"⚫︎⚪︎⚪︎"）が点灯で舵力抑制発動
             dc_get_lag_adjusted_curvature = True
           else:
             dc_get_lag_adjusted_curvature = False

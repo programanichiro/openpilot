@@ -325,7 +325,7 @@ const static char *btn_styleb1 = "font-size: 30px; border-width: 0px; color: rgb
 const static char *btn_styleb2 = "font-size: 50px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_styleb3 = "font-size: 40px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
-bool Knight_scanner = true;
+int Knight_scanner = 7;
 int DrivingPsn = 0; //運転傾向
 int Limit_speed_mode = 0; //標識
 ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_btn) : QWidget(parent) {
@@ -367,44 +367,53 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       });
     }
     { //ナイトスキャナー非表示
-      QPushButton *T2_Button = new QPushButton("⚫︎⚫︎⚫︎");
+      // auto interp_color = [=](QColor c1, QColor c2, QColor c3) { //関数内関数の記述例
+      //   return speedLimit > 0 ? interpColor(setSpeed, {speedLimit + 5, speedLimit + 15, speedLimit + 25}, {c1, c2, c3}) : c1;
+      // };
+      // max_color = interp_color(max_color, QColor(0xff, 0xe4, 0xbf), QColor(0xff, 0xbf, 0xbf));
+      Knight_scanner = getButtonInt("/data/knight_scanner_bit3.txt",7);
+      std::string btn_str = "";
+      if(Knight_scanner & 0x1){
+        btn_str += "⚫︎";
+      } else {
+        btn_str += "⚪︎";
+      }
+      if(Knight_scanner & 0x2){
+        btn_str += "⚫︎";
+      } else {
+        btn_str += "⚪︎";
+      }
+      if(Knight_scanner & 0x4){
+        btn_str += "⚫︎";
+      } else {
+        btn_str += "⚪︎";
+      }
+      QPushButton *T2_Button = new QPushButton(btn_str.c_str()); //"⚫︎⚫︎⚫︎"
       btns_layoutBB->addWidget(T2_Button);
       T2_Button->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Fixed);
       T2_Button->setContentsMargins(0, 0, 0, 0);
       T2_Button->setFixedHeight(90);
       T2_Button->setStyleSheet(QString(btn_styleb).arg(mButtonColors.at(true)));
-      Knight_scanner = getButtonEnabled("/data/knight_scanner_disable.txt");
       QObject::connect(T2_Button, &QPushButton::pressed, [=]() {
-        Knight_scanner = !getButtonEnabled("/data/knight_scanner_disable.txt");
-        setButtonEnabled("/data/knight_scanner_disable.txt",Knight_scanner);
-#if 0
+        Knight_scanner = (getButtonInt("/data/knight_scanner_bit3.txt") + 1) % 8;
+        setButtonInt("/data/knight_scanner_bit3.txt",Knight_scanner);
         std::string btn_str = "";
-        std::string txt0 = util::read_file("/tmp/camera0_info.txt");
-        if(txt0 == "8"){
-          btn_str += "⚪︎";
-        } else if(txt0 == "9"){
+        if(Knight_scanner & 0x1){
           btn_str += "⚫︎";
         } else {
-          btn_str += "✖︎";
-        }
-        std::string txt1 = util::read_file("/tmp/camera1_info.txt");
-        if(txt1 == "8"){
           btn_str += "⚪︎";
-        } else if(txt1 == "9"){
+        }
+        if(Knight_scanner & 0x2){
           btn_str += "⚫︎";
         } else {
-          btn_str += "✖︎";
-        }
-        std::string txt2 = util::read_file("/tmp/camera2_info.txt");
-        if(txt2 == "8"){
           btn_str += "⚪︎";
-        } else if(txt2 == "9"){
+        }
+        if(Knight_scanner & 0x4){
           btn_str += "⚫︎";
         } else {
-          btn_str += "✖︎";
+          btn_str += "⚪︎";
         }
-        T2_Button->setText(btn_str.c_str()); //⚫︎⚫︎⚫︎(OX) , ⚪︎⚪︎⚪︎(AR) , ✖︎✖︎✖︎(カメラ不明)
-#endif
+        T2_Button->setText(btn_str.c_str());
         if(Knight_scanner){
           soundPipo();
         } else {
@@ -2250,7 +2259,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       if(left_blinker || right_blinker){
         p.drawRect(rect_w * i / (n-1), h_pos - lane_change_height, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
       } else {
-        if(Knight_scanner == false){
+        if(Knight_scanner == 0){
           continue;
         }
         //ポリゴンで表示。
