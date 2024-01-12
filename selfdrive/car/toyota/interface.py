@@ -59,7 +59,7 @@ class CarInterface(CarInterfaceBase):
           CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.2)
       if '1131d250d405' in os.environ['DONGLE_ID'] or ret.steerActuatorDelay == 0.25: #0.25のTSSP車もsteering_angle_deadzone_deg=0.05とする。
         #自分はパワステモーター47700(8965B47060)でバッドアングルセンサー、ret.steerActuatorDelayは0.12のままsteering_angle_deadzone_deg=0.1とする。角度表示すると0.1の精度は出ている
-        CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.05) #0.1未満の角度をエミュレートして、steering_angle_deadzone_degをさらに小さくする。
+        CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.1) #やはりこのくらいがいい？
 
     elif candidate == CAR.PRIUS_V:
       stop_and_go = True
