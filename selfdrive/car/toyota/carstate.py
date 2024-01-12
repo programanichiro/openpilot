@@ -108,8 +108,6 @@ class CarState(CarStateBase):
         #   fp.write("cv:%+.10f,(%+.10f)\n" % (self.curvature_hist[4] , sum(self.curvature_hist)/len(self.curvature_hist)))
         #   fp.write("%+.8f,%+.8f,%+.8f" % (self.curvature_hist[4]-self.curvature_hist[3],self.curvature_hist[3]-self.curvature_hist[2],self.curvature_hist[2]-self.curvature_hist[1]))
 
-      with open('/tmp/debug_out_z','w') as fp:
-        fp.write("%+.3f" % (actuators.steer*1500))
       # steeringAngleDeg0 = ret.steeringAngleDeg
       # self.steeringAngleDegs.append(float(steeringAngleDeg0))
       # angV = 0
@@ -133,19 +131,20 @@ class CarState(CarStateBase):
       # with open('/tmp/debug_out_v','w') as fp:
       #   fp.write("ct:%d,%+.2f,%+.2f,%+.2f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,angV))
       # ret.steeringAngleDeg += self.prob_ang
-      # if abs(self.before_ang - ret.steeringAngleDeg) > 3:
-      #   # ハンドルが大きく動いたら
-      #   self.before_ang_ct *= 0.9
-      #   self.prob_ang *= 0.9
-      # else:
-      #   if self.before_ang_ct < 100:
-      #     self.before_ang_ct += 1
-      # if self.before_ang_ct > 10:
-      #   self.prob_ang = apply_???
-      # else:
-      #   self.prob_ang *= 0.9
-      # with open('/tmp/debug_out_v','w') as fp:
-      #   fp.write("ct:%.1f,%+.2f,%+.2f" % (self.before_ang_ct,ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,self.prob_ang))
+      if abs(self.before_ang - ret.steeringAngleDeg) > 3:
+        # ハンドルが大きく動いたら
+        self.before_ang_ct *= 0.9
+        self.prob_ang *= 0.9
+      else:
+        if self.before_ang_ct < 100:
+          self.before_ang_ct += 1
+      self.before_ang = ret.steeringAngleDeg
+      if self.before_ang_ct > 10:
+        self.prob_ang = actuators.steer * 10
+      else:
+        self.prob_ang *= 0.9
+      with open('/tmp/debug_out_v','w') as fp:
+        fp.write("ct:%d,%+.2f,%+.2f,a(%+.3)" % (int(self.before_ang_ct),ret.steeringAngleDeg,ret.steeringAngleDeg+self.prob_ang,self.prob_ang,actuators.steer))
       # ret.steeringAngleDeg += self.prob_ang
       pass
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
