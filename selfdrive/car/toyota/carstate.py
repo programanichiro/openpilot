@@ -152,7 +152,7 @@ class CarState(CarStateBase):
           sum_ang += self.steeringAngleDegs[i]
         ret.steeringAngleDeg = sum_ang / l
         with open('/tmp/debug_out_v','w') as fp:
-          fp.write("ct:%d,%+.2f/%+.2f" % (int(l),ret.steeringAngleDeg,steeringAngleDeg0))
+          fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),ret.steeringAngleDeg,steeringAngleDeg0,ret.steeringAngleDeg-steeringAngleDeg0))
       # ret.steeringAngleDeg += self.prob_ang
       pass
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
