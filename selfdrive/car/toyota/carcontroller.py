@@ -111,10 +111,13 @@ class CarController:
         self.new_steers.pop(0)
         #5〜ct〜55 -> 1〜10回の平均
         l = int(self.before_ang_ct) / 5
-        l = int(1 if l < 1 else (l if l < 10 else 10))
-        apply_steer = sum(self.new_steers[10-l:10]) / l
+        l = 1 if l < 1 else (l if l < 10 else 10)
+        sum_steer = 0
+        for i in range(int(l)): #i=0..9
+          sum_steer += self.new_steers[9-i]
+        apply_steer = sum_steer / int(l)
         with open('/tmp/debug_out_v','w') as fp:
-          fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (l,apply_steer,new_steer0,apply_steer-new_steer0))
+          fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),apply_steer,new_steer0,apply_steer-new_steer0))
     self.last_steer = apply_steer
 
     # toyota can trace shows STEERING_LKA at 42Hz, with counter adding alternatively 1 and 2;
