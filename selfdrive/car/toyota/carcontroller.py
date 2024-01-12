@@ -10,11 +10,14 @@ from opendbc.can.packer import CANPacker
 
 SteerControlType = car.CarParams.SteerControlType
 VisualAlert = car.CarControl.HUDControl.VisualAlert
+LongCtrlState = car.CarControl.Actuators.LongControlState
 
 # LKA limits
 # EPS faults if you apply torque while the steering rate is above 100 deg/s for too long
 MAX_STEER_RATE = 100  # deg/s
 MAX_STEER_RATE_FRAMES = 18  # tx control frames needed before torque can be cut
+# MAX_STEER_RATE = 105  # これを現車で耐えられる可能な限り上げる
+# MAX_STEER_RATE_FRAMES = 25 # こちらも耐えられる可能な限り上げる？
 
 # EPS allows user torque above threshold for 50 frames before permanently faulting
 MAX_USER_TORQUE = 500
@@ -41,17 +44,55 @@ class CarController:
     self.gas = 0
     self.accel = 0
 
+    self.now_gear = car.CarState.GearShifter.park
+    self.lock_flag = False
+    self.lock_speed = 0
+    try:
+      with open('../../../run_auto_lock.txt','r') as fp:
+        lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        if lock_speed_str:
+          self.lock_speed = int(lock_speed_str);
+    except Exception as e:
+      pass
+    #self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
+    self.before_ang = 0
+    self.before_ang_ct = 0
+    self.new_steers = []
+
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
     hud_control = CC.hudControl
     pcm_cancel_cmd = CC.cruiseControl.cancel
     lat_active = CC.latActive and abs(CS.out.steeringTorque) < MAX_USER_TORQUE
+    stopping = actuators.longControlState == LongCtrlState.stopping
 
     # *** control msgs ***
     can_sends = []
 
     # *** steer torque ***
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
+    if self.CP.carFingerprint not in TSS2_CAR:
+      if abs(self.before_ang - CS.out.steeringAngleDeg) > 3.0/100: #1秒で3度以上
+        # ハンドルが大きく動いたら
+        self.before_ang_ct *= 0.9
+      else:
+        if self.before_ang_ct < 100:
+          self.before_ang_ct += 1
+      self.before_ang = CS.out.steeringAngleDeg
+
+      new_steer0 = new_steer
+      self.new_steers.append(float(new_steer0))
+      if len(self.new_steers) > 10:
+        self.new_steers.pop(0)
+        #5〜ct〜55 -> 1〜10回の平均
+        l = int(self.before_ang_ct) / 5
+        l = int(1 if l < 1 else (l if l < 10 else 10))
+        sum_steer = 0
+        for i in range(l): #i=0..9
+          sum_steer += self.new_steers[9-i]
+        new_steer = sum_steer / l
+        # with open('/tmp/debug_out_v','w') as fp:
+        #   fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),new_steer,new_steer0,new_steer-new_steer0))
     apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.params)
 
     # >100 degree/sec steering fault prevention
@@ -114,7 +155,32 @@ class CarController:
       interceptor_gas_cmd = clip(pedal_command, 0., MAX_INTERCEPTOR_GAS)
     else:
       interceptor_gas_cmd = 0.
-    pcm_accel_cmd = clip(actuators.accel, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
+
+    # NO_STOP_TIMER_CAR will creep if compensation is applied when stopping or stopped, don't compensate when stopped or stopping
+    should_compensate = True
+    if self.CP.carFingerprint in NO_STOP_TIMER_CAR and ((CS.out.vEgo <  1e-3 and actuators.accel < 1e-3) or stopping):
+      should_compensate = False
+    if CC.longActive and should_compensate:
+      accel_offset = CS.pcm_neutral_force / self.CP.mass
+    else:
+      accel_offset = 0.
+    if CC.longActive:
+      pcm_accel_cmd = clip(actuators.accel + accel_offset, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
+    else:
+      pcm_accel_cmd = 0.
+
+    actuators_accel = actuators.accel
+    try:
+      with open('/tmp/cruise_info.txt','r') as fp:
+        cruise_info_str = fp.read()
+        if cruise_info_str:
+          if cruise_info_str == "1" or cruise_info_str == ",1":
+            if actuators_accel > 0:
+              actuators_accel = 0
+            if pcm_accel_cmd > 0:
+              pcm_accel_cmd = 0
+    except Exception as e:
+      pass
 
     # TODO: probably can delete this. CS.pcm_acc_status uses a different signal
     # than CS.cruiseState.enabled. confirm they're not meaningfully different
@@ -122,7 +188,7 @@ class CarController:
       pcm_cancel_cmd = 1
 
     # on entering standstill, send standstill request
-    if CS.out.standstill and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor):
+    if CS.out.standstill and not self.CP.openpilotLongitudinalControl and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR or self.CP.enableGasInterceptor):
       self.standstill_req = True
     if CS.pcm_acc_status != 8:
       # pcm entered standstill or it's disabled
@@ -133,6 +199,17 @@ class CarController:
     # handle UI messages
     fcw_alert = hud_control.visualAlert == VisualAlert.fcw
     steer_alert = hud_control.visualAlert in (VisualAlert.steerRequired, VisualAlert.ldw)
+    
+    if self.lock_speed > 0: #auto door lock , unlock
+      gear = CS.out.gearShifter
+      if self.now_gear != gear or (CS.out.doorOpen and self.lock_flag == True): #ギアが変わるか、ドアが開くか。
+        if gear == car.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
+          can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+        self.lock_flag = False #ドアが空いてもフラグはおろす。
+      elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
+        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+        self.lock_flag = True
+      self.now_gear = gear
 
     # we can spam can to cancel the system even if we are using lat only control
     if (self.frame % 3 == 0 and self.CP.openpilotLongitudinalControl) or pcm_cancel_cmd:
@@ -142,10 +219,13 @@ class CarController:
       if pcm_cancel_cmd and self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
         can_sends.append(toyotacan.create_acc_cancel_command(self.packer))
       elif self.CP.openpilotLongitudinalControl:
-        can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type, fcw_alert))
+      # can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type, fcw_alert, CS.lead_dist_button))
+        can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, actuators_accel, pcm_cancel_cmd,
+                                                        self.standstill_req, lead, CS.acc_type, fcw_alert, hud_control.leadVisible, CS.lead_dist_button))
         self.accel = pcm_accel_cmd
       else:
-        can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False))
+      # can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False, CS.lead_dist_button))
+        can_sends.append(toyotacan.create_accel_command(self.packer, 0, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False, False, CS.lead_dist_button))
 
     if self.frame % 2 == 0 and self.CP.enableGasInterceptor and self.CP.openpilotLongitudinalControl:
       # send exactly zero if gas cmd is zero. Interceptor will send the max between read value and gas cmd.
