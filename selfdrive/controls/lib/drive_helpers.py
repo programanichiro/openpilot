@@ -1,11 +1,11 @@
 import math
-import os
 
 from cereal import car, log
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
+from openpilot.selfdrive.car.toyota.values import ToyotaFlags
 
 # WARNING: this value was determined based on the model's training distribution,
 #          model predictions above this speed can be unpredictable
@@ -39,10 +39,6 @@ MAX_LATERAL_JERK = 5.0
 # k_vs_org = [0   , 0.01, 0.05]
 # k2_vs =     [1.0, 1.0  , 1.0] #TSS2用減少補正。 舵力減少させないでテスト。
 # k2_vs_org = [0  , 0.033, 0.05]
-try:
-  flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
-except Exception as e:
-  flag_47700 = False #ビルド時にlong_mpc.pyが呼ばれて失敗する対策。
 k_vs_47700 =     [1.0, 0.95, 0.85, 0.80 ] #47700用減少補正。
 k_vs_org_47700 = [0  , 0.01, 0.02, 0.035]
 with open('/tmp/curvature_info.txt','w') as fp:
@@ -222,7 +218,9 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
     except Exception as e:
       pass
 
-  if flag_47700 == True and CT_get_lag_adjusted_curvature % 100 == 51:
+  flag_47700 = CP.flags & ToyotaFlags.POWER_STEERING_47700.value
+
+  if flag_47700 and CT_get_lag_adjusted_curvature % 100 == 51:
     try:
       with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ひとまずナイトスキャナーボタンに連動
         knight_scanner_bit3_str = fp.read()
@@ -238,7 +236,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
   
   k_v = 1.0
   org_desired_curvature = desired_curvature
-  if flag_47700 == True and dc_get_lag_adjusted_curvature == True:
+  if flag_47700 and dc_get_lag_adjusted_curvature == True:
     #自分だけのスペシャル処理
     k_v = interp(abs(desired_curvature) , k_vs_org_47700 , k_vs_47700)
     desired_curvature_rate *= k_v

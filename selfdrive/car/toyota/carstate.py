@@ -44,7 +44,7 @@ class CarState(CarStateBase):
 
     self.brake_state = False
     self.params = Params()
-    self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
+    self.flag_47700 = True if CP.flags & ToyotaFlags.POWER_STEERING_47700.value else False
     self.before_ang = 0
     self.before_ang_ct = 0
     self.prob_ang = 0
@@ -110,7 +110,7 @@ class CarState(CarStateBase):
       # angA = 0
       if len(self.steeringAngleDegs) > 13:
         self.steeringAngleDegs.pop(0)
-        # 過去17フレーム(0.17秒)の角度から、角速度と角加速度の平均を求める。
+        # 過去13フレーム(0.13秒)の角度から、角速度と角加速度の平均を求める。
         angVs = [self.steeringAngleDegs[i + 1] - self.steeringAngleDegs[i] for i in range(len(self.steeringAngleDegs) - 1)] #過去９回の角速度
         # angAs = [angVs[i + 1] - angVs[i] for i in range(len(angVs) - 1)] #過去８回の角加速度
         angV = sum(angVs) / len(angVs)
