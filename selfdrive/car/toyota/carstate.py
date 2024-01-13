@@ -118,8 +118,8 @@ class CarState(CarStateBase):
         if self.before_ang != ret.steeringAngleDeg:
           self.prob_ang = 0
         self.before_ang = ret.steeringAngleDeg
-        with open('/tmp/debug_out_v','w') as fp:
-          fp.write("%+.2f(%+.2f),%+.2f/%+.2f" % (ret.steeringAngleDeg+self.prob_ang+prob_ang2,self.prob_ang+prob_ang2,angV,angA))
+        # with open('/tmp/debug_out_v','w') as fp:
+        #   fp.write("%+.2f(%+.2f),%+.2f/%+.2f" % (ret.steeringAngleDeg+self.prob_ang+prob_ang2,self.prob_ang+prob_ang2,angV,angA))
         ret.steeringAngleDeg += self.prob_ang + prob_ang2 #未来推定と現時点高精細処理を同時に行う。
 
     can_gear = int(cp.vl["GEAR_PACKET"]["GEAR"])
