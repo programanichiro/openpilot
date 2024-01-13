@@ -46,7 +46,6 @@ class CarState(CarStateBase):
     self.params = Params()
     self.flag_47700 = True if CP.flags & ToyotaFlags.POWER_STEERING_47700.value else False
     self.before_ang = 0
-    self.before_ang_ct = 0
     self.prob_ang = 0
     self.steeringAngleDegs = []
 
@@ -106,8 +105,6 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint not in TSS2_CAR:
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
-      angV = 0
-      angA = 0
       if len(self.steeringAngleDegs) > 13:
         self.steeringAngleDegs.pop(0)
         # 過去13フレーム(0.13秒)の角度から、角速度と角加速度の平均を求める。
@@ -115,19 +112,15 @@ class CarState(CarStateBase):
         angAs = [angVs[i + 1] - angVs[i] for i in range(len(angVs) - 1)]
         angV = sum(angVs) / len(angVs)
         angA = sum(angAs) / len(angAs)
-        # self.prob_ang += angV
+        self.prob_ang += angV
         prob_ct = 10 # 0.1秒先の未来を推定。
-        self.prob_ang = prob_ct * angV + (prob_ct-1) * prob_ct / 2 * angA
-
-      # if self.before_ang != ret.steeringAngleDeg:
-      #   self.before_ang_ct = 0
-      #   self.prob_ang = 0
-      # else:
-      #   self.before_ang_ct += 1
-      # self.before_ang = ret.steeringAngleDeg
-      with open('/tmp/debug_out_v','w') as fp:
-        fp.write("%+.2f(%+.2f),%+.2f/%+.2f" % (ret.steeringAngleDeg+self.prob_ang,self.prob_ang,angV,angA))
-      ret.steeringAngleDeg += self.prob_ang
+        prob_ang2 = prob_ct * angV + (prob_ct-1) * prob_ct / 2 * angA
+        if self.before_ang != ret.steeringAngleDeg:
+          self.prob_ang = 0
+        self.before_ang = ret.steeringAngleDeg
+        with open('/tmp/debug_out_v','w') as fp:
+          fp.write("%+.2f(%+.2f),%+.2f/%+.2f" % (ret.steeringAngleDeg+self.prob_ang+prob_ang2,self.prob_ang+prob_ang2,angV,angA))
+        ret.steeringAngleDeg += self.prob_ang + prob_ang2 #未来推定と現時点高精細処理を同時に行う。
 
     can_gear = int(cp.vl["GEAR_PACKET"]["GEAR"])
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(can_gear, None))
