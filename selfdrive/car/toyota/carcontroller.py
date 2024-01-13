@@ -54,7 +54,6 @@ class CarController:
           self.lock_speed = int(lock_speed_str);
     except Exception as e:
       pass
-    #self.flag_47700 = ('1131d250d405' in os.environ['DONGLE_ID'])
     self.before_ang = 0
     self.before_ang_ct = 0
     self.new_steers = []
@@ -71,7 +70,7 @@ class CarController:
 
     # *** steer torque ***
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
-    if self.CP.carFingerprint not in TSS2_CAR:
+    if False: #self.CP.carFingerprint not in TSS2_CAR:
       if abs(self.before_ang - CS.out.steeringAngleDeg) > 3.0/100: #1秒で3度以上
         # ハンドルが大きく動いたら
         self.before_ang_ct *= 0.9
