@@ -106,6 +106,16 @@ class CarState(CarStateBase):
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
       self.accurate_steer_angle_seen = (not self.flag_47700) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
 
+    # steeringAngleDeg_ = ret.steeringAngleDeg
+    if self.accurate_steer_angle_seen:
+      # Offset seems to be invalid for large steering angles and high angle rates
+      if abs(ret.steeringAngleDeg) < 90 and abs(ret.steeringRateDeg) < 100 and cp.can_valid:
+        self.angle_offset.update(torque_sensor_angle_deg - ret.steeringAngleDeg)
+
+      if self.angle_offset.initialized:
+        ret.steeringAngleOffsetDeg = self.angle_offset.x
+        ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
+
     if self.CP.carFingerprint not in TSS2_CAR: # knight_scanner_bit3.txt 未割り当て
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
@@ -125,19 +135,9 @@ class CarState(CarStateBase):
         # with open('/tmp/debug_out_v','w') as fp:
         #   fp.write("%+.2f(%+.2f),%+.2f/%+.2f" % (ret.steeringAngleDeg+self.prob_ang+prob_ang2,self.prob_ang+prob_ang2,angV,angA))
         ret.steeringAngleDeg += self.prob_ang + prob_ang2 #未来推定と現時点高精細処理を同時に行う。
-    steeringAngleDeg_ = ret.steeringAngleDeg
-
-    if self.accurate_steer_angle_seen:
-      # Offset seems to be invalid for large steering angles and high angle rates
-      if abs(ret.steeringAngleDeg) < 90 and abs(ret.steeringRateDeg) < 100 and cp.can_valid:
-        self.angle_offset.update(torque_sensor_angle_deg - ret.steeringAngleDeg)
-
-      if self.angle_offset.initialized:
-        ret.steeringAngleOffsetDeg = self.angle_offset.x
-        ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
-
-    with open('/tmp/debug_out_o','w') as fp:
-      fp.write("%+.3f/%+.4f" % (steeringAngleDeg_ , ret.steeringAngleDeg))
+        
+    # with open('/tmp/debug_out_o','w') as fp:
+    #   fp.write("%+.3f/%+.4f" % (steeringAngleDeg_ , ret.steeringAngleDeg))
     can_gear = int(cp.vl["GEAR_PACKET"]["GEAR"])
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(can_gear, None))
     ret.leftBlinker = cp.vl["BLINKERS_STATE"]["TURN_SIGNALS"] == 1
