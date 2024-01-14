@@ -99,11 +99,10 @@ class CarState(CarStateBase):
     ret.standstill = ret.vEgoRaw == 0
 
     ret.steeringAngleDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_ANGLE"] + cp.vl["STEER_ANGLE_SENSOR"]["STEER_FRACTION"]
+    steeringAngleDeg_ = ret.steeringAngleDeg
     ret.steeringRateDeg = cp.vl["STEER_ANGLE_SENSOR"]["STEER_RATE"]
     torque_sensor_angle_deg = cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE"]
 
-    with open('/tmp/debug_out_o','w') as fp:
-      fp.write("%+.2f/%+.3f" % (ret.steeringAngleDeg , torque_sensor_angle_deg))
     # On some cars, the angle measurement is non-zero while initializing
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
       self.accurate_steer_angle_seen = (not self.flag_47700) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
@@ -117,6 +116,8 @@ class CarState(CarStateBase):
         ret.steeringAngleOffsetDeg = self.angle_offset.x
         ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
 
+    with open('/tmp/debug_out_o','w') as fp:
+      fp.write("%+.2f/%+.4f(%+.4f)" % (steeringAngleDeg_ , ret.steeringAngleDeg, torque_sensor_angle_deg))
     if self.CP.carFingerprint not in TSS2_CAR: # knight_scanner_bit3.txt 未割り当て
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
