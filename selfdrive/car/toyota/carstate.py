@@ -61,9 +61,9 @@ class CarState(CarStateBase):
         with open('/tmp/knight_scanner_bit3.txt','r') as fp:
           knight_scanner_bit3_str = fp.read()
           if knight_scanner_bit3_str:
-            ret.knight_scanner_bit3  = int(knight_scanner_bit3_str)
+            self.knight_scanner_bit3  = int(knight_scanner_bit3_str)
       except Exception as e:
-        ret.knight_scanner_bit3  = 7 #デフォ
+        self.knight_scanner_bit3  = 7 #デフォ
         # ⚫︎⚪︎⚪︎　47700用舵力抑制,2024/1/13
         # ⚪︎⚫︎⚪︎　new_steer平滑化,2024/1/14
         # ⚪︎⚪︎⚫︎　accurate_steer_angle_seenを無効化,2024/1/14
@@ -103,7 +103,7 @@ class CarState(CarStateBase):
 
     # On some cars, the angle measurement is non-zero while initializing
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
-      self.accurate_steer_angle_seen = (not self.flag_47700) if (ret.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
+      self.accurate_steer_angle_seen = (not self.flag_47700) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
       with open('/tmp/debug_out_o','w') as fp:
         fp.write("%d" % (self.accurate_steer_angle_seen))
 
