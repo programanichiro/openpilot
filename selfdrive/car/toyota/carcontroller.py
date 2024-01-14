@@ -70,7 +70,7 @@ class CarController:
 
     # *** steer torque ***
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
-    if self.CP.carFingerprint not in TSS2_CAR:
+    if (self.CP.carFingerprint not in TSS2_CAR) and (CS.knight_scanner_bit3 & 0x02): # knight_scanner_bit3.txt ⚪︎⚫︎⚪︎
       if abs(self.before_ang - CS.out.steeringAngleDeg) > 3.0/100: #1秒で3度以上
         # ハンドルが大きく動いたら
         self.before_ang_ct *= 0.9

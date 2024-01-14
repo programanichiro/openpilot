@@ -362,6 +362,7 @@ class CarStateBase(ABC):
     self.lead_dist_button = 0
     self.lead_dist_lines = 0
     self.lead_dist_lines_init = False
+    self.knight_scanner_bit3 = 0 # carstate.updateで knight_scanner_bit3.txt が反映される
 
   def update_speed_kf(self, v_ego_raw):
     if abs(v_ego_raw - self.v_ego_kf.x[0][0]) > 2.0:  # Prevent large accelerations when car starts at non zero speed

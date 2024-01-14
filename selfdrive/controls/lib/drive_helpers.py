@@ -222,7 +222,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures, curvature_rates):
 
   if flag_47700 and CT_get_lag_adjusted_curvature % 100 == 51:
     try:
-      with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ひとまずナイトスキャナーボタンに連動
+      with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ナイトスキャナーボタン ⚫︎⚪︎⚪︎ で有効
         knight_scanner_bit3_str = fp.read()
         if knight_scanner_bit3_str:
           knight_scanner_bit3 = int(knight_scanner_bit3_str)

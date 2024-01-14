@@ -48,6 +48,7 @@ class CarState(CarStateBase):
     self.before_ang = 0
     self.prob_ang = 0
     self.steeringAngleDegs = []
+    self.knight_scanner_bit3_ct = 0
 
     self.low_speed_lockout = False
     self.acc_type = 1
@@ -55,7 +56,18 @@ class CarState(CarStateBase):
 
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
-
+    if self.knight_scanner_bit3_ct == 0:
+      try:
+        with open('/tmp/knight_scanner_bit3.txt','r') as fp:
+          knight_scanner_bit3_str = fp.read()
+          if knight_scanner_bit3_str:
+            ret.knight_scanner_bit3  = int(knight_scanner_bit3_str)
+      except Exception as e:
+        ret.knight_scanner_bit3  = 7 #デフォ
+        # ⚫︎⚪︎⚪︎　47700用舵力抑制,2024/1/13
+        # ⚪︎⚫︎⚪︎　new_steer平滑化,2024/1/14
+        # ⚪︎⚪︎⚫︎　accurate_steer_angle_seenを無効化,2024/1/14
+    self.knight_scanner_bit3_ct = (self.knight_scanner_bit3_ct + 1) % 101
     ret.doorOpen = any([cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FR"],
                         cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RR"]])
     ret.seatbeltUnlatched = cp.vl["BODY_CONTROL_STATE"]["SEATBELT_DRIVER_UNLATCHED"] != 0
@@ -91,7 +103,7 @@ class CarState(CarStateBase):
 
     # On some cars, the angle measurement is non-zero while initializing
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
-      self.accurate_steer_angle_seen = not self.flag_47700 #True , 自分だけFalseにする
+      self.accurate_steer_angle_seen = (not self.flag_47700) if (ret.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
 
     if self.accurate_steer_angle_seen:
       # Offset seems to be invalid for large steering angles and high angle rates
@@ -102,7 +114,7 @@ class CarState(CarStateBase):
         ret.steeringAngleOffsetDeg = self.angle_offset.x
         ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
 
-    if self.CP.carFingerprint not in TSS2_CAR:
+    if self.CP.carFingerprint not in TSS2_CAR: # knight_scanner_bit3.txt 未割り当て
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
       if len(self.steeringAngleDegs) > 13:
