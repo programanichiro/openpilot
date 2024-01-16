@@ -116,7 +116,7 @@ class CarState(CarStateBase):
         ret.steeringAngleOffsetDeg = self.angle_offset.x
         ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
 
-    if self.CP.carFingerprint not in TSS2_CAR and self.accurate_steer_angle_seen == False: # knight_scanner_bit3.txt 未割り当て
+    if self.CP.carFingerprint not in TSS2_CAR: # knight_scanner_bit3.txt 未割り当て
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
       if len(self.steeringAngleDegs) > 13:
@@ -129,7 +129,7 @@ class CarState(CarStateBase):
         self.prob_ang += angV
         prob_ct = 10 # 0.1秒先の未来を推定。
         prob_ang2 = prob_ct * angV + (prob_ct-1) * prob_ct / 2 * angA
-        if self.before_ang != ret.steeringAngleDeg:
+        if self.before_ang != ret.steeringAngleDeg or self.accurate_steer_angle_seen:
           self.prob_ang = 0
         self.before_ang = ret.steeringAngleDeg
         # with open('/tmp/debug_out_v','w') as fp:
