@@ -116,6 +116,10 @@ class CarState(CarStateBase):
         ret.steeringAngleOffsetDeg = self.angle_offset.x
         ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
 
+    self.steeringAngleDegOrg = ret.steeringAngleDeg #回転先予想する前のオリジナル値
+    if (self.knight_scanner_bit3_ct & 0x3) == 1:
+      with open('/tmp/steer_ang_info.txt','w') as fp:
+       fp.write('%f' % (self.steeringAngleDegOrg))
     if self.CP.carFingerprint not in TSS2_CAR: # knight_scanner_bit3.txt 未割り当て
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
