@@ -757,7 +757,7 @@ class LongitudinalPlanner:
         fp.write('%d' % (limit_vc))
     # if True: #CVS_FRAME % 5 == 1:
     #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
-    #   with open('/tmp/steer_ang_info.txt','w') as fp:
+    #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
     #    fp.write('%f' % (steerAng))
     #    #fp.write('%f' % (-max_yp / 2.5))
     if CVS_FRAME % 5 == 0:
