@@ -621,7 +621,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 }
 
 //static bool g_stand_still;
-int limit_speed_auto_detect; //onroad.ccから参照あり
+extern int limit_speed_auto_detect;
 int limit_speed_num;
 
 void MapLimitspeed::updateLimitspeed(int map_width) {
