@@ -66,7 +66,7 @@ class CarState(CarStateBase):
         # self.knight_scanner_bit3  = 7 #ここでデフォ設定はしない、値を継続させるため。
         # ⚫︎⚪︎⚪︎　47700用舵力抑制,2024/1/13
         # ⚪︎⚫︎⚪︎　new_steer平滑化,2024/1/14
-        # ⚪︎⚪︎⚫︎　accurate_steer_angle_seenを無効化,2024/1/14
+        # ⚪︎⚪︎⚫︎　ハンドル高精細化未来予想2024/1/19
         pass
     self.knight_scanner_bit3_ct = (self.knight_scanner_bit3_ct + 1) % 101
     ret.doorOpen = any([cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FR"],
@@ -104,7 +104,8 @@ class CarState(CarStateBase):
 
     # On some cars, the angle measurement is non-zero while initializing
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
-      self.accurate_steer_angle_seen = (not self.flag_47700) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
+      # self.accurate_steer_angle_seen = (not self.flag_47700) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
+      self.accurate_steer_angle_seen = True #あれば常にグッドアングルセンサーを使う
 
     # steeringAngleDeg_ = ret.steeringAngleDeg
     if self.accurate_steer_angle_seen:
@@ -120,7 +121,8 @@ class CarState(CarStateBase):
     if (self.knight_scanner_bit3_ct & 0x3) == 1:
       with open('/tmp/steer_ang_info.txt','w') as fp:
        fp.write('%f' % (self.steeringAngleDegOrg))
-    if self.CP.carFingerprint not in TSS2_CAR: # knight_scanner_bit3.txt 未割り当て
+    # if self.CP.carFingerprint not in TSS2_CAR:
+    if (self.knight_scanner_bit3 & 0x04): # knight_scanner_bit3.txt ⚪︎⚪︎⚫︎をONで有効
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
       if len(self.steeringAngleDegs) > 13:
