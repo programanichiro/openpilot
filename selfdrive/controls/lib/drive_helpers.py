@@ -202,7 +202,6 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures):
   psi = interp(delay, ModelConstants.T_IDXS[:CONTROL_N], psis)
   average_curvature_desired = psi / (v_ego * delay)
   desired_curvature = 2 * average_curvature_desired - current_curvature_desired
-  desired_curvature_rate = curvature_rates[0]
 
   global tss_type,CT_get_lag_adjusted_curvature,dc_get_lag_adjusted_curvature
   if tss_type == 0:
@@ -238,7 +237,6 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures):
   if flag_47700 and dc_get_lag_adjusted_curvature == True:
     #自分だけのスペシャル処理
     k_v = interp(abs(desired_curvature) , k_vs_org_47700 , k_vs_47700)
-    desired_curvature_rate *= k_v
     desired_curvature *= k_v
 
   if CT_get_lag_adjusted_curvature % 10 == 7 and skip_curvature_info == False: #書き出し頻度を1/10に
