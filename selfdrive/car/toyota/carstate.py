@@ -64,7 +64,7 @@ class CarState(CarStateBase):
             self.knight_scanner_bit3  = int(knight_scanner_bit3_str)
       except Exception as e:
         # self.knight_scanner_bit3  = 7 #ここでデフォ設定はしない、値を継続させるため。
-        # ⚫︎⚪︎⚪︎　47700用舵力抑制,2024/1/13
+        # ⚫︎⚪︎⚪︎　47700用カーブ曲率抑制,2024/1/13
         # ⚪︎⚫︎⚪︎　new_steer平滑化,2024/1/14
         # ⚪︎⚪︎⚫︎　ハンドル高精細化未来予想2024/1/19
         pass
@@ -122,7 +122,7 @@ class CarState(CarStateBase):
       with open('/tmp/steer_ang_info.txt','w') as fp:
        fp.write('%f' % (self.steeringAngleDegOrg))
     # if self.CP.carFingerprint not in TSS2_CAR:
-    if (self.knight_scanner_bit3 & 0x04): # knight_scanner_bit3.txt ⚪︎⚪︎⚫︎をONで有効
+    if (self.knight_scanner_bit3 & 0x04) and abs(self.steeringAngleDegOrg) < 35: # knight_scanner_bit3.txt ⚪︎⚪︎⚫︎をONで有効, 35度以上急カーブは補正止める
       steeringAngleDeg0 = ret.steeringAngleDeg
       self.steeringAngleDegs.append(float(steeringAngleDeg0))
       if len(self.steeringAngleDegs) > 13:
