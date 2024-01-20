@@ -44,7 +44,7 @@ class CarState(CarStateBase):
 
     self.brake_state = False
     self.params = Params()
-    self.flag_47700 = True if CP.flags & ToyotaFlags.POWER_STEERING_47700.value else False
+    # self.flag_eps_TSS2 = True if CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value else False
     self.before_ang = 0
     self.prob_ang = 0
     self.steeringAngleDegs = []
@@ -104,7 +104,7 @@ class CarState(CarStateBase):
 
     # On some cars, the angle measurement is non-zero while initializing
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
-      # self.accurate_steer_angle_seen = (not self.flag_47700) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
+      # self.accurate_steer_angle_seen = (not self.flag_eps_TSS2) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
       self.accurate_steer_angle_seen = True #あれば常にグッドアングルセンサーを使う
 
     # steeringAngleDeg_ = ret.steeringAngleDeg

@@ -155,7 +155,7 @@ class LongitudinalPlanner:
       self.dexp_mode_min = 20/3.6
       self.dexp_mode_max = 23/3.6
 
-    if self.CP.carFingerprint not in TSS2_CAR or (self.CP.flags & ToyotaFlags.POWER_STEERING_47700.value): #47700はTSS2相当の操舵範囲
+    if self.CP.carFingerprint not in TSS2_CAR or (self.CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value): #47700はTSS2相当の操舵範囲
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
 
   def read_param(self):

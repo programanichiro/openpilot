@@ -218,9 +218,9 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures):
     except Exception as e:
       pass
 
-  flag_47700 = CP.flags & ToyotaFlags.POWER_STEERING_47700.value
+  flag_eps_TSS2 = CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value
 
-  if flag_47700 and CT_get_lag_adjusted_curvature % 100 == 51:
+  if flag_eps_TSS2 and CT_get_lag_adjusted_curvature % 100 == 51:
     try:
       with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ナイトスキャナーボタン ⚫︎⚪︎⚪︎ で有効
         knight_scanner_bit3_str = fp.read()
@@ -236,7 +236,7 @@ def get_lag_adjusted_curvature(CP, v_ego, psis, curvatures):
   
   k_v = 1.0
   org_desired_curvature = desired_curvature
-  if flag_47700 and dc_get_lag_adjusted_curvature == True:
+  if flag_eps_TSS2 and dc_get_lag_adjusted_curvature == True:
     #自分だけのスペシャル処理
     k_v = interp(abs(desired_curvature) , k_vs_org_47700 , k_vs_47700)
     desired_curvature *= k_v

@@ -45,6 +45,8 @@ class CarInterface(CarInterfaceBase):
     ret.stoppingControl = False  # Toyota starts braking more when it thinks you want to stop
 
     stop_and_go = candidate in TSS2_CAR
+    if candidate in TSS2_CAR:
+      ret.flags |= ToyotaFlags.POWER_STEERING_TSS2.value #パワステモーターTSS2
 
     if candidate == CAR.PRIUS:
       stop_and_go = True
@@ -58,8 +60,7 @@ class CarInterface(CarInterfaceBase):
           ret.steerActuatorDelay = 0.25
           CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.2)
         elif fw.ecu == "eps" and (fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00'):
-          #パワステモーター47700(8965B47060)でグッドアングルセンサー。steering_angle_deadzone_deg=0
-          ret.flags |= ToyotaFlags.POWER_STEERING_47700.value
+          ret.flags |= ToyotaFlags.POWER_STEERING_TSS2.value #パワステモーター47700(8965B47060)はグッドアングルセンサー＆パワフルハンドリング、TSS2相当
 
     elif candidate == CAR.PRIUS_V:
       stop_and_go = True
