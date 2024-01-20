@@ -120,7 +120,7 @@ class LanePlanner:
     # path_from_left_lane = self.lll_y + clipped_lane_width / 2.0
     # path_from_right_lane = self.rll_y - clipped_lane_width / 2.0
     #速度によってマージンを増したほうがいい？
-    lane_speed_margin = interp(v_ego*3.6 , [30,100] , [1,1]) #時速60キロで1.5倍弱になるよう調整。走行モデル向上によってオーバーしにくくなったのか、効果を弱める。
+    lane_speed_margin = interp(v_ego*3.6 , [30,100] , [1,0]) #時速60キロで1.5倍弱になるよう調整。走行モデル向上によってオーバーしにくくなったのか、効果を弱める。
     path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.2*lane_speed_margin #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
     path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.2*lane_speed_margin
 
