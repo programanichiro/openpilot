@@ -608,20 +608,22 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     QObject::connect(speed, &QPushButton::pressed, [=]() {
       std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
       if(last_navi_dest.empty() == false){
-        extern void soundPikiri();
-        soundPikiri();
+        extern void soundPipo();
+        soundPipo();
         Params().put("NavDestination", last_navi_dest);
       }
     });
   }
-
   setStyleSheet(R"(
     * {
       color: #2457A1;
       font-family: "Inter";
       font-size: 75px;
+      border-width: 0px;
+      background-color: rgba(0, 0, 0, 0);
     }
-  )");
+  )"); //border-width以降はQPushButton用
+
 /*
   QPalette pal = palette();
   pal.setColor(QPalette::Background, QColor(255, 255, 255, 200));
