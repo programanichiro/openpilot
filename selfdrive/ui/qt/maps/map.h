@@ -28,7 +28,7 @@ class MapLimitspeed : public QWidget {
 
 private:
   void paintEvent(QPaintEvent *event) override;
-  QLabel *speed;
+  QPushButton *speed;
 
 public:
   MapLimitspeed(QWidget * parent=nullptr);

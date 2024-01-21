@@ -5,6 +5,7 @@
 
 #include <QDebug>
 
+#include "common/params.h"
 #include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/ui.h"
@@ -595,7 +596,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
   {
     QHBoxLayout *layout = new QHBoxLayout;
-    speed = new QLabel;
+    speed = new QPushButton;
     speed->setAlignment(Qt::AlignCenter);
     speed->setStyleSheet("font-weight:600");
     //this->updateLimitspeed(0);
@@ -603,6 +604,15 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
     layout->addWidget(speed);
     main_layout->addLayout(layout);
+
+    QObject::connect(speed, &QPushButton::pressed, [=]() {
+      std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
+      if(last_navi_dest.empty() == false){
+        extern void soundPikiri();
+        soundPikiri();
+        Params().put("NavDestination", last_navi_dest);
+      }
+    });
   }
 
   setStyleSheet(R"(

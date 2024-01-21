@@ -16,6 +16,9 @@ if __name__ == "__main__":
     }
     params.put("NavDestination", json.dumps(dest))
     params.remove("NavDestinationWaypoints")
+
+    with open('/data/last_navi_dest.json','w') as fp:
+      fp.write('%s' % (json.dumps(dest)))
   else:
     print("Setting to Taco Bell")
     dest = {
