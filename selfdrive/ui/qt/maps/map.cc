@@ -618,7 +618,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
   }
   setStyleSheet(R"(
     QPushButton {
-      color: rgba(255, 255, 255, 0.7);
+      color: #2457A1;
       text-align: center;
       padding: 0px;
       border-width: 4px;
