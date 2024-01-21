@@ -595,10 +595,11 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
   main_layout->setContentsMargins(0, 0, 0, 0);
 
   {
+    const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; color: #2457A1; background-color: rgba(0, 0, 0, 0);"; //透明ボタン用
     QHBoxLayout *layout = new QHBoxLayout;
     speed = new QPushButton;
     //speed->setAlignment(Qt::AlignCenter);
-    speed->setStyleSheet("font-weight:600");
+    speed->setStyleSheet(btn_styleb_trs);
     //this->updateLimitspeed(0);
     speed->setText("━");
 
@@ -619,10 +620,8 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
       color: #2457A1;
       font-family: "Inter";
       font-size: 75px;
-      border-width: 0px;
-      background-color: rgba(0, 0, 0, 0);
     }
-  )"); //border-width以降はQPushButton用
+  )");
 
 /*
   QPalette pal = palette();
