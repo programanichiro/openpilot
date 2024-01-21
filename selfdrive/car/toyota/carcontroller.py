@@ -156,7 +156,7 @@ class CarController:
     else:
       interceptor_gas_cmd = 0.
 
-    # set allow negative calculation to False when longActive is False
+    # prohibit negative compensatory calculations when first activating long after accelerator depression or engagement
     if not CC.longActive:
       self.prohibit_neg_calculation = True
     # don't reset until the first positive is reached
@@ -166,13 +166,12 @@ class CarController:
     should_compensate = True
     if self.CP.carFingerprint in NO_STOP_TIMER_CAR and ((CS.out.vEgo <  1e-3 and actuators.accel < 1e-3) or stopping):
       should_compensate = False
-    # limit minimum to only positive until first positive is reached after engagement
-    if CC.longActive and self.prohibit_neg_calculation:
-      accel_offset = min(0, CS.pcm_neutral_force / self.CP.mass)
-    elif CC.longActive and should_compensate:
+    # limit minimum to only positive until first positive is reached after engagement, don't calculate when long isn't active
+    if CC.longActive and should_compensate and not self.prohibit_neg_calculation:
       accel_offset = CS.pcm_neutral_force / self.CP.mass
     else:
       accel_offset = 0.
+    # only calculate pcm_accel_cmd when long is active to prevent disengagement from accelerator depression
     if CC.longActive:
       pcm_accel_cmd = clip(actuators.accel + accel_offset, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
     else:
@@ -223,6 +222,8 @@ class CarController:
     # we can spam can to cancel the system even if we are using lat only control
     if (self.frame % 3 == 0 and self.CP.openpilotLongitudinalControl) or pcm_cancel_cmd:
       lead = hud_control.leadVisible or CS.out.vEgo < 12.  # at low speed we always assume the lead is present so ACC can be engaged
+      # when stopping, send -2.5 raw acceleration immediately to prevent vehicle from creeping, send compensated accel if there is
+      # a leading vehicle, else send actuators.accel and let pcm figure the rest out
       accel_raw = -2.5 if stopping else pcm_accel_cmd if hud_control.leadVisible else actuators_accel
 
       # Lexus IS uses a different cancellation message
