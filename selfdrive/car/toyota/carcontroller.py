@@ -39,7 +39,7 @@ class CarController:
     self.last_standstill = False
     self.standstill_req = False
     self.steer_rate_counter = 0
-    self.allow_neg_calculation = False
+    self.prohibit_neg_calculation = True
 
     self.packer = CANPacker(dbc_name)
     self.gas = 0
@@ -156,16 +156,20 @@ class CarController:
     else:
       interceptor_gas_cmd = 0.
 
-    # prohibit negative compensation calculations until first positive is reached after gas press or reengagement
-    if CS.out.gasPressed or not CS.out.cruiseState.enabled:
-      self.allow_neg_calculation = False
-    if CS.pcm_neutral_force > 1e-3 or actuators.accel < 1e-3:
-      self.allow_neg_calculation = True
+    # set allow negative calculation to False when longActive is False
+    if not CC.longActive:
+      self.prohibit_neg_calculation = True
+    # don't reset until the first positive is reached
+    if CS.pcm_neutral_force > 0.:
+      self.prohibit_neg_calculation = False
     # NO_STOP_TIMER_CAR will creep if compensation is applied when stopping or stopped, don't compensate when stopped or stopping
     should_compensate = True
     if self.CP.carFingerprint in NO_STOP_TIMER_CAR and ((CS.out.vEgo <  1e-3 and actuators.accel < 1e-3) or stopping):
       should_compensate = False
-    if CC.longActive and should_compensate and self.allow_neg_calculation:
+    # limit minimum to only positive until first positive is reached after engagement
+    if CC.longActive and self.prohibit_neg_calculation:
+      accel_offset = min(0, CS.pcm_neutral_force / self.CP.mass)
+    elif CC.longActive and should_compensate:
       accel_offset = CS.pcm_neutral_force / self.CP.mass
     else:
       accel_offset = 0.
@@ -219,18 +223,19 @@ class CarController:
     # we can spam can to cancel the system even if we are using lat only control
     if (self.frame % 3 == 0 and self.CP.openpilotLongitudinalControl) or pcm_cancel_cmd:
       lead = hud_control.leadVisible or CS.out.vEgo < 12.  # at low speed we always assume the lead is present so ACC can be engaged
+      accel_raw = -2.5 if stopping else pcm_accel_cmd if hud_control.leadVisible else actuators_accel
 
       # Lexus IS uses a different cancellation message
       if pcm_cancel_cmd and self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
         can_sends.append(toyotacan.create_acc_cancel_command(self.packer))
       elif self.CP.openpilotLongitudinalControl:
       # can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type, fcw_alert, CS.lead_dist_button))
-        can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, actuators_accel, pcm_cancel_cmd, stopping,
-                                                        self.standstill_req, lead, CS.acc_type, fcw_alert, hud_control.leadVisible, CS.lead_dist_button))
+        can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, accel_raw, pcm_cancel_cmd,
+                                                        self.standstill_req, lead, CS.acc_type, fcw_alert, CS.lead_dist_button))
         self.accel = pcm_accel_cmd
       else:
       # can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False, CS.lead_dist_button))
-        can_sends.append(toyotacan.create_accel_command(self.packer, 0, 0, pcm_cancel_cmd, False, False, lead, CS.acc_type, False, False, CS.lead_dist_button))
+        can_sends.append(toyotacan.create_accel_command(self.packer, 0, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False, CS.lead_dist_button))
 
     if self.frame % 2 == 0 and self.CP.enableGasInterceptor and self.CP.openpilotLongitudinalControl:
       # send exactly zero if gas cmd is zero. Interceptor will send the max between read value and gas cmd.
