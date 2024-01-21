@@ -595,7 +595,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
   main_layout->setContentsMargins(0, 0, 0, 0);
 
   {
-    const static char *btn_styleb_trs = "font-size: 75px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+    const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
     //const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; color: #2457A1; background-color: rgba(0, 0, 0, 0);"; //透明ボタン用
     QHBoxLayout *layout = new QHBoxLayout;
     speed = new QPushButton;
