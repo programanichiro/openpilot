@@ -600,7 +600,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     QHBoxLayout *layout = new QHBoxLayout;
     speed = new QPushButton;
     //speed->setAlignment(Qt::AlignCenter);
-    speed->setStyleSheet(QString(btn_styleb_trs)).arg("#909090");
+    speed->setStyleSheet(QString(btn_styleb_trs).arg("#909090"));
     //this->updateLimitspeed(0);
     speed->setText("━");
 
