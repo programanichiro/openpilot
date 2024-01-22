@@ -62,7 +62,7 @@ def fill_xyvat(builder, t, x, y, v, a, x_std=None, y_std=None, v_std=None, a_std
 def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, np.ndarray], publish_state: PublishState,
                    vipc_frame_id: int, vipc_frame_id_extra: int, frame_id: int, frame_drop: float,
                    timestamp_eof: int, timestamp_llk: int, model_execution_time: float,
-                   nav_enabled: bool, v_ego: float, steer_delay: float, valid: bool , STEER_CTRL_Y: float , DH) -> None:
+                   nav_enabled: bool, v_ego: float, steer_delay: float, valid: bool , STEER_CTRL_Y: float , DH , CP) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   msg.valid = valid
 
@@ -139,7 +139,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
   curvatures = (x_sol[0:CONTROL_N, 3]/v_ego).tolist()
 
   action = modelV2.action
-  action.desiredCurvature = get_lag_adjusted_curvature(steer_delay, v_ego, psis, curvatures)
+  action.desiredCurvature = get_lag_adjusted_curvature(steer_delay, v_ego, psis, curvatures, CP)
 
   # times at X_IDXS according to model plan
   PLAN_T_IDXS = [np.nan] * ModelConstants.IDX_N

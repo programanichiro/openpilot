@@ -198,7 +198,7 @@ def clip_curvature(v_ego, prev_curvature, new_curvature):
   return safe_desired_curvature
 
 
-def get_lag_adjusted_curvature(steer_delay, v_ego, psis, curvatures):
+def get_lag_adjusted_curvature(steer_delay, v_ego, psis, curvatures , CP):
   if len(psis) != CONTROL_N:
     psis = [0.0]*CONTROL_N
     curvatures = [0.0]*CONTROL_N
