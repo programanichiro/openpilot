@@ -7,7 +7,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_lag_ad
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
 from openpilot.common.params import Params
 from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
-
+TRAJECTORY_SIZE = 33
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
 params = Params()
@@ -93,7 +93,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
   x_sol = np.column_stack([x, y, yaw, yawRate])
   v_ego = max(MIN_SPEED, v_ego)
 
-  if True:
+  if len(position.x) == TRAJECTORY_SIZE and len(orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
     LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
     path_xyz = np.column_stack([position.x, position.y, position.z])
     t_idxs = np.array(position.t)
@@ -131,7 +131,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
       STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       pred_angle = (-max_yp / 2.5)
       lane_d = LP.get_d_path(STEER_CTRL_Y , pred_angle , ypf , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
-      if True: #len(md.position.x) == TRAJECTORY_SIZE and len(md.velocity.x) == TRAJECTORY_SIZE and len(md.lateralPlannerSolution.x) == TRAJECTORY_SIZE:
+      if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
         k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
         x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
         
