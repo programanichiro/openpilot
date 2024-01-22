@@ -5,22 +5,22 @@ from typing import Dict
 from cereal import log
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_lag_adjusted_curvature, MIN_SPEED
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
-# from openpilot.common.params import Params
-# from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
-# TRAJECTORY_SIZE = 33
-# STEERING_CENTER_calibration = []
-# STEERING_CENTER_calibration_update_count = 0
-# params = Params()
-# try:
-#   with open('../../../handle_center_info.txt','r') as fp:
-#     handle_center_info_str = fp.read()
-#     if handle_center_info_str:
-#       STEERING_CENTER = float(handle_center_info_str)
-#       with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
-#         fp.write('%0.2f' % (STEERING_CENTER) )
-# except Exception as e:
-#   pass
-# LP = LanePlanner(True) #widw_camera常にONで呼び出す。
+from openpilot.common.params import Params
+from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
+TRAJECTORY_SIZE = 33
+STEERING_CENTER_calibration = []
+STEERING_CENTER_calibration_update_count = 0
+params = Params()
+try:
+  with open('../../../handle_center_info.txt','r') as fp:
+    handle_center_info_str = fp.read()
+    if handle_center_info_str:
+      STEERING_CENTER = float(handle_center_info_str)
+      with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+        fp.write('%0.2f' % (STEERING_CENTER) )
+except Exception as e:
+  pass
+LP = LanePlanner(True) #widw_camera常にONで呼び出す。
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
