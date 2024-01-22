@@ -12,7 +12,7 @@ STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
 params = Params()
 try:
-  with open('../../../handle_center_info.txt','r') as fp:
+  with open('/data/handle_center_info.txt','r') as fp:
     handle_center_info_str = fp.read()
     if handle_center_info_str:
       STEERING_CENTER = float(handle_center_info_str)
