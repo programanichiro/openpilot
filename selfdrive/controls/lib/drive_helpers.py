@@ -23,7 +23,6 @@ CAR_ROTATION_RADIUS = 0.0
 
 #新処理をTSS2で使用
 # EU guidelines
-tss_type = 0
 dc_get_lag_adjusted_curvature = False
 CT_get_lag_adjusted_curvature = 0
 MAX_LATERAL_JERK = 5.0
@@ -212,21 +211,8 @@ def get_lag_adjusted_curvature(steer_delay, v_ego, psis, curvatures , CP):
   average_curvature_desired = psi / (v_ego * steer_delay)
   desired_curvature = 2 * average_curvature_desired - current_curvature_desired
 
-  global tss_type,CT_get_lag_adjusted_curvature,dc_get_lag_adjusted_curvature
-  if tss_type == 0:
-    try:
-      with open('../../../tss_type_info.txt','r') as fp:
-        tss_type_str = fp.read()
-        if tss_type_str:
-          if int(tss_type_str) == 2: #TSS2
-            tss_type = 2
-          elif int(tss_type_str) == 1: #TSSP
-            tss_type = 1
-    except Exception as e:
-      pass
-
+  global CT_get_lag_adjusted_curvature,dc_get_lag_adjusted_curvature
   flag_eps_TSS2 = CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value
-
   if flag_eps_TSS2 and CT_get_lag_adjusted_curvature % 100 == 51:
     try:
       with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ナイトスキャナーボタン ⚫︎⚪︎⚪︎ で有効
