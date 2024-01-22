@@ -136,7 +136,7 @@ class LanePlanner:
       lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
       lane_path_y_interp_right = np.interp(path_t, self.ll_t[safe_idxs], path_from_right_lane[safe_idxs])
       # with open('/tmp/debug_out_o','w') as fp:
-      #   fp.write('L:%.2f , e:%.2f ,w:%.1f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , clipped_lane_width , path_from_right_lane[0]))
+      #   fp.write('L:%.2f , e:%.2f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , path_from_right_lane[0]))
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
       diff_mul = 1.02 #押し戻すための倍率
       diff_add = 0.05 * lane_speed_margin #さらに押し戻す距離[m]
