@@ -93,47 +93,47 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
   x_sol = np.column_stack([x, y, yaw, yawRate])
   v_ego = max(MIN_SPEED, v_ego)
 
-  # if len(position.x) == TRAJECTORY_SIZE and len(orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
-  #   LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
-  #   path_xyz = np.column_stack([position.x, position.y, position.z])
-  #   t_idxs = np.array(position.t)
+  if len(position.x) == TRAJECTORY_SIZE and len(orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
+    LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
+    path_xyz = np.column_stack([position.x, position.y, position.z])
+    t_idxs = np.array(position.t)
   
-  #   path_y = path_xyz[:,1]
-  #   max_yp = 0
-  #   for yp in path_y:
-  #     max_yp = yp if abs(yp) > abs(max_yp) else max_yp
-  #   STEERING_CENTER_calibration_max = 300 #3秒
-  #   if abs(max_yp) / 2.5 < 0.1 and v_ego > 20/3.6 and abs(STEER_CTRL_Y) < 8:
-  #     STEERING_CENTER_calibration.append(STEER_CTRL_Y)
-  #     if len(STEERING_CENTER_calibration) > STEERING_CENTER_calibration_max:
-  #       STEERING_CENTER_calibration.pop(0)
-  #   if len(STEERING_CENTER_calibration) > 0:
-  #     value_STEERING_CENTER_calibration = sum(STEERING_CENTER_calibration) / len(STEERING_CENTER_calibration)
-  #   else:
-  #     value_STEERING_CENTER_calibration = 0
-  #   handle_center = 0 #STEERING_CENTER
-  #   global STEERING_CENTER_calibration_update_count
-  #   STEERING_CENTER_calibration_update_count += 1
-  #   if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
-  #     handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
-  #     if STEERING_CENTER_calibration_update_count % 100 == 0:
-  #       with open('../../../handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
-  #         fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
-  #     if STEERING_CENTER_calibration_update_count % 10 == 5:
-  #       with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
-  #         fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
-  #   else:
-  #     with open('../../../handle_calibct_info.txt','w') as fp:
-  #       fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
+    path_y = path_xyz[:,1]
+    max_yp = 0
+    for yp in path_y:
+      max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+    STEERING_CENTER_calibration_max = 300 #3秒
+    if abs(max_yp) / 2.5 < 0.1 and v_ego > 20/3.6 and abs(STEER_CTRL_Y) < 8:
+      STEERING_CENTER_calibration.append(STEER_CTRL_Y)
+      if len(STEERING_CENTER_calibration) > STEERING_CENTER_calibration_max:
+        STEERING_CENTER_calibration.pop(0)
+    if len(STEERING_CENTER_calibration) > 0:
+      value_STEERING_CENTER_calibration = sum(STEERING_CENTER_calibration) / len(STEERING_CENTER_calibration)
+    else:
+      value_STEERING_CENTER_calibration = 0
+    handle_center = 0 #STEERING_CENTER
+    global STEERING_CENTER_calibration_update_count
+    STEERING_CENTER_calibration_update_count += 1
+    if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
+      handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
+      if STEERING_CENTER_calibration_update_count % 100 == 0:
+        with open('/data/handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+      if STEERING_CENTER_calibration_update_count % 10 == 5:
+        with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+    else:
+      with open('/data/handle_calibct_info.txt','w') as fp:
+        fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
 
-  #   if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
-  #     ypf = STEER_CTRL_Y
-  #     STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
-  #     pred_angle = (-max_yp / 2.5)
-  #     lane_d = LP.get_d_path(STEER_CTRL_Y , pred_angle , ypf , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
-  #     if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
-  #       k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
-  #       x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
+    if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
+      ypf = STEER_CTRL_Y
+      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
+      pred_angle = (-max_yp / 2.5)
+      lane_d = LP.get_d_path(STEER_CTRL_Y , pred_angle , ypf , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
+      if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
+        k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
+        x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
         
   psis = x_sol[0:CONTROL_N, 2].tolist()
   curvatures = (x_sol[0:CONTROL_N, 3]/v_ego).tolist()
