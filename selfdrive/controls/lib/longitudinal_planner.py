@@ -20,7 +20,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL
 from openpilot.common.swaglog import cloudlog
 
 from openpilot.selfdrive.car.toyota.values import TSS2_CAR,ToyotaFlags
-from openpilot.selfdrive.controls.lib.lateral_planner import TRAJECTORY_SIZE
+TRAJECTORY_SIZE = 33
 params = Params()
 g_tss_type = 0
 CVS_FRAME = 0
