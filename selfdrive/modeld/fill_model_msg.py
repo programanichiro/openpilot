@@ -136,11 +136,11 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
       value_STEERING_CENTER_calibration = sum(STEERING_CENTER_calibration) / len(STEERING_CENTER_calibration)
     else:
       value_STEERING_CENTER_calibration = 0
-    handle_center = 0 #STEERING_CENTER
+    #handle_center = 0 #STEERING_CENTER,もうhandle_center_info.txtもいらないか。
     global STEERING_CENTER_calibration_update_count
     STEERING_CENTER_calibration_update_count += 1
     if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
-      handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
+      #handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
       if STEERING_CENTER_calibration_update_count % 100 == 0:
         with open('/data/handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
           fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
@@ -152,10 +152,8 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
         fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
 
     if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
-      ypf = STEER_CTRL_Y
-      STEER_CTRL_Y -= handle_center #STEER_CTRL_Yにhandle_centerを込みにする。
       pred_angle = (-max_yp / 2.5)
-      lane_d = LP.get_d_path(STEER_CTRL_Y , pred_angle , ypf , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
+      lane_d = LP.get_d_path(pred_angle , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
       with open('/tmp/lane_d_info.txt','w') as fp:
         fp.write('%.5f' % (lane_d))
       # if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
