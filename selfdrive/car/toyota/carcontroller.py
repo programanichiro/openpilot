@@ -98,10 +98,11 @@ class CarController:
         lane_d_info_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
         if lane_d_info_str:
           lane_d_info = float(lane_d_info_str)
+          with open('/tmp/debug_out_v','w') as fp:
+            fp.write('ns:%.7f / %.5f' % (new_steer,lane_d_info))
           if lane_d_info != 0:
             # new_steer += lane_d_info * 0.015
-            with open('/tmp/debug_out_v','w') as fp:
-              fp.write('ns:%.7f / %.5f' % (new_steer,lane_d_info))
+            pass
     except Exception as e:
       pass
     apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.params)
