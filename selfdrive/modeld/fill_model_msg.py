@@ -151,15 +151,16 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
       with open('/data/handle_calibct_info.txt','w') as fp:
         fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
 
+    lane_d = 0
     if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
       pred_angle = (-max_yp / 2.5)
       lane_d = LP.get_d_path(pred_angle , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
-      with open('/tmp/lane_d_info.txt','w') as fp:
-        fp.write('%.5f' % (lane_d))
       # if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
       #   k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
       #   # x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
       #   # action.desiredCurvature += lane_d * 0.015 * k #ハンドル制御の曲率をレーンの反対へ戻す
+    with open('/tmp/lane_d_info.txt','w') as fp:
+      fp.write('%.5f' % (lane_d))
 
   # road edges
   modelV2.init('roadEdges', 2)
