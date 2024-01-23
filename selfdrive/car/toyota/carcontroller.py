@@ -52,7 +52,7 @@ class CarController:
       with open('../../../run_auto_lock.txt','r') as fp:
         lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
         if lock_speed_str:
-          self.lock_speed = int(lock_speed_str);
+          self.lock_speed = int(lock_speed_str)
     except Exception as e:
       pass
     self.before_ang = 0
@@ -93,6 +93,17 @@ class CarController:
         new_steer = sum_steer / l
         # with open('/tmp/debug_out_v','w') as fp:
         #   fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),new_steer,new_steer0,new_steer-new_steer0))
+    try:
+      with open('/tmp/lane_d_info.txt','r') as fp:
+        lane_d_info_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        if lane_d_info_str:
+          lane_d_info = float(lane_d_info_str)
+          if lane_d_info != 0:
+            # new_steer += lane_d_info * 0.015
+            with open('/tmp/debug_out_v','w') as fp:
+              fp.write('ns:%.7f / %.5f' % (new_steer,lane_d_info))
+    except Exception as e:
+      pass
     apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.params)
 
     # >100 degree/sec steering fault prevention
