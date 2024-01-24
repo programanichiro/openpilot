@@ -14,11 +14,12 @@ if __name__ == "__main__":
       coords.append(float(sys.argv[1].replace(",","")))
       coords.append(float(sys.argv[2].replace(",","")))
 
-      print(coords[0])
-      print(coords[1])
-
     else:
       coords = sys.argv[1].split("/@")[-1].split("/")[0].split(",")
+      
+    print(coords[0])
+    print(coords[1])
+
     dest = {
       "latitude": float(coords[0]),
       "longitude": float(coords[1])
