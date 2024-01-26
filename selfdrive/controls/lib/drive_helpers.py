@@ -4,6 +4,7 @@ from cereal import car, log
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.realtime import DT_CTRL
+from openpilot.selfdrive.car.toyota.values import ToyotaFlags
 
 # WARNING: this value was determined based on the model's training distribution,
 #          model predictions above this speed can be unpredictable
@@ -19,8 +20,22 @@ MIN_SPEED = 1.0
 CONTROL_N = 17
 CAR_ROTATION_RADIUS = 0.0
 
+#新処理をTSS2で使用
 # EU guidelines
+dc_get_lag_adjusted_curvature = False
+CT_get_lag_adjusted_curvature = 0
 MAX_LATERAL_JERK = 5.0
+
+#k_vs_47700 =     [1.0, 0.96, 0.92, 0.92 , 0.92] #47700用減少補正。ツインウェイブ曲がれた。ちょっと内寄り気味
+k_vs_47700 =     [1.0, 0.96, 0.92, 0.91 , 0.91] #47700用減少補正。
+#k_vs_47700 =     [0.99, 0.94, 0.91, 0.90 , 0.90] #47700用減少補正。
+#k_vs_47700 =     [1.0, 0.96, 0.92, 0.87 , 0.85] #47700用減少補正。参考、ツインウェイブ曲がれない。後半オーバーする
+k_vs_org_47700 = [0  , 0.01, 0.02, 0.035, 0.05]
+with open('/tmp/curvature_info.txt','w') as fp:
+  fp.write('%.9f/%.3f' % (0 , 1.0))
+
+skip_curvature_info = False
+
 MAX_VEL_ERR = 5.0
 
 ButtonEvent = car.CarState.ButtonEvent
@@ -161,7 +176,38 @@ def rate_limit(new_value, last_value, dw_step, up_step):
   return clip(new_value, last_value + dw_step, last_value + up_step)
 
 
-def clip_curvature(v_ego, prev_curvature, new_curvature):
+def clip_curvature(v_ego, prev_curvature, new_curvature , CP):
+
+  global CT_get_lag_adjusted_curvature,dc_get_lag_adjusted_curvature
+  flag_eps_TSS2 = CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value
+  if flag_eps_TSS2 and CT_get_lag_adjusted_curvature % 100 == 51:
+    try:
+      with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ナイトスキャナーボタン ⚫︎⚪︎⚪︎ で有効
+        knight_scanner_bit3_str = fp.read()
+        if knight_scanner_bit3_str:
+          knight_scanner_bit3 = int(knight_scanner_bit3_str)
+          if (knight_scanner_bit3 & 0x01) != 0: #1ビット（"⚫︎⚪︎⚪︎"）が点灯で舵力抑制発動
+            dc_get_lag_adjusted_curvature = True
+          else:
+            dc_get_lag_adjusted_curvature = False
+    except Exception as e:
+      dc_get_lag_adjusted_curvature = True #デフォルト
+  CT_get_lag_adjusted_curvature += 1
+  
+  k_v = 1.0
+  org_desired_curvature = new_curvature
+  if flag_eps_TSS2 and dc_get_lag_adjusted_curvature == True:
+    #自分だけのスペシャル処理
+    k_v = interp(abs(new_curvature) , k_vs_org_47700 , k_vs_47700)
+    new_curvature *= k_v
+
+  if CT_get_lag_adjusted_curvature % 10 == 7 and skip_curvature_info == False: #書き出し頻度を1/10に
+    try:
+      with open('/tmp/curvature_info.txt','w') as fp:
+        fp.write('%.9f/%.3f' % (org_desired_curvature , k_v))
+    except Exception as e:
+      pass
+
   v_ego = max(MIN_SPEED, v_ego)
   max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
   safe_desired_curvature = clip(new_curvature,
