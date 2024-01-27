@@ -1077,6 +1077,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   if(PI0_DEBUG == false && tss_type <= 1){
     //これまでと互換。tss_type_infoがなければTSSP
     v_cruise = v_cruise < (55 - 4) ? (55 - (55 - (v_cruise+4)) * 2 - 4) : v_cruise;
+  //v_cruise = v_cruise > (110 - 6) ? (110 + ((v_cruise+6) - 110) * 3 - 6) : v_cruise; //最大119
     v_cruise = v_cruise > (107 - 6) ? (107 + ((v_cruise+6) - 107) * 2 - 6) : v_cruise; //最大119 -> 114 -> 117に。
   } else if(PI0_DEBUG == true || tss_type == 2){
     SET_SPEED_NA = 255; //TSS2では戻す。
