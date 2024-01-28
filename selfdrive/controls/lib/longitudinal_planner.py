@@ -679,10 +679,10 @@ class LongitudinalPlanner:
 
       # with open('/tmp/debug_out_x','w') as fp:
       #   fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
-      if v_ego * 3.6 * 0.7 < d_rel / 0.98 and v_cruise_kph < v_abs * 3.6 + 10: #例、時速50kmの時前走車までの距離が50m以上離れている。×0.7はd_relの値と実際の距離感との調整。&&MAX(v_cruise_kph)より相手+10が速い。
-        self.v_cruise_kph_1_15 = v_abs * 3.6 + 10
-        if self.v_cruise_kph_1_15 > v_cruise_kph + 15:
-          self.v_cruise_kph_1_15 = v_cruise_kph + 15 #MAXを最大15は超えない
+      if v_ego * 3.6 * 0.7 < d_rel / 0.98 and v_cruise_kph < v_abs * 3.6 + 5: #例、時速50kmの時前走車までの距離が50m以上離れている。×0.7はd_relの値と実際の距離感との調整。&&MAX(v_cruise_kph)より相手+5が速い。
+        self.v_cruise_kph_1_15 = v_abs * 3.6 + 5
+        if self.v_cruise_kph_1_15 > v_cruise_kph + 10:
+          self.v_cruise_kph_1_15 = v_cruise_kph + 10 #MAXを最大15は超えない
         if v_ego * 3.6 >= v_cruise_kph * 0.95: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
@@ -691,8 +691,8 @@ class LongitudinalPlanner:
           self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
           # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
           v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-          if v_cruise_kph > 110:
-            v_cruise_kph = 110 #危ないのでひとまず時速110kmまで。
+          if v_cruise_kph > 115:
+            v_cruise_kph = 115 #危ないのでひとまず時速115kmまで。
             if v_cruise_kph < org_v_cruise_kph:
               v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
               self.ac_vc_time = 0
