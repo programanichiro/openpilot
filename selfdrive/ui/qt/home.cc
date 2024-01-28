@@ -111,17 +111,10 @@ void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
 void OffroadHome::poweroff() {
   if (!uiState()->engaged()) {
       if (!uiState()->engaged()) {
-        void soundPipo();
-        soundPipo();
         params.putBool("DoShutdown", true);
-      } else {
-        void soundPo();
-        soundPo();
       }
-  } else {
-    // ConfirmationDialog::alert(tr("Disengage to Power Off"), this);
-    void soundPo();
-    soundPo();
+  // } else {
+  //   ConfirmationDialog::alert(tr("Disengage to Power Off"), this);
   }
 }
 
