@@ -108,6 +108,15 @@ void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
 }
 
 // OffroadHome: the offroad home page
+void OffroadHome::poweroff() {
+  if (!uiState()->engaged()) {
+      if (!uiState()->engaged()) {
+        params.putBool("DoShutdown", true);
+      }
+  // } else {
+  //   ConfirmationDialog::alert(tr("Disengage to Power Off"), this);
+  }
+}
 
 OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
   QVBoxLayout* main_layout = new QVBoxLayout(this);
@@ -177,6 +186,11 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     QObject::connect(setup_widget, &SetupWidget::openSettings, this, &OffroadHome::openSettings);
     right_column->addWidget(setup_widget, 1);
 
+    QPushButton *poweroff_btn = new QPushButton(tr("Power Off"));
+    poweroff_btn->setObjectName("poweroff_btn");
+    right_column->addWidget(poweroff_btn , 1);
+    QObject::connect(poweroff_btn, &QPushButton::clicked, this, &OffroadHome::poweroff);
+
     home_layout->addWidget(right_widget, 1);
   }
   center_layout->addWidget(home_widget);
@@ -211,6 +225,8 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     OffroadHome > QLabel {
       font-size: 55px;
     }
+    #poweroff_btn {font-size: 60px; font-weight: bold; height: 120px; border-radius: 10px; background-color: #E22C2C; }
+    #poweroff_btn:pressed { background-color: #FF2424; }
   )");
 }
 
