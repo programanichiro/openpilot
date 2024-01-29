@@ -9,13 +9,21 @@ if __name__ == "__main__":
 
   # set from google maps url
   if len(sys.argv) > 1:
-    coords = sys.argv[1].split("/@")[-1].split("/")[0].split(",")
+    if len(sys.argv) > 2:
+      coords = []
+      coords.append(float(sys.argv[1].replace(",","")))
+      coords.append(float(sys.argv[2].replace(",","")))
+    else:
+      coords = sys.argv[1].split("/@")[-1].split("/")[0].split(",")
     dest = {
       "latitude": float(coords[0]),
       "longitude": float(coords[1])
     }
     params.put("NavDestination", json.dumps(dest))
     params.remove("NavDestinationWaypoints")
+
+    with open('/data/last_navi_dest.json','w') as fp:
+      fp.write('%s' % (json.dumps(dest)))
   else:
     print("Setting to Taco Bell")
     dest = {
