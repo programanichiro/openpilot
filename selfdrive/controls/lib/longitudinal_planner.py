@@ -679,10 +679,10 @@ class LongitudinalPlanner:
 
       # with open('/tmp/debug_out_x','w') as fp:
       #   fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
-      if v_ego * 3.6 * 0.7 < d_rel / 0.98 and v_cruise_kph < v_abs * 3.6 + 5: #例、時速50kmの時前走車までの距離が50m以上離れている。×0.7はd_relの値と実際の距離感との調整。&&MAX(v_cruise_kph)より相手+5が速い。
-        self.v_cruise_kph_1_15 = v_abs * 3.6 + 5
-        if self.v_cruise_kph_1_15 > v_cruise_kph + 10:
-          self.v_cruise_kph_1_15 = v_cruise_kph + 10 #MAXを最大15は超えない
+      if v_ego * 3.6 * 0.6 < d_rel and v_cruise_kph < v_abs * 3.6 + 7: #例、時速50kmの時前走車までの距離が30m(50x0.6)以上離れている。&&MAX(v_cruise_kph)より相手+7が速い。
+        self.v_cruise_kph_1_15 = v_abs * 3.6 + 7
+        if self.v_cruise_kph_1_15 > v_cruise_kph + 11:
+          self.v_cruise_kph_1_15 = v_cruise_kph + 11 #MAXを最大11は超えない
         if v_ego * 3.6 >= v_cruise_kph * 0.95: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
