@@ -2,6 +2,7 @@
 
 #include <algorithm>
 #include <eigen3/Eigen/Dense>
+#include <QMapLibre/Utils>
 
 #include <QDebug>
 
