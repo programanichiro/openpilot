@@ -20,6 +20,7 @@ try:
 except Exception as e:
   pass
 LP = LanePlanner(True) #widw_camera常にONで呼び出す。
+g_lane_d = -999
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
@@ -137,7 +138,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
     else:
       value_STEERING_CENTER_calibration = 0
     #handle_center = 0 #STEERING_CENTER,もうhandle_center_info.txtもいらないか。
-    global STEERING_CENTER_calibration_update_count
+    global STEERING_CENTER_calibration_update_count,g_lane_d
     STEERING_CENTER_calibration_update_count += 1
     if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
       #handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
@@ -159,8 +160,10 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: Dict[str, 
       #   k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
       #   # x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
       #   # action.desiredCurvature += lane_d * 0.015 * k #ハンドル制御の曲率をレーンの反対へ戻す
-    with open('/tmp/lane_d_info.txt','w') as fp:
-      fp.write('%.5f' % (lane_d))
+    if lane_d != g_lane_d:
+      g_lane_d = lane_d
+      with open('/tmp/lane_d_info.txt','w') as fp:
+        fp.write('%.5f' % (lane_d))
 
   # road edges
   modelV2.init('roadEdges', 2)
