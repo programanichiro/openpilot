@@ -32,7 +32,7 @@ constexpr mat3 FCAM_INTRINSIC_MATRIX = (mat3){{2648.0, 0.0, 1928.0 / 2,
                                            0.0, 0.0, 1.0}};
 // tici ecam focal probably wrong? magnification is not consistent across frame
 // Need to retrain model before this can be changed
-constexpr mat3 ECAM_INTRINSIC_MATRIX = (mat3){{567.0, 0.0, 1928.0 / 2,
+constexpr mat3 ECAM_INTRINSIC_MATRIX = (mat3){{567.0 * 0.92, 0.0, 1928.0 / 2 * 0.92, //FCAM_INTRINSIC_MATRIXより横に間伸びしているのを調整する。
                                            0.0, 567.0, 1208.0 / 2,
                                            0.0, 0.0, 1.0}};
 
@@ -160,6 +160,16 @@ typedef struct UIScene {
   bool started, ignition, is_metric, map_on_left, longitudinal_control;
   bool world_objects_visible = false;
   uint64_t started_frame;
+
+  // PI button statuses
+  bool mLockOnButton = true;
+  bool mAccelCtrlButton = true;
+  bool mDecelCtrlButton = true;
+  int mAccelEngagedButton = 0;
+  int mLTA_EnableButton = 0;
+  bool mStartAccelPowerUpButton = false;
+  int mUseDynmicExpButton = 0;
+
 } UIScene;
 
 class UIState : public QObject {

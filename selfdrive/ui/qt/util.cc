@@ -25,7 +25,7 @@ QString getVersion() {
 }
 
 QString getBrand() {
-  return QObject::tr("openpilot");
+  return QObject::tr("ichiropilot");
 }
 
 QString getUserAgent() {
