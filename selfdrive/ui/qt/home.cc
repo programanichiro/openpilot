@@ -82,13 +82,13 @@ void HomeWindow::showDriverView(bool show) {
     emit closeSettings();
     slayout->setCurrentWidget(driver_view);
   } else {
-    if (offroad) {
+    if (!onroad->isVisible()) {
       slayout->setCurrentWidget(home);
     } else {
       slayout->setCurrentWidget(onroad);
     }
   }
-  if (offroad) {
+  if (!onroad->isVisible()) {
     sidebar->setVisible(show == false);
   }
 }
