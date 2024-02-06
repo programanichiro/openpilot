@@ -81,14 +81,14 @@ void HomeWindow::showDriverView(bool show) {
   if (show) {
     emit closeSettings();
     slayout->setCurrentWidget(driver_view);
-  } else {
-    if (!onroad->isVisible()) {
+  } else {    
+    if (!uiState()->scene.started) {
       slayout->setCurrentWidget(home);
     } else {
       slayout->setCurrentWidget(onroad);
     }
   }
-  if (!onroad->isVisible()) {
+  if (!uiState()->scene.started) {
     sidebar->setVisible(show == false);
   }
 }
@@ -101,7 +101,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
 }
 
 void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
-  if(onroad->isVisible()){
+  if(uiState()->scene.started){
     slayout->setCurrentWidget(driver_view);
     sidebar->setVisible(false);
     return;
