@@ -81,7 +81,7 @@ void HomeWindow::showDriverView(bool show) {
   if (show) {
     emit closeSettings();
     slayout->setCurrentWidget(driver_view);
-  } else {    
+  } else {
     if (!uiState()->scene.started) {
       slayout->setCurrentWidget(home);
     } else {
