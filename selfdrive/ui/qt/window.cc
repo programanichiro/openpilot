@@ -12,6 +12,9 @@ MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
   main_layout->addWidget(homeWindow);
   QObject::connect(homeWindow, &HomeWindow::openSettings, this, &MainWindow::openSettings);
   QObject::connect(homeWindow, &HomeWindow::closeSettings, this, &MainWindow::closeSettings);
+  QObject::connect(homeWindow->onroad, &OnroadWindow::driverViewOn, [=] {
+    homeWindow->showDriverView(true);
+  });
 
   settingsWindow = new SettingsWindow(this);
   main_layout->addWidget(settingsWindow);

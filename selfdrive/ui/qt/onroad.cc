@@ -68,6 +68,9 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &OnroadWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &OnroadWindow::offroadTransition);
   QObject::connect(uiState(), &UIState::primeChanged, this, &OnroadWindow::primeChanged);
+
+  //OnroadWindow::driverViewOnはMainWindow::MainWindowでconnectしている。emit driverViewOnでドライバービューに切り替わる。
+  QObject::connect(this, &OnroadWindow::driverViewOff, this, &DriverViewWindow::done); //emit driverViewOffでドライバービューが閉じる。
 }
 
 bool mapVisible;
@@ -2177,7 +2180,12 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
   int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
+  static bool blinker_stat = false;
   if(left_blinker || right_blinker){
+    if(blinker_stat == false){
+      blinker_stat = true;
+      emit driverViewOn();
+    }
     if(left_blinker == true){
       dir0 = -fabs(dir0);
     } else if(right_blinker == true){
@@ -2206,6 +2214,11 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       }
     }
 #endif
+  } else {
+    if(blinker_stat == true){
+      blinker_stat = false;
+      emit driverViewOff();
+    }
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
 

@@ -12,7 +12,7 @@ DriverViewWindow::DriverViewWindow(QWidget* parent) : CameraWidget("camerad", VI
   QObject::connect(this, &CameraWidget::clicked, this, &DriverViewWindow::done);
   QObject::connect(device(), &Device::interactiveTimeout, this, [this]() {
     if (isVisible()) {
-      emit done();
+      //emit done(); , ひとまず時間で閉じるのをやめる
     }
   });
 }

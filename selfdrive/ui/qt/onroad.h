@@ -180,6 +180,8 @@ public:
 
 signals:
   void mapPanelRequested();
+  void driverViewOn();
+  void driverViewOff();
 
 private:
   void paintEvent(QPaintEvent *event);
