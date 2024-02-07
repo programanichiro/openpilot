@@ -104,6 +104,8 @@ private:
   QPixmap settings_img;
 };
 
+class OnroadWindow;
+
 // container window for the NVG UI
 class AnnotatedCameraWidget : public CameraWidget {
   Q_OBJECT
@@ -113,6 +115,7 @@ public:
   void updateState(const UIState &s);
 
   MapSettingsButton *map_settings_btn;
+  OnroadWindow *parent_onroad;
 
 private:
   void drawText(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false);
@@ -165,8 +168,9 @@ protected:
   FirstOrderFilter fps_filter;
   void knightScanner(QPainter &p);
 
-//signals:
-//  void resizeSignal(int w);
+signals:
+  void driverViewOn();
+  void driverViewOff();
 };
 
 // container for all onroad widgets
@@ -180,8 +184,6 @@ public:
 
 signals:
   void mapPanelRequested();
-  void driverViewOn();
-  void driverViewOff();
 
 private:
   void paintEvent(QPaintEvent *event);
