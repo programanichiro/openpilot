@@ -66,7 +66,9 @@ void DriverViewWindow::paintGL() {
     int fbox_x = 1080.0 - 1714.0 * face_x;
     int fbox_y = -135.0 + (504.0 + std::abs(face_x)*112.0) + (1205.0 - std::abs(face_x)*724.0) * face_y;
     p.setPen(QPen(QColor(255, 255, 255, alpha * 255), 10));
-    p.setBrush(QColor(192, 102, 0, 255)); //顔を隠す
+    if(uiState()->scene.started){
+      p.setBrush(QColor(192, 102, 0, 255)); //顔を隠す
+    }
     p.drawRoundedRect(fbox_x - box_size / 2, fbox_y - box_size / 2, box_size, box_size, 35.0, 35.0);
   }
 
@@ -77,7 +79,9 @@ void DriverViewWindow::paintGL() {
   p.setOpacity(face_detected ? 1.0 : 0.2);
   p.drawPixmap(img_x, img_y, face_img);
 
-  mini_knightScanner(p);
+  if(uiState()->scene.started){
+    mini_knightScanner(p);
+  }
 }
 
 extern bool global_engageable;
