@@ -76,7 +76,7 @@ void DriverViewWindow::paintGL() {
   p.setOpacity(face_detected ? 1.0 : 0.2);
   p.drawPixmap(img_x, img_y, face_img);
 
-  mini_knightScanner(p);
+  //mini_knightScanner(p);
 }
 
 extern bool blinker_stat;
