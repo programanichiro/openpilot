@@ -77,7 +77,6 @@ void HomeWindow::updateState(const UIState &s) {
       showDriverView(true);
     }
   } else {
-    //ドライバーカメラ発動中は動いていない？
     if(blinker_stat == true){
       blinker_stat = false;
       showDriverView(false);
