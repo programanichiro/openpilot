@@ -2122,7 +2122,6 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   painter.restore();
 }
 
-bool blinker_stat = false;
 void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 
   static const int ct_n = 1;
@@ -2183,10 +2182,6 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
   int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker){
-    if(blinker_stat == false){
-      blinker_stat = true;
-      emit driverViewOn();
-    }
     if(left_blinker == true){
       dir0 = -fabs(dir0);
     } else if(right_blinker == true){
@@ -2215,12 +2210,6 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       }
     }
 #endif
-  } else {
-    //ドライバーカメラ発動中は動いていない？
-    if(blinker_stat == true){
-      blinker_stat = false;
-      //emit driverViewOff();
-    }
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
 

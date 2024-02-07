@@ -57,7 +57,6 @@ void HomeWindow::showMapPanel(bool show) {
   onroad->showMapPanel(show);
 }
 
-extern bool blinker_stat;
 void HomeWindow::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
 
@@ -67,11 +66,15 @@ void HomeWindow::updateState(const UIState &s) {
     slayout->setCurrentWidget(body);
   }
 
+  static bool blinker_stat = false;
   bool left_blinker = sm["carState"].getCarState().getLeftBlinker();
   bool right_blinker = sm["carState"].getCarState().getRightBlinker();
   //int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker){
-    ;
+    if(blinker_stat == false){
+      blinker_stat = true;
+      showDriverView(true);
+    }
   } else {
     //ドライバーカメラ発動中は動いていない？
     if(blinker_stat == true){

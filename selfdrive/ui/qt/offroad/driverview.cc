@@ -79,7 +79,6 @@ void DriverViewWindow::paintGL() {
   mini_knightScanner(p);
 }
 
-extern bool blinker_stat;
 extern bool global_engageable;
 extern int global_status;
 extern float vc_speed;
@@ -146,15 +145,14 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
   int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker){
+    if(left_blinker == true){
+      dir0 = -fabs(dir0);
+    } else if(right_blinker == true){
+      dir0 = fabs(dir0);
+    }
     dir = dir0 * 1.0;
     hh = ww;
     hh = hh * 2 / 3;
-  } else {
-    // //ドライバーカメラ発動中は動いていない？
-    // if(blinker_stat == true){
-    //   blinker_stat = false;
-    //   ここでemit doneするとクラッシュする ->HomeWindowのupdateStatusで行う。
-    // }
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
 
