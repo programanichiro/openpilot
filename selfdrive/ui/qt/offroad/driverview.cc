@@ -66,6 +66,7 @@ void DriverViewWindow::paintGL() {
     int fbox_x = 1080.0 - 1714.0 * face_x;
     int fbox_y = -135.0 + (504.0 + std::abs(face_x)*112.0) + (1205.0 - std::abs(face_x)*724.0) * face_y;
     p.setPen(QPen(QColor(255, 255, 255, alpha * 255), 10));
+    p.setBrush(QColor(192, 102, 0, 255)); //顔を隠す
     p.drawRoundedRect(fbox_x - box_size / 2, fbox_y - box_size / 2, box_size, box_size, 35.0, 35.0);
   }
 
@@ -76,7 +77,7 @@ void DriverViewWindow::paintGL() {
   p.setOpacity(face_detected ? 1.0 : 0.2);
   p.drawPixmap(img_x, img_y, face_img);
 
-  //mini_knightScanner(p);
+  mini_knightScanner(p);
 }
 
 extern bool blinker_stat;
@@ -150,11 +151,11 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
     hh = ww;
     hh = hh * 2 / 3;
   } else {
-    //ドライバーカメラ発動中は動いていない？
-    if(blinker_stat == true){
-      blinker_stat = false;
-      emit done2(); //ここでemit doneするとクラッシュする？
-    }
+    // //ドライバーカメラ発動中は動いていない？
+    // if(blinker_stat == true){
+    //   blinker_stat = false;
+    //   emit done2(); //ここでemit doneするとクラッシュする？ ->HomeWindowのupdateStatusで行う。
+    // }
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
 
@@ -187,6 +188,7 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
     }
   }
   p.setCompositionMode(QPainter::CompositionMode_Plus);
+  p.setPen(QPen(QColor(255, 255, 255, 0), 0)); //枠をとる
   for(int i=0; i<(n-1); i++){
     //QRect rc(0, h_pos, ww, hh);
     if(t[i] > 0.01){
