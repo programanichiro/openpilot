@@ -95,16 +95,21 @@ void HomeWindow::offroadTransition(bool offroad) {
 }
 
 void HomeWindow::showDriverView(bool show) {
+  static bool sidebar_disp = false;
   if (show) {
-    if (!uiState()->scene.started) {
-      emit closeSettings();
+    if (uiState()->scene.started) {
+      sidebar_disp = sidebar->isVisible();
     }
+    emit closeSettings();
     slayout->setCurrentWidget(driver_view);
   } else {
     if (!uiState()->scene.started) {
       slayout->setCurrentWidget(home);
     } else {
       slayout->setCurrentWidget(onroad);
+      if(sidebar_disp){
+        sidebar->setVisible(true);
+      }
     }
   }
   if (!uiState()->scene.started) {
@@ -121,8 +126,7 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
 
 void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
   if(uiState()->scene.started){
-    slayout->setCurrentWidget(driver_view);
-    //sidebar->setVisible(false);
+    showDriverView(true);
     return;
   }
   HomeWindow::mousePressEvent(e);
