@@ -1,5 +1,4 @@
 #include "selfdrive/ui/qt/onroad.h"
-#include "selfdrive/ui/qt/home.h"
 
 #include <algorithm>
 #include <cmath>
@@ -69,9 +68,6 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &OnroadWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &OnroadWindow::offroadTransition);
   QObject::connect(uiState(), &UIState::primeChanged, this, &OnroadWindow::primeChanged);
-
-  //OnroadWindow::driverViewOnはMainWindow::MainWindowでconnectしている。emit driverViewOnでドライバービューに切り替わる。
-  QObject::connect(nvg, &AnnotatedCameraWidget::driverViewOff, ((HomeWindow*)parent)->driver_view, &DriverViewWindow::done); //emit driverViewOffでドライバービューが閉じる。
 }
 
 bool mapVisible;
@@ -1025,7 +1021,7 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
 // Window that shows camera view and variety of info drawn on top
 AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* parent) : fps_filter(UI_FREQ, 3, 1. / UI_FREQ), CameraWidget("camerad", type, true, parent) {
   pm = std::make_unique<PubMaster, const std::initializer_list<const char *>>({"uiDebug"});
-  parent_onroad = (OnroadWindow*)parent;
+
   main_layout = new QVBoxLayout(this);
 /*
   main_layout->setMargin(UI_BORDER_SIZE);

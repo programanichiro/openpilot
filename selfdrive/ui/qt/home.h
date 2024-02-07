@@ -67,11 +67,9 @@ protected:
 private:
   Sidebar *sidebar;
   OffroadHome *home;
-public:
   OnroadWindow *onroad;
   BodyWindow *body;
   DriverViewWindow *driver_view;
-private:
   QStackedLayout *slayout;
 
 private slots:
