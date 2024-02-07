@@ -67,6 +67,7 @@ void HomeWindow::updateState(const UIState &s) {
   }
 
   static bool blinker_stat = false;
+#if 0
   uint16_t lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
   double vEgo = sm["carState"].getCarState().getVEgo() * 3.6;
   bool left_blinker = sm["carState"].getCarState().getLeftBlinker() && vEgo > 45 && lsta == 1;
@@ -83,6 +84,31 @@ void HomeWindow::updateState(const UIState &s) {
       showDriverView(false);
     }
   }
+#else
+  static bool lsta_can_get = false;
+  uint16_t lsta = 0;
+  const bool left_blinker = sm["carState"].getCarState().getLeftBlinker();
+  const bool right_blinker = sm["carState"].getCarState().getRightBlinker();
+  if(left_blinker == false && right_blinker == false){
+    lsta_can_get = true;
+  }
+  if(lsta_can_get == true){
+    lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
+  }
+  bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
+  if(lsta == 1 /*left_blinker || right_blinker*/ || back_gear){
+    if(blinker_stat == false){
+      blinker_stat = true;
+      showDriverView(true);
+    }
+  } else {
+    if(blinker_stat == true){
+      blinker_stat = false;
+      showDriverView(false);
+      lsta_can_get == false; //一旦ウインカーを戻すまでは発動しない。
+    }
+  }
+#endif
 }
 
 void HomeWindow::offroadTransition(bool offroad) {
