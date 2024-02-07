@@ -184,15 +184,6 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
         }
       }
     }
-    std::string handle_center_txt = util::read_file("/tmp/handle_center_info.txt");
-    if(handle_center_txt.empty() == false){
-        handle_center = std::stof(handle_center_txt);
-    } else {
-      std::string handle_calibct_txt = util::read_file("/data/handle_calibct_info.txt");
-      if(handle_calibct_txt.empty() == false){
-        handle_calibct = std::stoi(handle_calibct_txt);
-      }
-    }
   }
   p.setCompositionMode(QPainter::CompositionMode_Plus);
   for(int i=0; i<(n-1); i++){
