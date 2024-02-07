@@ -67,10 +67,11 @@ void HomeWindow::updateState(const UIState &s) {
   }
 
   static bool blinker_stat = false;
-  bool left_blinker = sm["carState"].getCarState().getLeftBlinker();
-  bool right_blinker = sm["carState"].getCarState().getRightBlinker();
+  uint16_t lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
+  double vEgo sm["carState"].getCarState().getVEgo() * 3.6;
+  bool left_blinker = sm["carState"].getCarState().getLeftBlinker() && vEgo > 45 && lsta == 1;
+  bool right_blinker = sm["carState"].getCarState().getRightBlinker() && vEgo > 45 && lsta == 1;
   bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
-  //int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker || back_gear){
     if(blinker_stat == false){
       blinker_stat = true;
