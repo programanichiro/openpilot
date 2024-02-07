@@ -75,7 +75,6 @@ void DriverViewWindow::paintGL() {
   p.setOpacity(face_detected ? 1.0 : 0.2);
   p.drawPixmap(img_x, img_y, face_img);
 
-  void mini_knightScanner(QPainter &p);
   mini_knightScanner(p);
 }
 
@@ -84,7 +83,9 @@ extern bool global_engageable;
 extern int global_status;
 extern float vc_speed;
 extern float curve_value;
-void mini_knightScanner(QPainter &p) {
+extern void setButtonInt(const char*fn , int num); //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。num(0〜3)はそのまま数字で。
+extern void setButtonEnabled0(const char*fn , bool flag); //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
+void DriverViewWindow::mini_knightScanner(QPainter &p) {
 
   static const int ct_n = 1;
   static float ct;
