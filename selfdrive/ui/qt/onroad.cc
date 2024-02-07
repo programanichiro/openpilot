@@ -1,4 +1,5 @@
 #include "selfdrive/ui/qt/onroad.h"
+#include "selfdrive/ui/qt/home.h"
 
 #include <algorithm>
 #include <cmath>
@@ -70,7 +71,7 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::primeChanged, this, &OnroadWindow::primeChanged);
 
   //OnroadWindow::driverViewOnはMainWindow::MainWindowでconnectしている。emit driverViewOnでドライバービューに切り替わる。
-  QObject::connect(this, &OnroadWindow::driverViewOff, this, &DriverViewWindow::done); //emit driverViewOffでドライバービューが閉じる。
+  QObject::connect(nvg, &AnnotatedCameraWidget::driverViewOff, ((HomeWindow*)parent)->driver_view, &DriverViewWindow::done); //emit driverViewOffでドライバービューが閉じる。
 }
 
 bool mapVisible;

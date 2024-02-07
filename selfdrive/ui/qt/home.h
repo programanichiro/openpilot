@@ -69,9 +69,9 @@ private:
   OffroadHome *home;
 public:
   OnroadWindow *onroad;
-private:
   BodyWindow *body;
   DriverViewWindow *driver_view;
+private:
   QStackedLayout *slayout;
 
 private slots:
