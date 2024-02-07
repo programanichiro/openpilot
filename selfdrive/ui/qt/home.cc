@@ -69,7 +69,7 @@ void HomeWindow::updateState(const UIState &s) {
 
   bool left_blinker = sm["carState"].getCarState().getLeftBlinker();
   bool right_blinker = sm["carState"].getCarState().getRightBlinker();
-  int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
+  //int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker){
     ;
   } else {
