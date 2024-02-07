@@ -10,6 +10,7 @@ public:
 
 signals:
   void done();
+  void done2();
 
 protected:
   void showEvent(QShowEvent *event) override;

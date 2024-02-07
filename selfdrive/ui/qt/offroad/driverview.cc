@@ -15,6 +15,11 @@ DriverViewWindow::DriverViewWindow(QWidget* parent) : CameraWidget("camerad", VI
       //emit done(); , ひとまず時間で閉じるのをやめる
     }
   });
+  QObject::connect(this, &DriverViewWindow::done2, this, [this]() {
+    if (isVisible()) {
+      emit done();
+    }
+  });
 }
 
 void DriverViewWindow::showEvent(QShowEvent* event) {
@@ -152,7 +157,7 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
     //ドライバーカメラ発動中は動いていない？
     if(blinker_stat == true){
       blinker_stat = false;
-      emit done();
+      emit done2(); //ここでemit doneするとクラッシュする？
     }
   }
   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
