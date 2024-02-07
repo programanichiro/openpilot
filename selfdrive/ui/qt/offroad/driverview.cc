@@ -15,11 +15,7 @@ DriverViewWindow::DriverViewWindow(QWidget* parent) : CameraWidget("camerad", VI
       //emit done(); , ひとまず時間で閉じるのをやめる
     }
   });
-  QObject::connect(this, &DriverViewWindow::done2, this, [this]() {
-    if (isVisible()) {
-      emit done();
-    }
-  });
+  QObject::connect(this, &DriverViewWindow::done2, this, &DriverViewWindow::done);
 }
 
 void DriverViewWindow::showEvent(QShowEvent* event) {
