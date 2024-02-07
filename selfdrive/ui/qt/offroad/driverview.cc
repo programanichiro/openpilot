@@ -36,7 +36,7 @@ void DriverViewWindow::paintGL() {
   std::lock_guard lk(frame_lock);
   QPainter p(this);
   // startup msg
-  if (frames.empty()) {
+  if (frames.empty() && !uiState()->scene.started) {
     p.setPen(Qt::white);
     p.setRenderHint(QPainter::TextAntialiasing);
     p.setFont(InterFont(100, QFont::Bold));
