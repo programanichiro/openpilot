@@ -69,7 +69,7 @@ void HomeWindow::updateState(const UIState &s) {
   static bool blinker_stat = false;
   bool left_blinker = sm["carState"].getCarState().getLeftBlinker();
   bool right_blinker = sm["carState"].getCarState().getRightBlinker();
-  bool back_gear = (sm["carState"].getCarState().getGearShifter() == ::cereal::CarState::GearShifter::reverse);//car.capnp , enum GearShifterにバックギアが定義されている。
+  bool back_gear = (int)((sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
   //int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
   if(left_blinker || right_blinker || back_gear){
     if(blinker_stat == false){
