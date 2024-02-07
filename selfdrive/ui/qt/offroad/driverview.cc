@@ -81,7 +81,7 @@ void DriverViewWindow::paintGL() {
 
 extern bool blinker_stat;
 extern bool global_engageable;
-extern int global_status
+extern int global_status;
 extern float vc_speed;
 extern float curve_value;
 void mini_knightScanner(QPainter &p) {
