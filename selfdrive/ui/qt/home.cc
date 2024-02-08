@@ -105,7 +105,7 @@ void HomeWindow::updateState(const UIState &s) {
     if(blinker_stat == true){
       blinker_stat = false;
       showDriverView(false);
-      lsta_can_get == false; //一旦ウインカーを戻すまでは発動しない。
+      lsta_can_get = false; //一旦ウインカーを戻すまでは発動しない。
     }
   }
 #endif
