@@ -1060,7 +1060,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto nav_instruction = sm["navInstruction"].getNavInstruction();
 
   // Handle older routes where vCruiseCluster is not set
-  float v_cruise =  cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
+  float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
   maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。getVCruiseCluster導入でここが45〜115になってる可能性あり。ただ黄色点滅警告にはなんかマッチしてる気がする。
   //maxspeed_org = v_cruise; //getVCruiseを使うと点滅しすぎる？
   if(tss_type == 0){
