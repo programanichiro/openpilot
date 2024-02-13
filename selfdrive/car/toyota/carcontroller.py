@@ -104,7 +104,7 @@ class CarController:
           # with open('/tmp/debug_out_v','w') as fp:
           #   fp.write('ns:%.7f / %.5f' % (new_steer,lane_d_info))
           #new_steerはマイナスで右に曲がる。
-          new_steer -= lane_d_info * 10 #引くとセンターへ車体を戻す。様子見で微調整。10でもよさげ。
+          new_steer -= lane_d_info * 100 #引くとセンターへ車体を戻す。様子見で微調整。10でもよさげ。
     except Exception as e:
       pass
     apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.params)
