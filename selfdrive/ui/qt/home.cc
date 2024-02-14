@@ -65,6 +65,50 @@ void HomeWindow::updateState(const UIState &s) {
     body->setEnabled(true);
     slayout->setCurrentWidget(body);
   }
+
+  static bool blinker_stat = false;
+#if 0
+  uint16_t lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
+  double vEgo = sm["carState"].getCarState().getVEgo() * 3.6;
+  bool left_blinker = sm["carState"].getCarState().getLeftBlinker() && vEgo > 45 && lsta == 1;
+  bool right_blinker = sm["carState"].getCarState().getRightBlinker() && vEgo > 45 && lsta == 1;
+  bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
+  if(left_blinker || right_blinker || back_gear){
+    if(blinker_stat == false){
+      blinker_stat = true;
+      showDriverView(true);
+    }
+  } else {
+    if(blinker_stat == true){
+      blinker_stat = false;
+      showDriverView(false);
+    }
+  }
+#else
+  static bool lsta_can_get = false;
+  uint16_t lsta = 0;
+  const bool left_blinker = sm["carState"].getCarState().getLeftBlinker();
+  const bool right_blinker = sm["carState"].getCarState().getRightBlinker();
+  if(left_blinker == false && right_blinker == false){
+    lsta_can_get = true;
+  }
+  if(lsta_can_get == true){
+    lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
+  }
+  bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
+  if(lsta == 1 /*left_blinker || right_blinker*/ || back_gear){
+    if(blinker_stat == false){
+      blinker_stat = true;
+      showDriverView(true);
+    }
+  } else {
+    if(blinker_stat == true){
+      blinker_stat = false;
+      showDriverView(false);
+      lsta_can_get = false; //一旦ウインカーを戻すまでは発動しない。
+    }
+  }
+#endif
 }
 
 void HomeWindow::offroadTransition(bool offroad) {
@@ -78,13 +122,26 @@ void HomeWindow::offroadTransition(bool offroad) {
 }
 
 void HomeWindow::showDriverView(bool show) {
+  static bool sidebar_disp = false;
   if (show) {
+    if (uiState()->scene.started) {
+      sidebar_disp = sidebar->isVisible();
+    }
     emit closeSettings();
     slayout->setCurrentWidget(driver_view);
   } else {
-    slayout->setCurrentWidget(home);
+    if (!uiState()->scene.started) {
+      slayout->setCurrentWidget(home);
+    } else {
+      slayout->setCurrentWidget(onroad);
+      if(sidebar_disp){
+        sidebar->setVisible(true);
+      }
+    }
   }
-  sidebar->setVisible(show == false);
+  if (!uiState()->scene.started) {
+    sidebar->setVisible(show == false);
+  }
 }
 
 void HomeWindow::mousePressEvent(QMouseEvent* e) {
@@ -95,6 +152,10 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
 }
 
 void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
+  if(uiState()->scene.started){
+    showDriverView(true);
+    return;
+  }
   HomeWindow::mousePressEvent(e);
   const SubMaster &sm = *(uiState()->sm);
   if (sm["carParams"].getCarParams().getNotCar()) {
@@ -108,6 +169,15 @@ void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
 }
 
 // OffroadHome: the offroad home page
+void OffroadHome::poweroff() {
+  if (!uiState()->engaged()) {
+      if (!uiState()->engaged()) {
+        params.putBool("DoShutdown", true);
+      }
+  // } else {
+  //   ConfirmationDialog::alert(tr("Disengage to Power Off"), this);
+  }
+}
 
 OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
   QVBoxLayout* main_layout = new QVBoxLayout(this);
@@ -177,6 +247,11 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     QObject::connect(setup_widget, &SetupWidget::openSettings, this, &OffroadHome::openSettings);
     right_column->addWidget(setup_widget, 1);
 
+    QPushButton *poweroff_btn = new QPushButton(tr("Power Off"));
+    poweroff_btn->setObjectName("poweroff_btn");
+    right_column->addWidget(poweroff_btn , 1);
+    QObject::connect(poweroff_btn, &QPushButton::clicked, this, &OffroadHome::poweroff);
+
     home_layout->addWidget(right_widget, 1);
   }
   center_layout->addWidget(home_widget);
@@ -211,6 +286,8 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     OffroadHome > QLabel {
       font-size: 55px;
     }
+    #poweroff_btn {font-size: 60px; font-weight: bold; height: 120px; border-radius: 10px; background-color: #E22C2C; }
+    #poweroff_btn:pressed { background-color: #FF2424; }
   )");
 }
 
