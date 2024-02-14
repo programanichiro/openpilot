@@ -101,9 +101,9 @@ class CarController:
         lane_d_info_str = fp.read()
         if lane_d_info_str:
           lane_d_info = float(lane_d_info_str)
-          nn_lane_d_info = 0 if new_steer == 0 else lane_d_info / new_steer
-          with open('/tmp/debug_out_v','w') as fp:
-            fp.write('ns:%.7f/%.5f(%.1f%%)' % (new_steer,lane_d_info,nn_lane_d_info*100))
+          # nn_lane_d_info = 0 if new_steer == 0 else lane_d_info / new_steer
+          # with open('/tmp/debug_out_v','w') as fp:
+          #   fp.write('ns:%.7f/%.5f(%.1f%%)' % (new_steer,lane_d_info,nn_lane_d_info*100))
           #new_steerはマイナスで右に曲がる。
           new_steer -= lane_d_info * 100 * 30 #引くとセンターへ車体を戻す。
     except Exception as e:
