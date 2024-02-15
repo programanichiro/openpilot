@@ -126,15 +126,18 @@ void HomeWindow::showDriverView(bool show) {
   if (show) {
     if (uiState()->scene.started) {
       sidebar_disp = sidebar->isVisible();
+      sidebar->setVisible(false);
+    } else {
+      emit closeSettings();
     }
-    emit closeSettings();
     slayout->setCurrentWidget(driver_view);
   } else {
     if (!uiState()->scene.started) {
       slayout->setCurrentWidget(home);
     } else {
       slayout->setCurrentWidget(onroad);
-      if(sidebar_disp){
+      if(sidebar_disp == true){
+        sidebar_disp = false;
         sidebar->setVisible(true);
       }
     }
