@@ -319,7 +319,8 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
 
 // ButtonsWindow
 const static char *btn_style0 = "font-size: 90px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
-const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
+//const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: %1";
+const static char *btn_style = "font-size: 90px; border-radius: 20px; border-color: rgba(75, 75, 75, 0.3); color: %1"; //枠なしのボタン色変更
 const static char *btn_styleb = "font-size: 35px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_styleb1 = "font-size: 30px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_styleb2 = "font-size: 50px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
