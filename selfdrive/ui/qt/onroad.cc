@@ -559,8 +559,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     QObject::connect(LTA_EnableButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mLTA_EnableButton = (mLTA_EnableButton + 1) % 2; //0->1->0
     });
-    LTA_EnableButton->setFixedWidth(150);
-    LTA_EnableButton->setFixedHeight(150*0.9);
+#define BTN_W_NORMAL 154 //150
+    LTA_EnableButton->setFixedWidth(BTN_W_NORMAL);
+    LTA_EnableButton->setFixedHeight(BTN_W_NORMAL*0.9);
     //LTA_EnableButton->setPalette(QColor(255,255,255,all_opac*255));
     //LTA_EnableButton->setAutoFillBackground(true);
     btns_layoutLL->addSpacing(10);
@@ -575,8 +576,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     QObject::connect(useDynmicExpButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mUseDynmicExpButton = (mUseDynmicExpButton + 1) % 2; //0->1->0
     });
-    useDynmicExpButton->setFixedWidth(150);
-    useDynmicExpButton->setFixedHeight(150*0.9);
+    useDynmicExpButton->setFixedWidth(BTN_W_NORMAL);
+    useDynmicExpButton->setFixedHeight(BTN_W_NORMAL*0.9);
     btns_layoutLL->addSpacing(15);
     btns_layoutLL->addWidget(useDynmicExpButton);
     useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0)));
@@ -661,8 +662,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     QObject::connect(startAccelPowerUpButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mStartAccelPowerUpButton = !mStartAccelPowerUpButton;
     });
-    startAccelPowerUpButton->setFixedWidth(150);
-    startAccelPowerUpButton->setFixedHeight(150);
+    startAccelPowerUpButton->setFixedWidth(BTN_W_NORMAL);
+    startAccelPowerUpButton->setFixedHeight(BTN_W_NORMAL);
     //lockOnButton->setWindowOpacity(all_opac);
     btns_layoutL->addWidget(startAccelPowerUpButton);
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton)));
@@ -675,8 +676,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     QObject::connect(lockOnButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mLockOnButton = !mLockOnButton;
     });
-    lockOnButton->setFixedWidth(150);
-    lockOnButton->setFixedHeight(150);
+    lockOnButton->setFixedWidth(BTN_W_NORMAL);
+    lockOnButton->setFixedHeight(BTN_W_NORMAL);
     //lockOnButton->setWindowOpacity(all_opac);
     btns_layoutL->addSpacing(15);
     btns_layoutL->addWidget(lockOnButton);
@@ -699,8 +700,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
       setButtonEnabled0("/tmp/force_low_engage.txt" , false);
     });
-    accelEngagedButton->setFixedWidth(150);
-    accelEngagedButton->setFixedHeight(150);
+    accelEngagedButton->setFixedWidth(BTN_W_NORMAL);
+    accelEngagedButton->setFixedHeight(BTN_W_NORMAL);
     //accelEngagedButton->setWindowOpacity(all_opac);
     btns_layoutL->addSpacing(15);
     btns_layoutL->addWidget(accelEngagedButton);
@@ -721,8 +722,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     QObject::connect(accelCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mAccelCtrlButton = !mAccelCtrlButton;
     });
-    accelCtrlButton->setFixedWidth(150);
-    accelCtrlButton->setFixedHeight(150);
+    accelCtrlButton->setFixedWidth(BTN_W_NORMAL);
+    accelCtrlButton->setFixedHeight(BTN_W_NORMAL);
     //accelCtrlButton->setWindowOpacity(all_opac);
     //btns_layout->addSpacing(10);
     btns_layout->addWidget(accelCtrlButton);
@@ -736,8 +737,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     QObject::connect(decelCtrlButton, &QPushButton::pressed, [=]() {
       uiState()->scene.mDecelCtrlButton = !mDecelCtrlButton;
     });
-    decelCtrlButton->setFixedWidth(150);
-    decelCtrlButton->setFixedHeight(150);
+    decelCtrlButton->setFixedWidth(BTN_W_NORMAL);
+    decelCtrlButton->setFixedHeight(BTN_W_NORMAL);
     //decelCtrlButton->setWindowOpacity(all_opac);
     btns_layout->addSpacing(15);
     btns_layout->addWidget(decelCtrlButton);
@@ -759,7 +760,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       color: rgba(255, 255, 255, 0.7);
       text-align: center;
       padding: 0px;
-      border-width: 4px;
+      border-width: 0px;
       border-style: solid;
       background-color: rgba(35, 35, 35, 0.5);
     }
