@@ -1095,7 +1095,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   v_ego_cluster_seen = v_ego_cluster_seen || car_state.getVEgoCluster() != 0.0;
   float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
-  int ACC_speed = (int)(speed * s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
+  int ACC_speed = (int)(speed * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH));
   vc_speed = v_ego;
   QString maxspeed_str = is_cruise_set ? QString::number(std::nearbyint(setSpeed)) : "N/A";
   std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
