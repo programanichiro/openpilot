@@ -1126,7 +1126,11 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
   is_metric = s.scene.is_metric;
   speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
-  speedUnit = QString::number(ACC_speed) + ":" + speedUnit;
+  if(is_cruise_set){
+    speedUnit = QString::number(ACC_speed) + ":" + speedUnit;
+  } else {
+    speedUnit = QString("-:") + speedUnit;
+  }
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   status = s.status;
 
