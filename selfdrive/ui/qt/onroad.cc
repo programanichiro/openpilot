@@ -1052,7 +1052,7 @@ static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
-  int SET_SPEED_NA = 409; //406; //557; //255;
+  int SET_SPEED_NA = 255; //ACC_speedと比較することで255のままで良い。409; //406; //557; //255; , 
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
@@ -1063,9 +1063,9 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
-  //int ACC_speed = (int)v_cruise; //45〜
-  int ACC_speed = (int)cs.getVCruise(); //41〜
-  maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。39〜？、黄色点滅警告にはなんかマッチしてる気がする。
+  int ACC_speed = (int)v_cruise; //45〜
+  v_cruise = cs.getVCruise(); //41〜,間違いない、表示して確認した。改めてこちらを使う。
+  maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
   //maxspeed_org = v_cruise; //getVCruiseを使うと点滅しすぎる？
   if(tss_type == 0){
     std::string tss_type_txt = util::read_file("/data/tss_type_info.txt");
@@ -1079,16 +1079,14 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     }
   }
   if(PI0_DEBUG == false && tss_type <= 1){
-    //これまでと互換。tss_type_infoがなければTSSP
+    //これまでと互換。tss_type_infoがなければTSSP。ここの計算はcruise_info.txtの内容で上書きされる。できればここでの計算は無しにしたい。
     v_cruise = v_cruise < (55 - 4) ? (55 - (55 - (v_cruise+4)) * 2 - 4) : v_cruise;
   //v_cruise = v_cruise > (110 - 6) ? (110 + ((v_cruise+6) - 110) * 3 - 6) : v_cruise; //最大119
     v_cruise = v_cruise > (107 - 6) ? (107 + ((v_cruise+6) - 107) * 2 - 6) : v_cruise; //最大119 -> 114 -> 117に。
-  } else if(PI0_DEBUG == true || tss_type == 2){
-    SET_SPEED_NA = 255; //TSS2では戻す。
   }
 
   setSpeed = cs_alive ? v_cruise : SET_SPEED_NA;
-  is_cruise_set = setSpeed > 0 && (int)setSpeed != SET_SPEED_NA;
+  is_cruise_set = setSpeed > 0 && (int)ACC_speed != SET_SPEED_NA;
   if (is_cruise_set && !s.scene.is_metric) {
     setSpeed *= KM_TO_MILE;
   }
