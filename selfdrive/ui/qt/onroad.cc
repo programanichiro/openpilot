@@ -1063,7 +1063,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
-  maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。getVCruiseCluster導入でここが45〜115になってる可能性あり。ただ黄色点滅警告にはなんかマッチしてる気がする。
+  int ACC_speed = (int)v_cruise;
+  maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。39〜？、黄色点滅警告にはなんかマッチしてる気がする。
   //maxspeed_org = v_cruise; //getVCruiseを使うと点滅しすぎる？
   if(tss_type == 0){
     std::string tss_type_txt = util::read_file("/data/tss_type_info.txt");
@@ -1095,7 +1096,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   v_ego_cluster_seen = v_ego_cluster_seen || car_state.getVEgoCluster() != 0.0;
   float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
-  int ACC_speed = (int)(speed * (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH));
   vc_speed = v_ego;
   QString maxspeed_str = is_cruise_set ? QString::number(std::nearbyint(setSpeed)) : "N/A";
   std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
