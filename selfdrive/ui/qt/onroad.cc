@@ -1129,9 +1129,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   is_metric = s.scene.is_metric;
   speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
   if(is_cruise_set){
-    speedUnit = QString::number(ACC_speed) + ":" + speedUnit;
-  } else {
-    speedUnit = QString("-:") + speedUnit;
+    speedUnit = QString::number(ACC_speed) + speedUnit;
   }
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   status = s.status;
