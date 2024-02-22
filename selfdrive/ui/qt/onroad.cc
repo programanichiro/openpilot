@@ -1449,7 +1449,19 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
-  int temp = (int)deviceState.getAmbientTempC();
+  //int temp = (int)deviceState.getAmbientTempC();
+  int temp = 0; //温度が取れなくなったので目安。
+  auto ts = deviceState.getThermalStatus();
+  if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
+    //tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
+    temp = 55;
+  } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
+    //tempStatus = {{tr("TEMP"), tr("OK")}, warning_color};
+    temp = 65;
+  } else {
+    temp = 75;
+  }
+
 #if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
 #else
