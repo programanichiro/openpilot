@@ -130,7 +130,7 @@ void Sidebar::updateState(const UIState &s) {
   auto ts = deviceState.getThermalStatus();
   if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
     // int temp = (int)deviceState.getAmbientTempC(); 2024/2/22,もう温度取れない？
-    int temp = (int)deviceState.getMaxTempC();
+    int temp = (int)deviceState.getMaxTempC(); //代用。ファン制御に使っている。
     QString good_disp = QString::number(temp) + "°C";
     tempStatus = {{tr("TEMP"), tr(good_disp.toUtf8().data())}, good_color};
     //tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
