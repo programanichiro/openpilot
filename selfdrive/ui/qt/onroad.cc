@@ -1461,6 +1461,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   } else {
     temp = 75;
   }
+  temp = (int)deviceState.getMaxTempC();
 
 #if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
