@@ -1063,7 +1063,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
-  int ACC_speed = (int)v_cruise; //45〜
+  int ACC_speed = std::nearbyint(v_cruise); //45〜
   v_cruise = cs.getVCruise(); //41〜,間違いない、表示して確認した。改めてこちらを使う。
   maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
   //maxspeed_org = v_cruise; //getVCruiseを使うと点滅しすぎる？
@@ -1449,7 +1449,20 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
-  int temp = (int)deviceState.getAmbientTempC();
+  //int temp = (int)deviceState.getAmbientTempC();
+  int temp = 0; //温度が取れなくなったので目安。
+  auto ts = deviceState.getThermalStatus();
+  if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
+    //tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
+    temp = 55; //色変化のための参照値
+  } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
+    //tempStatus = {{tr("TEMP"), tr("OK")}, warning_color};
+    temp = 65; //色変化のための参照値
+  } else {
+    temp = 75; //色変化のための参照値
+  }
+  int max_temp = (int)deviceState.getMaxTempC(); //表示はこれを使う。
+
 #if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
 #else
@@ -1464,7 +1477,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   //QString temp_disp1 = QString(okConnect ? "⚫︎" : "⚪︎");
   QString temp_disp1 = QString(okConnect ? "●" : "○");
   QString temp_disp2 = QString(okGps ? "★" : "☆");
-  QString temp_disp3 = QString::number(temp) + "°C";
+  QString temp_disp3 = QString::number(max_temp) + "°C";
   //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "◆ " : "◇ ") + QString::number(temp) + "°C";
 
   //制限速度情報をmap.ccからonroadへ移動
