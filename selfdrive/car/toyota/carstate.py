@@ -50,6 +50,9 @@ class CarState(CarStateBase):
     self.steeringAngleDegs = []
     self.knight_scanner_bit3_ct = 0
 
+    self.prev_distance_button = 0
+    self.distance_button = 0
+
     self.low_speed_lockout = False
     self.acc_type = 1
     self.lkas_hud = {}
@@ -194,7 +197,7 @@ class CarState(CarStateBase):
       if not (self.CP.flags & ToyotaFlags.SMART_DSU.value):
         self.acc_type = cp_acc.vl["ACC_CONTROL"]["ACC_TYPE"]
       ret.stockFcw = bool(cp_acc.vl["PCS_HUD"]["FCW"])
-      self.lead_dist_button = cp_cam.vl["ACC_CONTROL"]["DISTANCE"]
+      self.lead_dist_button = cp_cam.vl["ACC_CONTROL"]["DISTANCE"] #公式実装？
 
     if self.CP.flags & ToyotaFlags.SMART_DSU.value:
       self.lead_dist_button = cp.vl["SDSU"]["FD_BUTTON"]
@@ -240,6 +243,11 @@ class CarState(CarStateBase):
 
     if self.CP.carFingerprint != CAR.PRIUS_V:
       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
+
+    # distance button is wired to the ACC module (camera or radar)
+    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
+      self.prev_distance_button = self.distance_button
+      self.distance_button = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
 
     return ret
 

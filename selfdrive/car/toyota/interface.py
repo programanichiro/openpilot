@@ -4,10 +4,11 @@ from panda import Panda
 from panda.python import uds
 from openpilot.selfdrive.car.toyota.values import Ecu, CAR, DBC, ToyotaFlags, CarControllerParams, TSS2_CAR, RADAR_ACC_CAR, NO_DSU_CAR, \
                                         MIN_ACC_SPEED, EPS_SCALE, UNSUPPORTED_DSU_CAR, NO_STOP_TIMER_CAR, ANGLE_CONTROL_CAR
-from openpilot.selfdrive.car import get_safety_config
+from openpilot.selfdrive.car import create_button_events, get_safety_config
 from openpilot.selfdrive.car.disable_ecu import disable_ecu
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 
+ButtonType = car.CarState.ButtonEvent.Type
 EventName = car.CarEvent.EventName
 SteerControlType = car.CarParams.SteerControlType
 
@@ -47,35 +48,29 @@ class CarInterface(CarInterfaceBase):
     if candidate in TSS2_CAR:
       ret.flags |= ToyotaFlags.POWER_STEERING_TSS2.value #パワステモーターTSS2
 
+    # Detect smartDSU, which intercepts ACC_CMD from the DSU (or radar) allowing openpilot to send it
+    # 0x2AA is sent by a similar device which intercepts the radar instead of DSU on NO_DSU_CARs
+    if 0x2FF in fingerprint[0] or (0x2AA in fingerprint[0] and candidate in NO_DSU_CAR):
+      ret.flags |= ToyotaFlags.SMART_DSU.value
+
+    # In TSS2 cars, the camera does long control
+    found_ecus = [fw.ecu for fw in car_fw]
+    ret.enableDsu = len(found_ecus) > 0 and Ecu.dsu not in found_ecus and candidate not in (NO_DSU_CAR | UNSUPPORTED_DSU_CAR) \
+                                        and not (ret.flags & ToyotaFlags.SMART_DSU)
+
     if candidate == CAR.PRIUS:
       stop_and_go = True
       # Only give steer angle deadzone to for bad angle sensor prius
       for fw in car_fw:
-        if fw.ecu == "eps" and (not fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00'):
+        if fw.ecu == "eps" and not fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00':
           ret.steerActuatorDelay = 0.25
           CarInterfaceBase.configure_torque_tune(candidate, ret.lateralTuning, steering_angle_deadzone_deg=0.2)
-        elif fw.ecu == "eps" and (fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00'):
+        elif fw.ecu == "eps" and fw.fwVersion == b'8965B47060\x00\x00\x00\x00\x00\x00':
           ret.flags |= ToyotaFlags.POWER_STEERING_TSS2.value #パワステモーター47700(8965B47060)はグッドアングルセンサー＆パワフルハンドリング、TSS2相当
-
-    elif candidate == CAR.PRIUS_V:
-      stop_and_go = True
-
-    elif candidate in (CAR.RAV4, CAR.RAV4H):
-      stop_and_go = True if (candidate in CAR.RAV4H) else False
 
     elif candidate in (CAR.LEXUS_RX, CAR.LEXUS_RX_TSS2):
       stop_and_go = True
       ret.wheelSpeedFactor = 1.035
-
-    elif candidate in (CAR.CHR, CAR.CHR_TSS2):
-      stop_and_go = True
-
-    elif candidate in (CAR.CAMRY, CAR.CAMRY_TSS2):
-      stop_and_go = True
-
-    elif candidate in (CAR.HIGHLANDER, CAR.HIGHLANDER_TSS2):
-      # TODO: TSS-P models can do stop and go, but unclear if it requires sDSU or unplugging DSU
-      stop_and_go = True
 
     elif candidate in (CAR.AVALON, CAR.AVALON_2019, CAR.AVALON_TSS2):
       # starting from 2019, all Avalon variants have stop and go
@@ -99,17 +94,14 @@ class CarInterface(CarInterfaceBase):
           ret.lateralTuning.pid.kf = 0.00004
           break
 
-    elif candidate == CAR.SIENNA:
+    elif candidate in (CAR.RAV4H, CAR.CHR, CAR.CAMRY, CAR.SIENNA, CAR.LEXUS_CTH, CAR.LEXUS_NX):
+      # TODO: Some of these platforms are not advertised to have full range ACC, are they similar to SNG_WITHOUT_DSU cars?
       stop_and_go = True
 
-    elif candidate == CAR.LEXUS_CTH:
-      stop_and_go = True
-
-    elif candidate in (CAR.LEXUS_NX, CAR.LEXUS_NX_TSS2):
-      stop_and_go = True
-
-    elif candidate == CAR.MIRAI:
-      stop_and_go = True
+    # TODO: these models can do stop and go, but unclear if it requires sDSU or unplugging DSU.
+    #  For now, don't list stop and go functionality in the docs
+    if ret.flags & ToyotaFlags.SNG_WITHOUT_DSU:
+      stop_and_go = stop_and_go or bool(ret.flags & ToyotaFlags.SMART_DSU.value) or (ret.enableDsu and not docs)
 
     ret.centerToFront = ret.wheelbase * 0.44
 
@@ -117,19 +109,9 @@ class CarInterface(CarInterfaceBase):
     # Detect flipped signals and enable for C-HR and others
     ret.enableBsm = 0x3F6 in fingerprint[0] and candidate in TSS2_CAR
 
-    # Detect smartDSU, which intercepts ACC_CMD from the DSU (or radar) allowing openpilot to send it
-    # 0x2AA is sent by a similar device which intercepts the radar instead of DSU on NO_DSU_CARs
-    if 0x2FF in fingerprint[0] or (0x2AA in fingerprint[0] and candidate in NO_DSU_CAR):
-      ret.flags |= ToyotaFlags.SMART_DSU.value
-
     # No radar dbc for cars without DSU which are not TSS 2.0
     # TODO: make an adas dbc file for dsu-less models
     ret.radarUnavailable = DBC[candidate]['radar'] is None or candidate in (NO_DSU_CAR - TSS2_CAR)
-
-    # In TSS2 cars, the camera does long control
-    found_ecus = [fw.ecu for fw in car_fw]
-    ret.enableDsu = len(found_ecus) > 0 and Ecu.dsu not in found_ecus and candidate not in (NO_DSU_CAR | UNSUPPORTED_DSU_CAR) \
-                                        and not (ret.flags & ToyotaFlags.SMART_DSU)
 
     # if the smartDSU is detected, openpilot can send ACC_CONTROL and the smartDSU will block it from the DSU or radar.
     # since we don't yet parse radar on TSS2/TSS-P radar-based ACC cars, gate longitudinal behind experimental toggle
@@ -199,6 +181,10 @@ class CarInterface(CarInterfaceBase):
     ret = self.CS.update(self.cp, self.cp_cam)
 
     new_stand_still = False
+
+    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
+      ret.buttonEvents = create_button_events(self.CS.distance_button, self.CS.prev_distance_button, {1: ButtonType.gapAdjustCruise})
+
     # events
     events = self.create_common_events(ret)
 
@@ -228,7 +214,7 @@ class CarInterface(CarInterfaceBase):
     if NowStandStill != new_stand_still:
       NowStandStill = new_stand_still
       # with open('/tmp/stand_still.txt','w') as fp:
-      #   fp.write('%d' % (new_stand_still))      
+      #   fp.write('%d' % (new_stand_still))
 
     return ret
 
