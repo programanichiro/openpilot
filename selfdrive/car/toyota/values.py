@@ -46,7 +46,6 @@ class ToyotaFlags(IntFlag):
   HYBRID = 1
   SMART_DSU = 2
   DISABLE_RADAR = 4
-  POWER_STEERING_TSS2 = 8
 
   # Static flags
   TSS2 = 8
@@ -57,6 +56,7 @@ class ToyotaFlags(IntFlag):
   ANGLE_CONTROL = 128
   NO_STOP_TIMER = 256
 
+  POWER_STEERING_TSS2 = 512
 
 class Footnote(Enum):
   CAMRY = CarFootnote(
