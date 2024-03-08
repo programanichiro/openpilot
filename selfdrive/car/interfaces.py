@@ -379,9 +379,6 @@ class CarStateBase(ABC):
     K = get_kalman_gain(DT_CTRL, np.array(A), np.array(C), np.array(Q), R)
     self.v_ego_kf = KF1D(x0=x0, A=A, C=C[0], K=K)
 
-    self.lead_dist_button = 0
-    self.lead_dist_lines = 0
-    self.lead_dist_lines_init = False
     self.knight_scanner_bit3 = 7 # carstate.updateで knight_scanner_bit3.txt が反映される,デフォは7
     self.steeringAngleDegOrg = 0 #回転先予想する前のオリジナル値
 

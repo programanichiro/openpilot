@@ -200,23 +200,6 @@ class CarState(CarStateBase):
       if not (self.CP.flags & ToyotaFlags.SMART_DSU.value):
         self.acc_type = cp_acc.vl["ACC_CONTROL"]["ACC_TYPE"]
       ret.stockFcw = bool(cp_acc.vl["PCS_HUD"]["FCW"])
-      self.lead_dist_button = cp_cam.vl["ACC_CONTROL"]["DISTANCE"] #公式実装？
-
-    if self.CP.flags & ToyotaFlags.SMART_DSU.value:
-      self.lead_dist_button = cp.vl["SDSU"]["FD_BUTTON"]
-
-    if self.lead_dist_lines_init == False or self.lead_dist_lines != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
-      self.lead_dist_lines_init = True #初回は通す。
-      if self.lead_dist_lines != 0 and cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0:
-        #ボタン切り替えの可能性が高い
-        self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
-        #button(3,2,1) -> LongitudinalPersonality(2,1,0)
-        self.params.put("LongitudinalPersonality", str(int(self.lead_dist_lines)-1))
-      else:
-        # Ready OFFなどはこちら？
-        self.lead_dist_lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
-      # with open('/tmp/debug_out_q','w') as fp:
-      #   fp.write('lead_dist_lines:%d' % (self.lead_dist_lines))
 
     # some TSS2 cars have low speed lockout permanently set, so ignore on those cars
     # these cars are identified by an ACC_TYPE value of 2.
@@ -249,6 +232,8 @@ class CarState(CarStateBase):
 
     if self.CP.carFingerprint not in UNSUPPORTED_DSU_CAR:
       self.pcm_follow_distance = cp.vl["PCM_CRUISE_2"]["PCM_FOLLOW_DISTANCE"]
+      # with open('/tmp/debug_out_q','w') as fp:
+      #   fp.write('pcm_follow_distance:%d' % (self.pcm_follow_distance))
 
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
       # distance button is wired to the ACC module (camera or radar)

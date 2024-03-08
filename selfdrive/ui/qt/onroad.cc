@@ -820,14 +820,14 @@ void ButtonsWindow::updateState(const UIState &s) {
     setButtonInt("/data/lta_enable_sw.txt" , mLTA_EnableButton);
     soundButton(mLTA_EnableButton);
   }
-  
+
   if (mStartAccelPowerUpButton != s.scene.mStartAccelPowerUpButton) {  // update mStartAccelPowerUpButton
     mStartAccelPowerUpButton = s.scene.mStartAccelPowerUpButton;
     startAccelPowerUpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mStartAccelPowerUpButton && fp_error==false)));
     setButtonEnabled0("/data/start_accel_power_up_disp_enable.txt" , mStartAccelPowerUpButton);
     soundButton(mStartAccelPowerUpButton);
   }
-  
+
   if (mUseDynmicExpButton != s.scene.mUseDynmicExpButton) {  // update mUseDynmicExpButton
     mUseDynmicExpButton = s.scene.mUseDynmicExpButton;
     useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0 && fp_error==false)));
@@ -842,7 +842,7 @@ void ButtonsWindow::updateState(const UIState &s) {
       //ここで"/tmp/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
     }
   }
-  
+
 }
 
 void ButtonsWindow::MAX_touch(){
@@ -872,7 +872,7 @@ void ButtonsWindow::psn_update(){
   }
   if(new_DrivingPsn != DrivingPsn){
     DrivingPsn = new_DrivingPsn;
-    soundPipo();
+    //soundPipo();
     if(DrivingPsn == 0){
       T3_Button->setText("⬆︎⬆︎⬆︎");
     } else if(DrivingPsn == 1){
@@ -1031,7 +1031,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
 
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
- 
+
   map_settings_btn = new MapSettingsButton(this);
   main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
 */
@@ -1052,7 +1052,7 @@ static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
 void AnnotatedCameraWidget::updateState(const UIState &s) {
-  int SET_SPEED_NA = 409; //406; //557; //255; , 
+  int SET_SPEED_NA = 409; //406; //557; //255; ,
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
@@ -1676,7 +1676,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       curve_value = std::stof(limit_vc_txt);
     }
   }
-  
+
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
   all_brake_light = false;
   std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
@@ -1788,7 +1788,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
           limit_speed_num = (int)output[0];
           limit_speed_auto_detect = 1;
         }
-      }      
+      }
     }
 
     QString traffic_speed;
@@ -1868,7 +1868,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       drawText(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
     }
   }
-  
+
   p.restore();
 }
 
@@ -2913,7 +2913,7 @@ void AnnotatedCameraWidget::paintGL() {
     if (s->scene.longitudinal_control && sm.rcv_frame("radarState") > s->scene.started_frame) {
       auto radar_state = sm["radarState"].getRadarState();
       update_leads(s, radar_state, model.getPosition());
-      
+
       const auto leads = model.getLeadsV3();
       size_t leads_num = leads.size();
       for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
