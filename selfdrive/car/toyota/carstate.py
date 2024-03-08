@@ -235,13 +235,13 @@ class CarState(CarStateBase):
       # with open('/tmp/debug_out_q','w') as fp:
       #   fp.write('pcm_follow_distance:%d' % (self.pcm_follow_distance))
 
-    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
+#    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
       # distance button is wired to the ACC module (camera or radar)
-      self.prev_distance_button = self.distance_button
-      if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
-        self.distance_button = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
-      else:
-        self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
+    self.prev_distance_button = self.distance_button
+    if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
+      self.distance_button = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
+    else:
+      self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
 
     return ret
 
