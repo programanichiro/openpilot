@@ -46,6 +46,7 @@ class ToyotaFlags(IntFlag):
   HYBRID = 1
   SMART_DSU = 2
   DISABLE_RADAR = 4
+  RADAR_CAN_FILTER = 1024
 
   # Static flags
   TSS2 = 8
@@ -609,5 +610,4 @@ ANGLE_CONTROL_CAR = CAR.with_flags(ToyotaFlags.ANGLE_CONTROL)
 # no resume button press required
 NO_STOP_TIMER_CAR = CAR.with_flags(ToyotaFlags.NO_STOP_TIMER)
 
-CAR_INFO = CAR.create_carinfo_map()
 DBC = CAR.create_dbc_map()

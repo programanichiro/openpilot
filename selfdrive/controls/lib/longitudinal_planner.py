@@ -120,8 +120,8 @@ class LongitudinalPlanner:
     self.solverExecutionTime = 0.0
     self.params = Params()
     self.param_read_counter = 0
-    self.read_param()
     self.personality = log.LongitudinalPersonality.standard
+    self.read_param()
 
     self.red_signals = np.zeros(10)
     self.red_signal_path_xs = np.zeros(5)
