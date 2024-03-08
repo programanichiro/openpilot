@@ -230,11 +230,17 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint != CAR.PRIUS_V:
       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
 
+    if self.pcm_follow_distance == 0 or self.pcm_follow_distance != cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']:
+      #初回は通す。
+      if self.pcm_follow_distance != 0 and cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES'] != 0:
+        #ボタン切り替えの可能性が高い
+        lines = cp.vl["PCM_CRUISE_SM"]['DISTANCE_LINES']
+        #button(3,2,1) -> LongitudinalPersonality(2,1,0)
+        self.params.put("LongitudinalPersonality", str(int(lines)-1))
+
     if self.CP.carFingerprint not in UNSUPPORTED_DSU_CAR:
       # self.pcm_follow_distance = cp.vl["PCM_CRUISE_2"]["PCM_FOLLOW_DISTANCE"] #取れない？
       self.pcm_follow_distance = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"]
-      # with open('/tmp/debug_out_q','w') as fp:
-      #   fp.write('pcm_follow_distance:%d' % (self.pcm_follow_distance))
 
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
       # distance button is wired to the ACC module (camera or radar)

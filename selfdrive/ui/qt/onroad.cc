@@ -872,7 +872,7 @@ void ButtonsWindow::psn_update(){
   }
   if(new_DrivingPsn != DrivingPsn){
     DrivingPsn = new_DrivingPsn;
-    //soundPipo();
+    soundPipo();
     if(DrivingPsn == 0){
       T3_Button->setText("⬆︎⬆︎⬆︎");
     } else if(DrivingPsn == 1){
