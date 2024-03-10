@@ -247,12 +247,12 @@ class CarController(CarControllerBase):
       accel_raw = -2.5 if stopping else actuators_accel
 
       # Press distance button until we are at the correct bar length. Only change while enabled to avoid skipping startup popup
-      # if self.frame % 6 == 0:
-      #   if CS.pcm_follow_distance_values.get(CS.pcm_follow_distance, "UNKNOWN") != "FAR" and CS.out.cruiseState.enabled and \
-      #     self.CP.carFingerprint not in UNSUPPORTED_DSU_CAR:
-      #     self.distance_button = not self.distance_button
-      #   else:
-      #     self.distance_button = 0
+      if self.frame % 6 == 0 and self.CP.openpilotLongitudinalControl:
+        desired_distance = 4 - hud_control.leadDistanceBars
+        if CS.out.cruiseState.enabled and CS.pcm_follow_distance != desired_distance:
+          self.distance_button = not self.distance_button
+        else:
+          self.distance_button = 0
 
       # Lexus IS uses a different cancellation message
       if pcm_cancel_cmd and self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
@@ -261,11 +261,11 @@ class CarController(CarControllerBase):
         # can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, pcm_cancel_cmd, self.standstill_req, lead, CS.acc_type, fcw_alert,
         #                                                 self.distance_button))
         can_sends.append(toyotacan.create_accel_command(self.packer, pcm_accel_cmd, accel_raw, pcm_cancel_cmd,
-                                                        self.standstill_req, lead, CS.acc_type, fcw_alert, CS.distance_button))
+                                                        self.standstill_req, lead, CS.acc_type, fcw_alert, self.distance_button))
         self.accel = pcm_accel_cmd
       else:
         # can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False, self.distance_button))
-        can_sends.append(toyotacan.create_accel_command(self.packer, 0, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False, CS.distance_button))
+        can_sends.append(toyotacan.create_accel_command(self.packer, 0, 0, pcm_cancel_cmd, False, lead, CS.acc_type, False, self.distance_button))
 
     if self.frame % 2 == 0 and self.CP.enableGasInterceptor and self.CP.openpilotLongitudinalControl:
       # send exactly zero if gas cmd is zero. Interceptor will send the max between read value and gas cmd.
