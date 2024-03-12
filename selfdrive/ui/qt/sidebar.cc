@@ -86,7 +86,9 @@ void Sidebar::updateState(const UIState &s) {
   if (last_ping == 0) {
     connectStatus = ItemStatus{{tr("CONNECT"), tr("OFFLINE")}, warning_color};
     setProperty("netStrength", 0);
-    ipaddress[0] = 0;
+    if(net_type != "Wi-Fi"){
+      ipaddress[0] = 0;
+    }
   } else {
     connectStatus = nanos_since_boot() - last_ping < 80e9
                         ? ItemStatus{{tr("CONNECT"), tr("ONLINE")}, good_color}
