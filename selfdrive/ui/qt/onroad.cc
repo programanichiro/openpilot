@@ -424,7 +424,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     }
     { //運転傾向
       T3_Button = new QPushButton("⬆︎⬆︎⬆︎");
-      std::string longPsn_txt = Params().get("LongitudinalPersonality");
+      std::string longPsn_txt = Params().get("LongitudinalPersonality"); // static_cast<int>(sm["controlsState"].getControlsState().getPersonality());
+
       if(longPsn_txt.empty() == false){
         DrivingPsn = std::stoi(longPsn_txt);
       }
@@ -439,7 +440,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       T3_Button->setFixedHeight(90);
       T3_Button->setStyleSheet(QString(btn_styleb1).arg(mButtonColors.at(false)));
       QObject::connect(T3_Button, &QPushButton::pressed, [=]() {
-        std::string longPsn_txt = Params().get("LongitudinalPersonality");
+        std::string longPsn_txt = Params().get("LongitudinalPersonality"); // static_cast<int>(sm["controlsState"].getControlsState().getPersonality());
         if(longPsn_txt.empty() == false){
           DrivingPsn = std::stoi(longPsn_txt);
         }
@@ -866,7 +867,7 @@ void ButtonsWindow::psn_update(){
   }
   //int DrivingPsn = 0; //運転傾向
   int new_DrivingPsn = 0; //運転傾向変更を検出
-  std::string longPsn_txt = Params().get("LongitudinalPersonality");
+  std::string longPsn_txt = Params().get("LongitudinalPersonality"); // static_cast<int>(sm["controlsState"].getControlsState().getPersonality());
   if(longPsn_txt.empty() == false){
     new_DrivingPsn = std::stoi(longPsn_txt);
   }
