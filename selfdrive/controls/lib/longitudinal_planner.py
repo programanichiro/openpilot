@@ -4,8 +4,6 @@ import random
 import math
 import numpy as np
 from openpilot.common.numpy_fast import clip, interp
-from openpilot.common.params import Params
-from cereal import log
 
 import cereal.messaging as messaging
 from openpilot.common.conversions import Conversions as CV
@@ -118,10 +116,6 @@ class LongitudinalPlanner:
     self.a_desired_trajectory = np.zeros(CONTROL_N)
     self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
-    self.params = Params()
-    self.param_read_counter = 0
-    self.personality = log.LongitudinalPersonality.standard
-    self.read_param()
 
     self.red_signals = np.zeros(10)
     self.red_signal_path_xs = np.zeros(5)
@@ -158,12 +152,6 @@ class LongitudinalPlanner:
     if self.CP.carFingerprint not in TSS2_CAR or (self.CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value): #47700はTSS2相当の操舵範囲
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
 
-  def read_param(self):
-    try:
-      self.personality = int(self.params.get('LongitudinalPersonality'))
-    except (ValueError, TypeError):
-      self.personality = log.LongitudinalPersonality.standard
-
   @staticmethod
   def parse_model(model_msg, model_error):
     if (len(model_msg.position.x) == 33 and
@@ -181,9 +169,6 @@ class LongitudinalPlanner:
     return x, v, a, j
 
   def update(self, sm):
-    if self.param_read_counter % 50 == 0:
-      self.read_param()
-    self.param_read_counter += 1
     self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
 
     v_ego = sm['carState'].vEgo
@@ -607,7 +592,7 @@ class LongitudinalPlanner:
             self.limitspeed_point -= 0.1
             if target > self.limitspeed_point:
               self.limitspeed_point = target
-          
+
           if limitspeed_flag != 999:
             self.limitspeed_point = v_ego * 3.6
 
@@ -615,7 +600,7 @@ class LongitudinalPlanner:
           if len(self.limitspeed_point_dim) > 50:
             self.limitspeed_point_dim.pop(0)
           self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近50個の平均。
-          
+
           with open('/tmp/limitspeed_sw.txt','r') as fp:
             limitspeed_sw_str = fp.read()
             if limitspeed_sw_str and limitspeed_data_str:
@@ -816,7 +801,7 @@ class LongitudinalPlanner:
           v_cruise = v_cruise_org * (desired_path_x_rate**0.85) #カーブ減速がなければv_cruise==v_cruise_orgなので、従来のアルゴリズムは保たれる。
     if long_speeddown_flag == False:
       v_cruise *= red_signal_speed_down
-    
+
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
       v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
       #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
@@ -962,11 +947,12 @@ class LongitudinalPlanner:
     #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,self.a_desired_mul,cruise_info_power_up,vl*3.6,vd))
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
-    self.mpc.set_weights(prev_accel_constraint, personality=self.personality)
+
+    self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=self.personality)
+    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
 
     self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
@@ -1011,6 +997,5 @@ class LongitudinalPlanner:
     longitudinalPlan.fcw = self.fcw
 
     longitudinalPlan.solverExecutionTime = self.mpc.solve_time
-    longitudinalPlan.personality = self.personality
 
     pm.send('longitudinalPlan', plan_send)
