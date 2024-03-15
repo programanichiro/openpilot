@@ -444,7 +444,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         if(longPsn_txt.empty() == false){
           DrivingPsn = std::stoi(longPsn_txt);
         }
-        DrivingPsn = (DrivingPsn + 1) % 3;
+        DrivingPsn = (DrivingPsn - 1 + 3) % 3;
 #if 0
         enum LongitudinalPersonality { == DrivingPsn
           aggressive @0;
