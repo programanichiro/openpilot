@@ -65,12 +65,15 @@ void Sidebar::mouseReleaseEvent(QMouseEvent *event) {
   }
 }
 
+char ipaddress[32];
 void Sidebar::offroadTransition(bool offroad) {
+  if(onroad != !offroad && offroad == true){
+    ipaddress[0] = 0;
+  }
   onroad = !offroad;
   update();
 }
 
-static char ipaddress[32];
 void Sidebar::updateState(const UIState &s) {
   if (!isVisible()) return;
 
