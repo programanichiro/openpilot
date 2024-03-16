@@ -94,6 +94,7 @@ void WifiManager::refreshNetworks() {
   QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, &WifiManager::refreshFinished);
 }
 
+char ipaddress[32]; //sidebar.ccで使う。
 void WifiManager::refreshFinished(QDBusPendingCallWatcher *watcher) {
   ipv4_address = getIp4Address();
   seenNetworks.clear();
@@ -114,6 +115,9 @@ void WifiManager::refreshFinished(QDBusPendingCallWatcher *watcher) {
 
     if (path.path() == activeAp) {
       seenNetworks[ssid].connected = (ssid == connecting_to_network) ? ConnectedType::CONNECTING : ConnectedType::CONNECTED;
+      if(seenNetworks[ssid].connected == ConnectedType::CONNECTING){
+        ipaddress[0] = 0;
+      }
     }
 
     uint32_t strength = properties["Strength"].toUInt();

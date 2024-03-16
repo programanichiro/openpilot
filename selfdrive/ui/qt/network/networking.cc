@@ -363,7 +363,6 @@ WifiItem::WifiItem(const QString &connecting_text, const QString &forget_text, Q
   });
 }
 
-char ipaddress[32]; //sidebar.ccで使う。
 void WifiItem::setItem(const Network &n, const QPixmap &status_icon, bool show_forget_btn, const QPixmap &strength_icon) {
   network = n;
 
@@ -372,9 +371,6 @@ void WifiItem::setItem(const Network &n, const QPixmap &status_icon, bool show_f
   ssidLabel->setFont(InterFont(55, network.connected == ConnectedType::DISCONNECTED ? QFont::Normal : QFont::Bold));
 
   connecting->setVisible(n.connected == ConnectedType::CONNECTING);
-  if(n.connected == ConnectedType::CONNECTING){
-    ipaddress[0] = 0;
-  }
   forgetBtn->setVisible(show_forget_btn);
 
   iconLabel->setPixmap(status_icon);
