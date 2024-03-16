@@ -363,6 +363,7 @@ WifiItem::WifiItem(const QString &connecting_text, const QString &forget_text, Q
   });
 }
 
+char ipaddress[32]; //sidebar.ccで使う。
 void WifiItem::setItem(const Network &n, const QPixmap &status_icon, bool show_forget_btn, const QPixmap &strength_icon) {
   network = n;
 
@@ -372,7 +373,6 @@ void WifiItem::setItem(const Network &n, const QPixmap &status_icon, bool show_f
 
   connecting->setVisible(n.connected == ConnectedType::CONNECTING);
   if(n.connected == ConnectedType::CONNECTING){
-    extern char ipaddress[];
     ipaddress[0] = 0;
   }
   forgetBtn->setVisible(show_forget_btn);

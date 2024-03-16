@@ -65,7 +65,7 @@ void Sidebar::mouseReleaseEvent(QMouseEvent *event) {
   }
 }
 
-char ipaddress[32];
+extern char ipaddress[];
 void Sidebar::offroadTransition(bool offroad) {
   if(onroad != !offroad && offroad == true){
     ipaddress[0] = 0;
