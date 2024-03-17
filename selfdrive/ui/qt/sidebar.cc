@@ -66,6 +66,7 @@ void Sidebar::mouseReleaseEvent(QMouseEvent *event) {
 }
 
 char ipaddress[32];
+bool ipaddress_update;
 void Sidebar::offroadTransition(bool offroad) {
   if(onroad != !offroad && offroad == true){
     ipaddress[0] = 0;
@@ -105,8 +106,9 @@ void Sidebar::updateState(const UIState &s) {
         ipaddress[0] = 0;
 #if 1
       } else if(net_type == "Wi-Fi"){
-        ipaddress[0] = 0; //試しに常に取得し直してみる。
-        while(ipaddress[0] == 0){
+        while(ipaddress[0] == 0 || ipaddress_update == true){
+          ipaddress[0] = 0;
+          ipaddress_update = false; //サイドバーが表示された時に更新する
           std::string result = util::check_output("ifconfig wlan0");
           if (result.empty()) break;
 
