@@ -106,9 +106,7 @@ void Sidebar::updateState(const UIState &s) {
         ipaddress[0] = 0;
 #if 1
       } else if(net_type == "Wi-Fi"){
-        while(ipaddress[0] == 0 || ipaddress_update == true){
-          ipaddress[0] = 0;
-          ipaddress_update = false; //サイドバーが表示された時に更新する
+        while(ipaddress[0] == 0 || ipaddress_update == true){ //サイドバーが表示された時にも更新する
           std::string result = util::check_output("ifconfig wlan0");
           if (result.empty()) break;
 
@@ -123,6 +121,8 @@ void Sidebar::updateState(const UIState &s) {
           std::string::size_type end = result.find(' ', begin);
           if (end == std::string::npos) break;
 
+          ipaddress[0] = 0;
+          ipaddress_update = false;
           strcpy(ipaddress,result.substr(begin, end - begin).c_str());
           break;
         }
