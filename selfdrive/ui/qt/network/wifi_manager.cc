@@ -94,11 +94,8 @@ void WifiManager::refreshNetworks() {
   QObject::connect(watcher, &QDBusPendingCallWatcher::finished, this, &WifiManager::refreshFinished);
 }
 
-char ipaddress[32]; //sidebar.ccで使う。
 void WifiManager::refreshFinished(QDBusPendingCallWatcher *watcher) {
   ipv4_address = getIp4Address();
-  std::string ipv4_str = ipv4_address.toUtf8().constData();
-  strcpy(ipaddress,ipv4_str.c_str());
   seenNetworks.clear();
 
   const QDBusReply<QList<QDBusObjectPath>> wather_reply = *watcher;

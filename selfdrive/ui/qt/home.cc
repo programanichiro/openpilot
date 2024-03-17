@@ -49,7 +49,11 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::offroadTransition, sidebar, &Sidebar::offroadTransition);
 }
 
+extern char ipaddress[];
 void HomeWindow::showSidebar(bool show) {
+  if(show == true){
+    ipaddress[0] = 0;
+  }
   sidebar->setVisible(show);
 }
 
@@ -139,6 +143,7 @@ void HomeWindow::showDriverView(bool show) {
       if(sidebar_disp == true){
         sidebar_disp = false;
         sidebar->setVisible(true);
+        ipaddress[0] = 0;
       }
     }
   }
@@ -151,6 +156,9 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
   // Handle sidebar collapsing
   if ((onroad->isVisible() || body->isVisible()) && (!sidebar->isVisible() || e->x() > sidebar->width())) {
     sidebar->setVisible(!sidebar->isVisible() && !onroad->isMapVisible());
+    if(!sidebar->isVisible() && !onroad->isMapVisible()){
+      ipaddress[0] = 0;
+    }
   }
 }
 
