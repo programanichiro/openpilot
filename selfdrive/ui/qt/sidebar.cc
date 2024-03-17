@@ -105,6 +105,7 @@ void Sidebar::updateState(const UIState &s) {
         ipaddress[0] = 0;
 #if 1
       } else if(net_type == "Wi-Fi"){
+        ipaddress[0] = 0; //試しに常に取得し直してみる。
         while(ipaddress[0] == 0){
           std::string result = util::check_output("ifconfig wlan0");
           if (result.empty()) break;
