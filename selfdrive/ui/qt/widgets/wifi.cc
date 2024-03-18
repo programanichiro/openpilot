@@ -61,7 +61,7 @@ WiFiPromptWidget::WiFiPromptWidget(QWidget *parent) : QFrame(parent) {
     QHBoxLayout *title_layout = new QHBoxLayout;
     {
       QLabel *title = new QLabel(tr("Ready to upload"));
-      title->setStyleSheet("font-size: 55px; font-weight: 600;");
+      title->setStyleSheet("font-size: 58px; font-weight: 600;");
       title->setWordWrap(true);
       title->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Minimum);
       title_layout->addWidget(title);
