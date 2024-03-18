@@ -1566,7 +1566,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     if(std::stoi(brake_light_txt) != 0){
       if(global_engageable){
         brake_light = true;
-        logo_trs = 50; //drawText内部で100足される。
+        logo_trs = 80; //drawText内部で100足される。
       }
       all_brake_light = true; //こちらはエンゲージしていなくてもセットされる。
     }
