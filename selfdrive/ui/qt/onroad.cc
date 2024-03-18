@@ -1558,32 +1558,49 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.setFont(InterFont(48));
   p.drawText(QRect(rect().left()+65+5+5, rect().top()+110-8+11, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
 
+  bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
+  all_brake_light = false;
+  std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
+  if(brake_light_txt.empty() == false){
+    if(std::stoi(brake_light_txt) != 0){
+      if(global_engageable){
+        brake_light = true;
+      }
+      all_brake_light = true; //こちらはエンゲージしていなくてもセットされる。
+    }
+  }
   if((float)rect_w / rect_h > 1.4f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", 150);
+    drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", 150, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
-      drawText(p, rect().right()-270, 60, "for prius PHV TSSP", 150);
+      //drawText(p, rect().right()-270, 60, "for prius PHV TSSP", 150);
+      drawTextRight(p, rect().right()-10, 60 , "for prius PHV TSSP", 150, brake_light);
     } else {
-      drawText(p, rect().right()-270, 60, "for prius PHV TSS2", 150);
+      //drawText(p, rect().right()-270, 60, "for prius PHV TSS2", 150);
+      drawTextRight(p, rect().right()-10, 60 , "for prius PHV TSS2", 150, brake_light);
     }
   } else if((float)rect_w / rect_h > 1.1f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+140, 55, "COMMA.AI", 150);
+    drawText(p, rect().left()+140, 55, "COMMA.AI", 150, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
-      drawText(p, rect().right()-150, 60, "PHV TSSP", 150);
+      //drawText(p, rect().right()-150, 60, "PHV TSSP", 150);
+      drawTextRight(p, rect().right()-10, 60 , "PHV TSSP", 150, brake_light);
     } else {
-      drawText(p, rect().right()-150, 60, "PHV TSS2", 150);
+      //drawText(p, rect().right()-150, 60, "PHV TSS2", 150);
+      drawTextRight(p, rect().right()-10, 60 , "PHV TSS2", 150, brake_light);
     }
   } else if((float)rect_w / rect_h >= 0.98f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+102, 55, "COMMA", 150);
+    drawText(p, rect().left()+102, 55, "COMMA", 150, brake_light);
     p.setFont(InterFont(50, QFont::DemiBold));
     if(tss_type <= 1){
-      drawText(p, rect().right()-97, 57, "PHV P", 150);
+      //drawText(p, rect().right()-97, 57, "PHV P", 150);
+      drawTextRight(p, rect().right()-10, 57 , "PHV P", 150, brake_light);
     } else {
-      drawText(p, rect().right()-97, 57, "PHV 2", 150);
+      //drawText(p, rect().right()-97, 57, "PHV 2", 150);
+      drawTextRight(p, rect().right()-10, 57 , "PHV 2", 150, brake_light);
     }
   }
   p.setFont(InterFont(33, QFont::DemiBold));
@@ -1678,17 +1695,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
   }
 
-  bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
-  all_brake_light = false;
-  std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
-  if(brake_light_txt.empty() == false){
-    if(std::stoi(brake_light_txt) != 0){
-      if(global_engageable){
-        brake_light = true;
-      }
-      all_brake_light = true; //こちらはエンゲージしていなくてもセットされる。
-    }
-  }
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*2 , "speed limit auto detect", a2 , brake_light);
