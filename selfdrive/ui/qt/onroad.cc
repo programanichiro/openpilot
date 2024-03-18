@@ -1560,7 +1560,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
   all_brake_light = false;
-  int logo_trs = 150
+  int logo_trs = 150;
   std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
   if(brake_light_txt.empty() == false){
     if(std::stoi(brake_light_txt) != 0){
