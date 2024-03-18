@@ -1560,47 +1560,49 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
   all_brake_light = false;
+  int logo_trs = 150
   std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
   if(brake_light_txt.empty() == false){
     if(std::stoi(brake_light_txt) != 0){
       if(global_engageable){
         brake_light = true;
+        logo_trs = 50; //drawText内部で100足される。
       }
       all_brake_light = true; //こちらはエンゲージしていなくてもセットされる。
     }
   }
   if((float)rect_w / rect_h > 1.4f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", 150, brake_light);
+    drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
       //drawText(p, rect().right()-270, 60, "for prius PHV TSSP", 150);
-      drawTextRight(p, rect().right()-10, 60 , "for prius PHV TSSP", 150, brake_light);
+      drawTextRight(p, rect().right()-20, 60 , "for toyota TSSP", logo_trs, brake_light);
     } else {
       //drawText(p, rect().right()-270, 60, "for prius PHV TSS2", 150);
-      drawTextRight(p, rect().right()-10, 60 , "for prius PHV TSS2", 150, brake_light);
+      drawTextRight(p, rect().right()-20, 60 , "for toyota TSS2", logo_trs, brake_light);
     }
   } else if((float)rect_w / rect_h > 1.1f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+140, 55, "COMMA.AI", 150, brake_light);
+    drawText(p, rect().left()+140, 55, "COMMA.AI", logo_trs, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
       //drawText(p, rect().right()-150, 60, "PHV TSSP", 150);
-      drawTextRight(p, rect().right()-10, 60 , "PHV TSSP", 150, brake_light);
+      drawTextRight(p, rect().right()-20, 60 , "toyota TSSP", logo_trs, brake_light);
     } else {
       //drawText(p, rect().right()-150, 60, "PHV TSS2", 150);
-      drawTextRight(p, rect().right()-10, 60 , "PHV TSS2", 150, brake_light);
+      drawTextRight(p, rect().right()-20, 60 , "toyota TSS2", logo_trs, brake_light);
     }
   } else if((float)rect_w / rect_h >= 0.98f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+102, 55, "COMMA", 150, brake_light);
+    drawText(p, rect().left()+102, 55, "COMMA", logo_trs, brake_light);
     p.setFont(InterFont(50, QFont::DemiBold));
     if(tss_type <= 1){
       //drawText(p, rect().right()-97, 57, "PHV P", 150);
-      drawTextRight(p, rect().right()-10, 57 , "PHV P", 150, brake_light);
+      drawTextRight(p, rect().right()-20, 57 , "toyota P", logo_trs, brake_light);
     } else {
       //drawText(p, rect().right()-97, 57, "PHV 2", 150);
-      drawTextRight(p, rect().right()-10, 57 , "PHV 2", 150, brake_light);
+      drawTextRight(p, rect().right()-20, 57 , "toyota 2", logo_trs, brake_light);
     }
   }
   p.setFont(InterFont(33, QFont::DemiBold));
