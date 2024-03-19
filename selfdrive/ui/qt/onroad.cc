@@ -1584,10 +1584,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
-      //drawText(p, rect().right()-270, 60, "for prius PHV TSSP", 150);
-      drawTextRight(p, rect().right()-20, 60 , "for toyota TSSP", logo_trs, brake_light, label_red, label_grn, label_blu);
+      int next_x = drawTextRight(p, rect().right()-20, 60 , " TSSP", logo_trs, brake_light, label_red, label_grn, label_blu); //47060車はTSSP部分が黄色くなる。
+      drawTextRight(p, next_x, 60 , "for toyota", logo_trs, brake_light);
     } else {
-      //drawText(p, rect().right()-270, 60, "for prius PHV TSS2", 150);
       drawTextRight(p, rect().right()-20, 60 , "for toyota TSS2", logo_trs, brake_light);
     }
   } else if((float)rect_w / rect_h > 1.1f){
@@ -1595,10 +1594,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     drawText(p, rect().left()+140, 55, "COMMA.AI", logo_trs, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
-      //drawText(p, rect().right()-150, 60, "PHV TSSP", 150);
-      drawTextRight(p, rect().right()-20, 60 , "toyota TSSP", logo_trs, brake_light, label_red, label_grn, label_blu);
+      int next_x = drawTextRight(p, rect().right()-20, 60 , " TSSP", logo_trs, brake_light, label_red, label_grn, label_blu);
+      drawTextRight(p, next_x, 60 , "toyota", logo_trs, brake_light);
     } else {
-      //drawText(p, rect().right()-150, 60, "PHV TSS2", 150);
       drawTextRight(p, rect().right()-20, 60 , "toyota TSS2", logo_trs, brake_light);
     }
   } else if((float)rect_w / rect_h >= 0.98f){
@@ -1606,10 +1604,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     drawText(p, rect().left()+102, 55, "COMMA", logo_trs, brake_light);
     p.setFont(InterFont(50, QFont::DemiBold));
     if(tss_type <= 1){
-      //drawText(p, rect().right()-97, 57, "PHV P", 150);
-      drawTextRight(p, rect().right()-20, 57 , "toyota P", logo_trs, brake_light, label_red, label_grn, label_blu);
+      int next_x = drawTextRight(p, rect().right()-20, 60 , " P", logo_trs, brake_light, label_red, label_grn, label_blu);
+      drawTextRight(p, next_x, 57 , "toyota", logo_trs, brake_light);
     } else {
-      //drawText(p, rect().right()-97, 57, "PHV 2", 150);
       drawTextRight(p, rect().right()-20, 57 , "toyota 2", logo_trs, brake_light);
     }
   }
