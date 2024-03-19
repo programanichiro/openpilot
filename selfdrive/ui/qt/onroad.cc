@@ -1571,15 +1571,15 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       all_brake_light = true; //こちらはエンゲージしていなくてもセットされる。
     }
   }
+  const auto cp = (*uiState()->sm)["carParams"].getCarParams();
+  bool tssp_47700 = (((cp.getFlags() & 2048) != 0) && brake_light == false);
+  int label_red = 255;
+  int label_grn = 255;
+  int label_blu = 255;
+  if(tssp_47700){
+    label_blu = 0;
+  }
   if((float)rect_w / rect_h > 1.4f){
-    const auto cp = (*uiState()->sm)["carParams"].getCarParams();
-    bool tssp_47700 = (((cp.getFlags() & 2048) != 0) && brake_light == false);
-    int label_red = 255;
-    int label_grn = 255;
-    int label_blu = 255;
-    if(tssp_47700){
-      label_blu = 0;
-    }
     p.setFont(InterFont(44, QFont::DemiBold));
     drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
