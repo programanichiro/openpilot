@@ -194,7 +194,7 @@ def clip_curvature(v_ego, prev_curvature, new_curvature , CP):
     except Exception as e:
       dc_get_lag_adjusted_curvature = True #デフォルト
   CT_get_lag_adjusted_curvature += 1
-  
+
   k_v = 1.0
   org_desired_curvature = new_curvature
   if flag_eps_TSS2 and dc_get_lag_adjusted_curvature == True:
@@ -205,7 +205,7 @@ def clip_curvature(v_ego, prev_curvature, new_curvature , CP):
   if CT_get_lag_adjusted_curvature % 10 == 7 and skip_curvature_info == False: #書き出し頻度を1/10に
     try:
       with open('/tmp/curvature_info.txt','w') as fp:
-        fp.write('%.9f/%.3f' % (org_desired_curvature , k_v))
+        fp.write('%.9f/%.3f' % (org_desired_curvature if v_ego > 0.01/3.6 else 0 , k_v))
     except Exception as e:
       pass
 
