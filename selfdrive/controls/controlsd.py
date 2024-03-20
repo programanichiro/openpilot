@@ -14,6 +14,7 @@ from cereal.visionipc import VisionIpcClient, VisionStreamType
 from openpilot.selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
 
 from openpilot.common.conversions import Conversions as CV
+from openpilot.common.git import get_short_branch
 from openpilot.common.numpy_fast import clip
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
@@ -32,7 +33,6 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
 
 from openpilot.system.hardware import HARDWARE
-from openpilot.system.version import get_short_branch
 
 handle_center = 0 #STEERING_CENTER # キャリブレーション前の手抜き
 handle_center_ct = 0
