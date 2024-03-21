@@ -102,8 +102,8 @@ void HomeWindow::updateState(const UIState &s) {
   bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
   if(back_gear){
     //developer control
-    std::string branch = Params().get("GitBranch");
-    std::string dongleId = Params().get("DongleId");
+    std::string branch = params.get("GitBranch");
+    std::string dongleId = params.get("DongleId");
     if(branch != "release3" && branch != "release2" && branch.find("release3-pi")  == std::string::npos && branch.find("release2-pi")  == std::string::npos && branch.find("rehearsal")  == std::string::npos && dongleId.find("1131d250d405") == std::string::npos && branch.find("debug") == std::string::npos){
       back_gear = false;
       lsta = 0;
