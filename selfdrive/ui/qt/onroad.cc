@@ -109,6 +109,27 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   QWidget::mousePressEvent(e);
 }
 
+void OnroadWindow::createMapWidget() {
+#ifdef ENABLE_MAPS
+  auto m = new MapPanel(get_mapbox_settings());
+  map = m;
+  QObject::connect(m, &MapPanel::mapPanelRequested, this, &OnroadWindow::mapPanelRequested);
+  QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
+  nvg->map_settings_btn->setEnabled(true);
+
+  std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
+  if(my_mapbox_width.empty() == false){
+    this->mb_width_rate = std::stof(my_mapbox_width);
+    m->setFixedWidth((topWidget(this)->width() * this->mb_width_rate - UI_BORDER_SIZE));
+  } else {
+    m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
+  }
+  split->insertWidget(0, m);
+  // hidden by default, made visible when navRoute is published
+  m->setVisible(false);
+#endif
+}
+
 void OnroadWindow::offroadTransition(bool offroad) {
 #ifdef ENABLE_MAPS
   if (!offroad) {
@@ -118,29 +139,10 @@ void OnroadWindow::offroadTransition(bool offroad) {
       mapbox_extra = true;
     }
     if (map == nullptr && (uiState()->hasPrime() || !MAPBOX_TOKEN.isEmpty() || mapbox_extra)) {
-      auto m = new MapPanel(get_mapbox_settings());
-      map = m;
-
-      QObject::connect(m, &MapPanel::mapPanelRequested, this, &OnroadWindow::mapPanelRequested);
-      QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
-      nvg->map_settings_btn->setEnabled(true);
-
-      std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
-      if(my_mapbox_width.empty() == false){
-        this->mb_width_rate = std::stof(my_mapbox_width);
-        m->setFixedWidth((topWidget(this)->width() * this->mb_width_rate - UI_BORDER_SIZE));
-      } else {
-        //m->setFixedWidth((topWidget(this)->width() * 0.5 - UI_BORDER_SIZE));
-        m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
-      }
-      split->insertWidget(0, m);
-
-      // hidden by default, made visible when navRoute is published
-      m->setVisible(false);
+      createMapWidget();
     }
   }
 #endif
-
   alerts->updateAlert({});
 }
 
@@ -151,6 +153,8 @@ void OnroadWindow::primeChanged(bool prime) {
     nvg->map_settings_btn->setVisible(false);
     map->deleteLater();
     map = nullptr;
+  } else if (!map && (prime || !MAPBOX_TOKEN.isEmpty())) {
+    createMapWidget();
   }
 #endif
 }
