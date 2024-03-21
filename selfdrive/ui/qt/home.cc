@@ -100,6 +100,16 @@ void HomeWindow::updateState(const UIState &s) {
     lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
   }
   bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
+  if(back_gear){
+    //developer control
+    std::string branch = Params().get("GitBranch");
+    std::string dongleId = Params().get("DongleId");
+    if(branch != "release3" && branch != "release2" && branch.find("release3-pi")  == std::string::npos && branch.find("release2-pi")  == std::string::npos && branch.find("rehearsal")  == std::string::npos && dongleId.find("1131d250d405") == std::string::npos && branch.find("debug") == std::string::npos){
+      back_gear = false;
+      lsta = 0;
+      blinker_stat = false;
+    }
+  }
   if(lsta == 1 /*left_blinker || right_blinker*/ || back_gear){
     if(blinker_stat == false){
       blinker_stat = true;
