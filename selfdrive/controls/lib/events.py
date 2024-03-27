@@ -891,11 +891,9 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   },
 
   EventName.steerUnavailable: {
-    # ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("LKAS Fault: Restart the Car"),
-    # ET.PERMANENT: NormalPermanentAlert("LKAS Fault: Restart the car to engage"),
-    # ET.NO_ENTRY: NoEntryAlert("LKAS Fault: Restart the Car"),
-    ET.SOFT_DISABLE: soft_disable_alert("LKAS Fault: TEST ERROR"),
-    ET.NO_ENTRY: NoEntryAlert("LKAS Fault: TEST ERROR"),
+    ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("LKAS Fault: Restart the Car"),
+    ET.PERMANENT: NormalPermanentAlert("LKAS Fault: Restart the car to engage"),
+    ET.NO_ENTRY: NoEntryAlert("LKAS Fault: Restart the Car"),
   },
 
   EventName.reverseGear: {
