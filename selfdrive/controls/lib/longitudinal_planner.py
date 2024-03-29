@@ -785,17 +785,17 @@ class LongitudinalPlanner:
       v_cruise *= red_signal_speed_down
 
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
-      ePadal = False
+      ePedal = False
       if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
-        ePadal = True
-      if red_signal_scan_flag >= 2 or ePadal == False:
+        ePedal = True
+      if red_signal_scan_flag >= 2 or ePedal == False:
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
       elif v_cruise > 8/3.6:
         v_cruise = 8/3.6 #完全停止しない
       #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
       # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
       self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
-      v_cruise = 12/3.6 #完全停止しない
+      v_cruise = 8/3.6 #完全停止しない
     else:
       self.v_cruise_onep_k = 1.0
 
@@ -922,9 +922,12 @@ class LongitudinalPlanner:
       cruise_info_power_up = True
 
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
-      if sm['carState'].gasPressed == False and self.a_desired > 0:
+      ePedal = False
+      if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
+        ePedal = True
+      if sm['carState'].gasPressed == False and self.a_desired > 0 and ePedal == False:
         self.a_desired = 0 #アクセル離して加速ならゼロに。
-      if self.a_desired < 0:
+      if self.a_desired < 0 and ePedal == False:
         #ワンペダル停止の減速を強めてみる。
         self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
