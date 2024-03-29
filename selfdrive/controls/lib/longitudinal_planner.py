@@ -218,20 +218,21 @@ class LongitudinalPlanner:
     if v_cruise_kph < min_acc_speed:
       v_cruise_kph = min_acc_speed #念のため
 
+    accel_engaged_str = None
+    try:
+      with open('/tmp/accel_engaged.txt','r') as fp:
+        accel_engaged_str = fp.read()
+    except Exception as e:
+      pass
     one_pedal = False
     on_accel0 = False #押した瞬間
     if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
-      try:
-        with open('/tmp/accel_engaged.txt','r') as fp:
-          accel_engaged_str = fp.read()
-          if accel_engaged_str:
-            if int(accel_engaged_str) == 3: #ワンペダルモード
-              one_pedal = True
-              if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
-                if on_onepedal_ct < 0:
-                  on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
-      except Exception as e:
-        pass
+      if accel_engaged_str:
+        if int(accel_engaged_str) >= 3: #ワンペダルモード
+          one_pedal = True
+          if OP_ACCEL_PUSH == False and sm['carState'].gasPressed:
+            if on_onepedal_ct < 0:
+              on_onepedal_ct = 0 #ワンペダルかアクセル判定開始
     if on_onepedal_ct >= 0:
       on_onepedal_ct += 1
       if on_onepedal_ct > 5:# 1秒後に。フレームレートを実測すると、30カウントくらいで1秒？
@@ -278,28 +279,15 @@ class LongitudinalPlanner:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       if one_pedal_chenge_restrict_time == 0:
         OP_ENABLE_gas_speed = v_ego
-      try:
-        with open('/tmp/accel_engaged.txt','r') as fp:
-          accel_engaged_str = fp.read()
-          if accel_engaged_str:
-            if int(accel_engaged_str) == 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
-              OP_ENABLE_gas_speed = 1.0 / 3.6
-      except Exception as e:
-        pass
+      if accel_engaged_str:
+        if int(accel_engaged_str) >= 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
+          OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
     if sm_longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         if one_pedal_chenge_restrict_time == 0:
           OP_ENABLE_gas_speed = v_ego
-        # try:
-        #   with open('/tmp/accel_engaged.txt','r') as fp:
-        #     accel_engaged_str = fp.read()
-        #     if accel_engaged_str:
-        #       if int(accel_engaged_str) == 3: #ワンペダルモード
-        #         OP_ENABLE_gas_speed = 1.0 / 3.6
-        # except Exception as e:
-        #   pass
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
@@ -459,28 +447,26 @@ class LongitudinalPlanner:
           red_signal_scan_ct = 10000
           #まずは音を鳴らす。
           try:
-            with open('/tmp/accel_engaged.txt','r') as fp:
-              accel_engaged_str = fp.read()
-              if accel_engaged_str:
-                if int(accel_engaged_str) == 3: #ワンペダルモード
-                    # fp.write('%d' % (3)) #デバッグ用にpo.wavを鳴らしてみる。
-                  lock_off = False
-                  if os.path.isfile('/tmp/lockon_disp_disable.txt'):
-                    with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
-                      lockon_disp_disable_str = fp.read()
-                      if lockon_disp_disable_str:
-                        lockon_disp_disable = int(lockon_disp_disable_str)
-                        if lockon_disp_disable != 0:
-                          lock_off = True #ロックオンOFFで停車コードOFF
-                  if lock_off == False:
-                    with open('/tmp/signal_start_prompt_info.txt','w') as fp:
-                      fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
-                    OP_ENABLE_v_cruise_kph = v_cruise_kph
-                    OP_ENABLE_gas_speed = 1.0 / 3.6
-                    #one_pedal_chenge_restrict_time = 10 , ここは意味的に要らないか。
-                    red_signal_scan_flag_1 = 3 #赤信号停止状態
-                    set_red_signal_scan_flag_3 = True #セットした瞬間
-                    red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
+            if accel_engaged_str:
+              if int(accel_engaged_str) >= 3: #ワンペダルモード
+                  # fp.write('%d' % (3)) #デバッグ用にpo.wavを鳴らしてみる。
+                lock_off = False
+                if os.path.isfile('/tmp/lockon_disp_disable.txt'):
+                  with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
+                    lockon_disp_disable_str = fp.read()
+                    if lockon_disp_disable_str:
+                      lockon_disp_disable = int(lockon_disp_disable_str)
+                      if lockon_disp_disable != 0:
+                        lock_off = True #ロックオンOFFで停車コードOFF
+                if lock_off == False:
+                  with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+                    fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
+                  OP_ENABLE_v_cruise_kph = v_cruise_kph
+                  OP_ENABLE_gas_speed = 1.0 / 3.6
+                  #one_pedal_chenge_restrict_time = 10 , ここは意味的に要らないか。
+                  red_signal_scan_flag_1 = 3 #赤信号停止状態
+                  set_red_signal_scan_flag_3 = True #セットした瞬間
+                  red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
           except Exception as e:
             pass
       else:
@@ -505,14 +491,9 @@ class LongitudinalPlanner:
       rssf = red_signal_scan_flag
       if red_signal_scan_flag <= 1:
         red_signal_scan_span = 0
-      try:
-        with open('/tmp/accel_engaged.txt','r') as fp:
-          accel_engaged_str = fp.read()
-          if accel_engaged_str:
-            if int(accel_engaged_str) != 3: #ワンペダルモード以外
-              rssf = 0
-      except Exception as e:
-        pass
+      if accel_engaged_str:
+        if int(accel_engaged_str) < 3: #ワンペダルモード以外
+          rssf = 0
       with open('/tmp/red_signal_scan_flag.txt','w') as fp:
         fp.write('%d' % (rssf))
 
@@ -804,7 +785,13 @@ class LongitudinalPlanner:
       v_cruise *= red_signal_speed_down
 
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
-      v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
+      ePadal = False
+      if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
+        ePadal = True
+      if red_signal_scan_flag >= 2 or ePadal == False:
+        v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
+      elif v_cruise > 8/3.6:
+        v_cruise = 8/3.6 #完全停止しない
       #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
       # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
       self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに

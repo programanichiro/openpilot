@@ -690,7 +690,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
   { // A,iPボタン
     // Accel Engage button
     uiState()->scene.mAccelEngagedButton = mAccelEngagedButton = getButtonInt("/data/accel_engaged.txt" , 0);
-    if(mAccelEngagedButton == 3){
+    if(mAccelEngagedButton == 4){
+      accelEngagedButton = new QPushButton("eP"); //4なら完全停止しないePadalっぽい動作
+    } else if(mAccelEngagedButton == 3){
       accelEngagedButton = new QPushButton("iP"); //3ならイチロウペダル（インテリジェントペダルモード）
     } else if(mAccelEngagedButton == 2){
       accelEngagedButton = new QPushButton("AA"); //2ならAA(ALL ACCEL)
@@ -699,7 +701,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     }
     QObject::connect(accelEngagedButton, &QPushButton::pressed, [=]() {
       //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2・・・にすれば良い
-      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0
+      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 5; //0->1->2->3->4->0
       setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
       setButtonEnabled0("/tmp/force_low_engage.txt" , false);
     });
@@ -801,7 +803,9 @@ void ButtonsWindow::updateState(const UIState &s) {
     mAccelEngagedButton = s.scene.mAccelEngagedButton;
     accelEngagedButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mAccelEngagedButton > 0 && fp_error==false)));
     //ここでボタンのラベルを変えられないかな？mAccelEngagedButton == 2でAAとかにしたい。
-    if(mAccelEngagedButton == 3){
+    if(mAccelEngagedButton == 4){
+      accelEngagedButton->setText("eP");
+    } else if(mAccelEngagedButton == 3){
       accelEngagedButton->setText("iP");
     } else if(mAccelEngagedButton == 2){
       accelEngagedButton->setText("AA");
