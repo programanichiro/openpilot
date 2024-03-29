@@ -793,10 +793,10 @@ class LongitudinalPlanner:
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
         self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
       else:
-        if v_cruise > 20/3.6:
+        if v_cruise > 33/3.6:
           v_cruise -= 1/3.6
-        if v_cruise < 20/3.6:
-          v_cruise = 20/3.6 #完全停止しない。クリープ速度。
+        if v_cruise < 33/3.6:
+          v_cruise = 33/3.6 #完全停止しない。クリープ速度。
         self.v_cruise_onep_k = 1.0
       #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
       # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
