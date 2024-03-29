@@ -788,7 +788,7 @@ class LongitudinalPlanner:
       ePedal = False
       if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
         ePedal = True
-      if red_signal_scan_flag >= 2 or ePedal == False:
+      if red_signal_scan_flag >= 2 or ePedal == False or sm['carState'].standstill:
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
         self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
       else:
