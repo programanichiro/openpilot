@@ -513,7 +513,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     QPushButton *forceOnePedalButton = new QPushButton(""); //表示文字も無し。
     QObject::connect(forceOnePedalButton, &QPushButton::pressed, [=]() {
       const auto cs = (*(uiState()->sm))["controlsState"].getControlsState();
-      if(getButtonInt("/tmp/accel_engaged.txt" , 0) == 3 && cs.getEnabled()){ //ワンペダルのみ
+      if(getButtonInt("/tmp/accel_engaged.txt" , 0) >= 3 && cs.getEnabled()){ //ワンペダルのみ
         std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
         if(stdstr_txt.empty() == false){
           if(stdstr_txt != "1" && stdstr_txt != ",1"){ //MAXが1ではない時
@@ -1364,7 +1364,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(red_signal_scan_flag_txt_ct % 7 == 0){
     std::string red_signal_scan_flag_txt = util::read_file("/tmp/red_signal_scan_flag.txt");
     if(red_signal_scan_flag_txt.empty() == false){
-      if(uiState()->scene.mAccelEngagedButton == 3){
+      if(uiState()->scene.mAccelEngagedButton >= 3){
         red_signal_scan_flag = std::stoi(red_signal_scan_flag_txt);
       } else {
         red_signal_scan_flag = 0;
@@ -1762,7 +1762,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if (global_engageable) {
     SubMaster &sm = *(uiState()->sm);
     QBrush bg_color = bg_colors[status];
-    if(uiState()->scene.mAccelEngagedButton == 3 && fabs(global_angle_steer0) >= 50 && (*(uiState()->sm))["carState"].getCarState().getVEgo() <= 0.01/3.6){
+    if(uiState()->scene.mAccelEngagedButton >= 3 && fabs(global_angle_steer0) >= 50 && (*(uiState()->sm))["carState"].getCarState().getVEgo() <= 0.01/3.6){
       //停止時の青信号発進抑制、一時的に緩和、15->50度
       bg_color = COLOR_STATUS_WARNING; //ワンペダル時に信号スタート可能角度でなければ警告色。
     }

@@ -266,7 +266,7 @@ class CarInterfaceBase(ABC):
         with open('/tmp/accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
-            if int(accel_engaged_str) == 3: #ワンペダルモード
+            if int(accel_engaged_str) >= 3: #ワンペダルモード
               one_pedal = True
       except Exception as e:
         pass
