@@ -700,8 +700,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       accelEngagedButton = new QPushButton("A");
     }
     QObject::connect(accelEngagedButton, &QPushButton::pressed, [=]() {
-      //uiState()->scene.mAccelEngagedButton = !mAccelEngagedButton; //ここを0->1->2・・・にすれば良い
-      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 5; //0->1->2->3->4->0
+      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0 , 4:ePはしばらく封印。一応8キロで走行はするが、小道でクリープを使いたいのに狭いとパスが邪魔されて停止してしまう。これではワンペダル(3:iP)と変わらない。
       setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
       setButtonEnabled0("/tmp/force_low_engage.txt" , false);
     });

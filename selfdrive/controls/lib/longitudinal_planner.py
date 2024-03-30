@@ -196,8 +196,6 @@ class LongitudinalPlanner:
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (0)) #イチロウロング有効
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
-    #with open('/tmp/debug_out_v','w') as fp:
-    #  fp.write("%d push:%d , gas:%.2f" % (CVS_FRAME,sm['carState'].gasPressed,sm['carState'].gas))
     min_acc_speed = 31
     v_cruise_kph = sm['controlsState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
@@ -835,42 +833,6 @@ class LongitudinalPlanner:
     # Compute model v_ego error
     self.v_model_error = get_speed_error(sm['modelV2'], v_ego)
 
-    if False:
-      msv_desired = max(0,self.v_desired_filter.x * 3.6)
-      msc = "A:%5.1fkm/h" % (v_cruise_kph_org)
-      if int(min(v_cruise_kph_org,V_CRUISE_MAX) / 2) - len(msc) > 0:
-        for vm in range(int(min(v_cruise_kph_org,V_CRUISE_MAX) / 2) - len(msc)):
-          msc += "#"
-      msl = "L:%5.1fkm/h" % (limit_vc)
-      if int(min(limit_vc,V_CRUISE_MAX) / 2) - len(msl) > 0:
-        for vml in range(int(min(limit_vc,V_CRUISE_MAX) / 2) - len(msl)):
-          msl += "<"
-      v_ego_2 = max(0,v_ego * 3.6)
-      msv = "V:%5.1fkm/h" % (v_ego_2)
-      if msv_desired <= v_ego_2:
-        if int(min(msv_desired,V_CRUISE_MAX) / 2) - len(msv) > 0:
-          for vml in range(int(min(msv_desired,V_CRUISE_MAX) / 2) - len(msv)):
-            msv += "|"
-        if int(min(v_ego_2,V_CRUISE_MAX) / 2) - len(msv) > 0:
-          for vml in range(int(min(v_ego_2,V_CRUISE_MAX) / 2) - len(msv)):
-            msv += "<"
-      else:
-        if int(min(v_ego_2,V_CRUISE_MAX) / 2) - len(msv) > 0:
-          for vml in range(int(min(v_ego_2,V_CRUISE_MAX) / 2) - len(msv)):
-            msv += "|"
-        if int(min(msv_desired,V_CRUISE_MAX) / 2) - len(msv) > 0:
-          for vml in range(int(min(msv_desired,V_CRUISE_MAX) / 2) - len(msv)):
-            msv += ">"
-      msv += "%+.1fkm/h" % (msv_desired-v_ego_2)
-      with open('/tmp/debug_out_v','w') as fp:
-        #fp.write('[%i],vc:%.1f(%.1f) , v:%.2f , vd:%.2f[km/h] ; ah:%.2f bh:%.2f ch:%.2f' % (prev_accel_constraint , v_cruise_kph_org , limit_vc , v_ego * 3.6 , self.v_desired_filter.x* 3.6 , LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH) )
-        #fp.write('[%i],vc:%.1f(%.1f) , v:%.2f , vd:%.2f[km/h] ; a:%.2f , ad:%.2f[m/ss]' % (prev_accel_constraint , v_cruise_kph , limit_vc , v_ego * 3.6 , self.v_desired_filter.x* 3.6 , a_ego , self.a_desired) )
-        fp.write('ah:%.2f bh:%.2f ch:%.2f\n' % (LIMIT_VC_AH,LIMIT_VC_BH,LIMIT_VC_CH) )
-        #fp.write('op:[%d] vk:%.2f gs:%.2fkm/h\n' % (OP_ENABLE_PREV,OP_ENABLE_v_cruise_kph,OP_ENABLE_gas_speed*3.6) )
-        fp.write("%s\n%s\n%s" % (msc ,msl ,msv))
-
-    #with open('/tmp/debug_out_vd','w') as fp:
-    #  fp.write('vc:%.2f[km/h] , vd:%.2f[km/h] ; ang:%.2f[deg] ; v:%.2f[km/h]' % (v_cruise * 3.6 , self.v_desired_filter.x* 3.6,steerAng , v_ego * 3.6) )
     if force_slow_decel:
       v_cruise = 0.0
     # clip limits, cannot init MPC outside of bounds
@@ -940,8 +902,6 @@ class LongitudinalPlanner:
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-    # with open('/tmp/debug_out_v','w') as fp:
-    #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,prev_accel_constraint))
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
@@ -961,8 +921,6 @@ class LongitudinalPlanner:
     a_prev = self.a_desired
     self.a_desired = float(interp(self.dt, ModelConstants.T_IDXS[:CONTROL_N], self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
-    # with open('/tmp/debug_out_v','w') as fp:
-    #   fp.write("a_desired=%.4f,r=%d,vd=%.1f**%0.4f" % (self.a_desired,reset_state,self.v_desired_filter.x*3.6,self.dt * (self.a_desired + a_prev) / 2.0))
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
