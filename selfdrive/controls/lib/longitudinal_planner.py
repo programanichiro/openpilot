@@ -759,9 +759,9 @@ class LongitudinalPlanner:
     # #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and v_ego * 3.6 > 20: # over 20km/h
     # #  with open('./ml_data.csv','a') as fp:
     # #    fp.write('%s%0.2f\n' % (ml_csv , limit_vc))
-    # CVS_FRAME += 1
-    # global v_cruise , v_cruise_old
-    # v_cruise_old = v_cruise
+    CVS_FRAME += 1
+    global v_cruise , v_cruise_old
+    v_cruise_old = v_cruise
 
     # v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     # v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
