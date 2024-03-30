@@ -938,7 +938,7 @@ class LongitudinalPlanner:
         fp.write("a_desired=%.4f,e=%d,vd=%.1f,vg=%0.1f" % (self.a_desired,ePedal,self.v_desired_filter.x*3.6,v_ego*3.6))
     else:
       with open('/tmp/debug_out_v','w') as fp:
-        fp.write("A_desired=%.4f,e=%d,vd=%.1f,vg=%0.1f" % (self.a_desired,ePedal,self.v_desired_filter.x*3.6,v_ego*3.6))
+        fp.write("a_desired=%.4f,e=x,vd=%.1f,vg=%0.1f" % (self.a_desired,self.v_desired_filter.x*3.6,v_ego*3.6))
 
     if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
