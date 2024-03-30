@@ -698,71 +698,71 @@ class LongitudinalPlanner:
       except Exception as e:
         decel_lead_ctrl = True
 
-    if decel_lead_ctrl == True and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
-      #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
-      max_yp = 0
-      for yp in md.position.y: #path_y
-        max_yp = yp if abs(yp) > abs(max_yp) else max_yp
-        if abs(steerAng) < abs(max_yp) / 2.5:
-          steerAng = (-max_yp / 2.5)
-      limit_vc = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_B else LIMIT_VC_A / (abs(steerAng) - LIMIT_VC_B) + LIMIT_VC_C
-      limit_vc_h = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_BH else LIMIT_VC_AH / (abs(steerAng) - LIMIT_VC_BH) + LIMIT_VC_CH
-      #前方カーブ機械学習用ファイルデータ生成処理。ひとまず保留
-      #if CVS_FRAME % 10 == 0 and v_ego * 3.6 > 20: # over 20km/h
-      #  ml_csv = '%0.2f,' % v_cruise_kph
-      #  for i in path_y:
-      #    ml_csv += '%0.2f,' % i
-    v_cruise_kph_org = v_cruise_kph
-    limit_vc_th = 95-5 #85-5 #80-4
-    limit_vc_tl = 60-4 #50-4 #65-4 #70-4
-    if v_cruise_kph_org > limit_vc_th:
-      limit_vc = limit_vc_h
-    elif v_cruise_kph_org >= limit_vc_tl:
-      limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
-    v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
-    if CVS_FRAME % 5 == 2:
-      with open('/tmp/limit_vc_info.txt','w') as fp:
-        fp.write('%d' % (limit_vc))
-    # if True: #CVS_FRAME % 5 == 1:
-    #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
-    #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
-    #    fp.write('%f' % (steerAng))
-    #    #fp.write('%f' % (-max_yp / 2.5))
-    if CVS_FRAME % 5 == 0:
-      with open('/tmp/cruise_info.txt','w') as fp:
-        #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
-        if v_cruise_kph == limit_vc:
-          if cruise_info_power_up:
-            fp.write('%d;' % (v_cruise_kph))
-          else:
-            fp.write('%d.' % (v_cruise_kph))
-        else:
-          if add_v_by_lead == True or self.ac_vc_time > 0:
-            if cruise_info_power_up:
-              fp.write('%d;' % (v_cruise_kph_org))
-            else:
-              fp.write(',%d' % (v_cruise_kph_org))
-          else:
-            vo = v_cruise_kph_org
-            if int(vo) == 59 or int(vo) == 61:
-              vo += 0.5 #メーター表示誤差補正
-            if cruise_info_power_up:
-              fp.write('%d;' % (vo))
-            elif limitspeed_set == True:
-              #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
-              if add_v_by_lead == False and (tss_type >= 2 or vo < 115.0) and vo >= 30:
-                vo = int(vo / 5) * 5
-              fp.write(';%d' % (vo))
-            else:
-              fp.write('%d' % (vo))
-    #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and v_ego * 3.6 > 20: # over 20km/h
-    #  with open('./ml_data.csv','a') as fp:
-    #    fp.write('%s%0.2f\n' % (ml_csv , limit_vc))
-    CVS_FRAME += 1
-    global v_cruise , v_cruise_old
-    v_cruise_old = v_cruise
-
     #$$$$$$$$$$$$$$$$
+    # if decel_lead_ctrl == True and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+    #   #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
+    #   max_yp = 0
+    #   for yp in md.position.y: #path_y
+    #     max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+    #     if abs(steerAng) < abs(max_yp) / 2.5:
+    #       steerAng = (-max_yp / 2.5)
+    #   limit_vc = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_B else LIMIT_VC_A / (abs(steerAng) - LIMIT_VC_B) + LIMIT_VC_C
+    #   limit_vc_h = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_BH else LIMIT_VC_AH / (abs(steerAng) - LIMIT_VC_BH) + LIMIT_VC_CH
+    #   #前方カーブ機械学習用ファイルデータ生成処理。ひとまず保留
+    #   #if CVS_FRAME % 10 == 0 and v_ego * 3.6 > 20: # over 20km/h
+    #   #  ml_csv = '%0.2f,' % v_cruise_kph
+    #   #  for i in path_y:
+    #   #    ml_csv += '%0.2f,' % i
+    # v_cruise_kph_org = v_cruise_kph
+    # limit_vc_th = 95-5 #85-5 #80-4
+    # limit_vc_tl = 60-4 #50-4 #65-4 #70-4
+    # if v_cruise_kph_org > limit_vc_th:
+    #   limit_vc = limit_vc_h
+    # elif v_cruise_kph_org >= limit_vc_tl:
+    #   limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
+    # v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
+    # if CVS_FRAME % 5 == 2:
+    #   with open('/tmp/limit_vc_info.txt','w') as fp:
+    #     fp.write('%d' % (limit_vc))
+    # # if True: #CVS_FRAME % 5 == 1:
+    # #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
+    # #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
+    # #    fp.write('%f' % (steerAng))
+    # #    #fp.write('%f' % (-max_yp / 2.5))
+    # if CVS_FRAME % 5 == 0:
+    #   with open('/tmp/cruise_info.txt','w') as fp:
+    #     #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
+    #     if v_cruise_kph == limit_vc:
+    #       if cruise_info_power_up:
+    #         fp.write('%d;' % (v_cruise_kph))
+    #       else:
+    #         fp.write('%d.' % (v_cruise_kph))
+    #     else:
+    #       if add_v_by_lead == True or self.ac_vc_time > 0:
+    #         if cruise_info_power_up:
+    #           fp.write('%d;' % (v_cruise_kph_org))
+    #         else:
+    #           fp.write(',%d' % (v_cruise_kph_org))
+    #       else:
+    #         vo = v_cruise_kph_org
+    #         if int(vo) == 59 or int(vo) == 61:
+    #           vo += 0.5 #メーター表示誤差補正
+    #         if cruise_info_power_up:
+    #           fp.write('%d;' % (vo))
+    #         elif limitspeed_set == True:
+    #           #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
+    #           if add_v_by_lead == False and (tss_type >= 2 or vo < 115.0) and vo >= 30:
+    #             vo = int(vo / 5) * 5
+    #           fp.write(';%d' % (vo))
+    #         else:
+    #           fp.write('%d' % (vo))
+    # #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and v_ego * 3.6 > 20: # over 20km/h
+    # #  with open('./ml_data.csv','a') as fp:
+    # #    fp.write('%s%0.2f\n' % (ml_csv , limit_vc))
+    # CVS_FRAME += 1
+    # global v_cruise , v_cruise_old
+    # v_cruise_old = v_cruise
+
     # v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     # v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
     # long_speeddown_flag = False
