@@ -934,20 +934,16 @@ class LongitudinalPlanner:
       if self.a_desired < 0 and ePedal == False:
         #ワンペダル停止の減速を強めてみる。
         self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
-      with open('/tmp/debug_out_v','w') as fp:
-        fp.write("a_desired=%.4f,e=%d,vd=%.1f,vg=%0.1f" % (self.a_desired,ePedal,self.v_desired_filter.x*3.6,v_ego*3.6))
-    else:
-      with open('/tmp/debug_out_v','w') as fp:
-        fp.write("a_desired=%.4f,e=x,vd=%.1f,vg=%0.1f" % (self.a_desired,self.v_desired_filter.x*3.6,v_ego*3.6))
 
     if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
-    # with open('/tmp/debug_out_v','w') as fp:
-    #   fp.write("v_desired=%.2fkm/h" % (self.v_desired_filter.x*3.6))
-    #  fp.write("lead:%d(lcd:%.2f) a:%.2f , m:%.2f(%d) , vl:%dkm/h , vd:%.2f" % (hasLead,lcd,self.a_desired,self.a_desired_mul,cruise_info_power_up,vl*3.6,vd))
+    al0 = accel_limits_turns[0]
+    al1 = accel_limits_turns[1]
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
+    with open('/tmp/debug_out_v','w') as fp:
+      fp.write("al=%.4f,%.4f->%.4f,%.4f" % (al0,al1,accel_limits_turns[0],accel_limits_turns[1]))
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
