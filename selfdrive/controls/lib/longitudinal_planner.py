@@ -532,7 +532,7 @@ class LongitudinalPlanner:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
     before_v_cruise_kph_max_1 = v_cruise_kph
 
-    if OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
+    if OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
       OP_ENABLE_v_cruise_kph = 0
       if red_signal_scan_flag == 3:
         red_signal_scan_flag = 2
@@ -946,8 +946,8 @@ class LongitudinalPlanner:
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-    with open('/tmp/debug_out_v','w') as fp:
-      fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,prev_accel_constraint))
+    # with open('/tmp/debug_out_v','w') as fp:
+    #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,prev_accel_constraint))
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
@@ -967,6 +967,8 @@ class LongitudinalPlanner:
     a_prev = self.a_desired
     self.a_desired = float(interp(self.dt, ModelConstants.T_IDXS[:CONTROL_N], self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
+    with open('/tmp/debug_out_v','w') as fp:
+      fp.write("a_desired=%.4f,dt=%.2f,vd=%.2f**%0.4f" % (self.a_desired,self.dt,self.v_desired_filter.x,self.dt * (self.a_desired + a_prev) / 2.0))
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
