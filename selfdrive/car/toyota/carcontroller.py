@@ -187,10 +187,13 @@ class CarController(CarControllerBase):
         cruise_info_str = fp.read()
         if cruise_info_str:
           if cruise_info_str == "1" or cruise_info_str == ",1": #クリープしたければ以下を通さない。
-            if actuators_accel > 0:
-              actuators_accel = 0
-            if pcm_accel_cmd > 0:
-              pcm_accel_cmd = 0
+            with open('/tmp/accel_engaged.txt','r') as fp:
+              accel_engaged_str = fp.read()
+              if int(accel_engaged_str) == 3: #ワンペダルモードでもePでは通さない
+                if actuators_accel > 0:
+                  actuators_accel = 0
+                if pcm_accel_cmd > 0:
+                  pcm_accel_cmd = 0
     except Exception as e:
       pass
 
