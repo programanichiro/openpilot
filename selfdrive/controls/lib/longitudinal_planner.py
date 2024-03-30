@@ -720,15 +720,15 @@ class LongitudinalPlanner:
     elif v_cruise_kph_org >= limit_vc_tl:
       limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
     v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
+    if CVS_FRAME % 5 == 2:
+      with open('/tmp/limit_vc_info.txt','w') as fp:
+        fp.write('%d' % (limit_vc))
+    # if True: #CVS_FRAME % 5 == 1:
+    #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
+    #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
+    #    fp.write('%f' % (steerAng))
+    #    #fp.write('%f' % (-max_yp / 2.5))
     #$$$$$$$$$$$$$$$$
-    # if CVS_FRAME % 5 == 2:
-    #   with open('/tmp/limit_vc_info.txt','w') as fp:
-    #     fp.write('%d' % (limit_vc))
-    # # if True: #CVS_FRAME % 5 == 1:
-    # #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
-    # #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
-    # #    fp.write('%f' % (steerAng))
-    # #    #fp.write('%f' % (-max_yp / 2.5))
     # if CVS_FRAME % 5 == 0:
     #   with open('/tmp/cruise_info.txt','w') as fp:
     #     #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
