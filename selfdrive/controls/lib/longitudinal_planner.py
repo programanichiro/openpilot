@@ -968,7 +968,7 @@ class LongitudinalPlanner:
     self.a_desired = float(interp(self.dt, ModelConstants.T_IDXS[:CONTROL_N], self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
     with open('/tmp/debug_out_v','w') as fp:
-      fp.write("a_desired=%.4fr=d,vd=%.1f**%0.4f" % (self.a_desired,reset_state,self.v_desired_filter.x*3.6,self.dt * (self.a_desired + a_prev) / 2.0))
+      fp.write("a_desired=%.4f,r=%d,vd=%.1f**%0.4f" % (self.a_desired,reset_state,self.v_desired_filter.x*3.6,self.dt * (self.a_desired + a_prev) / 2.0))
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
