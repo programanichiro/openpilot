@@ -619,72 +619,72 @@ class LongitudinalPlanner:
 #  }
     add_v_by_lead = False #前走車に追いつくための増速処理
 
+    global accel_lead_ctrl
+    if CVS_FRAME % 30 == 13:
+      try:
+        with open('/tmp/accel_ctrl_disable.txt','r') as fp:
+          accel_lead_ctrl_disable_str = fp.read()
+          if accel_lead_ctrl_disable_str:
+            accel_lead_ctrl_disable = int(accel_lead_ctrl_disable_str)
+            if accel_lead_ctrl_disable == 0:
+              accel_lead_ctrl = True
+            else:
+              accel_lead_ctrl = False
+      except Exception as e:
+        accel_lead_ctrl = True
+
+    if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5 and OP_ENABLE_v_cruise_kph == 0: #前走者がいる,信頼度が高い,MAX!=1の状態
+      leadOne = sm['radarState'].leadOne
+      d_rel = leadOne.dRel #前走者までの距離
+      #a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス,常にゼロ？UIで使ってるgetAEgoと違うようだ。
+      v_abs0 = leadOne.vRel + v_ego #前走者の速度。vRelは相対速度のもよう。
+
+      self.lead_v_abs.append(v_abs0)
+      if len(self.lead_v_abs) > 20:
+        self.lead_v_abs.pop(0)
+      v_abs = sum(self.lead_v_abs) / len(self.lead_v_abs) #直近20個の平均。ガタつきを抑える
+
+      # with open('/tmp/debug_out_x','w') as fp:
+      #   fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
+      if v_ego * 3.6 * 0.6 < d_rel and v_cruise_kph < v_abs * 3.6 + 7: #例、時速50kmの時前走車までの距離が30m(50x0.6)以上離れている。&&MAX(v_cruise_kph)より相手+7が速い。
+        self.v_cruise_kph_1_15 = v_abs * 3.6 + 7
+        if self.v_cruise_kph_1_15 > v_cruise_kph + 11:
+          self.v_cruise_kph_1_15 = v_cruise_kph + 11 #MAXを最大11は超えない
+        if v_ego * 3.6 >= v_cruise_kph * 0.95: #ACC設定速度がすでに出ている。
+          add_v_by_lead = True #前走車に追いつくための増速処理が有効
+          org_v_cruise_kph = v_cruise_kph
+          if self.ac_vc_time < 1.0:
+            self.ac_vc_time += 0.02
+          self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
+          # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
+          v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
+          if v_cruise_kph > 115:
+            v_cruise_kph = 115 #危ないのでひとまず時速115kmまで。
+            if v_cruise_kph < org_v_cruise_kph:
+              v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
+              self.ac_vc_time = 0
+              add_v_by_lead = False
+    if add_v_by_lead == False and self.v_cruise_kph_1_15 > 0:
+      if self.ac_vc_time > 0:
+        self.ac_vc_time -= 0.003 #解除はセット(0.02)の何倍も時間をかける
+        test_v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
+        if v_ego <= 1*3.6 or int(test_v_cruise_kph) <= int(v_cruise_kph):
+          self.ac_vc_time -= 0.02 #停車時では早く終わらせる。数字が元の速度と同じ時も同様。
+        if OP_ENABLE_v_cruise_kph != 0:
+          self.ac_vc_time = 0 #ワンペダル操作では直に終わらせる。
+      self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
+      if self.ac_vc_time <= 0:
+        self.v_cruise_kph_1_15 = 0
+        self.lead_v_abs = []
+      v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
+
+    steerAng = sm['carState'].steeringAngleDeg - handle_center
+    # orgSteerAng = steerAng , 使わなくても良くなった？
+    limit_vc = V_CRUISE_MAX
+    limit_vc_h = V_CRUISE_MAX
+    #ml_csv = ""
+
     #$$$$$$$$$$$$$$$$
-    # global accel_lead_ctrl
-    # if CVS_FRAME % 30 == 13:
-    #   try:
-    #     with open('/tmp/accel_ctrl_disable.txt','r') as fp:
-    #       accel_lead_ctrl_disable_str = fp.read()
-    #       if accel_lead_ctrl_disable_str:
-    #         accel_lead_ctrl_disable = int(accel_lead_ctrl_disable_str)
-    #         if accel_lead_ctrl_disable == 0:
-    #           accel_lead_ctrl = True
-    #         else:
-    #           accel_lead_ctrl = False
-    #   except Exception as e:
-    #     accel_lead_ctrl = True
-
-    # if accel_lead_ctrl == True and hasLead == True and sm['radarState'].leadOne.modelProb > 0.5 and OP_ENABLE_v_cruise_kph == 0: #前走者がいる,信頼度が高い,MAX!=1の状態
-    #   leadOne = sm['radarState'].leadOne
-    #   d_rel = leadOne.dRel #前走者までの距離
-    #   #a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス,常にゼロ？UIで使ってるgetAEgoと違うようだ。
-    #   v_abs0 = leadOne.vRel + v_ego #前走者の速度。vRelは相対速度のもよう。
-
-    #   self.lead_v_abs.append(v_abs0)
-    #   if len(self.lead_v_abs) > 20:
-    #     self.lead_v_abs.pop(0)
-    #   v_abs = sum(self.lead_v_abs) / len(self.lead_v_abs) #直近20個の平均。ガタつきを抑える
-
-    #   # with open('/tmp/debug_out_x','w') as fp:
-    #   #   fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
-    #   if v_ego * 3.6 * 0.6 < d_rel and v_cruise_kph < v_abs * 3.6 + 7: #例、時速50kmの時前走車までの距離が30m(50x0.6)以上離れている。&&MAX(v_cruise_kph)より相手+7が速い。
-    #     self.v_cruise_kph_1_15 = v_abs * 3.6 + 7
-    #     if self.v_cruise_kph_1_15 > v_cruise_kph + 11:
-    #       self.v_cruise_kph_1_15 = v_cruise_kph + 11 #MAXを最大11は超えない
-    #     if v_ego * 3.6 >= v_cruise_kph * 0.95: #ACC設定速度がすでに出ている。
-    #       add_v_by_lead = True #前走車に追いつくための増速処理が有効
-    #       org_v_cruise_kph = v_cruise_kph
-    #       if self.ac_vc_time < 1.0:
-    #         self.ac_vc_time += 0.02
-    #       self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
-    #       # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
-    #       v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-    #       if v_cruise_kph > 115:
-    #         v_cruise_kph = 115 #危ないのでひとまず時速115kmまで。
-    #         if v_cruise_kph < org_v_cruise_kph:
-    #           v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
-    #           self.ac_vc_time = 0
-    #           add_v_by_lead = False
-    # if add_v_by_lead == False and self.v_cruise_kph_1_15 > 0:
-    #   if self.ac_vc_time > 0:
-    #     self.ac_vc_time -= 0.003 #解除はセット(0.02)の何倍も時間をかける
-    #     test_v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-    #     if v_ego <= 1*3.6 or int(test_v_cruise_kph) <= int(v_cruise_kph):
-    #       self.ac_vc_time -= 0.02 #停車時では早く終わらせる。数字が元の速度と同じ時も同様。
-    #     if OP_ENABLE_v_cruise_kph != 0:
-    #       self.ac_vc_time = 0 #ワンペダル操作では直に終わらせる。
-    #   self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
-    #   if self.ac_vc_time <= 0:
-    #     self.v_cruise_kph_1_15 = 0
-    #     self.lead_v_abs = []
-    #   v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-
-    # steerAng = sm['carState'].steeringAngleDeg - handle_center
-    # # orgSteerAng = steerAng , 使わなくても良くなった？
-    # limit_vc = V_CRUISE_MAX
-    # limit_vc_h = V_CRUISE_MAX
-    # #ml_csv = ""
-
     # global decel_lead_ctrl
     # if CVS_FRAME % 30 == 29:
     #   try:
@@ -950,7 +950,7 @@ class LongitudinalPlanner:
     #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,prev_accel_constraint))
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], 33.0, x, v, a, j, personality=sm['controlsState'].personality)
+    self.mpc.update(sm['radarState'], 20.0, x, v, a, j, personality=sm['controlsState'].personality)
 
     self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
