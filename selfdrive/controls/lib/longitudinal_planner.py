@@ -938,12 +938,8 @@ class LongitudinalPlanner:
     if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
-    al0 = accel_limits_turns[0]
-    al1 = accel_limits_turns[1]
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
-    with open('/tmp/debug_out_v','w') as fp:
-      fp.write("al=%.4f,%.4f->%.4f,%.4f" % (al0,al1,accel_limits_turns[0],accel_limits_turns[1]))
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
@@ -951,7 +947,7 @@ class LongitudinalPlanner:
     #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,prev_accel_constraint))
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
+    self.mpc.update(sm['radarState'], 33.0/3.6, x, v, a, j, personality=sm['controlsState'].personality)
 
     self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
