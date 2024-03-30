@@ -186,7 +186,7 @@ class CarController(CarControllerBase):
       with open('/tmp/cruise_info.txt','r') as fp:
         cruise_info_str = fp.read()
         if cruise_info_str:
-          if cruise_info_str == "1" or cruise_info_str == ",1":
+          if cruise_info_str == "1" or cruise_info_str == ",1": #クリープしたければ以下を通さない。
             if actuators_accel > 0:
               actuators_accel = 0
             if pcm_accel_cmd > 0:

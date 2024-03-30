@@ -762,50 +762,49 @@ class LongitudinalPlanner:
     global v_cruise , v_cruise_old
     v_cruise_old = v_cruise
 
-    #$$$$$$$$$$$$$$$$
-    # v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
-    # v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
-    # long_speeddown_flag = False
-    # if desired_path_x_rate > 0.1 and desired_path_x_rate < 1.0:
-    #   long_speeddown_disable = 0
-    #   try:
-    #     with open('/tmp/long_speeddown_disable.txt','r') as fp:
-    #       long_speeddown_disable_str = fp.read()
-    #       if long_speeddown_disable_str:
-    #         long_speeddown_disable = int(long_speeddown_disable_str) #0で有効。
-    #   except Exception as e:
-    #     pass
-    #   if long_speeddown_disable == 0:
-    #     long_speeddown_flag = True #このフラグで信号ストップ条件の切り替えを行っている。
-    #     # v_cruise *= desired_path_x_rate #赤信号やAボタンモード関係なく、path_xの情報を加味してみる。
-    #     v_cruise_org = min(v_cruise_kph_org, V_CRUISE_MAX) * CV.KPH_TO_MS #ACC設定速度
-    #     # v_cruise:カーブ減速含むACC設定速度,もしカーブ減速(v_cruise)がイチロウロング減速(v_cruise_org * desired_path_x_rate)より強い時は、カーブ減速をそのまま採用する。
-    #     if v_cruise > v_cruise_org * (desired_path_x_rate**0.85):
-    #       v_cruise = v_cruise_org * (desired_path_x_rate**0.85) #カーブ減速がなければv_cruise==v_cruise_orgなので、従来のアルゴリズムは保たれる。
-    # if long_speeddown_flag == False:
-    #   v_cruise *= red_signal_speed_down
+    v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
+    v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
+    long_speeddown_flag = False
+    if desired_path_x_rate > 0.1 and desired_path_x_rate < 1.0:
+      long_speeddown_disable = 0
+      try:
+        with open('/tmp/long_speeddown_disable.txt','r') as fp:
+          long_speeddown_disable_str = fp.read()
+          if long_speeddown_disable_str:
+            long_speeddown_disable = int(long_speeddown_disable_str) #0で有効。
+      except Exception as e:
+        pass
+      if long_speeddown_disable == 0:
+        long_speeddown_flag = True #このフラグで信号ストップ条件の切り替えを行っている。
+        # v_cruise *= desired_path_x_rate #赤信号やAボタンモード関係なく、path_xの情報を加味してみる。
+        v_cruise_org = min(v_cruise_kph_org, V_CRUISE_MAX) * CV.KPH_TO_MS #ACC設定速度
+        # v_cruise:カーブ減速含むACC設定速度,もしカーブ減速(v_cruise)がイチロウロング減速(v_cruise_org * desired_path_x_rate)より強い時は、カーブ減速をそのまま採用する。
+        if v_cruise > v_cruise_org * (desired_path_x_rate**0.85):
+          v_cruise = v_cruise_org * (desired_path_x_rate**0.85) #カーブ減速がなければv_cruise==v_cruise_orgなので、従来のアルゴリズムは保たれる。
+    if long_speeddown_flag == False:
+      v_cruise *= red_signal_speed_down
 
-    # if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
-    #   ePedal = False
-    #   if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
-    #     ePedal = True
+    if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
+      ePedal = False
+      if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
+        ePedal = True
 
-    #   if red_signal_scan_flag >= 2 or ePedal == False or sm['carState'].cruiseState.standstill:
-    #     v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
-    #     self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
-    #   else:
-    #     if v_cruise > 33/3.6:
-    #       v_cruise -= 1/3.6
-    #     if v_cruise < 33/3.6:
-    #       v_cruise = 33/3.6 #完全停止しない。クリープ速度。
-    #     self.v_cruise_onep_k = 1.0
-    #   #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
-    #   # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
-    # else:
-    #   self.v_cruise_onep_k = 1.0
+      if red_signal_scan_flag >= 2 or ePedal == False or sm['carState'].cruiseState.standstill:
+        v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
+        self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
+      else:
+        if v_cruise > 16/3.6:
+          v_cruise -= 1/3.6
+        if v_cruise < 16/3.6:
+          v_cruise = 16/3.6 #完全停止しない。クリープ速度。
+        self.v_cruise_onep_k = 1.0
+      #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
+      # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
+    else:
+      self.v_cruise_onep_k = 1.0
 
-    #   # if red_signal_scan_span > 0: これでブレーキングの強さが変わったら制御しづらいのでやめる。
-    #   #   v_cruise *= interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
+      # if red_signal_scan_span > 0: これでブレーキングの強さが変わったら制御しづらいのでやめる。
+      #   v_cruise *= interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
 
     long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
     force_slow_decel = sm['controlsState'].forceDecel
@@ -830,14 +829,13 @@ class LongitudinalPlanner:
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
-    #$$$$$$$$$$$$$$$$
-    # if limitspeed_set == True and self.ac_vc_time == 0 and cruise_info_power_up == False and self.v_desired_filter.x > self.limitspeed_point / 3.6: #増速した時を除く
-    #   self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
-    # if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
-    #   self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
-    # # if tss_type < 2 and self.v_desired_filter.x > 117.0 / 3.6:
-    # #   self.v_desired_filter.x = 117.0 / 3.6
-    # # Compute model v_ego error
+    if limitspeed_set == True and self.ac_vc_time == 0 and cruise_info_power_up == False and self.v_desired_filter.x > self.limitspeed_point / 3.6: #増速した時を除く
+      self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
+    if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
+      self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
+    # if tss_type < 2 and self.v_desired_filter.x > 117.0 / 3.6:
+    #   self.v_desired_filter.x = 117.0 / 3.6
+    # Compute model v_ego error
     self.v_model_error = get_speed_error(sm['modelV2'], v_ego)
 
     if False:
@@ -880,67 +878,66 @@ class LongitudinalPlanner:
       v_cruise = 0.0
     # clip limits, cannot init MPC outside of bounds
 
-    #$$$$$$$$$$$$$$$$
-    # self.a_desired_mul = 1.0
-    # vl = 0
-    # vd = 0
-    # lcd = 0
-    # if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
-    #   leadOne = sm['radarState'].leadOne
-    #   to_lead_distance = 35 #35m以上空いている
-    #   add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
-    #   add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
-    #   to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
-    #   if leadOne.dRel > to_lead_distance:
-    #     lcd = leadOne.dRel #前走者までの距離
-    #     lcd -= to_lead_distance #0〜
-    #     lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
-    #     if lcd > 1:
-    #       lcd = 1
-    # if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
-    #   if hasLead == False:
-    #     lcd = 1.0 #前走車がいなければlcd=1扱い。
-    #   vl = v_cruise
-    #   if vl > 100/3.6:
-    #     vl = 100/3.6
-    #   #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
-    #   vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
-    #   vd = v_ego
-    #   if vd > vl:
-    #     vd = vl #vdの最大値はvl
-    #   if vl > 0:
-    #     vd /= vl #0〜1
-    #     vd = 1 - vd #1〜0
-    #     add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
-    #     self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
-    #     try:
-    #       with open('/tmp/start_accel_power_up_disp_enable.txt','r') as fp:
-    #         start_accel_power_up_disp_enable_str = fp.read()
-    #         if start_accel_power_up_disp_enable_str:
-    #           start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
-    #           if start_accel_power_up_disp_enable == 0:
-    #             self.a_desired_mul = 1 #スタート加速増なし
-    #     except Exception as e:
-    #       self.a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
+    self.a_desired_mul = 1.0
+    vl = 0
+    vd = 0
+    lcd = 0
+    if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+      leadOne = sm['radarState'].leadOne
+      to_lead_distance = 35 #35m以上空いている
+      add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
+      add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
+      to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
+      if leadOne.dRel > to_lead_distance:
+        lcd = leadOne.dRel #前走者までの距離
+        lcd -= to_lead_distance #0〜
+        lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
+        if lcd > 1:
+          lcd = 1
+    if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+      if hasLead == False:
+        lcd = 1.0 #前走車がいなければlcd=1扱い。
+      vl = v_cruise
+      if vl > 100/3.6:
+        vl = 100/3.6
+      #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
+      vd = v_ego
+      if vd > vl:
+        vd = vl #vdの最大値はvl
+      if vl > 0:
+        vd /= vl #0〜1
+        vd = 1 - vd #1〜0
+        add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
+        self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
+        try:
+          with open('/tmp/start_accel_power_up_disp_enable.txt','r') as fp:
+            start_accel_power_up_disp_enable_str = fp.read()
+            if start_accel_power_up_disp_enable_str:
+              start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+              if start_accel_power_up_disp_enable == 0:
+                self.a_desired_mul = 1 #スタート加速増なし
+        except Exception as e:
+          self.a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
 
-    # if self.a_desired_mul == 1.0 or v_ego < 1/3.6:
-    #   cruise_info_power_up = False
-    # else:
-    #   cruise_info_power_up = True
+    if self.a_desired_mul == 1.0 or v_ego < 1/3.6:
+      cruise_info_power_up = False
+    else:
+      cruise_info_power_up = True
 
-    # if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
-    #   ePedal = False
-    #   if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
-    #     ePedal = True
-    #   if sm['carState'].gasPressed == False and self.a_desired > 0 and ePedal == False:
-    #     self.a_desired = 0 #アクセル離して加速ならゼロに。
-    #   if self.a_desired < 0 and ePedal == False:
-    #     #ワンペダル停止の減速を強めてみる。
-    #     self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
+    if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
+      ePedal = False
+      if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
+        ePedal = True
+      if sm['carState'].gasPressed == False and self.a_desired > 0 and ePedal == False:
+        self.a_desired = 0 #アクセル離して加速ならゼロに。
+      if self.a_desired < 0 and ePedal == False:
+        #ワンペダル停止の減速を強めてみる。
+        self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
-    # if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
-    #   #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
-    #   v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
+    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
+      #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
+      v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
 
@@ -950,7 +947,7 @@ class LongitudinalPlanner:
     #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,prev_accel_constraint))
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
-    self.mpc.update(sm['radarState'], 20.0, x, v, a, j, personality=sm['controlsState'].personality)
+    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
 
     self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
