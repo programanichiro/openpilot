@@ -787,7 +787,8 @@ class LongitudinalPlanner:
       if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
         ePedal = True
 
-      if red_signal_scan_flag >= 2 or ePedal == False or sm['carState'].cruiseState.standstill:
+      if (red_signal_scan_flag >= 2 and ePedal == False) or sm['carState'].cruiseState.standstill:
+        #クリープ中にここを通してはいけない。AI判断でやたら停止してしまう。->クリープ時の信号停止は公式動作に任せることになる。
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
         self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
       else:
@@ -918,8 +919,8 @@ class LongitudinalPlanner:
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
-    with open('/tmp/debug_out_v','w') as fp:
-      fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,force_slow_decel))
+    # with open('/tmp/debug_out_v','w') as fp:
+    #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,force_slow_decel))
 
     self.v_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory_full = np.interp(ModelConstants.T_IDXS, T_IDXS_MPC, self.mpc.a_solution)
