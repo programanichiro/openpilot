@@ -700,7 +700,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       accelEngagedButton = new QPushButton("A");
     }
     QObject::connect(accelEngagedButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0 , 4:ePはしばらく封印。一応8キロで走行はするが、小道でクリープを使いたいのに狭いとパスが邪魔されて停止してしまう。これではワンペダル(3:iP)と変わらない。
+      //uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0 , 4:ePはしばらく封印。一応8キロで走行はするが、小道でクリープを使いたいのに狭いとパスが邪魔されて停止してしまう。これではワンペダル(3:iP)と変わらない。
+      uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 5; //0->1->2->3->4->0
       setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
       setButtonEnabled0("/tmp/force_low_engage.txt" , false);
     });
@@ -1404,7 +1405,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     set_speed_color = QColor(0x24, 0x57, 0xa1 , 255); //速度標識の数字に合わせる。
   }
   p.setPen(set_speed_color);
-  p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, setSpeedStr);
+  if(setSpeedStr == "1" && uiState()->scene.mAccelEngagedButton == 4){ //MAXが1の時
+    p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, "8");
+  } else {
+    p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, setSpeedStr);
+  }
 
   const QRect sign_rect = set_speed_rect.adjusted(sign_margin, default_size.height(), -sign_margin, -sign_margin);
   // US/Canada (MUTCD style) sign
