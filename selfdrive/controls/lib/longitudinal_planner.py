@@ -549,55 +549,54 @@ class LongitudinalPlanner:
         pass
 
     limitspeed_set = False
-    #$$$$$$$$$$$$$$$$
-    # try:
-    #   with open('/tmp/limitspeed_data.txt','r') as fp2:
-    #     limitspeed_data_str = fp2.read()
-    #     if limitspeed_data_str:
-    #       limitspeed_data = limitspeed_data_str.split(",")
-    #       limitspeed_flag = int(limitspeed_data[2])
-    #       #self.limitspeed_pointの計算は常に行う。
-    #       target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
-    #       if target > self.limitspeed_point+10:
-    #         self.limitspeed_point = target -10
-    #       elif target < self.limitspeed_point-10:
-    #         self.limitspeed_point = target +10
-    #       elif target > self.limitspeed_point+5:
-    #         self.limitspeed_point += 1
-    #       elif target < self.limitspeed_point-5:
-    #         self.limitspeed_point -= 1
-    #       elif target > self.limitspeed_point:
-    #         self.limitspeed_point += 0.1
-    #         if target < self.limitspeed_point:
-    #           self.limitspeed_point = target
-    #       elif target < self.limitspeed_point:
-    #         self.limitspeed_point -= 0.1
-    #         if target > self.limitspeed_point:
-    #           self.limitspeed_point = target
+    try:
+      with open('/tmp/limitspeed_data.txt','r') as fp2:
+        limitspeed_data_str = fp2.read()
+        if limitspeed_data_str:
+          limitspeed_data = limitspeed_data_str.split(",")
+          limitspeed_flag = int(limitspeed_data[2])
+          #self.limitspeed_pointの計算は常に行う。
+          target = float(limitspeed_data[1]) #実際にセットするのは平均速度の方
+          if target > self.limitspeed_point+10:
+            self.limitspeed_point = target -10
+          elif target < self.limitspeed_point-10:
+            self.limitspeed_point = target +10
+          elif target > self.limitspeed_point+5:
+            self.limitspeed_point += 1
+          elif target < self.limitspeed_point-5:
+            self.limitspeed_point -= 1
+          elif target > self.limitspeed_point:
+            self.limitspeed_point += 0.1
+            if target < self.limitspeed_point:
+              self.limitspeed_point = target
+          elif target < self.limitspeed_point:
+            self.limitspeed_point -= 0.1
+            if target > self.limitspeed_point:
+              self.limitspeed_point = target
 
-    #       if limitspeed_flag != 999:
-    #         self.limitspeed_point = v_ego * 3.6
+          if limitspeed_flag != 999:
+            self.limitspeed_point = v_ego * 3.6
 
-    #       self.limitspeed_point_dim.append(self.limitspeed_point)
-    #       if len(self.limitspeed_point_dim) > 50:
-    #         self.limitspeed_point_dim.pop(0)
-    #       self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近50個の平均。
+          self.limitspeed_point_dim.append(self.limitspeed_point)
+          if len(self.limitspeed_point_dim) > 50:
+            self.limitspeed_point_dim.pop(0)
+          self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近50個の平均。
 
-    #       with open('/tmp/limitspeed_sw.txt','r') as fp:
-    #         limitspeed_sw_str = fp.read()
-    #         if limitspeed_sw_str and limitspeed_data_str:
-    #           if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
-    #             if limitspeed_flag == 999:
-    #               v_cruise_kph = self.limitspeed_point_avg
-    #               # v_cruise_kph = self.limitspeed_point
-    #               limitspeed_set = True
-    # except Exception as e:
-    #   self.limitspeed_point = v_ego * 3.6
-    #   pass
+          with open('/tmp/limitspeed_sw.txt','r') as fp:
+            limitspeed_sw_str = fp.read()
+            if limitspeed_sw_str and limitspeed_data_str:
+              if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
+                if limitspeed_flag == 999:
+                  v_cruise_kph = self.limitspeed_point_avg
+                  # v_cruise_kph = self.limitspeed_point
+                  limitspeed_set = True
+    except Exception as e:
+      self.limitspeed_point = v_ego * 3.6
+      pass
 
-    # if lever_up_down != 0 and limitspeed_set == True:
-    #   with open('/tmp/accel_ctrl_disable.txt','w') as fp:
-    #     fp.write('%d' % (0 if lever_up_down > 0 else 1))
+    if lever_up_down != 0 and limitspeed_set == True:
+      with open('/tmp/accel_ctrl_disable.txt','w') as fp:
+        fp.write('%d' % (0 if lever_up_down > 0 else 1))
 
 #  struct LeadData {
 #    dRel @0 :Float32;
@@ -715,20 +714,19 @@ class LongitudinalPlanner:
     v_cruise_kph_org = v_cruise_kph
     limit_vc_th = 95-5 #85-5 #80-4
     limit_vc_tl = 60-4 #50-4 #65-4 #70-4
-    #$$$$$$$$$$$$$$$$
-    # if v_cruise_kph_org > limit_vc_th:
-    #   limit_vc = limit_vc_h
-    # elif v_cruise_kph_org >= limit_vc_tl:
-    #   limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
-    # v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
-    # if CVS_FRAME % 5 == 2:
-    #   with open('/tmp/limit_vc_info.txt','w') as fp:
-    #     fp.write('%d' % (limit_vc))
-    # # if True: #CVS_FRAME % 5 == 1:
-    # #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
-    # #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
-    # #    fp.write('%f' % (steerAng))
-    # #    #fp.write('%f' % (-max_yp / 2.5))
+    if v_cruise_kph_org > limit_vc_th:
+      limit_vc = limit_vc_h
+    elif v_cruise_kph_org >= limit_vc_tl:
+      limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
+    v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
+    if CVS_FRAME % 5 == 2:
+      with open('/tmp/limit_vc_info.txt','w') as fp:
+        fp.write('%d' % (limit_vc))
+    # if True: #CVS_FRAME % 5 == 1:
+    #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
+    #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
+    #    fp.write('%f' % (steerAng))
+    #    #fp.write('%f' % (-max_yp / 2.5))
     if CVS_FRAME % 5 == 0:
       with open('/tmp/cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
