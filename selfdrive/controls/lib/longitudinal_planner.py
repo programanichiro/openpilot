@@ -676,7 +676,6 @@ class LongitudinalPlanner:
         self.lead_v_abs = []
       v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
 
-    $$$$$$$$$$$$$$$$
     steerAng = sm['carState'].steeringAngleDeg - handle_center
     # orgSteerAng = steerAng , 使わなくても良くなった？
     limit_vc = V_CRUISE_MAX
@@ -727,7 +726,6 @@ class LongitudinalPlanner:
     #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
     #    fp.write('%f' % (steerAng))
     #    #fp.write('%f' % (-max_yp / 2.5))
-    $$$$$$$$$$$$$$$$
     if CVS_FRAME % 5 == 0:
       with open('/tmp/cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
