@@ -679,13 +679,13 @@ class LongitudinalPlanner:
     #     self.lead_v_abs = []
     #   v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
 
-    #$$$$$$$$$$$$$$$$
-    # steerAng = sm['carState'].steeringAngleDeg - handle_center
-    # # orgSteerAng = steerAng , 使わなくても良くなった？
-    # limit_vc = V_CRUISE_MAX
-    # limit_vc_h = V_CRUISE_MAX
-    # #ml_csv = ""
+    steerAng = sm['carState'].steeringAngleDeg - handle_center
+    # orgSteerAng = steerAng , 使わなくても良くなった？
+    limit_vc = V_CRUISE_MAX
+    limit_vc_h = V_CRUISE_MAX
+    #ml_csv = ""
 
+    #$$$$$$$$$$$$$$$$
     # global decel_lead_ctrl
     # if CVS_FRAME % 30 == 29:
     #   try:
