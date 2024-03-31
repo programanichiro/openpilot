@@ -350,127 +350,126 @@ class LongitudinalPlanner:
     red_signal_speed_down = 1.0
     desired_path_x_rate = 1.0 #一般的な減速制御
     set_red_signal_scan_flag_3 = False
-    #$$$$$$$$$$$$$$$$
-    # if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #これがFalseのケースは想定外
-    #   path_x = md.position.x #path_xyz[:,0]
-    #   red_signal_v_ego = 4/3.6 #この速度超で赤信号認識。
-    #   if (hasLead == False or distLead_near == False) and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego):
-    #     if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
-    #       red_signal_scan_flag_1 = 1 #赤信号センシング
+    if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #これがFalseのケースは想定外
+      path_x = md.position.x #path_xyz[:,0]
+      red_signal_v_ego = 4/3.6 #この速度超で赤信号認識。
+      if (hasLead == False or distLead_near == False) and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego):
+        if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
+          red_signal_scan_flag_1 = 1 #赤信号センシング
 
-    #   # path_x[TRAJECTORY_SIZE -1]が増加方向の時は弾きたい。
-    #   self.red_signal_path_xs = np.append(self.red_signal_path_xs,path_x[TRAJECTORY_SIZE -1])
-    #   self.red_signal_path_xs = np.delete(self.red_signal_path_xs , [0])
-    #   sum_red_signal_path_xs = np.sum(self.red_signal_path_xs)
+      # path_x[TRAJECTORY_SIZE -1]が増加方向の時は弾きたい。
+      self.red_signal_path_xs = np.append(self.red_signal_path_xs,path_x[TRAJECTORY_SIZE -1])
+      self.red_signal_path_xs = np.delete(self.red_signal_path_xs , [0])
+      sum_red_signal_path_xs = np.sum(self.red_signal_path_xs)
 
-    #   if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
-    #     red_signal = "●"
-    #     self.red_signals = np.append(self.red_signals,1)
-    #   else:
-    #     red_signal = "◯"
-    #     self.red_signals = np.append(self.red_signals,0)
-    #   self.red_signals = np.delete(self.red_signals , [0])
-    #   red_signals_sum = np.sum(self.red_signals)
-    #   if red_signals_sum > self.red_signals.size * 0.7:
-    #     red_signals_mark = "■"
-    #     if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
-    #       if red_signal_scan_flag < 2:
-    #         red_signal_scan_ct_2 = 0
-    #       red_signal_scan_ct_2 += 1 #red_signal_scan_flagが2になった瞬間から加算し始める。
-    #       red_signal_scan_flag_1 = 2 #赤信号検出
-    #       #この信号認識状態 and sum_red_signal_path_xs < self.old_red_signal_path_xsなら速度を落とし始めてもいい？ 473行のv_cruiseを1割落とすとか
-    #       if v_ego > 20/3.6 and sum_red_signal_path_xs < self.old_red_signal_path_xs:
-    #         red_signal_speed_down = interp(v_ego*3.6 , [10,20,30,40,50,55,60] , [0.97,0.96,0.95,0.94,0.93,0.92,0.91])
-    #         red_signal_scan_ct_2_rate = 200 if red_signal_scan_ct_2 > 200 else red_signal_scan_ct_2 #最大200
-    #         red_signal_speed_down -= red_signal_scan_ct_2_rate * 0.3 / 200 #徐々にブレーキが強くなる
-    #         red_signal_speed_down_before = red_signal_speed_down
-    #       elif red_signal_speed_down_before > 0:
-    #         red_signal_speed_down = red_signal_speed_down_before #条件に外れたら、一度だけ過去を参照する。
-    #         red_signal_speed_down_before = 0
-    #   else:
-    #     red_signals_mark = "□"
+      if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
+        red_signal = "●"
+        self.red_signals = np.append(self.red_signals,1)
+      else:
+        red_signal = "◯"
+        self.red_signals = np.append(self.red_signals,0)
+      self.red_signals = np.delete(self.red_signals , [0])
+      red_signals_sum = np.sum(self.red_signals)
+      if red_signals_sum > self.red_signals.size * 0.7:
+        red_signals_mark = "■"
+        if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
+          if red_signal_scan_flag < 2:
+            red_signal_scan_ct_2 = 0
+          red_signal_scan_ct_2 += 1 #red_signal_scan_flagが2になった瞬間から加算し始める。
+          red_signal_scan_flag_1 = 2 #赤信号検出
+          #この信号認識状態 and sum_red_signal_path_xs < self.old_red_signal_path_xsなら速度を落とし始めてもいい？ 473行のv_cruiseを1割落とすとか
+          if v_ego > 20/3.6 and sum_red_signal_path_xs < self.old_red_signal_path_xs:
+            red_signal_speed_down = interp(v_ego*3.6 , [10,20,30,40,50,55,60] , [0.97,0.96,0.95,0.94,0.93,0.92,0.91])
+            red_signal_scan_ct_2_rate = 200 if red_signal_scan_ct_2 > 200 else red_signal_scan_ct_2 #最大200
+            red_signal_speed_down -= red_signal_scan_ct_2_rate * 0.3 / 200 #徐々にブレーキが強くなる
+            red_signal_speed_down_before = red_signal_speed_down
+          elif red_signal_speed_down_before > 0:
+            red_signal_speed_down = red_signal_speed_down_before #条件に外れたら、一度だけ過去を参照する。
+            red_signal_speed_down_before = 0
+      else:
+        red_signals_mark = "□"
 
-    #   desired_path_x_by_speed = interp(v_ego*3.6,desired_path_x_speeds,desired_path_x_by_speeds)
-    #   desired_path_x_rate = 0 if desired_path_x_by_speed <= 0.01 else path_x[TRAJECTORY_SIZE -1]/desired_path_x_by_speed
-    #   self.desired_path_x_rates = np.append(self.desired_path_x_rates,desired_path_x_rate)
-    #   self.desired_path_x_rates = np.delete(self.desired_path_x_rates , [0])
-    #   desired_path_x_rate = np.sum(self.desired_path_x_rates) / self.desired_path_x_rates.size
-    #   if True: #CVS_FRAME % 2 == 0:
-    #     with open('/tmp/desired_path_x_rate.txt','w') as fp:
-    #       fp.write('%0.2f' % (desired_path_x_rate))
-    #   # with open('/tmp/debug_out_k','w') as fp:
-    #   # #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
-    #   #   lead_mark = "▲"
-    #   #   if hasLead == False or distLead_near == False:
-    #   #     lead_mark = "△"
-    #   # #   #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
-    #   # #   #fp.write('@@@%f,%f,%f' % (v_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
-    #   # #   #fp.write('***%.2f,[%.2f],%d' % (np.sum(self.desired_path_x_rates),desired_path_x_rate,self.desired_path_x_rates.size))
-    #   # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
-    #   # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
-    #   #   fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
-    #   # #   #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
-    #   red_signal_scan_ct += 1 #音を鳴らした後の緩衝処理になっているだけで、信号検出のあと徐々に加算されるロジックではないようだ。
+      desired_path_x_by_speed = interp(v_ego*3.6,desired_path_x_speeds,desired_path_x_by_speeds)
+      desired_path_x_rate = 0 if desired_path_x_by_speed <= 0.01 else path_x[TRAJECTORY_SIZE -1]/desired_path_x_by_speed
+      self.desired_path_x_rates = np.append(self.desired_path_x_rates,desired_path_x_rate)
+      self.desired_path_x_rates = np.delete(self.desired_path_x_rates , [0])
+      desired_path_x_rate = np.sum(self.desired_path_x_rates) / self.desired_path_x_rates.size
+      if True: #CVS_FRAME % 2 == 0:
+        with open('/tmp/desired_path_x_rate.txt','w') as fp:
+          fp.write('%0.2f' % (desired_path_x_rate))
+      # with open('/tmp/debug_out_k','w') as fp:
+      # #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
+      #   lead_mark = "▲"
+      #   if hasLead == False or distLead_near == False:
+      #     lead_mark = "△"
+      # #   #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
+      # #   #fp.write('@@@%f,%f,%f' % (v_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
+      # #   #fp.write('***%.2f,[%.2f],%d' % (np.sum(self.desired_path_x_rates),desired_path_x_rate,self.desired_path_x_rates.size))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
+      #   fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
+      red_signal_scan_ct += 1 #音を鳴らした後の緩衝処理になっているだけで、信号検出のあと徐々に加算されるロジックではないようだ。
 
-    #   self.night_time_refresh_ct += 1
-    #   if (self.night_time_refresh_ct % 11 == 6 and red_signal == "●") or self.night_time_refresh_ct % 200 == 100:
-    #     try:
-    #       with open('/tmp/night_time_info.txt','r') as fp:
-    #         night_time_info_str = fp.read()
-    #         if night_time_info_str:
-    #           self.night_time = int(night_time_info_str)
-    #     except Exception as e:
-    #       pass
-    #   red_stop_immediately = False
-    #   if long_speeddown_flag == False and self.mpc.mode == 'acc': #公式ロングではelseへ強制遷移する追加条件
-    #     if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
-    #       stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
-    #     else: #夜
-    #       stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
-    #     if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
-    #       red_stop_immediately = True #停止せよ。
-    #   else:
-    #     if True: #self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
-    #       stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,60] , [15,20,23,28,43,57,66]) #事前減速で40km/h以下になることを期待している。昼
-    #     # else: #夜
-    #     #   stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
-    #     if path_x[TRAJECTORY_SIZE -1] < stop_threshold or desired_path_x_rate < 0.11:
-    #       red_stop_immediately = True #停止せよ。
-    #     # stop_threshold_r = interp(v_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
-    #     #                                     , [0.25,0.30,0.33,0.35,0.38,0.41,0.43]) #さらに減速度の強さa_egoを加味。弱ければより小さくできる？
-    #     # if desired_path_x_rate < stop_threshold_r: #0.4:
-    #     #   red_stop_immediately = True #停止せよ。
-    #   if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
-    #     #赤信号検出でワンペダル発動
-    #     if red_signal_scan_ct < 10000:
-    #       red_signal_scan_ct = 10000
-    #       #まずは音を鳴らす。
-    #       try:
-    #         if accel_engaged_str:
-    #           if int(accel_engaged_str) >= 3: #ワンペダルモード
-    #               # fp.write('%d' % (3)) #デバッグ用にpo.wavを鳴らしてみる。
-    #             lock_off = False
-    #             if os.path.isfile('/tmp/lockon_disp_disable.txt'):
-    #               with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
-    #                 lockon_disp_disable_str = fp.read()
-    #                 if lockon_disp_disable_str:
-    #                   lockon_disp_disable = int(lockon_disp_disable_str)
-    #                   if lockon_disp_disable != 0:
-    #                     lock_off = True #ロックオンOFFで停車コードOFF
-    #             if lock_off == False:
-    #               with open('/tmp/signal_start_prompt_info.txt','w') as fp:
-    #                 fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
-    #               OP_ENABLE_v_cruise_kph = v_cruise_kph
-    #               OP_ENABLE_gas_speed = 1.0 / 3.6
-    #               #one_pedal_chenge_restrict_time = 10 , ここは意味的に要らないか。
-    #               red_signal_scan_flag_1 = 3 #赤信号停止状態
-    #               set_red_signal_scan_flag_3 = True #セットした瞬間
-    #               red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
-    #       except Exception as e:
-    #         pass
-    #   else:
-    #     red_signal_scan_ct = 0 if red_signal_scan_ct < 1000 else red_signal_scan_ct - 1000
-    #   self.old_red_signal_path_xs = sum_red_signal_path_xs
+      self.night_time_refresh_ct += 1
+      if (self.night_time_refresh_ct % 11 == 6 and red_signal == "●") or self.night_time_refresh_ct % 200 == 100:
+        try:
+          with open('/tmp/night_time_info.txt','r') as fp:
+            night_time_info_str = fp.read()
+            if night_time_info_str:
+              self.night_time = int(night_time_info_str)
+        except Exception as e:
+          pass
+      red_stop_immediately = False
+      if long_speeddown_flag == False and self.mpc.mode == 'acc': #公式ロングではelseへ強制遷移する追加条件
+        if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
+          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
+        else: #夜
+          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
+        if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
+          red_stop_immediately = True #停止せよ。
+      else:
+        if True: #self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
+          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,60] , [15,20,23,28,43,57,66]) #事前減速で40km/h以下になることを期待している。昼
+        # else: #夜
+        #   stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
+        if path_x[TRAJECTORY_SIZE -1] < stop_threshold or desired_path_x_rate < 0.11:
+          red_stop_immediately = True #停止せよ。
+        # stop_threshold_r = interp(v_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
+        #                                     , [0.25,0.30,0.33,0.35,0.38,0.41,0.43]) #さらに減速度の強さa_egoを加味。弱ければより小さくできる？
+        # if desired_path_x_rate < stop_threshold_r: #0.4:
+        #   red_stop_immediately = True #停止せよ。
+      if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
+        #赤信号検出でワンペダル発動
+        if red_signal_scan_ct < 10000:
+          red_signal_scan_ct = 10000
+          #まずは音を鳴らす。
+          try:
+            if accel_engaged_str:
+              if int(accel_engaged_str) >= 3: #ワンペダルモード
+                  # fp.write('%d' % (3)) #デバッグ用にpo.wavを鳴らしてみる。
+                lock_off = False
+                if os.path.isfile('/tmp/lockon_disp_disable.txt'):
+                  with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
+                    lockon_disp_disable_str = fp.read()
+                    if lockon_disp_disable_str:
+                      lockon_disp_disable = int(lockon_disp_disable_str)
+                      if lockon_disp_disable != 0:
+                        lock_off = True #ロックオンOFFで停車コードOFF
+                if lock_off == False:
+                  with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+                    fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
+                  OP_ENABLE_v_cruise_kph = v_cruise_kph
+                  OP_ENABLE_gas_speed = 1.0 / 3.6
+                  #one_pedal_chenge_restrict_time = 10 , ここは意味的に要らないか。
+                  red_signal_scan_flag_1 = 3 #赤信号停止状態
+                  set_red_signal_scan_flag_3 = True #セットした瞬間
+                  red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
+          except Exception as e:
+            pass
+      else:
+        red_signal_scan_ct = 0 if red_signal_scan_ct < 1000 else red_signal_scan_ct - 1000
+      self.old_red_signal_path_xs = sum_red_signal_path_xs
 
     lever_up_down = 0
     # if (hasLead == True and distLead_near == True) or v_ego > 24/3.6: #ここではlimitspeed_setは判定できないand limitspeed_set == True:
