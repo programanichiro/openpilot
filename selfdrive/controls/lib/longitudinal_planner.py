@@ -857,67 +857,66 @@ class LongitudinalPlanner:
       v_cruise = 0.0
     # clip limits, cannot init MPC outside of bounds
 
-    #$$$$$$$$$$$$$$$$
-    # self.a_desired_mul = 1.0
-    # vl = 0
-    # vd = 0
-    # lcd = 0
-    # if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
-    #   leadOne = sm['radarState'].leadOne
-    #   to_lead_distance = 35 #35m以上空いている
-    #   add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
-    #   add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
-    #   to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
-    #   if leadOne.dRel > to_lead_distance:
-    #     lcd = leadOne.dRel #前走者までの距離
-    #     lcd -= to_lead_distance #0〜
-    #     lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
-    #     if lcd > 1:
-    #       lcd = 1
-    # if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
-    #   if hasLead == False:
-    #     lcd = 1.0 #前走車がいなければlcd=1扱い。
-    #   vl = v_cruise
-    #   if vl > 100/3.6:
-    #     vl = 100/3.6
-    #   #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
-    #   vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
-    #   vd = v_ego
-    #   if vd > vl:
-    #     vd = vl #vdの最大値はvl
-    #   if vl > 0:
-    #     vd /= vl #0〜1
-    #     vd = 1 - vd #1〜0
-    #     add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
-    #     self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
-    #     try:
-    #       with open('/tmp/start_accel_power_up_disp_enable.txt','r') as fp:
-    #         start_accel_power_up_disp_enable_str = fp.read()
-    #         if start_accel_power_up_disp_enable_str:
-    #           start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
-    #           if start_accel_power_up_disp_enable == 0:
-    #             self.a_desired_mul = 1 #スタート加速増なし
-    #     except Exception as e:
-    #       self.a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
+    self.a_desired_mul = 1.0
+    vl = 0
+    vd = 0
+    lcd = 0
+    if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
+      leadOne = sm['radarState'].leadOne
+      to_lead_distance = 35 #35m以上空いている
+      add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
+      add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
+      to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
+      if leadOne.dRel > to_lead_distance:
+        lcd = leadOne.dRel #前走者までの距離
+        lcd -= to_lead_distance #0〜
+        lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
+        if lcd > 1:
+          lcd = 1
+    if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+      if hasLead == False:
+        lcd = 1.0 #前走車がいなければlcd=1扱い。
+      vl = v_cruise
+      if vl > 100/3.6:
+        vl = 100/3.6
+      #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
+      vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
+      vd = v_ego
+      if vd > vl:
+        vd = vl #vdの最大値はvl
+      if vl > 0:
+        vd /= vl #0〜1
+        vd = 1 - vd #1〜0
+        add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
+        self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
+        try:
+          with open('/tmp/start_accel_power_up_disp_enable.txt','r') as fp:
+            start_accel_power_up_disp_enable_str = fp.read()
+            if start_accel_power_up_disp_enable_str:
+              start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+              if start_accel_power_up_disp_enable == 0:
+                self.a_desired_mul = 1 #スタート加速増なし
+        except Exception as e:
+          self.a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
 
-    # if self.a_desired_mul == 1.0 or v_ego < 1/3.6:
-    #   cruise_info_power_up = False
-    # else:
-    #   cruise_info_power_up = True
+    if self.a_desired_mul == 1.0 or v_ego < 1/3.6:
+      cruise_info_power_up = False
+    else:
+      cruise_info_power_up = True
 
-    # if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
-    #   ePedal = False
-    #   if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
-    #     ePedal = True
-    #   if sm['carState'].gasPressed == False and self.a_desired > 0 and ePedal == False:
-    #     self.a_desired = 0 #アクセル離して加速ならゼロに。
-    #   if self.a_desired < 0 and ePedal == False:
-    #     #ワンペダル停止の減速を強めてみる。
-    #     self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
+    if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
+      ePedal = False
+      if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
+        ePedal = True
+      if sm['carState'].gasPressed == False and self.a_desired > 0 and ePedal == False:
+        self.a_desired = 0 #アクセル離して加速ならゼロに。
+      if self.a_desired < 0 and ePedal == False:
+        #ワンペダル停止の減速を強めてみる。
+        self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
-    # if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
-    #   #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
-    #   v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
+    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
+      #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
+      v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
 
@@ -954,20 +953,19 @@ class LongitudinalPlanner:
     longitudinalPlan.modelMonoTime = sm.logMonoTime['modelV2']
     longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.logMonoTime['modelV2']
 
-    longitudinalPlan.speeds = self.v_desired_trajectory.tolist()
-    longitudinalPlan.accels = self.a_desired_trajectory.tolist()
-    #$$$$$$$$$$$$$$$$
-    # if g_tss_type < 2:
-    #   longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory * self.v_cruise_onep_k, 119/3.6).tolist() #全要素を119km/h以下にする
-    # else:
-    #   longitudinalPlan.speeds = (self.v_desired_trajectory * self.v_cruise_onep_k).tolist()
-    # # with open('/tmp/long_e2e_ready.txt','w') as fp:
-    #   # fp.write('v%f / %f' % (self.v_desired_trajectory[0],self.v_desired_filter.x)) #long e2eに備えて、確認してみる。v_desired_filter.xへの扱いはv_desired_trajectoryを直に改変で代用できるか？、基本的にはオーバースピードさせないためにだけ使っている。
-    #   # fp.write('V%f / %f' % (self.v_desired_trajectory[CONTROL_N-1],self.v_desired_filter.x))
-    #   # fp.write('a%f / %f' % (self.a_desired_trajectory[0],self.a_desired)) #aもvも大体同じ値らしい。aは全体にa_desired_mulをかけるだけで済みそう。
-    #   #fp.write('A%f / %f' % (self.a_desired_trajectory[CONTROL_N-1],self.a_desired)) #aもvも大体同じ値らしい。
-    # # longitudinalPlan.accels = self.a_desired_trajectory.tolist()
-    # longitudinalPlan.accels = (self.a_desired_trajectory * self.a_desired_mul).tolist()
+    # longitudinalPlan.speeds = self.v_desired_trajectory.tolist()
+    # longitudinalPlan.accels = self.a_desired_trajectory.tolist()
+    if g_tss_type < 2:
+      longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory * self.v_cruise_onep_k, 119/3.6).tolist() #全要素を119km/h以下にする
+    else:
+      longitudinalPlan.speeds = (self.v_desired_trajectory * self.v_cruise_onep_k).tolist()
+    # with open('/tmp/long_e2e_ready.txt','w') as fp:
+      # fp.write('v%f / %f' % (self.v_desired_trajectory[0],self.v_desired_filter.x)) #long e2eに備えて、確認してみる。v_desired_filter.xへの扱いはv_desired_trajectoryを直に改変で代用できるか？、基本的にはオーバースピードさせないためにだけ使っている。
+      # fp.write('V%f / %f' % (self.v_desired_trajectory[CONTROL_N-1],self.v_desired_filter.x))
+      # fp.write('a%f / %f' % (self.a_desired_trajectory[0],self.a_desired)) #aもvも大体同じ値らしい。aは全体にa_desired_mulをかけるだけで済みそう。
+      #fp.write('A%f / %f' % (self.a_desired_trajectory[CONTROL_N-1],self.a_desired)) #aもvも大体同じ値らしい。
+    # longitudinalPlan.accels = self.a_desired_trajectory.tolist()
+    longitudinalPlan.accels = (self.a_desired_trajectory * self.a_desired_mul).tolist()
     longitudinalPlan.jerks = self.j_desired_trajectory.tolist()
 
     longitudinalPlan.hasLead = sm['radarState'].leadOne.status
