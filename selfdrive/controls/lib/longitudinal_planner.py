@@ -793,13 +793,13 @@ class LongitudinalPlanner:
       else:
         # v_cruise = 10/3.6 #完全停止しない。クリープ速度。
         now_v = self.v_desired_filter.x
-        t_v = 8  #完全停止しない。クリープ速度。
+        t_v = 10  #完全停止しない。クリープ速度。
         if now_v > (t_v+2)/3.6:
           now_v -= 1/3.6
           if now_v < (t_v+1)/3.6:
             now_v = t_v/3.6
         elif now_v < 1/3.6:
-            now_v = t_v/3.6 #停車時から発信するために一瞬強く踏む。
+            now_v = t_v/3.6 #停車時から発進するために一瞬強く踏む。
         elif now_v < (t_v-2)/3.6:
           now_v += 1/3.6
           if now_v > (t_v-1)/3.6:
