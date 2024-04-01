@@ -782,6 +782,7 @@ class LongitudinalPlanner:
     if long_speeddown_flag == False:
       v_cruise *= red_signal_speed_down
 
+    creep_a_mul = 1.0
     if OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2: #km/h
       ePedal = False
       if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
@@ -792,20 +793,12 @@ class LongitudinalPlanner:
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
         self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
       else:
-        v_cruise = 9/3.6 #完全停止しない。クリープ速度。
-        # now_v = self.v_desired_filter.x # v_egoでも？
-        # t_v = 9  #完全停止しない。クリープ速度。
-        # if now_v > (t_v+2)/3.6:
-        #   now_v -= 1/3.6
-        #   if now_v < (t_v+1)/3.6:
-        #     now_v = t_v/3.6
-        # elif now_v < 1/3.6:
-        #     now_v = t_v/3.6 #停車時から発進するために一瞬強く踏む。
-        # elif now_v < (t_v-2)/3.6:
-        #   now_v += 1/3.6
-        #   if now_v > (t_v-1)/3.6:
-        #     now_v = t_v/3.6
-        # v_cruise = now_v
+        t_v = 9/3.6  #m/s完全停止しない。クリープ速度。
+        v_cruise = t_v
+        if v_ego < t_v and self.a_desired > 0: #クリープ発進を滑らかに。
+          creep_a_mul = interp(v_ego*3.6
+                               ,[0  ,1  ,2  ,3  ,6  ,7  ,8  ,9  ]
+                               ,[1.0,1.0,0.7,0.6,0.5,0.7,0.9,1.0])
         self.v_cruise_onep_k = 1.0
       #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
       # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
@@ -908,6 +901,7 @@ class LongitudinalPlanner:
         #ワンペダル停止の減速を強めてみる。
         self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
+    self.a_desired_mul *= creep_a_mul #クリープダッシュを緩和してみる。
     if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
