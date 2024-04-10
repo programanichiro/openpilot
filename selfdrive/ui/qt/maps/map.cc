@@ -150,7 +150,7 @@ void MapWindow::initLayers() {
 
     QVariantMap transition;
     transition["duration"] = 400;  // ms
-    m_map->setPaintProperty("navLayer", "line-color", getNavPathColor(uiState()->scene.navigate_on_openpilot));
+    m_map->setPaintProperty("navLayer", "line-color", QColor("#31a1ee"));
     m_map->setPaintProperty("navLayer", "line-color-transition", transition);
     m_map->setPaintProperty("navLayer", "line-width", 7.5);
     m_map->setLayoutProperty("navLayer", "line-cap", "round");
@@ -175,7 +175,7 @@ void MapWindow::initLayers() {
       m_map->addImage("label-arrow", QImage("../../../mb_triangle.svg"));
     } else {
       m_map->addImage("label-arrow", QImage("../assets/images/triangle.svg"));
-    }    
+    }
 
     QVariantMap carPos;
     carPos["type"] = "symbol";
@@ -227,21 +227,6 @@ void MapWindow::updateState(const UIState &s) {
   }
   const SubMaster &sm = *(s.sm);
   update();
-
-  if (sm.updated("modelV2")) {
-    // set path color on change, and show map on rising edge of navigate on openpilot
-    bool nav_enabled = sm["modelV2"].getModelV2().getNavEnabled() &&
-                       sm["controlsState"].getControlsState().getEnabled();
-    if (nav_enabled != uiState()->scene.navigate_on_openpilot) {
-      if (loaded_once) {
-        m_map->setPaintProperty("navLayer", "line-color", getNavPathColor(nav_enabled));
-      }
-      if (nav_enabled) {
-        emit requestVisible(true);
-      }
-    }
-    uiState()->scene.navigate_on_openpilot = nav_enabled;
-  }
 
   static bool already_vego_over_8 = false;
   if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
@@ -558,7 +543,6 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
 void MapWindow::offroadTransition(bool offroad) {
   if (offroad) {
     clearRoute();
-    uiState()->scene.navigate_on_openpilot = false;
     routing_problem = false;
 
     FILE *fp = fopen("../manager/last_bearing_info.txt","w");

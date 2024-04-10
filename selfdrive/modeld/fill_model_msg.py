@@ -60,8 +60,7 @@ def fill_xyvat(builder, t, x, y, v, a, x_std=None, y_std=None, v_std=None, a_std
 
 def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, np.ndarray], publish_state: PublishState,
                    vipc_frame_id: int, vipc_frame_id_extra: int, frame_id: int, frame_drop: float,
-                   timestamp_eof: int, timestamp_llk: int, model_execution_time: float,
-                   nav_enabled: bool, valid: bool , STEER_CTRL_Y: float, v_ego: float, DH) -> None:
+                   timestamp_eof: int, model_execution_time: float, valid: bool , STEER_CTRL_Y: float, v_ego: float, DH) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   msg.valid = valid
 
@@ -71,9 +70,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
   modelV2.frameAge = frame_age
   modelV2.frameDropPerc = frame_drop * 100
   modelV2.timestampEof = timestamp_eof
-  modelV2.locationMonoTime = timestamp_llk
   modelV2.modelExecutionTime = model_execution_time
-  modelV2.navEnabled = nav_enabled
 
   # plan
   position = modelV2.position
@@ -122,7 +119,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
     LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
     path_xyz = np.column_stack([position.x, position.y, position.z])
     t_idxs = np.array(position.t)
-  
+
     path_y = path_xyz[:,1]
     max_yp = 0
     for yp in path_y:
