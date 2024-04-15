@@ -1,12 +1,13 @@
 #!/usr/bin/env python3
 import argparse
 import json
+import os
 import pathlib
 import tempfile
+import time
 from openpilot.common.basedir import BASEDIR
 from openpilot.system.hardware.tici.agnos import StreamingDecompressor, unsparsify, noop, AGNOS_MANIFEST_FILE
 from openpilot.system.updated.casync.common import create_casync_from_file
-from openpilot.system.version import get_agnos_version
 
 
 
@@ -14,7 +15,6 @@ if __name__ == "__main__":
   parser = argparse.ArgumentParser(description="creates a casync release")
   parser.add_argument("output_dir", type=str, help="output directory for the channel")
   parser.add_argument("working_dir", type=str, help="working directory")
-  parser.add_argument("--version", type=str, help="version of agnos this is", default=get_agnos_version())
   parser.add_argument("--manifest", type=str, help="json manifest to create agnos release from", \
                         default=str(pathlib.Path(BASEDIR) / AGNOS_MANIFEST_FILE))
   args = parser.parse_args()
@@ -35,6 +35,7 @@ if __name__ == "__main__":
 
     for entry in manifest:
       print(f"creating casync agnos build from {entry}")
+      start = time.monotonic()
       downloader = StreamingDecompressor(entry['url'])
 
       parse_func = unsparsify if entry['sparse'] else noop
@@ -48,4 +49,9 @@ if __name__ == "__main__":
         for chunk in parsed_chunks:
           f.write(chunk)
 
-      create_casync_from_file(entry_path, output_dir, f"agnos-{args.version}-{entry['name']}")
+      print(f"downloaded in {time.monotonic() - start}")
+
+      start = time.monotonic()
+      agnos_filename = os.path.basename(entry["url"]).split(".")[0]
+      create_casync_from_file(entry_path, output_dir, agnos_filename)
+      print(f"created casnc in {time.monotonic() - start}")
