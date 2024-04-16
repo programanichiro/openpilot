@@ -790,5 +790,5 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   p.setPen(pen);
 
-  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (map_bearing_num+3)*16, (map_bearing_num+180-3)*16);
+  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (90 + map_bearing_num+3)*16, (360-3*2)*16);
 }
