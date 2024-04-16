@@ -801,8 +801,8 @@ class LongitudinalPlanner:
       if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
         ePedal = True
 
-      if (red_signal_scan_flag >= 2 and ePedal == False) or sm['carState'].cruiseState.standstill:
-        #クリープ中にここを通してはいけない。AI判断でやたら停止してしまう。->クリープ時の信号停止は公式動作に任せることになる。
+      if ePedal == False or sm['carState'].cruiseState.standstill or self.red_signal_eP_iP_flag == 1:
+        #クリープ中にここを通してはいけない。AI判断でやたら停止してしまう。self.red_signal_eP_iP_flag == 1なら一時的iPモード。
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
         self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
       else:
