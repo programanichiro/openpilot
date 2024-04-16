@@ -716,24 +716,17 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
 
   {
     const static char *btn_styleb_trs = "font-weight:600; font-size: 50px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
-    //const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; color: #2457A1; background-color: rgba(0, 0, 0, 0);"; //透明ボタン用
     QHBoxLayout *layout = new QHBoxLayout;
     bearing_scale = new QPushButton;
     //bearing_scale->setAlignment(Qt::AlignCenter);
     bearing_scale->setStyleSheet(QString(btn_styleb_trs).arg("#909090"));
-    //this->updateLimitspeed(0);
     bearing_scale->setText("");
 
     layout->addWidget(bearing_scale);
     main_layout->addLayout(layout);
 
     QObject::connect(bearing_scale, &QPushButton::pressed, [=]() {
-      // std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
-      // if(last_navi_dest.empty() == false){
-      //   extern void soundPipo();
-      //   soundPipo();
-      //   Params().put("NavDestination", last_navi_dest);
-      // }
+      //ボタンを押した時に何かしたいならここで。
     });
   }
   setStyleSheet(R"(
@@ -799,6 +792,8 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(218, 202, 37, 210));
   p.drawEllipse(0,0,r*2,r*2);
 
+#if 0
+  //自車アイコンと似ているのでボツ
   const static QPointF chevron[] = {{-4, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+7, BS_SIZE/4+5}, {0, 0} , {BS_SIZE/3-7, BS_SIZE/4+5} , {BS_SIZE/3, BS_SIZE/4} , {4, -BS_SIZE/2}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
@@ -809,5 +804,19 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(201, 34, 49, 220));
   p.drawPolygon(chevron, std::size(chevron));
   p.resetTransform();
+#else
+  //包囲磁石風
+  const static QPointF chevron[] = {{-4, -BS_SIZE/2-4}, {-BS_SIZE/4, 0} , {BS_SIZE/4, 0} , {4, -BS_SIZE/2-4}};
+  p.resetTransform();
+  p.translate(BS_SIZE/2,BS_SIZE/2);
+  p.rotate(map_bearing_num); //degree指定
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor(201, 34, 49, 220));
+  p.drawPolygon(chevron, std::size(chevron));
+  p.rotate(180); //南側をグレーで描画
+  p.setBrush(QColor(100, 100, 100, 220));
+  p.drawPolygon(chevron, std::size(chevron));
+  p.resetTransform();
+#endif
 
 }
