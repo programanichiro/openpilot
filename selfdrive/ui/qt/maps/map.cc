@@ -799,9 +799,9 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   QPointF chevron[] = {{0, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {0, 0} , {BS_SIZE/3, BS_SIZE/4}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2 *1.1);
-  p.translate(BS_SIZE/2,BS_SIZE/2);
-  p.rotate(-map_bearing_num); //degree指定
   p.translate(-BS_SIZE/2,-BS_SIZE/2);
+  p.rotate(-map_bearing_num); //degree指定
+  p.translate(BS_SIZE/2,BS_SIZE/2);
   // if(ang != 0){
   //   p.translate(img.size().width()/2,img.size().height()/2);
   //   p.rotate(ang); //degree指定
