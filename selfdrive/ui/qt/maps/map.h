@@ -112,7 +112,7 @@ public slots:
 
 signals:
   void LimitspeedChanged(int map_width);
-  void BearingScaleChanged(int map_width, int angle, double scale);
+  void BearingScaleChanged(int map_width, int angle, double scale, double latitude);
   void requestVisible(bool visible);
   void requestSettings(bool settings);
 };

@@ -275,7 +275,7 @@ void MapWindow::updateState(const UIState &s) {
         emit LimitspeedChanged(rect().width());
 
         map_bearing_scale->setVisible(true);
-        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , locationd_pos.getValue()[0]);
       }
     }
   }
@@ -284,7 +284,7 @@ void MapWindow::updateState(const UIState &s) {
   //   emit_LimitspeedChanged_first_set = true;
   //   //このタイミングではrect().width()の値がおかしい。
   //   emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
-  //   emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+  //   emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , locationd_pos.getValue()[0]);
   // }
 
   if (sm.updated("navRoute") && sm["navRoute"].getNavRoute().getCoordinates().size()) {
@@ -762,7 +762,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
 
 static int map_bearing_num;
 static double map_scale_num;
-void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
+void MapBearingScale::updateBearingScale(int map_width, int angle, double scale , double latitude) {
 
   map_bearing_num = angle;
   // map_scale_num = scale; //18〜14scale->25m〜400m,25*(2^4=16)
@@ -771,7 +771,7 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale)
   //1,2,3,4,5, 6, 7, 8
   //n^2
   //pow(2,18-scale) * 25
-  map_scale_num = pow(2,(18-scale)) * 19;
+  map_scale_num = pow(2,(18-scale)) * 23 * cos(DEG2RAD(latitude));
   if(map_scale_num < 1000){
     bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   } else {
