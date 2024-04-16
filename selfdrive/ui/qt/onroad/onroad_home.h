@@ -31,6 +31,4 @@ private slots:
   void updateState(const UIState &s);
 };
 
-#define PI0_DEBUG false
 extern bool mapVisible;
-
