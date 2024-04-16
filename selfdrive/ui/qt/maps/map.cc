@@ -640,6 +640,8 @@ int limit_speed_num;
 
 void MapLimitspeed::updateLimitspeed(int map_width) {
 
+  int old_limit_speed_num = limit_speed_num;
+
   std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
   if(limitspeed_data_txt.empty() == false){
     float output[3]; // float型の配列
@@ -683,6 +685,9 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
   } else {
     this->move(map_width - r*2 - UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r*2 - UI_BORDER_SIZE - stand_still_height);
   }
+  if(old_limit_speed_num != limit_speed_num){
+    this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
+  }
 }
 
 void MapLimitspeed::paintEvent(QPaintEvent *event) {
@@ -710,7 +715,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   main_layout->setContentsMargins(0, 0, 0, 0);
 
   {
-    const static char *btn_styleb_trs = "font-weight:600; font-size: 55px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+    const static char *btn_styleb_trs = "font-weight:600; font-size: 50px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
     //const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; color: #2457A1; background-color: rgba(0, 0, 0, 0);"; //透明ボタン用
     QHBoxLayout *layout = new QHBoxLayout;
     bearing_scale = new QPushButton;
@@ -743,7 +748,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
     * {
       color: #202020;
       font-family: "Inter";
-      font-size: 55px;
+      font-size: 50px;
     }
   )");
 
@@ -760,10 +765,10 @@ static double map_scale_num;
 void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
 
   map_bearing_num = angle;
-  // map_scale_num = scale; //17〜14scale->0〜30m/s->5m〜200m？
-  // bearing_scale->setText(QString::number(map_scale_num, 'f', 1));
-  map_scale_num = util::map_val<double>(scale, MAX_ZOOM, MIN_ZOOM, 10, 500);
-  bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
+  map_scale_num = scale; //17〜14scale->0〜30m/s->5m〜200m？
+  bearing_scale->setText(QString::number(map_scale_num, 'f', 2));
+  // map_scale_num = util::map_val<double>(scale, MAX_ZOOM, MIN_ZOOM, 10, 500);
+  // bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   float r = BS_SIZE / 2;
   int stand_still_height = 0;
   if(now_navigation == true){
@@ -774,7 +779,7 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale)
   } else {
     this->move(UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r*2 - UI_BORDER_SIZE - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
   }
-  this->update(0,0,this->width(),this->height()); //これでpaintEventを呼び出せる？
+  this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
 }
 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
@@ -786,30 +791,13 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(218, 202, 37, 210));
   p.drawEllipse(0,0,r*2,r*2);
 
-  // int arc_w = -BS_SIZE * 40 / 200; //内側に描画
-  // // if(map_scale_num >= 100){
-  // //   arc_w = (int)(arc_w * 0.7); ///枠と数字が被らないように枠を細くする。
-  // // }
-  // //QPen pen = QPen(QColor(38, 44, 205, 255), abs(arc_w));
-  // QPen pen = QPen(QColor(201, 34, 49, 180), abs(arc_w));
-  // pen.setCapStyle(Qt::FlatCap); //端をフラットに
-  // p.setPen(pen);
-
-  // p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (90 - map_bearing_num+5)*16, (360-5*2)*16);
-
   QPointF chevron[] = {{0, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {0, 0} , {BS_SIZE/3, BS_SIZE/4}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
   p.rotate(map_bearing_num); //degree指定
   p.translate(-BS_SIZE/2,-BS_SIZE/2);
   p.translate(BS_SIZE/2,BS_SIZE/2 *1.1);
-  // if(ang != 0){
-  //   p.translate(img.size().width()/2,img.size().height()/2);
-  //   p.rotate(ang); //degree指定
-  //   p.translate(-img.size().width()/2,-img.size().height()/2);
-  // }
   p.setPen(Qt::NoPen);
-  //p.setBrush(QColor(250, 250, 250, 250));
   p.setBrush(QColor(201, 34, 49, 220));
   p.drawPolygon(chevron, std::size(chevron));
   p.resetTransform();
