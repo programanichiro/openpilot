@@ -765,10 +765,14 @@ static double map_scale_num;
 void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
 
   map_bearing_num = angle;
-  map_scale_num = scale; //17〜14scale->0〜30m/s->5m〜200m？
-  bearing_scale->setText(QString::number(map_scale_num, 'f', 2));
-  // map_scale_num = util::map_val<double>(scale, MAX_ZOOM, MIN_ZOOM, 10, 500);
-  // bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
+  // map_scale_num = scale; //18〜14scale->25m〜500m？
+  // bearing_scale->setText(QString::number(map_scale_num, 'f', 2));
+  map_scale_num = (scale - 18) * (25 - 500) / (18-14) + 25;
+  if(map_scale_num < 1000){
+    bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
+  } else {
+    bearing_scale->setText(QString::number(map_scale_num / 1000, 'f', 1) + "km");
+  }
   float r = BS_SIZE / 2;
   int stand_still_height = 0;
   if(now_navigation == true){
@@ -791,7 +795,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(218, 202, 37, 210));
   p.drawEllipse(0,0,r*2,r*2);
 
-  QPointF chevron[] = {{0, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {0, 0} , {BS_SIZE/3, BS_SIZE/4}};
+  const static QPointF chevron[] = {{-5, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+10, BS_SIZE/4}, {0, 0} , {BS_SIZE/3-10, BS_SIZE/4} , {BS_SIZE/3, BS_SIZE/4} , {5, -BS_SIZE/2}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
   p.rotate(map_bearing_num); //degree指定
