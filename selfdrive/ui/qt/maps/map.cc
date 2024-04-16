@@ -275,13 +275,13 @@ void MapWindow::updateState(const UIState &s) {
       }
     }
   }
-  static bool emit_LimitspeedChanged_first_set = false;
-  if(emit_LimitspeedChanged_first_set == false){
-    emit_LimitspeedChanged_first_set = true;
-    //このタイミングではrect().width()の値がおかしい。
-    emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
-    emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
-  }
+  // static bool emit_LimitspeedChanged_first_set = false; //最初非表示にしているので要らないかも
+  // if(emit_LimitspeedChanged_first_set == false){
+  //   emit_LimitspeedChanged_first_set = true;
+  //   //このタイミングではrect().width()の値がおかしい。
+  //   emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
+  //   emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+  // }
 
   if (sm.updated("navRoute") && sm["navRoute"].getNavRoute().getCoordinates().size()) {
     auto nav_dest = coordinate_from_param("NavDestination");
@@ -754,39 +754,10 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
 int bearing_scale_num;
 void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
 
-  std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
-  if(limitspeed_data_txt.empty() == false){
-    float output[3]; // float型の配列
-    int i = 0; // インデックス
-
-    std::stringstream ss(limitspeed_data_txt); // 入力文字列をstringstreamに変換
-    std::string token; // 一時的にトークンを格納する変数
-    while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
-      output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
-      i++; // インデックスを1つ進める
-    }
-    bearing_scale_num = (int)output[0];
-    if((int)output[2] == 111){
-      bearing_scale_num = 0;
-      bearing_scale->setText("━");
-    } else {
-      bearing_scale->setText(QString::number(bearing_scale_num));
-    }
-  }
-#if 0
-  std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
-  g_stand_still = false;
-  if(stand_still_txt.empty() == false){
-    g_stand_still = std::stoi(stand_still_txt) ? true : false;
-  }
-#endif
+  bearing_scale_num = (int)angle;
+  bearing_scale->setText(QString::number(bearing_scale_num));
   float r = LS_SIZE / 2;
   int stand_still_height = 0;
-#if 0 //持ち上げはひとまず取りやめ。
-  if(g_stand_still){
-    stand_still_height = 270;
-  }
-#endif
   if(now_navigation == true){
     stand_still_height = 115; //見た目ハードコーディング
   }
