@@ -771,7 +771,7 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale)
   //1,2,3,4,5, 6, 7, 8
   //n^2
   //pow(2,18-scale) * 25
-  map_scale_num = pow(2,(18-scale)) * 25;
+  map_scale_num = pow(2,(18-scale)) * 19;
   if(map_scale_num < 1000){
     bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   } else {
@@ -799,7 +799,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(218, 202, 37, 210));
   p.drawEllipse(0,0,r*2,r*2);
 
-  const static QPointF chevron[] = {{-5, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+10, BS_SIZE/4}, {0, 0} , {BS_SIZE/3-10, BS_SIZE/4} , {BS_SIZE/3, BS_SIZE/4} , {5, -BS_SIZE/2}};
+  const static QPointF chevron[] = {{-5, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+10, BS_SIZE/4+7}, {0, 0} , {BS_SIZE/3-10, BS_SIZE/4+7} , {BS_SIZE/3, BS_SIZE/4} , {5, -BS_SIZE/2}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
   p.rotate(map_bearing_num); //degree指定
