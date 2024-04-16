@@ -49,7 +49,7 @@ public:
   MapBearingScale(QWidget * parent=nullptr);
 
 public slots:
-  void updateBearingScale(int map_width, int angle, double scale);
+  void updateBearingScale(int map_width, int angle, double scale , double latitude);
 };
 
 class MapWindow : public QOpenGLWidget {
