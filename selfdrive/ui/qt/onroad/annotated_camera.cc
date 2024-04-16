@@ -164,6 +164,7 @@ bool add_v_by_lead;
 int limit_speed_auto_detect; //map.ccから参照あり
 extern int Limit_speed_mode; //標識
 extern bool Long_enable;
+extern bool mapVisible;
 extern void soundButton2(int onOff);
 extern void setButtonEnabled0(const char*fn , bool flag);
 void AnnotatedCameraWidget::drawHud(QPainter &p) {
@@ -1154,6 +1155,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
 }
 
 void AnnotatedCameraWidget::knightScanner(QPainter &p) {
+  extern int Knight_scanner;
 
   static const int ct_n = 1;
   static float ct;

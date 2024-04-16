@@ -30,5 +30,3 @@ private slots:
   void primeChanged(bool prime);
   void updateState(const UIState &s);
 };
-
-extern bool mapVisible;
