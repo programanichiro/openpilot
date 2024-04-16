@@ -187,7 +187,7 @@ class CarController(CarControllerBase):
             with open('/tmp/accel_engaged.txt','r') as fp:
               accel_engaged_str = fp.read()
               eP_iP = False
-              if os.path.exists('/tmp/red_signal_eP_iP_set.txt'):
+              if int(accel_engaged_str) == 4 and os.path.exists('/tmp/red_signal_eP_iP_set.txt'):
                 with open('/tmp/red_signal_eP_iP_set.txt','r') as fp:
                   red_signal_eP_iP_set_str = fp.read()
                   if red_signal_eP_iP_set_str and int(red_signal_eP_iP_set_str) == 1:

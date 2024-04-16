@@ -132,6 +132,7 @@ class LongitudinalPlanner:
     self.lead_v_abs = []
     self.a_desired_mul = 1.0
     self.v_cruise_onep_k = 1.0
+    self.red_signal_eP_iP_flag = 0
 
     try:
       with open('/tmp/dexp_sw_mode.txt','r') as fp:
@@ -326,8 +327,10 @@ class LongitudinalPlanner:
                 OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
                 # if red_signal_scan_flag == 3:
                 #   red_signal_scan_flag = 0 #赤ブレーキキャンセルならゼロに戻す。
-                with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
-                  fp.write('%d' % (0))
+                if self.red_signal_eP_iP_flag != 0:
+                  self.red_signal_eP_iP_flag = 0
+                  with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
+                    fp.write('%d' % (0))
               else:
                 fp.write('%d' % (1)) #よそ見してたらprompt.wavを鳴らす。
             signal_scan_ct = 200 #2回鳴るのを防止
@@ -467,8 +470,10 @@ class LongitudinalPlanner:
                   red_signal_scan_flag_1 = 3 #赤信号停止状態
                   set_red_signal_scan_flag_3 = True #セットした瞬間
                   red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
-                  with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
-                    fp.write('%d' % (1))
+                  if self.red_signal_eP_iP_flag != 1:
+                    self.red_signal_eP_iP_flag = 1
+                    with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
+                      fp.write('%d' % (1))
           except Exception as e:
             pass
       else:
@@ -487,8 +492,10 @@ class LongitudinalPlanner:
     if (hasLead == True and distLead_near == True) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         red_signal_scan_flag_1 = 0
-        with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
-          fp.write('%d' % (0))
+        if self.red_signal_eP_iP_flag != 0:
+          self.red_signal_eP_iP_flag = 0
+          with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
+            fp.write('%d' % (0))
 
     if red_signal_scan_flag_1 != red_signal_scan_flag:
       red_signal_scan_flag = red_signal_scan_flag_1
