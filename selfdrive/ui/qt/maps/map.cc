@@ -722,7 +722,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
     //bearing_scale->setAlignment(Qt::AlignCenter);
     bearing_scale->setStyleSheet(QString(btn_styleb_trs).arg("#909090"));
     //this->updateLimitspeed(0);
-    bearing_scale->setText("━");
+    bearing_scale->setText("");
 
     layout->addWidget(bearing_scale);
     main_layout->addLayout(layout);
@@ -738,7 +738,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   }
   setStyleSheet(R"(
     QPushButton {
-      color: #202020;
+      color: #FFFFFF;
       text-align: center;
       padding: 0px;
       border-width: 4px;
@@ -746,7 +746,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
       background-color: rgba(75, 75, 75, 0.3);
     }
     * {
-      color: #202020;
+      color: #FFFFFF;
       font-family: "Inter";
       font-size: 50px;
     }
