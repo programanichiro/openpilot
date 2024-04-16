@@ -760,8 +760,10 @@ static double map_scale_num;
 void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
 
   map_bearing_num = angle;
-  map_scale_num = scale;
-  bearing_scale->setText(QString::number(map_scale_num, 'f', 1));
+  // map_scale_num = scale; //17〜14scale->0〜30m/s->5m〜200m？
+  // bearing_scale->setText(QString::number(map_scale_num, 'f', 1));
+  map_scale_num = util::map_val<double>(scale, MAX_ZOOM0, MIN_ZOOM, 5, 200)
+  bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   float r = BS_SIZE / 2;
   int stand_still_height = 0;
   if(now_navigation == true){
@@ -792,5 +794,19 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   p.setPen(pen);
 
-  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (90 - map_bearing_num+3)*16, (360-3*2)*16);
+  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (90 - map_bearing_num+5)*16, (360-5*2)*16);
+
+  QPointF chevron[] = {{0, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {0, 0} , {BS_SIZE/3, BS_SIZE/4}};
+  p.resetTransform();
+  p.translate(BS_SIZE/2,BS_SIZE/2);
+  // if(ang != 0){
+  //   p.translate(img.size().width()/2,img.size().height()/2);
+  //   p.rotate(ang); //degree指定
+  //   p.translate(-img.size().width()/2,-img.size().height()/2);
+  // }
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor(250, 250, 250, 250));
+  p.drawPolygon(chevron, std::size(chevron));
+  p.resetTransform();
+
 }
