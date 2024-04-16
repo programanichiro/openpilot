@@ -805,8 +805,8 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.drawPolygon(chevron, std::size(chevron));
   p.resetTransform();
 #else
-  //包囲磁石風
-  const static QPointF chevron[] = {{-4, -BS_SIZE/2-4}, {-BS_SIZE/4, 0} , {BS_SIZE/4, 0} , {4, -BS_SIZE/2-4}};
+  //方位磁石風
+  const static QPointF chevron[] = {{-4, -BS_SIZE/2-20}, {-BS_SIZE/4+10, 0} , {BS_SIZE/4-10, 0} , {4, -BS_SIZE/2-20}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
   p.rotate(map_bearing_num); //degree指定
@@ -814,7 +814,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(201, 34, 49, 220));
   p.drawPolygon(chevron, std::size(chevron));
   p.rotate(180); //南側をグレーで描画
-  p.setBrush(QColor(100, 100, 100, 220));
+  p.setBrush(QColor(150, 150, 150, 220));
   p.drawPolygon(chevron, std::size(chevron));
   p.resetTransform();
 #endif
