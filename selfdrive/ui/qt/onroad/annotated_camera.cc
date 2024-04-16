@@ -356,7 +356,14 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   p.setPen(set_speed_color);
   if(setSpeedStr == "1" && uiState()->scene.mAccelEngagedButton == 4){ //MAXが1の時
-    p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, "8");
+    std::string red_signal_eP_iP_set_txt = util::read_file("/tmp/red_signal_eP_iP_set.txt");
+    bool red_signal_eP_iP_set = false;
+    if(red_signal_eP_iP_set_txt.empty() == false){
+      if(std::stoi(red_signal_eP_iP_set_txt) == 1){
+        red_signal_eP_iP_set = true;
+      }
+    }
+    p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, red_signal_eP_iP_set == 0 ? "8" : setSpeedStr);
   } else {
     p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, setSpeedStr);
   }

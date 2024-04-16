@@ -1,4 +1,5 @@
 from cereal import car
+import os
 from openpilot.common.numpy_fast import clip, interp
 from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, make_can_msg
 from openpilot.selfdrive.car.interfaces import CarControllerBase
@@ -185,7 +186,13 @@ class CarController(CarControllerBase):
           if cruise_info_str == "1" or cruise_info_str == ",1": #クリープしたければ以下を通さない。
             with open('/tmp/accel_engaged.txt','r') as fp:
               accel_engaged_str = fp.read()
-              if int(accel_engaged_str) == 3: #ワンペダルモードでもePでは通さない
+              eP_iP = False
+              if os.path.exists('/tmp/red_signal_eP_iP_set.txt'):
+                with open('/tmp/red_signal_eP_iP_set.txt','r') as fp:
+                  red_signal_eP_iP_set_str = fp.read()
+                  if red_signal_eP_iP_set_str and int(red_signal_eP_iP_set_str) == 1:
+                    eP_iP = True
+              if int(accel_engaged_str) == 3 or eP_iP == True: #ワンペダルモードでもeP(一時的な赤信号手前を除く)では通さない
                 if actuators_accel > 0:
                   actuators_accel = 0
                 if pcm_accel_cmd > 0:
