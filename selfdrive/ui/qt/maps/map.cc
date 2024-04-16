@@ -81,7 +81,7 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
   map_limitspeed->setFixedWidth(LS_SIZE);
   map_limitspeed->setVisible(false);
 
-#define BS_SIZE 180
+#define BS_SIZE 150
   map_bearing_scale = new MapBearingScale(this);
   QObject::connect(this, &MapWindow::BearingScaleChanged, map_bearing_scale, &MapBearingScale::updateBearingScale);
   map_bearing_scale->setFixedHeight(BS_SIZE);
@@ -710,7 +710,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   main_layout->setContentsMargins(0, 0, 0, 0);
 
   {
-    const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+    const static char *btn_styleb_trs = "font-weight:600; font-size: 55px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
     //const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; color: #2457A1; background-color: rgba(0, 0, 0, 0);"; //透明ボタン用
     QHBoxLayout *layout = new QHBoxLayout;
     bearing_scale = new QPushButton;
@@ -733,7 +733,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   }
   setStyleSheet(R"(
     QPushButton {
-      color: #CC0000;
+      color: #202020;
       text-align: center;
       padding: 0px;
       border-width: 4px;
@@ -741,9 +741,9 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
       background-color: rgba(75, 75, 75, 0.3);
     }
     * {
-      color: #2457A1;
+      color: #202020;
       font-family: "Inter";
-      font-size: 75px;
+      font-size: 55px;
     }
   )");
 
@@ -779,16 +779,18 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   float r = BS_SIZE / 2;
   QPainter p(this);
   p.setPen(Qt::NoPen);
-  p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+  //p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+  p.setBrush(QColor(218, 202, 37, 210));
   p.drawEllipse(0,0,r*2,r*2);
 
   int arc_w = -BS_SIZE * 40 / 200; //内側に描画
   // if(map_scale_num >= 100){
   //   arc_w = (int)(arc_w * 0.7); ///枠と数字が被らないように枠を細くする。
   // }
-  QPen pen = QPen(QColor(38, 44, 205, 255), abs(arc_w));
+  //QPen pen = QPen(QColor(38, 44, 205, 255), abs(arc_w));
+  QPen pen = QPen(QColor(201, 34, 49, 180), abs(arc_w));
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   p.setPen(pen);
 
-  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (90 + map_bearing_num+3)*16, (360-3*2)*16);
+  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (90 - map_bearing_num+3)*16, (360-3*2)*16);
 }
