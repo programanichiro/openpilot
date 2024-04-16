@@ -762,7 +762,7 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale)
   map_bearing_num = angle;
   // map_scale_num = scale; //17〜14scale->0〜30m/s->5m〜200m？
   // bearing_scale->setText(QString::number(map_scale_num, 'f', 1));
-  map_scale_num = util::map_val<double>(scale, MAX_ZOOM, MIN_ZOOM, 5, 200);
+  map_scale_num = util::map_val<double>(scale, MAX_ZOOM, MIN_ZOOM, 10, 500);
   bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   float r = BS_SIZE / 2;
   int stand_still_height = 0;
@@ -799,7 +799,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   QPointF chevron[] = {{0, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {0, 0} , {BS_SIZE/3, BS_SIZE/4}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
-  p.rotate(-map_bearing_num); //degree指定
+  p.rotate(map_bearing_num); //degree指定
   p.translate(-BS_SIZE/2,-BS_SIZE/2);
   p.translate(BS_SIZE/2,BS_SIZE/2 *1.1);
   // if(ang != 0){
@@ -809,7 +809,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   // }
   p.setPen(Qt::NoPen);
   //p.setBrush(QColor(250, 250, 250, 250));
-  p.setBrush(QColor(201, 34, 49, 180));
+  p.setBrush(QColor(201, 34, 49, 220));
   p.drawPolygon(chevron, std::size(chevron));
   p.resetTransform();
 
