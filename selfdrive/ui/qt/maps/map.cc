@@ -799,7 +799,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(218, 202, 37, 210));
   p.drawEllipse(0,0,r*2,r*2);
 
-  const static QPointF chevron[] = {{-5, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+10, BS_SIZE/4+7}, {0, 0} , {BS_SIZE/3-10, BS_SIZE/4+7} , {BS_SIZE/3, BS_SIZE/4} , {5, -BS_SIZE/2}};
+  const static QPointF chevron[] = {{-4, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+7, BS_SIZE/4+5}, {0, 0} , {BS_SIZE/3-7, BS_SIZE/4+5} , {BS_SIZE/3, BS_SIZE/4} , {4, -BS_SIZE/2}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
   p.rotate(map_bearing_num); //degree指定
