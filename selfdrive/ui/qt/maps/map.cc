@@ -765,13 +765,17 @@ static double map_scale_num;
 void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
 
   map_bearing_num = angle;
-  // map_scale_num = scale; //18〜14scale->25m〜500m？
+  // map_scale_num = scale; //18〜14scale->25m〜400m,25*(2^4=16)
   // bearing_scale->setText(QString::number(map_scale_num, 'f', 2));
-  map_scale_num = (scale - 18) * (25 - 500) / (18-14) + 25;
+  //1:2:4:8:16:32:64:128 , mapboxのズームレベルは＋1で映る範囲が２倍だそうです。参考→https://docs.mapbox.com/jp/help/glossary/zoom-level/
+  //1,2,3,4,5, 6, 7, 8
+  //n^2
+  //pow(2,18-scale) * 25
+  map_scale_num = pow(2,(18-scale)) * 25;
   if(map_scale_num < 1000){
     bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   } else {
-    bearing_scale->setText(QString::number(map_scale_num / 1000, 'f', 1) + "km");
+    bearing_scale->setText(QString::number(map_scale_num / 1000, 'f', 1) + "K");
   }
   float r = BS_SIZE / 2;
   int stand_still_height = 0;
