@@ -38,6 +38,20 @@ public slots:
   void updateLimitspeed(int map_width);
 };
 
+class MapBearingScale : public QWidget {
+  Q_OBJECT
+
+private:
+  void paintEvent(QPaintEvent *event) override;
+  QPushButton *bearing_scale;
+
+public:
+  MapBearingScale(QWidget * parent=nullptr);
+
+public slots:
+  void updateBearingScale(int map_width, int angle, double scale);
+};
+
 class MapWindow : public QOpenGLWidget {
   Q_OBJECT
 
@@ -84,6 +98,7 @@ private:
   MapETA* map_eta;
 
   MapLimitspeed* map_limitspeed;
+  MapBearingScale* map_bearing_scale;
 
   void clearRoute();
   void updateDestinationMarker();
@@ -97,6 +112,7 @@ public slots:
 
 signals:
   void LimitspeedChanged(int map_width);
+  void BearingScaleChanged(int map_width, int angle, double scale);
   void requestVisible(bool visible);
   void requestSettings(bool settings);
 };

@@ -80,6 +80,10 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
   map_limitspeed->setFixedHeight(LS_SIZE);
   map_limitspeed->setFixedWidth(LS_SIZE);
   map_limitspeed->setVisible(false);
+
+  map_bearing_scale = new MapBearingScale(this);
+  QObject::connect(this, &MapWindow::BearingScaleChanged, map_bearing_scale, &MapBearingScale::updateBearingScale);
+
 }
 
 MapWindow::~MapWindow() {
@@ -265,6 +269,9 @@ void MapWindow::updateState(const UIState &s) {
       if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
         map_limitspeed->setVisible(true);
         emit LimitspeedChanged(rect().width());
+
+        map_bearing_scale->setVisible(true);
+        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       }
     }
   }
@@ -273,6 +280,7 @@ void MapWindow::updateState(const UIState &s) {
     emit_LimitspeedChanged_first_set = true;
     //このタイミングではrect().width()の値がおかしい。
     emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
+    emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   }
 
   if (sm.updated("navRoute") && sm["navRoute"].getNavRoute().getCoordinates().size()) {
@@ -692,3 +700,118 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, 0*16, 360*16);
 }
 
+
+MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
+  QHBoxLayout *main_layout = new QHBoxLayout(this);
+  main_layout->setContentsMargins(0, 0, 0, 0);
+
+  {
+    const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+    //const static char *btn_styleb_trs = "font-weight:600; font-size: 75px; border-width: 0px; color: #2457A1; background-color: rgba(0, 0, 0, 0);"; //透明ボタン用
+    QHBoxLayout *layout = new QHBoxLayout;
+    bearing_scale = new QPushButton;
+    //bearing_scale->setAlignment(Qt::AlignCenter);
+    bearing_scale->setStyleSheet(QString(btn_styleb_trs).arg("#909090"));
+    //this->updateLimitspeed(0);
+    bearing_scale->setText("━");
+
+    layout->addWidget(bearing_scale);
+    main_layout->addLayout(layout);
+
+    QObject::connect(bearing_scale, &QPushButton::pressed, [=]() {
+      // std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
+      // if(last_navi_dest.empty() == false){
+      //   extern void soundPipo();
+      //   soundPipo();
+      //   Params().put("NavDestination", last_navi_dest);
+      // }
+    });
+  }
+  setStyleSheet(R"(
+    QPushButton {
+      color: #2457A1;
+      text-align: center;
+      padding: 0px;
+      border-width: 4px;
+      border-style: solid;
+      background-color: rgba(75, 75, 75, 0.3);
+    }
+    * {
+      color: #2457A1;
+      font-family: "Inter";
+      font-size: 75px;
+    }
+  )");
+
+/*
+  QPalette pal = palette();
+  pal.setColor(QPalette::Background, QColor(255, 255, 255, 200));
+  setAutoFillBackground(true);
+  setPalette(pal);
+*/
+}
+
+int bearing_scale_num;
+void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
+
+  std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
+  if(limitspeed_data_txt.empty() == false){
+    float output[3]; // float型の配列
+    int i = 0; // インデックス
+
+    std::stringstream ss(limitspeed_data_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+      output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
+      i++; // インデックスを1つ進める
+    }
+    bearing_scale_num = (int)output[0];
+    if((int)output[2] == 111){
+      bearing_scale_num = 0;
+      bearing_scale->setText("━");
+    } else {
+      bearing_scale->setText(QString::number(bearing_scale_num));
+    }
+  }
+#if 0
+  std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
+  g_stand_still = false;
+  if(stand_still_txt.empty() == false){
+    g_stand_still = std::stoi(stand_still_txt) ? true : false;
+  }
+#endif
+  float r = LS_SIZE / 2;
+  int stand_still_height = 0;
+#if 0 //持ち上げはひとまず取りやめ。
+  if(g_stand_still){
+    stand_still_height = 270;
+  }
+#endif
+  if(now_navigation == true){
+    stand_still_height = 115; //見た目ハードコーディング
+  }
+  if (map_width == 0 || uiState()->scene.map_on_left) {
+    this->move(map_width - r*2 - UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r*2 - UI_BORDER_SIZE - stand_still_height);
+  } else {
+    this->move(UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r*2 - UI_BORDER_SIZE - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
+  }
+}
+
+void MapBearingScale::paintEvent(QPaintEvent *event) {
+
+  float r = LS_SIZE / 2;
+  QPainter p(this);
+  p.setPen(Qt::NoPen);
+  p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+  p.drawEllipse(0,0,r*2,r*2);
+
+  int arc_w = -LS_SIZE * 25 / 200; //内側に描画
+  if(bearing_scale_num >= 100){
+    arc_w = (int)(arc_w * 0.7); ///枠と数字が被らないように枠を細くする。
+  }
+  QPen pen = QPen(QColor(38, 44, 205, 255), abs(arc_w));
+  pen.setCapStyle(Qt::FlatCap); //端をフラットに
+  p.setPen(pen);
+
+  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, 0*16, 360*16);
+}
