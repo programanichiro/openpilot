@@ -1,6 +1,7 @@
 #include "selfdrive/ui/qt/onroad/buttons.h"
 
 #include <QPainter>
+#include <QVBoxLayout>
 
 #include "selfdrive/ui/qt/util.h"
 
