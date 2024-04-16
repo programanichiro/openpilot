@@ -774,6 +774,7 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale)
   } else {
     this->move(UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r*2 - UI_BORDER_SIZE - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
   }
+  this->update(0,0,this->width(),this->height()); //これでpaintEventを呼び出せる？
 }
 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
