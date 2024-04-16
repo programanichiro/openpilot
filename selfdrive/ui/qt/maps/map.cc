@@ -755,11 +755,13 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
 */
 }
 
-int bearing_scale_num;
+static int map_bearing_num;
+static double map_scale_num;
 void MapBearingScale::updateBearingScale(int map_width, int angle, double scale) {
 
-  bearing_scale_num = (int)angle;
-  bearing_scale->setText(QString::number(bearing_scale_num));
+  map_bearing_num = angle;
+  map_scale_num = scale;
+  bearing_scale->setText(QString::number(map_scale_num, 'f', 1));
   float r = BS_SIZE / 2;
   int stand_still_height = 0;
   if(now_navigation == true){
@@ -780,13 +782,13 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   p.drawEllipse(0,0,r*2,r*2);
 
-  int arc_w = -BS_SIZE * 25 / 200; //内側に描画
-  if(bearing_scale_num >= 100){
-    arc_w = (int)(arc_w * 0.7); ///枠と数字が被らないように枠を細くする。
-  }
+  int arc_w = -BS_SIZE * 40 / 200; //内側に描画
+  // if(map_scale_num >= 100){
+  //   arc_w = (int)(arc_w * 0.7); ///枠と数字が被らないように枠を細くする。
+  // }
   QPen pen = QPen(QColor(38, 44, 205, 255), abs(arc_w));
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   p.setPen(pen);
 
-  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, 0*16, 360*16);
+  p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, (map_bearing_num+3)*16, (map_bearing_num+360-3)*16);
 }
