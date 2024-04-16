@@ -81,8 +81,12 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
   map_limitspeed->setFixedWidth(LS_SIZE);
   map_limitspeed->setVisible(false);
 
+#define BS_SIZE 180
   map_bearing_scale = new MapBearingScale(this);
   QObject::connect(this, &MapWindow::BearingScaleChanged, map_bearing_scale, &MapBearingScale::updateBearingScale);
+  map_bearing_scale->setFixedHeight(BS_SIZE);
+  map_bearing_scale->setFixedWidth(BS_SIZE);
+  map_bearing_scale->setVisible(false);
 
 }
 
@@ -729,7 +733,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   }
   setStyleSheet(R"(
     QPushButton {
-      color: #2457A1;
+      color: #CC0000;
       text-align: center;
       padding: 0px;
       border-width: 4px;
@@ -756,7 +760,7 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale)
 
   bearing_scale_num = (int)angle;
   bearing_scale->setText(QString::number(bearing_scale_num));
-  float r = LS_SIZE / 2;
+  float r = BS_SIZE / 2;
   int stand_still_height = 0;
   if(now_navigation == true){
     stand_still_height = 115; //見た目ハードコーディング
@@ -770,13 +774,13 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale)
 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
 
-  float r = LS_SIZE / 2;
+  float r = BS_SIZE / 2;
   QPainter p(this);
   p.setPen(Qt::NoPen);
   p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   p.drawEllipse(0,0,r*2,r*2);
 
-  int arc_w = -LS_SIZE * 25 / 200; //内側に描画
+  int arc_w = -BS_SIZE * 25 / 200; //内側に描画
   if(bearing_scale_num >= 100){
     arc_w = (int)(arc_w * 0.7); ///枠と数字が被らないように枠を細くする。
   }
