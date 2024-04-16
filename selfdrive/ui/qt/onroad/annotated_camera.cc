@@ -4,8 +4,10 @@
 #include <QPainter>
 #include <algorithm>
 #include <cmath>
+#include <sstream>
 
 #include "common/swaglog.h"
+#include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/qt/onroad/buttons.h"
 #include "selfdrive/ui/qt/util.h"
 
@@ -43,6 +45,7 @@ float vc_speed;
 static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
+extern void setButtonInt(const char*fn , int num);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
   int SET_SPEED_NA = 409; //406; //557; //255; ,
   const SubMaster &sm = *(s.sm);
@@ -159,6 +162,10 @@ static float clipped_brightness0 = 101; //初回ファイルアクセスさせ�
 static float global_fps;
 bool add_v_by_lead;
 int limit_speed_auto_detect; //map.ccから参照あり
+extern int Limit_speed_mode; //標識
+extern bool Long_enable;
+extern void soundButton2(int onOff);
+extern void setButtonEnabled0(const char*fn , bool flag);
 void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.save();
   int y_ofs = 150;
