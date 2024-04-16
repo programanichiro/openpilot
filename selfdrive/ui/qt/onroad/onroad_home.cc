@@ -98,7 +98,6 @@ void OnroadWindow::createMapWidget() {
   } else {
     m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
   }
-  m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
   split->insertWidget(0, m);
   // hidden by default, made visible when navRoute is published
   m->setVisible(false);
