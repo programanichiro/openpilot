@@ -709,7 +709,7 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   p.drawArc(0-arc_w/2+5, 0-arc_w/2+5, r*2+arc_w-10,r*2+arc_w-10, 0*16, 360*16);
 }
 
-
+int bs_color_revert = 0;
 MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   QHBoxLayout *main_layout = new QHBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
@@ -727,6 +727,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
 
     QObject::connect(bearing_scale, &QPushButton::pressed, [=]() {
       //ボタンを押した時に何かしたいならここで。
+      bs_color_revert ^= 1;
     });
   }
   setStyleSheet(R"(
@@ -826,10 +827,18 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   } else {
     scl = QString::number(map_scale_num / 1000, 'f', 1) + "K";
   }
-  int add = 3; //影のずらし
-  p.setPen(QColor(20, 20, 20, 255));
-  p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
-  p.setPen(QColor(220, 220, 220, 255));
-  p.drawText(QRect(0,0,this->width(),this->height()), Qt::AlignCenter, scl);
+  int add = 2; //影のずらし
+  p.setFont(InterFont(50, QFont::ExtraBold));
+  if(bs_color_revert == 0){
+    p.setPen(QColor(20, 20, 20, 255));
+    p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
+    p.setPen(QColor(220, 220, 220, 255));
+    p.drawText(QRect(0,0,this->width(),this->height()), Qt::AlignCenter, scl);
+  } else {
+    p.setPen(QColor(220, 220, 220, 255));
+    p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
+    p.setPen(QColor(20, 20, 20, 255));
+    p.drawText(QRect(0,0,this->width(),this->height()), Qt::AlignCenter, scl);
+  }
 
 }
