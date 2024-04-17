@@ -836,9 +836,10 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   static int h_ctl = 0; //方位針が寝たら距離表示を下げる。
   const int h_ctl_val = 45; //ピクセルoffset
   const int h_ctl_ang = 40; //こちらは角度
+  const int abs_map_bearing_num = abs(map_bearing_num);
   if(h_ctl == 0){
-    if(abs(map_bearing_num) > h_ctl_ang+3 && abs(map_bearing_num) < (180-h_ctl_ang)-3){
-      if(abs(map_bearing_num) <= 90){
+    if(abs_map_bearing_num > h_ctl_ang+3 && abs_map_bearing_num < (180-h_ctl_ang)-3){
+      if(abs_map_bearing_num <= 90){
         h_ctl = h_ctl_val;
       } else {
         h_ctl = -h_ctl_val;
@@ -846,15 +847,15 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     }
   } else {
     if(h_ctl == h_ctl_val){
-      if(abs(map_bearing_num) >= 90+3){
+      if(abs_map_bearing_num >= 90+3){
         h_ctl = -h_ctl_val;
       }
     } else if(h_ctl == -h_ctl_val){
-      if(abs(map_bearing_num) <= 90-3){
+      if(abs_map_bearing_num <= 90-3){
         h_ctl = h_ctl_val;
       }
     }
-    if(abs(map_bearing_num) < h_ctl_ang || abs(map_bearing_num) > (180-h_ctl_ang)){
+    if(abs_map_bearing_num < h_ctl_ang || abs_map_bearing_num > (180-h_ctl_ang)){
       h_ctl = 0;
     }
   }
@@ -862,20 +863,18 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setFont(InterFont(50, QFont::DemiBold));
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
-    p.drawText(QRect(0+add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
-    p.drawText(QRect(0-add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
-    p.drawText(QRect(0+add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
-    p.drawText(QRect(0-add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
-    p.setPen(QColor(220, 220, 220, 255));
-    p.drawText(QRect(0,0+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
   } else {
     p.setPen(QColor(220, 220, 220, 255));
-    p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
-    p.drawText(QRect(0-add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
-    p.drawText(QRect(0+add,0-add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
-    p.drawText(QRect(0-add,0-add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
-    p.setPen(QColor(20, 20, 20, 255));
-    p.drawText(QRect(0,0,this->width(),this->height()), Qt::AlignCenter, scl);
   }
+  p.drawText(QRect(0+add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+  p.drawText(QRect(0-add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+  p.drawText(QRect(0+add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+  p.drawText(QRect(0-add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+  if(bs_color_revert == 0){
+    p.setPen(QColor(220, 220, 220, 255));
+  } else {
+    p.setPen(QColor(20, 20, 20, 255));
+  }
+  p.drawText(QRect(0,0+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
 
 }
