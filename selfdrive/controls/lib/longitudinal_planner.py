@@ -489,13 +489,16 @@ class LongitudinalPlanner:
         elif v_cruise_kph > before_v_cruise_kph_max_1:
           lever_up_down = 1
 
-    if (hasLead == True and distLead_near == True) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+    if (hasLead == True and sm['radarState'].leadOne.dRel < 10) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
-        red_signal_scan_flag_1 = 0
         if self.red_signal_eP_iP_flag != 0:
           self.red_signal_eP_iP_flag = 0
           with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
             fp.write('%d' % (0))
+
+    if (hasLead == True and distLead_near == True) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+      if set_red_signal_scan_flag_3 == False:
+        red_signal_scan_flag_1 = 0
 
     if red_signal_scan_flag_1 != red_signal_scan_flag:
       red_signal_scan_flag = red_signal_scan_flag_1
