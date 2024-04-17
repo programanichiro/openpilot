@@ -861,11 +861,17 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
     p.drawText(QRect(0+add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+    p.drawText(QRect(0-add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+    p.drawText(QRect(0+add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+    p.drawText(QRect(0-add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
     p.setPen(QColor(220, 220, 220, 255));
     p.drawText(QRect(0,0+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
   } else {
     p.setPen(QColor(220, 220, 220, 255));
     p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
+    p.drawText(QRect(0-add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
+    p.drawText(QRect(0+add,0-add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
+    p.drawText(QRect(0-add,0-add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
     p.setPen(QColor(20, 20, 20, 255));
     p.drawText(QRect(0,0,this->width(),this->height()), Qt::AlignCenter, scl);
   }
