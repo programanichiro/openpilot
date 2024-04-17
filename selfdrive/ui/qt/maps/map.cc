@@ -844,11 +844,11 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     }
   } else {
     if(h_ctl == h_ctl_val){
-      if(abs(map_bearing_num) >= 85){
+      if(abs(map_bearing_num) <= 90-3){
         h_ctl = -h_ctl_val;
       }
     } else if(h_ctl == -h_ctl_val){
-      if(abs(map_bearing_num) <= 95){
+      if(abs(map_bearing_num) >= 90+3){
         h_ctl = h_ctl_val;
       }
     }
