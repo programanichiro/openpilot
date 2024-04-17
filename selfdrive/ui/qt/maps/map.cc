@@ -837,7 +837,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
       h_ctl = 0;
     }
   }
-  int add = 3; //影のずらし
+  int add = 5; //影のずらし
   p.setFont(InterFont(50, QFont::DemiBold));
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
