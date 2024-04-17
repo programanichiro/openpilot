@@ -790,7 +790,8 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   p.setPen(Qt::NoPen);
   //p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
-  p.setBrush(QColor(218, 202, 37, 210));
+  //p.setBrush(QColor(218, 202, 37, 210));
+  p.setBrush(QColor(240, 240, 240, 240));
   p.drawEllipse(0,0,r*2,r*2);
 
 #if 0
@@ -798,7 +799,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   const static QPointF chevron[] = {{-4, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+7, BS_SIZE/4+5}, {0, 0} , {BS_SIZE/3-7, BS_SIZE/4+5} , {BS_SIZE/3, BS_SIZE/4} , {4, -BS_SIZE/2}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
-  p.rotate(map_bearing_num); //degree指定
+  p.rotate(-map_bearing_num); //degree指定
   p.translate(-BS_SIZE/2,-BS_SIZE/2);
   p.translate(BS_SIZE/2,BS_SIZE/2 *1.1);
   p.setPen(Qt::NoPen);
@@ -810,7 +811,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   const static QPointF chevron[] = {{-4, -BS_SIZE/2+10}, {-BS_SIZE/4+5, 0} , {BS_SIZE/4-5, 0} , {4, -BS_SIZE/2+10}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
-  p.rotate(map_bearing_num); //degree指定
+  p.rotate(-map_bearing_num); //degree指定
   p.setPen(Qt::NoPen);
   p.setBrush(QColor(201, 34, 49, 220));
   p.drawPolygon(chevron, std::size(chevron));
