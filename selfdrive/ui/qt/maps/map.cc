@@ -835,7 +835,6 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   const int h_ctl_val = 45; //ピクセルoffset
   const int h_ctl_ang = 45; //たまたまh_ctl_valと同じだが、こちらは角度
   if(h_ctl == 0){
-    while()
     if(abs(map_bearing_num) > h_ctl_ang+3 && abs(map_bearing_num) < (180-h_ctl_ang)-3){
       if(h_ctl == h_ctl_val){
         if(abs(map_bearing_num) >= 85){
