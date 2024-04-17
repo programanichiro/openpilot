@@ -46,6 +46,7 @@ private:
   QPushButton *bearing_scale;
 
 public:
+  quint64 m_pressedTime;
   MapBearingScale(QWidget * parent=nullptr);
 
 public slots:

@@ -725,9 +725,23 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
     layout->addWidget(bearing_scale);
     main_layout->addLayout(layout);
 
+    m_pressedTime = 0;
     QObject::connect(bearing_scale, &QPushButton::pressed, [=]() {
+      m_pressedTime = QDateTime::currentMSecsSinceEpoch();
       //ボタンを押した時に何かしたいならここで。
-      bs_color_revert ^= 1;
+    });
+
+    QObject::connect(bearing_scale, &QPushButton::released, [=]() {
+      quint64 now = QDateTime::currentMSecsSinceEpoch();
+      //ボタンを押した時に何かしたいならここで。
+      if(now - m_pressedTime > 1000){
+        //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
+        bs_color_revert = 0;
+      } else {
+        //qDebug() << "clicked";
+        bs_color_revert = 1;
+      }
+      m_pressedTime = 0;
     });
   }
   setStyleSheet(R"(
