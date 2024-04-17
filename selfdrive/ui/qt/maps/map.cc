@@ -822,37 +822,36 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   //ラベルを使わず直に距離描画する
   QString scl;
-#if 0
+#if 1
   if(map_scale_num < 1000){
     scl = QString::number(map_scale_num, 'f', 0) + "m";
   } else {
     scl = QString::number(map_scale_num / 1000, 'f', 1) + "K";
   }
 #else
-    scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？
+    scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
   static int h_ctl = 0; //方位針が寝たら距離表示を下げる。
   const int h_ctl_val = 45; //ピクセルoffset
-  const int h_ctl_ang = 45; //たまたまh_ctl_valと同じだが、こちらは角度
+  const int h_ctl_ang = 40; //こちらは角度
   if(h_ctl == 0){
     if(abs(map_bearing_num) > h_ctl_ang+3 && abs(map_bearing_num) < (180-h_ctl_ang)-3){
-      if(h_ctl == h_ctl_val){
-        if(abs(map_bearing_num) >= 85){
-          h_ctl = -h_ctl_val;
-        }
-      } else if(h_ctl == -h_ctl_val){
-        if(abs(map_bearing_num) <= 95){
-          h_ctl = h_ctl_val;
-        }
+      if(abs(map_bearing_num) <= 90){
+        h_ctl = h_ctl_val;
       } else {
-        if(abs(map_bearing_num) <= 90){
-          h_ctl = h_ctl_val;
-        } else {
-          h_ctl = -h_ctl_val;
-        }
+        h_ctl = -h_ctl_val;
       }
     }
   } else {
+    if(h_ctl == h_ctl_val){
+      if(abs(map_bearing_num) >= 85){
+        h_ctl = -h_ctl_val;
+      }
+    } else if(h_ctl == -h_ctl_val){
+      if(abs(map_bearing_num) <= 95){
+        h_ctl = h_ctl_val;
+      }
+    }
     if(abs(map_bearing_num) < h_ctl_ang || abs(map_bearing_num) > (180-h_ctl_ang)){
       h_ctl = 0;
     }
