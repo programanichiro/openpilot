@@ -731,7 +731,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   }
   setStyleSheet(R"(
     QPushButton {
-      color: #FFFFFF;
+      color: #2457A1;
       text-align: center;
       padding: 0px;
       border-width: 4px;
@@ -739,7 +739,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
       background-color: rgba(75, 75, 75, 0.3);
     }
     * {
-      color: #FFFFFF;
+      color: #2457A1;
       font-family: "Inter";
       font-size: 50px;
     }
@@ -806,7 +806,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.resetTransform();
 #else
   //方位磁石風
-  const static QPointF chevron[] = {{-4, -BS_SIZE/2+20}, {-BS_SIZE/4+10, 0} , {BS_SIZE/4-10, 0} , {4, -BS_SIZE/2+20}};
+  const static QPointF chevron[] = {{-4, -BS_SIZE/2+10}, {-BS_SIZE/4+5, 0} , {BS_SIZE/4-5, 0} , {4, -BS_SIZE/2+10}};
   p.resetTransform();
   p.translate(BS_SIZE/2,BS_SIZE/2);
   p.rotate(map_bearing_num); //degree指定
