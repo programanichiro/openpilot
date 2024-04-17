@@ -830,7 +830,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   static int h_ctl = 0; //方位針が寝たら距離表示を下げる。
   if(h_ctl == 0){
     if(abs(map_bearing_num) > 45+3 && abs(map_bearing_num) < 135-3){
-      h_ctl = 60;
+      h_ctl = 45;
     }
   } else {
     if(abs(map_bearing_num) < 45 || abs(map_bearing_num) > 135){
