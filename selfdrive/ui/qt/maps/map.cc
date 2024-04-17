@@ -788,10 +788,11 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   float r = BS_SIZE / 2;
   QPainter p(this);
-  p.setPen(Qt::NoPen);
+  //p.setPen(Qt::NoPen);
+  p.setPen(QPen(QColor(150, 150, 150, 255),3));
   //p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   //p.setBrush(QColor(218, 202, 37, 210));
-  p.setBrush(QColor(240, 240, 240, 240));
+  p.setBrush(QColor(240, 240, 240, 255));
   p.drawEllipse(0,0,r*2,r*2);
 
 #if 0
