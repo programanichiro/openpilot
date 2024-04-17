@@ -827,13 +827,23 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   } else {
     scl = QString::number(map_scale_num / 1000, 'f', 1) + "K";
   }
+  static int h_ctl = 0; //方位針が寝たら距離表示を下げる。
+  if(h_ctl == 0){
+    if(abs(map_bearing_num) > 45+3 && abs(map_bearing_num) < 135-3){
+      h_ctl = 60;
+    }
+  } else {
+    if(abs(map_bearing_num) < 45 || abs(map_bearing_num) > 135){
+      h_ctl = 0;
+    }
+  }
   int add = 3; //影のずらし
-  p.setFont(InterFont(50, QFont::ExtraBold));
+  p.setFont(InterFont(50, QFont::DemiBold));
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
-    p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
+    p.drawText(QRect(0+add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
     p.setPen(QColor(220, 220, 220, 255));
-    p.drawText(QRect(0,0,this->width(),this->height()), Qt::AlignCenter, scl);
+    p.drawText(QRect(0,0+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
   } else {
     p.setPen(QColor(220, 220, 220, 255));
     p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
