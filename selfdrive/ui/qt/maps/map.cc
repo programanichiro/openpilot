@@ -720,7 +720,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
     bearing_scale = new QPushButton;
     //bearing_scale->setAlignment(Qt::AlignCenter);
     bearing_scale->setStyleSheet(QString(btn_styleb_trs).arg("#909090"));
-    bearing_scale->setText("");
+    bearing_scale->setText("   "); //ラベルを使わず直に距離描画する
 
     layout->addWidget(bearing_scale);
     main_layout->addLayout(layout);
@@ -765,11 +765,11 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
   //n^2
   //pow(2,18-scale) * 25
   map_scale_num = pow(2,(18-scale)) * 23 * cos(DEG2RAD(latitude));
-  if(map_scale_num < 1000){
-    bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
-  } else {
-    bearing_scale->setText(QString::number(map_scale_num / 1000, 'f', 1) + "K");
-  }
+  // if(map_scale_num < 1000){
+  //   bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
+  // } else {
+  //   bearing_scale->setText(QString::number(map_scale_num / 1000, 'f', 1) + "K");
+  // }
   float r = BS_SIZE / 2;
   int stand_still_height = 0;
   if(now_navigation == true){
@@ -818,5 +818,18 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.drawPolygon(chevron, std::size(chevron));
   p.resetTransform();
 #endif
+
+  //ラベルを使わず直に距離描画する
+  QString scl;
+  if(map_scale_num < 1000){
+    scl = QString::number(map_scale_num, 'f', 0) + "m";
+  } else {
+    scl = QString::number(map_scale_num / 1000, 'f', 1) + "K";
+  }
+  int add = 3; //影のずらし
+  p.setPen(QColor(20, 20, 20, 255));
+  p.drawText(QRect(0+add,0+add,this->width()+add,this->height()+add), Qt::AlignCenter, scl);
+  p.setPen(QColor(220, 220, 220, 255));
+  p.drawText(QRect(0,0,this->width(),this->height()), Qt::AlignCenter, scl);
 
 }
