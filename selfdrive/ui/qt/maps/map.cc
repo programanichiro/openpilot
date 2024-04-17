@@ -731,16 +731,15 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   }
   setStyleSheet(R"(
     QPushButton {
-      color: #2457A1;
+      color: #178644;
       text-align: center;
-      text-shadow: white 1px 1px;
       padding: 0px;
       border-width: 4px;
       border-style: solid;
       background-color: rgba(75, 75, 75, 0.3);
     }
     * {
-      color: #2457A1;
+      color: #178644;
       font-family: "Inter";
       font-size: 50px;
     }
