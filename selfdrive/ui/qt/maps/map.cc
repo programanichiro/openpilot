@@ -833,14 +833,19 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   const static QPointF memo[] = {{-3, -BS_SIZE_W/2+border+2}, {-3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+border+2}};
   p.resetTransform();
   p.translate(r_w,r_w);
-  if(bs_color_revert == 0){
-    p.setBrush(QColor(120, 120, 120, 255));
-  } else {
-    p.setBrush(QColor(200, 200, 200, 255));
-  }
   for(int ang=0; ang < 360; ang += 15){
     if(ang % 45 == 0){
+      if(ang % 90 == 0){
+        p.setBrush(QColor(220, 20, 20, 255));
+      }
       p.drawPolygon(memo_b, std::size(memo_b));
+      if(ang % 90 == 0){
+        if(bs_color_revert == 0){
+          p.setBrush(QColor(120, 120, 120, 255));
+        } else {
+          p.setBrush(QColor(200, 200, 200, 255));
+        }
+      }
     } else {
       p.drawPolygon(memo, std::size(memo));
     }
