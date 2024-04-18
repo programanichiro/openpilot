@@ -665,7 +665,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
   if(road_info_txt_flag == false){
     p.setFont(InterFont(33, QFont::DemiBold));
-    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "modified by PROGRAMAN ICHIRO", 150 /*, 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6*/);
+    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "Rrograman Ichiro modified", 150 /*, 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6*/);
   }
   p.setFont(InterFont(33, QFont::Bold));
   float angle_steer = 0;
