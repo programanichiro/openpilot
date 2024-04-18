@@ -737,10 +737,10 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
       //ボタンを押した時に何かしたいならここで。
       if(now - m_pressedTime > 500){
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
-        bs_color_revert = 0;
+        //bs_color_revert = 0;
       } else {
         //qDebug() << "clicked";
-        bs_color_revert = 1;
+        bs_color_revert ^= 1;
       }
       m_pressedTime = 0;
       this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
@@ -803,12 +803,17 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
 
+  bool tmp_bs_color_revert = (night_mode == 1) || bs_color_revert;
+
   float d_h = BS_SIZE_H - BS_SIZE_W;
   float r_w = BS_SIZE_W / 2;
   //float r_h = BS_SIZE_H / 2;
+  float btm_r = 20;
+
   QPainter p(this);
+#if 0
   p.setPen(Qt::NoPen);
-  if(bs_color_revert == 0){
+  if(tmp_bs_color_revert == 0){
     //p.setPen(QPen(QColor(150, 150, 150, 255),5));
     p.setBrush(QColor(240, 240, 240, 240));
   } else {
@@ -816,15 +821,18 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     p.setBrush(QColor(40, 40, 40, 240));
   }
   //p.drawEllipse(0,0,r*2,r*2);
-  float btm_r = 20;
   drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),r_w,r_w,btm_r,btm_r);
+#else
   const float border = 3;
-  if(bs_color_revert == 0){
+  if(tmp_bs_color_revert == 0){
     p.setPen(QPen(QColor(150, 150, 150, 255),border));
+    p.setBrush(QColor(240, 240, 240, 240));
   } else {
     p.setPen(QPen(QColor(240, 240, 240, 255),border));
+    p.setBrush(QColor(40, 40, 40, 240));
   }
   drawRoundedRect(p,QRectF(border/2,border/2,BS_SIZE_W-border,BS_SIZE_H-border),r_w-border/2,r_w-border/2,btm_r-border/2,btm_r-border/2);
+#endif
 
   p.setPen(Qt::NoPen);
 
@@ -840,7 +848,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
       }
       p.drawPolygon(memo_b, std::size(memo_b));
       if(ang % 90 == 0){
-        if(bs_color_revert == 0){
+        if(tmp_bs_color_revert == 0){
           p.setBrush(QColor(120, 120, 120, 255));
         } else {
           p.setBrush(QColor(200, 200, 200, 255));
@@ -877,15 +885,10 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
   p.setFont(InterFont(40, QFont::ExtraBold));
-  if(bs_color_revert == 0){
-    p.setPen(QColor(20, 20, 20, 255));
-  } else {
-    p.setPen(QColor(220, 220, 220, 255));
-  }
   const int SCL_H = d_h;
   const int h_ctl = BS_SIZE_W-6;
-  if(bs_color_revert == 0){
-    p.setPen(QColor(20, 20, 20, 255));
+  if(tmp_bs_color_revert == 0){
+    p.setPen(QColor(0x24, 0x57, 0xA1, 255));
   } else {
     p.setPen(QColor(220, 220, 220, 255));
   }
