@@ -85,8 +85,8 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
 #define BS_SIZE_W 150
   map_bearing_scale = new MapBearingScale(this);
   QObject::connect(this, &MapWindow::BearingScaleChanged, map_bearing_scale, &MapBearingScale::updateBearingScale);
-  map_bearing_scale->setFixedHeight(BS_SIZE_W);
-  map_bearing_scale->setFixedWidth(BS_SIZE_H);
+  map_bearing_scale->setFixedHeight(BS_SIZE_H);
+  map_bearing_scale->setFixedWidth(BS_SIZE_W);
   map_bearing_scale->setVisible(false);
 
 }
@@ -806,10 +806,13 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   float r_w = BS_SIZE_W / 2;
   //float r_h = BS_SIZE_H / 2;
   QPainter p(this);
-  p.setPen(QPen(QColor(150, 150, 150, 255),3));
-  //p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
-  //p.setBrush(QColor(218, 202, 37, 210));
-  p.setBrush(QColor(240, 240, 240, 255));
+  if(bs_color_revert == 0){
+    p.setPen(QPen(QColor(150, 150, 150, 255),3));
+    p.setBrush(QColor(240, 240, 240, 255));
+  } else {
+    p.setPen(QPen(QColor(240, 240, 240, 255),3));
+    p.setBrush(QColor(40, 40, 40, 255));
+  }
   //p.drawEllipse(0,0,r*2,r*2);
   drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),10,10,r_w,r_w);
 
@@ -838,7 +841,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
   int add = 3; //影のずらし
-  p.setFont(InterFont(50, QFont::DemiBold));
+  p.setFont(InterFont(40, QFont::DemiBold));
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
   } else {
@@ -846,15 +849,10 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   }
   const int SCL_H = 45;
   const int h_ctl = 0;
-  p.drawText(QRect(0+add,0+add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
-  p.drawText(QRect(0-add,0+add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
-  p.drawText(QRect(0+add,0-add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
-  p.drawText(QRect(0-add,0-add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
   if(bs_color_revert == 0){
     p.setPen(QColor(220, 220, 220, 255));
   } else {
     p.setPen(QColor(20, 20, 20, 255));
   }
   p.drawText(QRect(0,0+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
-
 }
