@@ -696,7 +696,11 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   float r = LS_SIZE / 2;
   QPainter p(this);
   p.setPen(Qt::NoPen);
-  p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+  if(night_mode == 1){
+    p.setBrush(QColor::fromRgbF(0.6, 0.6, 0.7, 1.0));
+  } else {
+    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
+  }
   p.drawEllipse(0,0,r*2,r*2);
 
   int arc_w = -LS_SIZE * 25 / 200; //内側に描画
@@ -803,7 +807,10 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
 
-  bool tmp_bs_color_revert = (night_mode == 1) || bs_color_revert;
+  bool tmp_bs_color_revert = bs_color_revert;
+  if(night_mode == 1){
+    tmp_bs_color_revert ^= 1;
+  }
 
   float d_h = BS_SIZE_H - BS_SIZE_W;
   float r_w = BS_SIZE_W / 2;
@@ -829,7 +836,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     p.setBrush(QColor(240, 240, 240, 240));
   } else {
     p.setPen(QPen(QColor(240, 240, 240, 255),border));
-    p.setBrush(QColor(40, 40, 40, 240));
+    p.setBrush(QColor(40, 40, 60, 200));
   }
   drawRoundedRect(p,QRectF(border/2,border/2,BS_SIZE_W-border,BS_SIZE_H-border),r_w-border/2,r_w-border/2,btm_r-border/2,btm_r-border/2);
 #endif
