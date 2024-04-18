@@ -810,32 +810,45 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
   if(bs_color_revert == 0){
     //p.setPen(QPen(QColor(150, 150, 150, 255),5));
-    p.setBrush(QColor(240, 240, 240, 255));
+    p.setBrush(QColor(240, 240, 240, 240));
   } else {
     //p.setPen(QPen(QColor(240, 240, 240, 255),5));
-    p.setBrush(QColor(40, 40, 40, 255));
+    p.setBrush(QColor(40, 40, 40, 240));
   }
   //p.drawEllipse(0,0,r*2,r*2);
-  drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),r_w,r_w,10,10);
+  float btm_r = 20;
+  drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),r_w,r_w,btm_r,btm_r);
   float border = 3;
   if(bs_color_revert == 0){
     p.setPen(QPen(QColor(150, 150, 150, 255),border));
   } else {
     p.setPen(QPen(QColor(240, 240, 240, 255),border));
   }
-  drawRoundedRect(p,QRectF(border/2,border/2,BS_SIZE_W-border,BS_SIZE_H-border),r_w-border/2,r_w-border/2,10-border/2,10-border/2);
+  drawRoundedRect(p,QRectF(border/2,border/2,BS_SIZE_W-border,BS_SIZE_H-border),r_w-border/2,r_w-border/2,btm_r-border/2,btm_r-border/2);
+
+  p.setPen(Qt::NoPen);
+
+  //方位メモリ的な演出。
+  const static QPointF chevron[] = {{-2, -BS_SIZE_W/2}, {-2, -BS_SIZE_W/2-10} , {2, -BS_SIZE_W/2-10} , {2, -BS_SIZE_W/2}};
+  p.resetTransform();
+  p.translate(r_w,r_w);
+  p.setBrush(QColor(80, 80, 80, 220));
+  for(int ang=0; ang < 360; ang += 45){
+    p.drawPolygon(chevron, std::size(chevron));
+    p.rotate(45); //degree指定
+  }
 
   //方位磁石風
   const static QPointF chevron[] = {{-4, -BS_SIZE_W/2+10}, {-BS_SIZE_W/4+5, 0} , {BS_SIZE_W/4-5, 0} , {4, -BS_SIZE_W/2+10}};
   p.resetTransform();
   p.translate(r_w,r_w);
   p.rotate(-map_bearing_num); //degree指定
-  p.setPen(Qt::NoPen);
   p.setBrush(QColor(201, 34, 49, 220));
   p.drawPolygon(chevron, std::size(chevron));
   p.rotate(180); //南側をグレーで描画
   p.setBrush(QColor(150, 150, 150, 220));
   p.drawPolygon(chevron, std::size(chevron));
+
   p.resetTransform();
 
   //ラベルを使わず直に距離描画する
@@ -856,7 +869,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     p.setPen(QColor(220, 220, 220, 255));
   }
   const int SCL_H = d_h;
-  const int h_ctl = BS_SIZE_W-6;
+  const int h_ctl = BS_SIZE_W-7;
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
   } else {
