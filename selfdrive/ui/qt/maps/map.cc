@@ -81,11 +81,12 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
   map_limitspeed->setFixedWidth(LS_SIZE);
   map_limitspeed->setVisible(false);
 
-#define BS_SIZE 150
+#define BS_SIZE_H 180
+#define BS_SIZE_W 150
   map_bearing_scale = new MapBearingScale(this);
   QObject::connect(this, &MapWindow::BearingScaleChanged, map_bearing_scale, &MapBearingScale::updateBearingScale);
-  map_bearing_scale->setFixedHeight(BS_SIZE);
-  map_bearing_scale->setFixedWidth(BS_SIZE);
+  map_bearing_scale->setFixedHeight(BS_SIZE_W);
+  map_bearing_scale->setFixedWidth(BS_SIZE_H);
   map_bearing_scale->setVisible(false);
 
 }
@@ -717,10 +718,10 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   {
     const static char *btn_styleb_trs = "font-weight:600; font-size: 50px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
     QHBoxLayout *layout = new QHBoxLayout;
-    bearing_scale = new QPushButton;
+    bearing_scale = new QPushButton("");
     //bearing_scale->setAlignment(Qt::AlignCenter);
     bearing_scale->setStyleSheet(QString(btn_styleb_trs).arg("#909090"));
-    bearing_scale->setText("   "); //ラベルを使わず直に距離描画する
+    //bearing_scale->setText("   "); //ラベルを使わず直に距離描画する
 
     layout->addWidget(bearing_scale);
     main_layout->addLayout(layout);
@@ -785,47 +786,37 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
   // } else {
   //   bearing_scale->setText(QString::number(map_scale_num / 1000, 'f', 1) + "K");
   // }
-  float r = BS_SIZE / 2;
+  float r_w = BS_SIZE_W / 2;
+  float r_h = BS_SIZE_H / 2;
   int stand_still_height = 0;
   if(now_navigation == true){
     stand_still_height = 115; //見た目ハードコーディング
   }
   if (map_width == 0 || uiState()->scene.map_on_left) {
-    this->move(map_width - r*2 - UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r*2 - UI_BORDER_SIZE - stand_still_height);
+    this->move(map_width - r_w*2 - UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r_h*2 - UI_BORDER_SIZE - stand_still_height);
   } else {
-    this->move(UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r*2 - UI_BORDER_SIZE - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
+    this->move(UI_BORDER_SIZE, 1080 - UI_BORDER_SIZE*2 - r_h*2 - UI_BORDER_SIZE - stand_still_height); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
   }
   this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
 }
 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
 
-  float r = BS_SIZE / 2;
+  float d_h = BS_SIZE_H - BS_SIZE_W;
+  float r_w = BS_SIZE_W / 2;
+  float r_h = BS_SIZE_H / 2;
   QPainter p(this);
-  //p.setPen(Qt::NoPen);
   p.setPen(QPen(QColor(150, 150, 150, 255),3));
   //p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   //p.setBrush(QColor(218, 202, 37, 210));
   p.setBrush(QColor(240, 240, 240, 255));
-  p.drawEllipse(0,0,r*2,r*2);
+  //p.drawEllipse(0,0,r*2,r*2);
+  drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),10,10,r_w,r_w);
 
-#if 0
-  //自車アイコンと似ているのでボツ
-  const static QPointF chevron[] = {{-4, -BS_SIZE/2}, {-BS_SIZE/3, BS_SIZE/4}, {-BS_SIZE/3+7, BS_SIZE/4+5}, {0, 0} , {BS_SIZE/3-7, BS_SIZE/4+5} , {BS_SIZE/3, BS_SIZE/4} , {4, -BS_SIZE/2}};
-  p.resetTransform();
-  p.translate(BS_SIZE/2,BS_SIZE/2);
-  p.rotate(-map_bearing_num); //degree指定
-  p.translate(-BS_SIZE/2,-BS_SIZE/2);
-  p.translate(BS_SIZE/2,BS_SIZE/2 *1.1);
-  p.setPen(Qt::NoPen);
-  p.setBrush(QColor(201, 34, 49, 220));
-  p.drawPolygon(chevron, std::size(chevron));
-  p.resetTransform();
-#else
   //方位磁石風
-  const static QPointF chevron[] = {{-4, -BS_SIZE/2+10}, {-BS_SIZE/4+5, 0} , {BS_SIZE/4-5, 0} , {4, -BS_SIZE/2+10}};
+  const static QPointF chevron[] = {{-4, -BS_SIZE_W/2+10}, {-BS_SIZE_W/4+5, 0} , {BS_SIZE_W/4-5, 0} , {4, -BS_SIZE_W/2+10}};
   p.resetTransform();
-  p.translate(BS_SIZE/2,BS_SIZE/2);
+  p.translate(r_w,r_w + d_h);
   p.rotate(-map_bearing_num); //degree指定
   p.setPen(Qt::NoPen);
   p.setBrush(QColor(201, 34, 49, 220));
@@ -834,7 +825,6 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setBrush(QColor(150, 150, 150, 220));
   p.drawPolygon(chevron, std::size(chevron));
   p.resetTransform();
-#endif
 
   //ラベルを使わず直に距離描画する
   QString scl;
@@ -847,32 +837,6 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 #else
     scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
-  static int h_ctl = 0; //方位針が寝たら距離表示を下げる。
-  const int h_ctl_val = 45; //ピクセルoffset
-  const int h_ctl_ang = 40; //こちらは角度
-  const int abs_map_bearing_num = abs(map_bearing_num);
-  if(h_ctl == 0){
-    if(abs_map_bearing_num > h_ctl_ang+3 && abs_map_bearing_num < (180-h_ctl_ang)-3){
-      if(abs_map_bearing_num <= 90){
-        h_ctl = h_ctl_val;
-      } else {
-        h_ctl = -h_ctl_val;
-      }
-    }
-  } else {
-    if(h_ctl == h_ctl_val){
-      if(abs_map_bearing_num >= 90+3){
-        h_ctl = -h_ctl_val;
-      }
-    } else if(h_ctl == -h_ctl_val){
-      if(abs_map_bearing_num <= 90-3){
-        h_ctl = h_ctl_val;
-      }
-    }
-    if(abs_map_bearing_num < h_ctl_ang || abs_map_bearing_num > (180-h_ctl_ang)){
-      h_ctl = 0;
-    }
-  }
   int add = 3; //影のずらし
   p.setFont(InterFont(50, QFont::DemiBold));
   if(bs_color_revert == 0){
@@ -880,15 +844,17 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   } else {
     p.setPen(QColor(220, 220, 220, 255));
   }
-  p.drawText(QRect(0+add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
-  p.drawText(QRect(0-add,0+add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
-  p.drawText(QRect(0+add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
-  p.drawText(QRect(0-add,0-add+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+  const int SCL_H = 45;
+  const int h_ctl = 0;
+  p.drawText(QRect(0+add,0+add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
+  p.drawText(QRect(0-add,0+add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
+  p.drawText(QRect(0+add,0-add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
+  p.drawText(QRect(0-add,0-add+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
   if(bs_color_revert == 0){
     p.setPen(QColor(220, 220, 220, 255));
   } else {
     p.setPen(QColor(20, 20, 20, 255));
   }
-  p.drawText(QRect(0,0+h_ctl,this->width(),this->height()), Qt::AlignCenter, scl);
+  p.drawText(QRect(0,0+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
 
 }
