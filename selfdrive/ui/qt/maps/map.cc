@@ -853,15 +853,15 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   }
 
   //方位磁石風
-  const static QPointF chevron[] = {{-4, -BS_SIZE_W/2+10}, {-BS_SIZE_W/4+5, 0} , {BS_SIZE_W/4-5, 0} , {4, -BS_SIZE_W/2+10}};
+  const static QPointF needle[] = {{-3, -BS_SIZE_W/2+20}, {-BS_SIZE_W/4+10, 0} , {BS_SIZE_W/4-10, 0} , {3, -BS_SIZE_W/2+20}};
   p.resetTransform();
   p.translate(r_w,r_w);
   p.rotate(-map_bearing_num); //degree指定
   p.setBrush(QColor(201, 34, 49, 220));
-  p.drawPolygon(chevron, std::size(chevron));
+  p.drawPolygon(needle, std::size(needle));
   p.rotate(180); //南側をグレーで描画
   p.setBrush(QColor(150, 150, 150, 220));
-  p.drawPolygon(chevron, std::size(chevron));
+  p.drawPolygon(needle, std::size(needle));
 
   p.resetTransform();
 
