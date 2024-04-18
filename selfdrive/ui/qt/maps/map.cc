@@ -855,7 +855,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     p.setPen(QColor(220, 220, 220, 255));
   }
   const int SCL_H = d_h;
-  const int h_ctl = BS_SIZE_W;
+  const int h_ctl = BS_SIZE_W-6;
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
   } else {
