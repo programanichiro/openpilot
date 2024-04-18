@@ -743,6 +743,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         bs_color_revert = 1;
       }
       m_pressedTime = 0;
+      this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
     });
   }
   setStyleSheet(R"(
@@ -816,7 +817,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   }
   //p.drawEllipse(0,0,r*2,r*2);
   drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),r_w,r_w,10,10);
-  float border = 5;
+  float border = 3;
   if(bs_color_revert == 0){
     p.setPen(QPen(QColor(150, 150, 150, 255),border));
   } else {
