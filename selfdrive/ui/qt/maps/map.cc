@@ -834,7 +834,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.translate(r_w,r_w);
   p.setBrush(QColor(80, 80, 80, 220));
   for(int ang=0; ang < 360; ang += 45){
-    p.drawPolygon(memo, std::size(chevron));
+    p.drawPolygon(memo, std::size(memo));
     p.rotate(45); //degree指定
   }
 
