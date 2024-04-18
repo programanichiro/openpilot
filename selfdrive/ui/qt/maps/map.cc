@@ -829,8 +829,8 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
 
   //方位メモリ的な演出。
-  const static QPointF memo_b[] = {{-4, -BS_SIZE_W/2+border+1}, {-4, -BS_SIZE_W/2+16} , {4, -BS_SIZE_W/2+16} , {4, -BS_SIZE_W/2+border+1}};
-  const static QPointF memo[] = {{-3, -BS_SIZE_W/2+border+1}, {-3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+border+1}};
+  const static QPointF memo_b[] = {{-4, -BS_SIZE_W/2+border+2}, {-4, -BS_SIZE_W/2+16} , {4, -BS_SIZE_W/2+16} , {4, -BS_SIZE_W/2+border+2}};
+  const static QPointF memo[] = {{-3, -BS_SIZE_W/2+border+2}, {-3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+border+2}};
   p.resetTransform();
   p.translate(r_w,r_w);
   if(bs_color_revert == 0){
