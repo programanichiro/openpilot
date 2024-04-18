@@ -840,7 +840,6 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 #else
     scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
-  int add = 3; //影のずらし
   p.setFont(InterFont(40, QFont::DemiBold));
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
