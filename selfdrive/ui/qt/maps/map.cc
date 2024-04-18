@@ -716,7 +716,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
   main_layout->setContentsMargins(0, 0, 0, 0);
 
   {
-    const static char *btn_styleb_trs = "font-weight:600; font-size: 50px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
+    const static char *btn_styleb_trs = "font-weight:600; font-size: 100px; border-width: 0px; background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
     QHBoxLayout *layout = new QHBoxLayout;
     bearing_scale = new QPushButton("");
     //bearing_scale->setAlignment(Qt::AlignCenter);
@@ -807,19 +807,19 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   //float r_h = BS_SIZE_H / 2;
   QPainter p(this);
   if(bs_color_revert == 0){
-    p.setPen(QPen(QColor(150, 150, 150, 255),3));
+    p.setPen(QPen(QColor(150, 150, 150, 255),5));
     p.setBrush(QColor(240, 240, 240, 255));
   } else {
-    p.setPen(QPen(QColor(240, 240, 240, 255),3));
+    p.setPen(QPen(QColor(240, 240, 240, 255),5));
     p.setBrush(QColor(40, 40, 40, 255));
   }
   //p.drawEllipse(0,0,r*2,r*2);
-  drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),10,10,r_w,r_w);
+  drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),r_w,r_w,10,10);
 
   //方位磁石風
   const static QPointF chevron[] = {{-4, -BS_SIZE_W/2+10}, {-BS_SIZE_W/4+5, 0} , {BS_SIZE_W/4-5, 0} , {4, -BS_SIZE_W/2+10}};
   p.resetTransform();
-  p.translate(r_w,r_w + d_h);
+  p.translate(r_w,r_w);
   p.rotate(-map_bearing_num); //degree指定
   p.setPen(Qt::NoPen);
   p.setBrush(QColor(201, 34, 49, 220));
@@ -846,12 +846,12 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   } else {
     p.setPen(QColor(220, 220, 220, 255));
   }
-  const int SCL_H = 45;
-  const int h_ctl = 0;
+  const int SCL_H = d_h + 15;
+  const int h_ctl = BS_SIZE_W;
   if(bs_color_revert == 0){
-    p.setPen(QColor(220, 220, 220, 255));
-  } else {
     p.setPen(QColor(20, 20, 20, 255));
+  } else {
+    p.setPen(QColor(220, 220, 220, 255));
   }
   p.drawText(QRect(0,0+h_ctl,this->width(),SCL_H), Qt::AlignCenter, scl);
 }
