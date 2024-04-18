@@ -895,6 +895,8 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   const int SCL_H = d_h;
   const int h_ctl = BS_SIZE_W-6;
   if(tmp_bs_color_revert == 0){
+    p.setPen(QColor(220, 220, 220, 255));
+    p.drawText(QRect(0,0+h_ctl-3,this->width(),SCL_H), Qt::AlignCenter, scl); //円形メモリと数字の衝突を避けるために白影を上オフセットで表示する。
     p.setPen(QColor(0x24, 0x57, 0xA1, 255));
   } else {
     p.setPen(QColor(220, 220, 220, 255));
