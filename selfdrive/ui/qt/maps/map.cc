@@ -735,7 +735,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
     QObject::connect(bearing_scale, &QPushButton::released, [=]() {
       quint64 now = QDateTime::currentMSecsSinceEpoch();
       //ボタンを押した時に何かしたいならここで。
-      if(now - m_pressedTime > 1000){
+      if(now - m_pressedTime > 500){
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         bs_color_revert = 0;
       } else {
@@ -806,15 +806,23 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   float r_w = BS_SIZE_W / 2;
   //float r_h = BS_SIZE_H / 2;
   QPainter p(this);
+  p.setPen(Qt::NoPen);
   if(bs_color_revert == 0){
-    p.setPen(QPen(QColor(150, 150, 150, 255),5));
+    //p.setPen(QPen(QColor(150, 150, 150, 255),5));
     p.setBrush(QColor(240, 240, 240, 255));
   } else {
-    p.setPen(QPen(QColor(240, 240, 240, 255),5));
+    //p.setPen(QPen(QColor(240, 240, 240, 255),5));
     p.setBrush(QColor(40, 40, 40, 255));
   }
   //p.drawEllipse(0,0,r*2,r*2);
   drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),r_w,r_w,10,10);
+  float border = 5;
+  if(bs_color_revert == 0){
+    p.setPen(QPen(QColor(150, 150, 150, 255),border));
+  } else {
+    p.setPen(QPen(QColor(240, 240, 240, 255),border));
+  }
+  drawRoundedRect(p,QRectF(border/2,border/2,BS_SIZE_W-border,BS_SIZE_H-border),r_w-border/2,r_w-border/2,10-border/2,10-border/2);
 
   //方位磁石風
   const static QPointF chevron[] = {{-4, -BS_SIZE_W/2+10}, {-BS_SIZE_W/4+5, 0} , {BS_SIZE_W/4-5, 0} , {4, -BS_SIZE_W/2+10}};
@@ -840,13 +848,13 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 #else
     scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
-  p.setFont(InterFont(40, QFont::DemiBold));
+  p.setFont(InterFont(40, QFont::ExtraBold));
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
   } else {
     p.setPen(QColor(220, 220, 220, 255));
   }
-  const int SCL_H = d_h + 15;
+  const int SCL_H = d_h;
   const int h_ctl = BS_SIZE_W;
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
