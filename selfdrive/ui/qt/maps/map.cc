@@ -829,13 +829,13 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
 
   //方位メモリ的な演出。
-  const static QPointF memo[] = {{-5, -BS_SIZE_W/2}, {-5, -BS_SIZE_W/2+10} , {5, -BS_SIZE_W/2+10} , {5, -BS_SIZE_W/2}};
+  const static QPointF memo[] = {{-2, -BS_SIZE_W/2}, {-2, -BS_SIZE_W/2+10} , {2, -BS_SIZE_W/2+10} , {2, -BS_SIZE_W/2}};
   p.resetTransform();
   p.translate(r_w,r_w);
   p.setBrush(QColor(80, 80, 80, 220));
-  for(int ang=0; ang < 360; ang += 45){
+  for(int ang=0; ang < 360; ang += 15){
     p.drawPolygon(memo, std::size(memo));
-    p.rotate(45); //degree指定
+    p.rotate(15); //degree指定
   }
 
   //方位磁石風
@@ -869,7 +869,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     p.setPen(QColor(220, 220, 220, 255));
   }
   const int SCL_H = d_h;
-  const int h_ctl = BS_SIZE_W-7;
+  const int h_ctl = BS_SIZE_W-6;
   if(bs_color_revert == 0){
     p.setPen(QColor(20, 20, 20, 255));
   } else {
