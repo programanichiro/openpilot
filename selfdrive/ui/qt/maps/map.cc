@@ -818,7 +818,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   //p.drawEllipse(0,0,r*2,r*2);
   float btm_r = 20;
   drawRoundedRect(p,QRectF(0,0,BS_SIZE_W,BS_SIZE_H),r_w,r_w,btm_r,btm_r);
-  float border = 3;
+  const float border = 3;
   if(bs_color_revert == 0){
     p.setPen(QPen(QColor(150, 150, 150, 255),border));
   } else {
@@ -829,8 +829,8 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
 
   //方位メモリ的な演出。
-  const static QPointF memo_b[] = {{-4, -BS_SIZE_W/2+3}, {-4, -BS_SIZE_W/2+15} , {4, -BS_SIZE_W/2+15} , {4, -BS_SIZE_W/2+3}};
-  const static QPointF memo[] = {{-3, -BS_SIZE_W/2+3}, {-3, -BS_SIZE_W/2+10} , {3, -BS_SIZE_W/2+10} , {3, -BS_SIZE_W/2+3}};
+  const static QPointF memo_b[] = {{-4, -BS_SIZE_W/2+border+1}, {-4, -BS_SIZE_W/2+16} , {4, -BS_SIZE_W/2+16} , {4, -BS_SIZE_W/2+border+1}};
+  const static QPointF memo[] = {{-3, -BS_SIZE_W/2+border+1}, {-3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+11} , {3, -BS_SIZE_W/2+border+1}};
   p.resetTransform();
   p.translate(r_w,r_w);
   if(bs_color_revert == 0){
