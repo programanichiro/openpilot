@@ -804,7 +804,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   float d_h = BS_SIZE_H - BS_SIZE_W;
   float r_w = BS_SIZE_W / 2;
-  float r_h = BS_SIZE_H / 2;
+  //float r_h = BS_SIZE_H / 2;
   QPainter p(this);
   p.setPen(QPen(QColor(150, 150, 150, 255),3));
   //p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
