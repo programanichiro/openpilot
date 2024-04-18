@@ -697,7 +697,7 @@ void MapLimitspeed::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   p.setPen(Qt::NoPen);
   if(night_mode == 1){
-    p.setBrush(QColor::fromRgbF(0.6, 0.6, 0.7, 1.0));
+    p.setBrush(QColor::fromRgbF(0.8, 0.8, 0.9, 1.0));
   } else {
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
   }
