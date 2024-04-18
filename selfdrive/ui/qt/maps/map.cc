@@ -829,12 +829,12 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
 
   //方位メモリ的な演出。
-  const static QPointF chevron[] = {{-2, -BS_SIZE_W/2}, {-2, -BS_SIZE_W/2-10} , {2, -BS_SIZE_W/2-10} , {2, -BS_SIZE_W/2}};
+  const static QPointF memo[] = {{-2, -BS_SIZE_W/2}, {-2, -BS_SIZE_W/2-10} , {2, -BS_SIZE_W/2-10} , {2, -BS_SIZE_W/2}};
   p.resetTransform();
   p.translate(r_w,r_w);
   p.setBrush(QColor(80, 80, 80, 220));
   for(int ang=0; ang < 360; ang += 45){
-    p.drawPolygon(chevron, std::size(chevron));
+    p.drawPolygon(memo, std::size(chevron));
     p.rotate(45); //degree指定
   }
 
