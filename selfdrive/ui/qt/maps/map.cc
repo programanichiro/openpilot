@@ -26,6 +26,7 @@ std::string my_mapbox_style;
 std::string my_mapbox_style_night;
 int night_mode = -1;
 int north_up = 0; //1で北上モード
+bool chg_pitch;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 
@@ -271,10 +272,14 @@ void MapWindow::updateState(const UIState &s) {
       if(north_up == 0){
         if(m_map->margins().top() == 0){
           m_map->setMargins({0, 350, 0, 50});
-          m_map->setPitch(MIN_PITCH); // ナビ中ならMAX_PITCHが正しい。
+          chg_pitch = true;
           MAX_ZOOM += sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
           if(MAX_ZOOM > 22){
             MAX_ZOOM = 22;
+          }
+          if(chg_pitch){
+            chg_pitch = false;
+            m_map->setPitch(MIN_PITCH); // ナビ中ならMAX_PITCHが正しい。
           }
         }
       } else {
@@ -808,6 +813,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
           MAX_ZOOM = 22;
         }
         setButtonInt("/data/mb_pitch.txt",MIN_PITCH); //MIN_PITCH = 0,10,20,30,40度から選択
+        chg_pitch = true;
       }
       m_pressedTime = 0;
       this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
