@@ -287,7 +287,6 @@ void MapWindow::updateState(const UIState &s) {
           m_map->setBearing(0);
           MAX_ZOOM = MAX_ZOOM0;
         }
-        m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing);
       }
 
       static unsigned int LimitspeedChanged_ct;
@@ -347,11 +346,7 @@ void MapWindow::updateState(const UIState &s) {
 
     // Map bearing isn't updated when interacting, keep location marker up to date
     if (last_bearing) {
-      if(north_up == 0){
-        m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing - m_map->bearing());
-      } else {
-        m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing);
-      }
+      m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing - m_map->bearing());
     }
   }
 
