@@ -493,6 +493,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   //制限速度情報をmap.ccからonroadへ移動
   static unsigned int limitspeed_update_ct;
+  static double car_bearing;
   if ((limitspeed_update_ct ++) % 10 == 0 && (*s->sm).updated("liveLocationKalman")) {
     auto locationd_location = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
@@ -516,6 +517,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
           }
         } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
         //double velo = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
+        car_bearing = bearing;
         double velo = velo_for_trans;
         if(add_v_by_lead == true){
           velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
@@ -836,7 +838,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
 
-    p.drawArc(traffic_speed_x-arc_w/2+4, traffic_speed_y-arc_w/2+4, traffic_speed_r*2+arc_w-8,traffic_speed_r*2+arc_w-8, 0*16, 360*16);
+    p.drawArc(traffic_speed_x-arc_w/2+4, traffic_speed_y-arc_w/2+4, traffic_speed_r*2+arc_w-8,traffic_speed_r*2+arc_w-8, (car_bearing-5)*16, (360-5*2)*16);
     int f_size = traffic_speed_r * 67 / (150 / 2);
     p.setFont(InterFont(f_size, QFont::Bold));
     drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
