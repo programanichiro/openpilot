@@ -273,13 +273,14 @@ void MapWindow::updateState(const UIState &s) {
         if(m_map->margins().top() == 0){
           m_map->setMargins({0, 350, 0, 50});
           chg_pitch = true;
-          MAX_ZOOM += sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+          MAX_ZOOM = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
           if(MAX_ZOOM > 22){
             MAX_ZOOM = 22;
           }
           if(chg_pitch){
             chg_pitch = false;
             m_map->setPitch(MIN_PITCH); // ナビ中ならMAX_PITCHが正しい。
+            m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
           }
         }
       } else {
