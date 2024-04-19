@@ -528,6 +528,10 @@ void MapWindow::clearRoute() {
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
+
+  if(m_lastPos.y() > this->width() / 2){
+    m_lastPos.setY(-1);
+  }
 }
 
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
@@ -544,6 +548,10 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
+  if(m_lastPos.y() < 0){
+    return; //動かさないテスト。
+  }
+
   QPointF delta = ev->localPos() - m_lastPos;
 
   if (!delta.isNull()) {
