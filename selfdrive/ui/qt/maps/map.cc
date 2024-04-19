@@ -26,6 +26,8 @@ std::string my_mapbox_style;
 std::string my_mapbox_style_night;
 int night_mode = -1;
 int north_up = 0; //1で北上モード
+extern void setButtonInt(const char*fn , int num);
+extern int getButtonInt(const char*fn , int defaultNum);
 
 MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
@@ -42,16 +44,11 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
   }
   QMapLibre::setNetworkMode(map_offline_mode ? QMapLibre::NetworkMode::Offline : QMapLibre::NetworkMode::Online);
 
-  MAX_ZOOM = MAX_ZOOM0;
   my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
-  std::string my_mapbox_pitch = util::read_file("../../../mb_pitch.txt");
-  if(my_mapbox_pitch.empty() == false){
-    MIN_PITCH = std::stof(my_mapbox_pitch);
-
-    MAX_ZOOM += sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
-    if(MAX_ZOOM > 22){
-      MAX_ZOOM = 22;
-    }
+  MIN_PITCH = getButtonInt("/data/mb_pitch.txt",0);
+  MAX_ZOOM = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+  if(MAX_ZOOM > 22){
+    MAX_ZOOM = 22;
   }
 
   // Instructions
@@ -529,8 +526,8 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
 
-  if(m_lastPos.y() > this->width() / 2){
-    m_lastPos.setY(-1);
+  if(m_lastPos.x() > this->width() - 120){ //端っこを上下でMAX_ZOOM調整。
+    m_lastPos.setX(-1);
   }
 }
 
@@ -548,7 +545,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
-  if(m_lastPos.y() < 0){
+  if(m_lastPos.x() < 0){
     return; //動かさないテスト。
   }
 
@@ -798,7 +795,19 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         north_up ^= 1;
       } else {
         //qDebug() << "clicked";
-        bs_color_revert ^= 1;
+        //bs_color_revert ^= 1;
+
+        MIN_PITCH /= 10;
+        MIN_PITCH += 1;
+        if(MIN_PITCH > 4){
+          MIN_PITCH = 0;
+        }
+        MIN_PITCH *= 10;
+        MAX_ZOOM = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+        if(MAX_ZOOM > 22){
+          MAX_ZOOM = 22;
+        }
+        setButtonInt("/data/mb_pitch.txt",MIN_PITCH); //MIN_PITCH = 0,10,20,30,40度から選択
       }
       m_pressedTime = 0;
       this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
