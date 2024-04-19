@@ -237,10 +237,10 @@ void MapWindow::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
   update();
 
-  static bool already_vego_over_8 = false;
-  if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
-    already_vego_over_8 = true; //一旦時速8km/h以上になった。
-  }
+  // static bool already_vego_over_8 = false;
+  // if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
+  //   already_vego_over_8 = true; //一旦時速8km/h以上になった。
+  // }
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
@@ -264,10 +264,10 @@ void MapWindow::updateState(const UIState &s) {
     locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && pos_accurate_enough);
 
     if (locationd_valid) {
-      if (already_vego_over_8 == true) {
+      //if (already_vego_over_8 == true) {
         last_position = QMapLibre::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
         last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
-      }
+      //}
       velocity_filter.update(std::max(5.0, locationd_velocity.getValue()[0]));
 
       static unsigned int LimitspeedChanged_ct;
@@ -420,11 +420,11 @@ void MapWindow::initializeGL() {
 
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
-    std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
-    if(last_bearing_info_str.empty() == false){
-      last_bearing = std::stof(last_bearing_info_str);
-      if (last_bearing) m_map->setBearing(*last_bearing);
-    }
+    // std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
+    // if(last_bearing_info_str.empty() == false){
+    //   last_bearing = std::stof(last_bearing_info_str);
+    //   if (last_bearing) m_map->setBearing(*last_bearing);
+    // }
   } else {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
@@ -567,7 +567,7 @@ void MapWindow::offroadTransition(bool offroad) {
     auto dest = coordinate_from_param("NavDestination");
     emit requestVisible(dest.has_value());
   }
-  //last_bearing = {}; これがあると最終状態保持がキャンセルされる？
+  last_bearing = {}; これがあると最終状態保持がキャンセルされる？
 }
 
 void MapWindow::updateDestinationMarker() {
