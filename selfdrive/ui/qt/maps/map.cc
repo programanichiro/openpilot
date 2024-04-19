@@ -25,6 +25,7 @@ std::string my_mapbox_triangle;
 std::string my_mapbox_style;
 std::string my_mapbox_style_night;
 int night_mode = -1;
+int north_up = 0; //1で北上モード
 
 MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
@@ -270,6 +271,19 @@ void MapWindow::updateState(const UIState &s) {
       //}
       velocity_filter.update(std::max(5.0, locationd_velocity.getValue()[0]));
 
+      if(north_up == 0){
+        if(m_map->margins().top() == 0){
+          m_map->setMargins({0, 350, 0, 50});
+          m_map->setPitch(MAX_PITCH); // TODO: smooth pitching based on maneuver distance
+        }
+      } else {
+        if(m_map->margins().top() != 0){
+          m_map->setMargins({0, 0, 0, 0});
+          m_map->setPitch(0);
+          m_map->setBearing(0);
+        }
+      }
+
       static unsigned int LimitspeedChanged_ct;
       if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
         map_limitspeed->setVisible(true);
@@ -327,13 +341,21 @@ void MapWindow::updateState(const UIState &s) {
 
     // Map bearing isn't updated when interacting, keep location marker up to date
     if (last_bearing) {
-      m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing - m_map->bearing());
+      if(north_up == 0){
+        m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing - m_map->bearing());
+      } else {
+        m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing);
+      }
     }
   }
 
   if (interaction_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
-    if (last_bearing) m_map->setBearing(*last_bearing);
+    if(north_up == 0){
+      if (last_bearing) m_map->setBearing(*last_bearing);
+    } else {
+      if (last_bearing) m_map->setBearing(0);
+    }
     m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   } else {
     interaction_counter--;
@@ -351,7 +373,13 @@ void MapWindow::updateState(const UIState &s) {
       map_eta->updateETA(i.getTimeRemaining(), i.getTimeRemainingTypical(), i.getDistanceRemaining());
 
       if (locationd_valid) {
-        m_map->setPitch(MAX_PITCH); // TODO: smooth pitching based on maneuver distance
+        if(north_up == 0){
+          m_map->setMargins({0, 350, 0, 50});
+          m_map->setPitch(MAX_PITCH); // TODO: smooth pitching based on maneuver distance
+        } else {
+          m_map->setMargins({0, 0, 0, 0});
+          m_map->setPitch(0);
+        }
         map_instructions->updateInstructions(i);
       }
       if(now_navigation == false && night_mode >= 0){
@@ -429,8 +457,14 @@ void MapWindow::initializeGL() {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
 
-  m_map->setMargins({0, 350, 0, 50});
-  m_map->setPitch(MIN_PITCH);
+  if(north_up == 0){
+    m_map->setMargins({0, 350, 0, 50});
+    m_map->setPitch(MIN_PITCH);
+  } else {
+    m_map->setMargins({0, 0, 0, 0});
+    m_map->setPitch(0);
+    m_map->setBearing(0);
+  }
 
   my_mapbox_style = util::read_file("../../../mb_style.txt");
   if(my_mapbox_style.empty() == false){
@@ -475,7 +509,13 @@ void MapWindow::paintGL() {
 void MapWindow::clearRoute() {
   if (!m_map.isNull()) {
     m_map->setLayoutProperty("navLayer", "visibility", "none");
-    m_map->setPitch(MIN_PITCH);
+    if(north_up == 0){
+      m_map->setMargins({0, 350, 0, 50});
+      m_map->setPitch(MIN_PITCH);
+    } else {
+      m_map->setMargins({0, 0, 0, 0});
+      m_map->setPitch(0);
+    }
     updateDestinationMarker();
   }
 
@@ -491,7 +531,11 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
 
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   if (last_position) m_map->setCoordinate(*last_position);
-  if (last_bearing) m_map->setBearing(*last_bearing);
+  if(north_up == 0){
+    if (last_bearing) m_map->setBearing(*last_bearing);
+  } else {
+    if (last_bearing) m_map->setBearing(0);
+  }
   m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   update();
 
@@ -742,6 +786,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
       if(now - m_pressedTime > 500){
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //bs_color_revert = 0;
+        north_up ^= 1;
       } else {
         //qDebug() << "clicked";
         bs_color_revert ^= 1;
