@@ -859,7 +859,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   int tmp_map_bearing_num = map_bearing_num;
   if(north_up != 0){
-    tmp_map_bearing_num = 0
+    tmp_map_bearing_num = 0;
   }
 
 
