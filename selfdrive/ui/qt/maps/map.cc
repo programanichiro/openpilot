@@ -287,6 +287,7 @@ void MapWindow::updateState(const UIState &s) {
           m_map->setBearing(0);
           MAX_ZOOM = MAX_ZOOM0;
         }
+        m_map->setLayoutProperty("carPosLayer", "icon-rotate", *last_bearing);
       }
 
       static unsigned int LimitspeedChanged_ct;
