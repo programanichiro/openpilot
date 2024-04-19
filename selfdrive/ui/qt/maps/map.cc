@@ -238,10 +238,10 @@ void MapWindow::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
   update();
 
-  // static bool already_vego_over_8 = false;
-  // if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
-  //   already_vego_over_8 = true; //一旦時速8km/h以上になった。
-  // }
+  static bool already_vego_over_8 = false;
+  if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
+    already_vego_over_8 = true; //一旦時速8km/h以上になった。
+  }
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
@@ -265,22 +265,27 @@ void MapWindow::updateState(const UIState &s) {
     locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && pos_accurate_enough);
 
     if (locationd_valid) {
-      //if (already_vego_over_8 == true) {
+      if (already_vego_over_8 == true) {
         last_position = QMapLibre::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
         last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
-      //}
+      }
       velocity_filter.update(std::max(5.0, locationd_velocity.getValue()[0]));
 
       if(north_up == 0){
         if(m_map->margins().top() == 0){
           m_map->setMargins({0, 350, 0, 50});
-          m_map->setPitch(MAX_PITCH); // TODO: smooth pitching based on maneuver distance
+          m_map->setPitch(MIN_PITCH); // ナビ中ならMAX_PITCHが正しい。
+          MAX_ZOOM += sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+          if(MAX_ZOOM > 22){
+            MAX_ZOOM = 22;
+          }
         }
       } else {
         if(m_map->margins().top() != 0){
           m_map->setMargins({0, 0, 0, 0});
           m_map->setPitch(0);
           m_map->setBearing(0);
+          MAX_ZOOM = MAX_ZOOM0;
         }
       }
 
@@ -448,11 +453,11 @@ void MapWindow::initializeGL() {
 
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
-    // std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
-    // if(last_bearing_info_str.empty() == false){
-    //   last_bearing = std::stof(last_bearing_info_str);
-    //   if (last_bearing) m_map->setBearing(*last_bearing);
-    // }
+    std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
+    if(last_bearing_info_str.empty() == false){
+      last_bearing = std::stof(last_bearing_info_str);
+      if (last_bearing) m_map->setBearing(*last_bearing);
+    }
   } else {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
@@ -611,7 +616,7 @@ void MapWindow::offroadTransition(bool offroad) {
     auto dest = coordinate_from_param("NavDestination");
     emit requestVisible(dest.has_value());
   }
-  last_bearing = {}; //これがあると最終状態保持がキャンセルされる？
+  //last_bearing = {}; //これがあると最終状態保持がキャンセルされる？
 }
 
 void MapWindow::updateDestinationMarker() {
@@ -852,6 +857,12 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
 
+  int tmp_map_bearing_num = map_bearing_num;
+  if(north_up != 0){
+    tmp_map_bearing_num = 0
+  }
+
+
   bool tmp_bs_color_revert = bs_color_revert;
   if(night_mode == 1){
     tmp_bs_color_revert ^= 1;
@@ -916,7 +927,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   const static QPointF needle[] = {{-3, -BS_SIZE_W/2+20}, {-BS_SIZE_W/4+10, 0} , {BS_SIZE_W/4-10, 0} , {3, -BS_SIZE_W/2+20}};
   p.resetTransform();
   p.translate(r_w,r_w);
-  p.rotate(-map_bearing_num); //degree指定
+  p.rotate(-tmp_map_bearing_num); //degree指定
   p.setBrush(QColor(201, 34, 49, 220));
   p.drawPolygon(needle, std::size(needle));
   p.rotate(180); //南側をグレーで描画
@@ -934,7 +945,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
     scl = QString::number(map_scale_num / 1000, 'f', 1) + "K";
   }
 #else
-    scl = QString::number(map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
+    scl = QString::number(tmp_map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
   p.setFont(InterFont(40, QFont::ExtraBold));
   const int SCL_H = d_h;
