@@ -567,7 +567,7 @@ void MapWindow::offroadTransition(bool offroad) {
     auto dest = coordinate_from_param("NavDestination");
     emit requestVisible(dest.has_value());
   }
-  last_bearing = {}; これがあると最終状態保持がキャンセルされる？
+  last_bearing = {}; //これがあると最終状態保持がキャンセルされる？
 }
 
 void MapWindow::updateDestinationMarker() {
