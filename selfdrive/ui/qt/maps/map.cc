@@ -277,11 +277,11 @@ void MapWindow::updateState(const UIState &s) {
           if(MAX_ZOOM > 22){
             MAX_ZOOM = 22;
           }
-          if(chg_pitch){
-            chg_pitch = false;
-            m_map->setPitch(MIN_PITCH); // ナビ中ならMAX_PITCHが正しい。
-            m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
-          }
+        }
+        if(chg_pitch){
+          chg_pitch = false;
+          m_map->setPitch(MIN_PITCH); // ナビ中ならMAX_PITCHが正しい。
+          m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
         }
       } else {
         if(m_map->margins().top() != 0){
