@@ -467,6 +467,9 @@ void MapWindow::resizeGL(int w, int h) {
 void MapWindow::initializeGL() {
   m_map.reset(new QMapLibre::Map(this, m_settings, size(), 1));
 
+  zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
+  north_up = getButtonInt("/data/mb_north_up.txt",0);
+
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
     last_bearing = (float)((double)getButtonInt("/data/mb_last_bearing_info.txt",0) / 1000);
@@ -647,8 +650,6 @@ void MapWindow::offroadTransition(bool offroad) {
     setButtonInt("/data/mb_north_up.txt",north_up);
     setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
   } else {
-    zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
-    north_up = getButtonInt("/data/mb_north_up.txt",0);
     auto dest = coordinate_from_param("NavDestination");
     emit requestVisible(dest.has_value());
   }
