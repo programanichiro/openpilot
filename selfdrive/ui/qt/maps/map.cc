@@ -284,7 +284,7 @@ void MapWindow::updateState(const UIState &s) {
         last_position = QMapLibre::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
         last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
       }
-      velocity_filter.update(std::max(5.0, locationd_velocity.getValue()[0]));
+      velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
 
       if(north_up == 0){
         if(m_map->margins().top() == 0){
