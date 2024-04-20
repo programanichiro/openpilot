@@ -18,12 +18,6 @@ const float MAX_ZOOM0 = 17;
 float MAX_ZOOM_;
 #define MAX_ZOOM ((MAX_ZOOM_+zoom_offset > 22) ? 22 : (MAX_ZOOM_+zoom_offset))
 float zoom_offset;
-void max_zoom_pitch_effect(){
-  MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
-  if(MAX_ZOOM_ > 22){
-    MAX_ZOOM_ = 22;
-  }
-}
 const float MIN_ZOOM = 14;
 const float MAX_PITCH = 50;
 float MIN_PITCH = 0;
@@ -37,6 +31,12 @@ int north_up = 0; //1で北上モード
 bool chg_pitch;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
+void max_zoom_pitch_effect(){
+  MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+  if(MAX_ZOOM_ > 22){
+    MAX_ZOOM_ = 22;
+  }
+}
 
 MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
@@ -555,7 +555,9 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   QPointF delta = ev->localPos() - m_lastPos;
   if(m_lastPos.x() < 0){
-    zoom_offset += delta / 100;
+    zoom_offset += delta.y() / 100;
+    m_lastPos = ev->localPos();
+    ev->accept();
     return; //地図は動かさない。
   }
 
