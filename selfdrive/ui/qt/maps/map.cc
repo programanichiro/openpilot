@@ -37,7 +37,7 @@ void max_zoom_pitch_effect(){
     MAX_ZOOM_ = 22;
   }
 }
-void calc_max_zoom(){
+float calc_max_zoom(){
   const float m_o = MAX_ZOOM_+zoom_offset;
   if(m_o > 22){
     return 22;
