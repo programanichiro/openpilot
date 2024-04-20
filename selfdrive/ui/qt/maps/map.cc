@@ -543,20 +543,18 @@ void MapWindow::clearRoute() {
   last_valid_nav_dest = std::nullopt;
 }
 
-float mouse_x;
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
-  mouse_x = m_lastPos.x();
 
   //方位磁石の上の端っこを上下でMAX_ZOOM調整。
   if(m_lastPos.y() < 1080 - 200){ //ボタンの位置は避ける。
     if(uiState()->scene.map_on_left){
-      if(m_lastPos.x() > this->width() - 135){
+      if(m_lastPos.x() > this->width() - 150){
         m_lastPos.setX(-1);
       }
     } else {
-      if(m_lastPos.x() < 135){
+      if(m_lastPos.x() < 150){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
         m_lastPos.setX(-1);
       }
     }
@@ -985,7 +983,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   //ラベルを使わず直に距離描画する
   QString scl;
-#if 0
+#if 1
   if(map_scale_num < 1000){
     scl = QString::number(map_scale_num, 'f', 0) + "m";
   } else {
@@ -993,8 +991,6 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   }
 #elif 0
     scl = QString::number(tmp_map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
-#else
-    scl = QString::number(mouse_x) + "°"; //マウスポジションがローカルかグローバルか？
 #endif
   p.setFont(InterFont(40, QFont::ExtraBold));
   const int SCL_H = d_h;

@@ -731,7 +731,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     my_drawIcon(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
-             sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), global_engageable ? 1.0 : 0.5 , -global_angle_steer0);
+             sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
   }
   const float x_Long_enable = rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2;
   const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
