@@ -831,7 +831,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //bs_color_revert = 0;
         north_up ^= 1;
-      } else {
+      } else if(north_up == 0){
         //qDebug() << "clicked";
         //bs_color_revert ^= 1;
 
