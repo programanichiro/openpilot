@@ -246,6 +246,7 @@ void MapWindow::initLayers() {
 
 bool now_navigation = false;
 int style_reload = 0;
+float g_latitude;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -306,6 +307,7 @@ void MapWindow::updateState(const UIState &s) {
           //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
         }
       }
+      g_latitude = locationd_pos.getValue()[0];
 
       static unsigned int LimitspeedChanged_ct;
       if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
@@ -313,7 +315,7 @@ void MapWindow::updateState(const UIState &s) {
         emit LimitspeedChanged(rect().width());
 
         map_bearing_scale->setVisible(true);
-        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , locationd_pos.getValue()[0]);
+        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
       }
     }
   }
@@ -322,7 +324,7 @@ void MapWindow::updateState(const UIState &s) {
   //   emit_LimitspeedChanged_first_set = true;
   //   //このタイミングではrect().width()の値がおかしい。
   //   emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
-  //   emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , locationd_pos.getValue()[0]);
+  //   emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
   // }
 
   if (sm.updated("navRoute") && sm["navRoute"].getNavRoute().getCoordinates().size()) {
@@ -583,7 +585,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     ev->accept();
     float zoom = util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM);
     m_map->setZoom(zoom);
-    emit BearingScaleChanged(rect().width(),*last_bearing,zoom , locationd_pos.getValue()[0]);
+    emit BearingScaleChanged(rect().width(),*last_bearing,zoom , g_latitude);
     return; //地図は動かさない。
   }
 
