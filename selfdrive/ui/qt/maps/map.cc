@@ -16,7 +16,7 @@ const int INTERACTION_TIMEOUT = 100;
 
 const float MAX_ZOOM0 = 17;
 float MAX_ZOOM_;
-#define MAX_ZOOM ((MAX_ZOOM_+zoom_offset > 22) ? 22 : (MAX_ZOOM_+zoom_offset))
+#define MAX_ZOOM calc_max_zoom()
 float zoom_offset;
 const float MIN_ZOOM = 14;
 const float MAX_PITCH = 50;
@@ -36,6 +36,16 @@ void max_zoom_pitch_effect(){
   if(MAX_ZOOM_ > 22){
     MAX_ZOOM_ = 22;
   }
+}
+void calc_max_zoom(){
+  const float m_o = MAX_ZOOM_+zoom_offset;
+  if(m_o > 22){
+    return 22;
+  }
+  if(m_o < MIN_ZOOM){
+    return MIN_ZOOM;
+  }
+  return m_o; //もしくはMIN_ZOOMを、MAX_ZOOMより大きくならないように小さくする制御も考えられる。
 }
 
 MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
