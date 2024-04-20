@@ -581,6 +581,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     m_lastPos = ev->localPos();
     m_lastPos.setX(-1); //Xをフラグとして使っている。
     ev->accept();
+    m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
     return; //地図は動かさない。
   }
 
