@@ -647,10 +647,10 @@ void MapWindow::offroadTransition(bool offroad) {
     setButtonInt("/data/mb_north_up.txt",north_up);
     setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
   } else {
-    auto dest = coordinate_from_param("NavDestination");
-    emit requestVisible(dest.has_value());
     zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
     north_up = getButtonInt("/data/mb_north_up.txt",0);
+    auto dest = coordinate_from_param("NavDestination");
+    emit requestVisible(dest.has_value());
   }
   //last_bearing = {}; //これがあると最終状態保持がキャンセルされる？
 }
