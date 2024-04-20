@@ -302,7 +302,8 @@ void MapWindow::updateState(const UIState &s) {
           m_map->setMargins({0, 0, 0, 0});
           m_map->setPitch(0);
           m_map->setBearing(0);
-          max_zoom_pitch_effect();
+          //MAX_ZOOM_ = MAX_ZOOM0;
+          max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまうが保留。
         }
       }
 
@@ -546,8 +547,17 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
 
-  if(m_lastPos.x() > this->width() - 120){ //端っこを上下でMAX_ZOOM調整。
-    m_lastPos.setX(-1);
+  //方位磁石の上の端っこを上下でMAX_ZOOM調整。
+  if(m_lastPos.y() < 1080 - 200){ //ボタンの位置は避ける。
+    if(uiState()->scene.map_on_left){
+      if(m_lastPos.x() > this->width() - 135){
+        m_lastPos.setX(-1);
+      }
+    } else {
+      if(m_lastPos.x() < 135){
+        m_lastPos.setX(-1);
+      }
+    }
   }
 }
 
