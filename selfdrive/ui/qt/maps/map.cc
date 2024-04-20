@@ -302,8 +302,8 @@ void MapWindow::updateState(const UIState &s) {
           m_map->setMargins({0, 0, 0, 0});
           m_map->setPitch(0);
           m_map->setBearing(0);
-          //MAX_ZOOM_ = MAX_ZOOM0;
-          max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまうが保留。
+          MAX_ZOOM_ = MAX_ZOOM0;
+          //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
         }
       }
 
@@ -581,7 +581,9 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     m_lastPos = ev->localPos();
     m_lastPos.setX(-1); //Xをフラグとして使っている。
     ev->accept();
-    m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+    float zoom = util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM);
+    m_map->setZoom(zoom);
+    emit BearingScaleChanged(rect().width(),*last_bearing,zoom , locationd_pos.getValue()[0]);
     return; //地図は動かさない。
   }
 
