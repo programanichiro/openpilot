@@ -722,7 +722,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
 
   // engage-ability icon
-  if (global_engageable) {
+  if (true) {
     SubMaster &sm = *(uiState()->sm);
     QBrush bg_color = bg_colors[status];
     if(uiState()->scene.mAccelEngagedButton >= 3 && fabs(global_angle_steer0) >= 50 && (*(uiState()->sm))["carState"].getCarState().getVEgo() <= 0.01/3.6){
@@ -731,7 +731,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     my_drawIcon(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
-             sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), 1.0 , -global_angle_steer0);
+             sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), global_engageable ? 1.0 : 0.5 , -global_angle_steer0);
   }
   const float x_Long_enable = rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2;
   const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
