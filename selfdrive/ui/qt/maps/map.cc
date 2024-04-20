@@ -40,9 +40,11 @@ void max_zoom_pitch_effect(){
 float calc_max_zoom(){
   const float m_o = MAX_ZOOM_+zoom_offset;
   if(m_o > 22){
+    zoom_offset = 22 - MAX_ZOOM_;
     return 22;
   }
   if(m_o < MIN_ZOOM){
+    zoom_offset = MIN_ZOOM - MAX_ZOOM_;
     return MIN_ZOOM;
   }
   return m_o; //もしくはMIN_ZOOMを、MAX_ZOOMより大きくならないように小さくする制御も考えられる。
