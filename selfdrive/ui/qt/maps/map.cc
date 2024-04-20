@@ -58,14 +58,14 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
   QVBoxLayout *overlay_layout = new QVBoxLayout(map_overlay);
   overlay_layout->setContentsMargins(0, 0, 0, 0);
 
-  std::string my_mapbox_offline = util::read_file("../../../mb_offline.txt");
+  std::string my_mapbox_offline = util::read_file("/data/mb_offline.txt");
   int map_offline_mode = 0;
   if(my_mapbox_offline.empty() == false){
     map_offline_mode = std::stoi(my_mapbox_offline);
   }
   QMapLibre::setNetworkMode(map_offline_mode ? QMapLibre::NetworkMode::Offline : QMapLibre::NetworkMode::Online);
 
-  my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
+  my_mapbox_triangle = util::read_file("/data/mb_triangle.svg");
   MIN_PITCH = getButtonInt("/data/mb_pitch.txt",0);
   max_zoom_pitch_effect();
 
@@ -197,7 +197,7 @@ void MapWindow::initLayers() {
   if (!m_map->layerExists("carPosLayer")) {
     qDebug() << "Initializing carPosLayer";
     if(my_mapbox_triangle.empty() == false){
-      m_map->addImage("label-arrow", QImage("../../../mb_triangle.svg"));
+      m_map->addImage("label-arrow", QImage("/data/mb_triangle.svg"));
     } else {
       m_map->addImage("label-arrow", QImage("../assets/images/triangle.svg"));
     }
@@ -469,11 +469,8 @@ void MapWindow::initializeGL() {
 
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
-    std::string last_bearing_info_str = util::read_file("../manager/last_bearing_info.txt");
-    if(last_bearing_info_str.empty() == false){
-      last_bearing = std::stof(last_bearing_info_str);
-      if (last_bearing) m_map->setBearing(*last_bearing);
-    }
+    last_bearing = (float)((double)getButtonInt("/data/mb_last_bearing_info.txt",0) / 1000);
+    if (last_bearing) m_map->setBearing(*last_bearing);
   } else {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
@@ -487,13 +484,13 @@ void MapWindow::initializeGL() {
     m_map->setBearing(0);
   }
 
-  my_mapbox_style = util::read_file("../../../mb_style.txt");
+  my_mapbox_style = util::read_file("/data/mb_style.txt");
   if(my_mapbox_style.empty() == false){
     while(my_mapbox_style.c_str()[my_mapbox_style.length()-1] == 0x0a){
       my_mapbox_style = my_mapbox_style.substr(0,my_mapbox_style.length()-1);
     }
   }
-  my_mapbox_style_night = util::read_file("../../../mb_style_night.txt");
+  my_mapbox_style_night = util::read_file("/data/mb_style_night.txt");
   if(my_mapbox_style_night.empty() == false){
     while(my_mapbox_style_night.c_str()[my_mapbox_style_night.length()-1] == 0x0a){
       my_mapbox_style_night = my_mapbox_style_night.substr(0,my_mapbox_style_night.length()-1);
@@ -646,14 +643,14 @@ void MapWindow::offroadTransition(bool offroad) {
     clearRoute();
     routing_problem = false;
 
-    FILE *fp = fopen("../manager/last_bearing_info.txt","w");
-    if(fp != NULL){
-      fprintf(fp,"%.2f",*last_bearing);
-      fclose(fp);
-    }
+    setButtonInt("/data/mb_last_bearing_info.txt",(int)(*last_bearing * 1000)); //"%.2f"の代わり。
+    setButtonInt("/data/mb_north_up.txt",north_up);
+    setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
   } else {
     auto dest = coordinate_from_param("NavDestination");
     emit requestVisible(dest.has_value());
+    zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
+    north_up = getButtonInt("/data/mb_north_up.txt",0);
   }
   //last_bearing = {}; //これがあると最終状態保持がキャンセルされる？
 }
