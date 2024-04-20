@@ -557,6 +557,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   if(m_lastPos.x() < 0){
     zoom_offset += delta.y() / 100;
     m_lastPos = ev->localPos();
+    m_lastPos.setX(-1); //Xをフラグとして使っている。
     ev->accept();
     return; //地図は動かさない。
   }
