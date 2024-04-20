@@ -15,7 +15,15 @@
 const int INTERACTION_TIMEOUT = 100;
 
 const float MAX_ZOOM0 = 17;
-float MAX_ZOOM;
+float MAX_ZOOM_;
+#define MAX_ZOOM ((MAX_ZOOM_+zoom_offset > 22) ? 22 : (MAX_ZOOM_+zoom_offset))
+float zoom_offset;
+void max_zoom_pitch_effect(){
+  MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+  if(MAX_ZOOM_ > 22){
+    MAX_ZOOM_ = 22;
+  }
+}
 const float MIN_ZOOM = 14;
 const float MAX_PITCH = 50;
 float MIN_PITCH = 0;
@@ -47,10 +55,7 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
 
   my_mapbox_triangle = util::read_file("../../../mb_triangle.svg");
   MIN_PITCH = getButtonInt("/data/mb_pitch.txt",0);
-  MAX_ZOOM = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
-  if(MAX_ZOOM > 22){
-    MAX_ZOOM = 22;
-  }
+  max_zoom_pitch_effect();
 
   // Instructions
   map_instructions = new MapInstructions(this);
@@ -273,10 +278,7 @@ void MapWindow::updateState(const UIState &s) {
         if(m_map->margins().top() == 0){
           m_map->setMargins({0, 350, 0, 50});
           chg_pitch = true;
-          MAX_ZOOM = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
-          if(MAX_ZOOM > 22){
-            MAX_ZOOM = 22;
-          }
+          max_zoom_pitch_effect();
         }
         if(chg_pitch){
           chg_pitch = false;
@@ -288,7 +290,7 @@ void MapWindow::updateState(const UIState &s) {
           m_map->setMargins({0, 0, 0, 0});
           m_map->setPitch(0);
           m_map->setBearing(0);
-          MAX_ZOOM = MAX_ZOOM0;
+          max_zoom_pitch_effect();
         }
       }
 
@@ -551,11 +553,11 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
-  if(m_lastPos.x() < 0){
-    return; //動かさないテスト。
-  }
-
   QPointF delta = ev->localPos() - m_lastPos;
+  if(m_lastPos.x() < 0){
+    zoom_offset += delta / 100;
+    return; //地図は動かさない。
+  }
 
   if (!delta.isNull()) {
     interaction_counter = INTERACTION_TIMEOUT;
@@ -809,10 +811,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
           MIN_PITCH = 0;
         }
         MIN_PITCH *= 10;
-        MAX_ZOOM = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
-        if(MAX_ZOOM > 22){
-          MAX_ZOOM = 22;
-        }
+        max_zoom_pitch_effect();
         setButtonInt("/data/mb_pitch.txt",MIN_PITCH); //MIN_PITCH = 0,10,20,30,40度から選択
         chg_pitch = true;
       }
