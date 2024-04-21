@@ -20,14 +20,16 @@ float MAX_ZOOM_;
 float zoom_offset;
 const float MIN_ZOOM = 14;
 const float MAX_PITCH = 50;
-float MIN_PITCH = 0;
+#define MIN_PITCH calc_pich();
+float MIN_PITCH_ = 0;
 const float MAP_SCALE = 2;
 
 std::string my_mapbox_triangle;
 std::string my_mapbox_style;
 std::string my_mapbox_style_night;
 int night_mode = -1;
-int north_up = 0; //1で北上モード
+//int north_up = 0; //1で北上モード
+#define north_up chk_north_up()
 bool chg_pitch;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
@@ -49,6 +51,18 @@ float calc_max_zoom(){
   }
   return m_o; //もしくはMIN_ZOOMを、MAX_ZOOMより大きくならないように小さくする制御も考えられる。
 }
+float calc_pich(){
+  if(MIN_PITCH_ < 0){
+    return 0; //north_up用。方位磁石タップにノースアップも混ぜる0->10->20->30->40->ノースアップ
+  }
+  return MIN_PITCH_;
+}
+int chk_north_up(){
+  if(MIN_PITCH_ < 0){
+    return 1; //ピッチ角がマイナスならノースアップ。
+  }
+  return 0;
+}
 
 MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
@@ -66,7 +80,7 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings)
   QMapLibre::setNetworkMode(map_offline_mode ? QMapLibre::NetworkMode::Offline : QMapLibre::NetworkMode::Online);
 
   my_mapbox_triangle = util::read_file("/data/mb_triangle.svg");
-  MIN_PITCH = getButtonInt("/data/mb_pitch.txt",0);
+  MIN_PITCH_ = getButtonInt("/data/mb_pitch.txt",0);
   max_zoom_pitch_effect();
 
   // Instructions
@@ -233,11 +247,11 @@ void MapWindow::initLayers() {
     static long long int test_counter = 0;
     test_counter ++;
     if(test_counter % 10 == 5){
-      MIN_PITCH = 60;
+      MIN_PITCH_ = 60;
       m_map->setStyleUrl(my_mapbox_style_night.c_str());
     }
     if(test_counter % 10 == 0){
-      MIN_PITCH = 0;
+      MIN_PITCH_ = 0;
       m_map->setStyleUrl(my_mapbox_style.c_str());
     }
 #endif
@@ -468,7 +482,7 @@ void MapWindow::initializeGL() {
   m_map.reset(new QMapLibre::Map(this, m_settings, size(), 1));
 
   zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
-  north_up = getButtonInt("/data/mb_north_up.txt",0);
+  //不要north_up = getButtonInt("/data/mb_north_up.txt",0);
 
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
@@ -647,7 +661,7 @@ void MapWindow::offroadTransition(bool offroad) {
     routing_problem = false;
 
     setButtonInt("/data/mb_last_bearing_info.txt",(int)(*last_bearing * 1000)); //"%.2f"の代わり。
-    setButtonInt("/data/mb_north_up.txt",north_up);
+    //不要setButtonInt("/data/mb_north_up.txt",north_up);
     setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
   } else {
     auto dest = coordinate_from_param("NavDestination");
@@ -825,22 +839,24 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
     QObject::connect(bearing_scale, &QPushButton::released, [=]() {
       quint64 now = QDateTime::currentMSecsSinceEpoch();
       //ボタンを押した時に何かしたいならここで。
-      if(now - m_pressedTime > 500){
+      if(now - m_pressedTime > 1000){
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //bs_color_revert = 0;
-        north_up ^= 1;
+        //north_up ^= 1;
+        //1秒以上長押しでzoom_offsetクリア。
+        zoom_offset = 0;
       } else if(north_up == 0){
         //qDebug() << "clicked";
         //bs_color_revert ^= 1;
 
-        MIN_PITCH /= 10;
-        MIN_PITCH += 1;
-        if(MIN_PITCH > 4){
-          MIN_PITCH = 0;
+        MIN_PITCH_ /= 10;
+        MIN_PITCH_ += 1;
+        if(MIN_PITCH_ > 4){
+          MIN_PITCH_ = -1;
         }
-        MIN_PITCH *= 10;
+        MIN_PITCH_ *= 10;
         max_zoom_pitch_effect();
-        setButtonInt("/data/mb_pitch.txt",MIN_PITCH); //MIN_PITCH = 0,10,20,30,40度から選択
+        setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
         chg_pitch = true;
       }
       m_pressedTime = 0;
