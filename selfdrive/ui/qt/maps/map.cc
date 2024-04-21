@@ -309,7 +309,7 @@ void MapWindow::updateState(const UIState &s) {
         }
         if(chg_pitch){
           chg_pitch = false;
-          if (false && sm.valid("navInstruction")) {
+          if (sm.valid("navInstruction")) {
             m_map->setPitch(MAX_PITCH); //ナビ中
           } else {
             m_map->setPitch(MIN_PITCH);
