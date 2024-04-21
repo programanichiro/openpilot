@@ -33,6 +33,12 @@ int night_mode = -1;
 bool chg_pitch;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
+float calc_pich(){
+  if(MIN_PITCH_ < 0){
+    return 0; //north_up用。方位磁石タップにノースアップも混ぜる0->10->20->30->40->ノースアップ
+  }
+  return MIN_PITCH_;
+}
 void max_zoom_pitch_effect(){
   MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
   if(MAX_ZOOM_ > 22){
@@ -50,12 +56,6 @@ float calc_max_zoom(){
     return MIN_ZOOM;
   }
   return m_o; //もしくはMIN_ZOOMを、MAX_ZOOMより大きくならないように小さくする制御も考えられる。
-}
-float calc_pich(){
-  if(MIN_PITCH_ < 0){
-    return 0; //north_up用。方位磁石タップにノースアップも混ぜる0->10->20->30->40->ノースアップ
-  }
-  return MIN_PITCH_;
 }
 int chk_north_up(){
   if(MIN_PITCH_ < 0){
