@@ -20,7 +20,7 @@ float MAX_ZOOM_;
 float zoom_offset;
 const float MIN_ZOOM = 14;
 const float MAX_PITCH = 50;
-#define MIN_PITCH calc_pich();
+#define MIN_PITCH calc_pich()
 float MIN_PITCH_ = 0;
 const float MAP_SCALE = 2;
 
