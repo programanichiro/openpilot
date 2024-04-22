@@ -37,7 +37,8 @@ float calc_pich(){
   if(MIN_PITCH_ < 0){
     return 0; //north_up用。方位磁石タップにノースアップも混ぜる0->10->20->30->40->ノースアップ
   }
-  return MIN_PITCH_;
+  return sqrtf(MIN_PITCH_/40) * 40;
+  //return MIN_PITCH_;
 }
 void max_zoom_pitch_effect(){
   MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
