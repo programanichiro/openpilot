@@ -301,28 +301,30 @@ void MapWindow::updateState(const UIState &s) {
       }
       velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
 
-      if(north_up == 0){
-        if(m_map->margins().top() == 0){
-          m_map->setMargins({0, 350, 0, 50});
-          chg_pitch = true;
-          max_zoom_pitch_effect();
-        }
-        if(chg_pitch){
-          chg_pitch = false;
-          if (sm.valid("navInstruction")) {
-            m_map->setPitch(MAX_PITCH); //ナビ中
-          } else {
-            m_map->setPitch(MIN_PITCH);
+      if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
+        if(north_up == 0){
+          if(m_map->margins().top() == 0){
+            m_map->setMargins({0, 350, 0, 50});
+            chg_pitch = true;
+            max_zoom_pitch_effect();
           }
-          m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
-        }
-      } else {
-        if(m_map->margins().top() != 0){
-          m_map->setMargins({0, 0, 0, 0});
-          m_map->setPitch(0);
-          m_map->setBearing(0);
-          MAX_ZOOM_ = MAX_ZOOM0;
-          //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
+          if(chg_pitch){
+            chg_pitch = false;
+            if (sm.valid("navInstruction")) {
+              m_map->setPitch(MAX_PITCH); //ナビ中
+            } else {
+              m_map->setPitch(MIN_PITCH);
+            }
+            m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+          }
+        } else {
+          if(m_map->margins().top() != 0){
+            m_map->setMargins({0, 0, 0, 0});
+            m_map->setPitch(0);
+            m_map->setBearing(0);
+            MAX_ZOOM_ = MAX_ZOOM0;
+            //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
+          }
         }
       }
       g_latitude = locationd_pos.getValue()[0];
