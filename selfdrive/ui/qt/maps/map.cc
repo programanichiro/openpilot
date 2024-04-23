@@ -40,7 +40,7 @@ float calc_pich(){
   return MIN_PITCH_;
 }
 void max_zoom_pitch_effect(){
-  MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 2; //30度でMAX_ZOOM=18くらいになる。
+  MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 1.7; //30度でMAX_ZOOM=18くらいになる。
   if(MAX_ZOOM_ > 22){
     MAX_ZOOM_ = 22;
   }
