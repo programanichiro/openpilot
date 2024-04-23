@@ -59,7 +59,7 @@ class ToyotaFlags(IntFlag):
   # these cars are speculated to allow stop and go when the DSU is unplugged or disabled with sDSU
   SNG_WITHOUT_DSU = 512
 
-  POWER_STEERING_TSS2 = 2048 #onroad.ccのcp.getFlags()ビットテストを合わせること。
+  POWER_STEERING_TSS2 = 2048 #onroad/annotated_camera.ccのcp.getFlags()ビットテストを合わせること。
 
 class Footnote(Enum):
   CAMRY = CarFootnote(
