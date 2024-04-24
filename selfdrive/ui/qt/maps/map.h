@@ -57,7 +57,7 @@ class MapWindow : public QOpenGLWidget {
   Q_OBJECT
 
 public:
-  MapWindow(const QMapLibre::Settings & , const QWidget *);
+  MapWindow(const QMapLibre::Settings & , const QFrame *);
   ~MapWindow();
 
 private:
