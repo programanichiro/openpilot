@@ -66,7 +66,7 @@ int chk_north_up(){
 }
 
 //MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
-MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_settings(settings), m_panel(panel), velocity_filter(0, 10, 0.05, false) {
+MapWindow::MapWindow(const QMapLibre::Settings &settings, const QFrame *panel) : m_settings(settings), m_panel(panel), velocity_filter(0, 10, 0.05, false) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
 
   map_overlay = new QWidget (this);
