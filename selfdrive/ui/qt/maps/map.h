@@ -66,7 +66,7 @@ private:
   void resizeGL(int w, int h) override;
 
   QMapLibre::Settings m_settings;
-  QWidget *m_panel;
+  const QWidget *m_panel;
   QScopedPointer<QMapLibre::Map> m_map;
 
   void initLayers();
