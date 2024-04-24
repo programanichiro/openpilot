@@ -12,7 +12,7 @@ MapPanel::MapPanel(const QMapLibre::Settings &mapboxSettings, QWidget *parent) :
   content_stack = new QStackedLayout(this);
   content_stack->setContentsMargins(0, 0, 0, 0);
 
-  auto map = new MapWindow(mapboxSettings , this);
+  auto map = new MapWindow(mapboxSettings);
   QObject::connect(uiState(), &UIState::offroadTransition, map, &MapWindow::offroadTransition);
   QObject::connect(device(), &Device::interactiveTimeout, this, [=]() {
     content_stack->setCurrentIndex(0);
