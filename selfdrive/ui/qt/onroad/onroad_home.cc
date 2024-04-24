@@ -94,6 +94,8 @@ void OnroadWindow::createMapWidget() {
   nvg->map_settings_btn->setEnabled(true);
 
   std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
+  m->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
+  m->setWidgetResizable(true);
   if(my_mapbox_width.empty() == false){
     this->mb_width_rate = std::stof(my_mapbox_width);
     m->setFixedWidth((topWidget(this)->width() * this->mb_width_rate - UI_BORDER_SIZE));

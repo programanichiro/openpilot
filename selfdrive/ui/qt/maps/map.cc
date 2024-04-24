@@ -8,6 +8,7 @@
 
 #include "common/params.h"
 #include "selfdrive/ui/qt/maps/map_helpers.h"
+#include "selfdrive/ui/qt/qt_window.h"
 #include "selfdrive/ui/qt/util.h"
 #include "selfdrive/ui/ui.h"
 
@@ -64,7 +65,8 @@ int chk_north_up(){
   return 0;
 }
 
-MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
+//MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
+MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_settings(settings), m_panel(panel), velocity_filter(0, 10, 0.05, false) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
 
   map_overlay = new QWidget (this);
@@ -581,6 +583,9 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
       }
     }
   }
+  if(m_lastPos.y() > 1080 - 170){ //下をスワイプ。
+      m_lastPos.setY(-1);
+  }
 }
 
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
@@ -598,6 +603,28 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   QPointF delta = ev->localPos() - m_lastPos;
+  if(m_lastPos.y() < 0){
+    static float width_rate = 0;
+    if(width_rate == 0){
+      std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
+      if(my_mapbox_width.empty() == false){
+        width_rate = std::stof(my_mapbox_width);
+      } else {
+        width_rate = 50;
+      }
+    }
+    if(uiState()->scene.map_on_left){
+      width_rate += delta.y() * 100 / DEVICE_SCREEN_SIZE.width();
+    } else {
+      width_rate -= delta.y() * 100 / DEVICE_SCREEN_SIZE.width();
+    }
+    //m_panel->setFixedWidth((topWidget(this)->width() * width_rate - UI_BORDER_SIZE));
+
+    m_lastPos = ev->localPos();
+    m_lastPos.setY(-1); //Yをフラグとして使っている。
+    ev->accept();
+    return;
+  }
   if(m_lastPos.x() < 0){
     zoom_offset += delta.y() / 100;
     m_lastPos = ev->localPos();
