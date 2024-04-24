@@ -57,7 +57,7 @@ class MapWindow : public QOpenGLWidget {
   Q_OBJECT
 
 public:
-  MapWindow(const QMapLibre::Settings & , const QFrame *);
+  MapWindow(const QMapLibre::Settings & , QFrame *);
   ~MapWindow();
 
 private:
@@ -66,7 +66,7 @@ private:
   void resizeGL(int w, int h) override;
 
   QMapLibre::Settings m_settings;
-  const QFrame *m_panel;
+  QFrame *m_panel;
   QScopedPointer<QMapLibre::Map> m_map;
 
   void initLayers();
