@@ -751,6 +751,20 @@ void ButtonsWindow::psn_update(){
     setButtonEnabled("/data/accel_ctrl_disable.txt" , mAccelCtrlButton);
     soundButton(mAccelCtrlButton);
   }
+
+  int _Limit_speed_mode = getButtonInt("/tmp/limitspeed_sw.txt",0);
+  if(_Limit_speed_mode != Limit_speed_mode){
+    //顔ジェスチャーの変更をキャッチ。
+    setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
+    soundButton(Limit_speed_mode);
+    if(Limit_speed_mode == 0){
+      T1_Button->setText("⚪︎");
+    } else if(Limit_speed_mode == 1){
+      T1_Button->setText("⚫︎"); //自動設定モード
+    } else if(Limit_speed_mode == 2){
+      T1_Button->setText("⬇︎"); //RECモード
+    }
+  }
 }
 
 

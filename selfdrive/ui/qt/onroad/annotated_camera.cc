@@ -1244,18 +1244,13 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
   if(face_up_ct > 20){ //顔上向ジェスチャー
-    extern void soundButton(int onOff);
-    extern int Limit_speed_mode;
     face_up_ct = 0;
     face_up_timer = 0;
-    Limit_speed_mode = getButtonInt("/data/limitspeed_sw.txt",0);
     if(Limit_speed_mode == 0){
       Limit_speed_mode = 1;
     } else {
       Limit_speed_mode = 0; //2にはならない。
     }
-    setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
-    soundButton(Limit_speed_mode);
   }
 
   painter.restore();
