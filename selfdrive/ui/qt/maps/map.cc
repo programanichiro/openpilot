@@ -584,7 +584,8 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
     }
   }
   if(m_lastPos.y() > 1080 - 170){ //下をスワイプ。
-      m_lastPos.setY(-1);
+    m_lastGlbPos = ev->globalPos();
+    m_lastPos.setY(-1);
   }
 }
 
@@ -602,8 +603,8 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
-  QPointF delta = ev->localPos() - m_lastPos;
   if(m_lastPos.y() < 0){
+    QPointF delta = ev->globalPos() - m_lastGlbPos;
     static float width_rate = 0;
     if(width_rate == 0){
       std::string my_mapbox_width = util::read_file("/data/mb_width_rate.txt");
@@ -613,11 +614,9 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
         width_rate = 0.5;
       }
     }
-    float dx_right = 0;
     if(uiState()->scene.map_on_left){
       width_rate += delta.x() / DEVICE_SCREEN_SIZE.width();
     } else {
-      dx_right = delta.x();
       width_rate -= delta.x() / DEVICE_SCREEN_SIZE.width();
     }
     if(width_rate > 0.65){
@@ -636,21 +635,19 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
         emit LimitspeedChanged(rect().width());
       }
     }
-
-    if(dx_right != 0){
-      //Xを動かさないのが正解？m_lastPos.setX(m_lastPos.x()+dx_right);
-    } else {
-      m_lastPos = ev->localPos();
-    }
+    m_lastGlbPos = ev->globalPos();
+    //使わない。m_lastPos = ev->localPos();
     m_lastPos.setY(-1); //Yをフラグとして使っている。
-    ev->accept();
+    //ev->accept();
     return;
   }
+
+  QPointF delta = ev->localPos() - m_lastPos;
   if(m_lastPos.x() < 0){
     zoom_offset += delta.y() / 100;
     m_lastPos = ev->localPos();
     m_lastPos.setX(-1); //Xをフラグとして使っている。
-    ev->accept();
+    //ev->accept();
     float zoom = util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM);
     m_map->setZoom(zoom);
     emit BearingScaleChanged(rect().width(),*last_bearing,zoom , g_latitude);

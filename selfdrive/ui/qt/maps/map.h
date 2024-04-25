@@ -84,6 +84,7 @@ private:
 
   // Panning
   QPointF m_lastPos;
+  QPointF m_lastGlbPos;
   int interaction_counter = 0;
 
   // Position
