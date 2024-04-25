@@ -601,8 +601,10 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   interaction_counter = 0;
 }
 
+float delta_debug;
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   QPointF delta = ev->localPos() - m_lastPos;
+  delta_debug = delta.x();
   if(m_lastPos.y() < 0){
     static float width_rate = 0;
     if(width_rate == 0){
@@ -1039,7 +1041,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   //ラベルを使わず直に距離描画する
   QString scl;
-#if 1
+#if 0
   if(map_scale_num < 1000){
     scl = QString::number(map_scale_num, 'f', 0) + "m";
   } else {
@@ -1047,6 +1049,8 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
   }
 #elif 0
     scl = QString::number(tmp_map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
+#elif 1
+    scl = QString::number(delta_debug, 'f', 1); //本当に-180〜180か？->確かにその通りだった。
 #endif
   p.setFont(InterFont(40, QFont::ExtraBold));
   const int SCL_H = d_h;
