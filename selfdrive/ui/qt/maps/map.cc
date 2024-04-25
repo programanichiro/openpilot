@@ -621,7 +621,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     if(width_rate > 0.6){
       width_rate = 0.6;
     } else if(width_rate < 0.3){
-      width_rate = 0.3
+      width_rate = 0.3;
     }
     m_panel->setFixedWidth((DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE));
 
