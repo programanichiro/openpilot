@@ -567,25 +567,25 @@ void MapWindow::clearRoute() {
   last_valid_nav_dest = std::nullopt;
 }
 
+bool map_dynamic_edit;
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
 
+  map_dynamic_edit = false;
   //方位磁石の上の端っこを上下でMAX_ZOOM調整。
   if(m_lastPos.y() < 1080 - 200){ //ボタンの位置は避ける。
     if(uiState()->scene.map_on_left){
       if(m_lastPos.x() > this->width() - 150){
-        m_lastPos.setX(-1);
+        map_dynamic_edit = true;
+        m_lastGlbPos = ev->globalPos();
       }
     } else {
       if(m_lastPos.x() < 150){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
-        m_lastPos.setX(-1);
+        map_dynamic_edit = true;
+        m_lastGlbPos = ev->globalPos();
       }
     }
-  }
-  if(m_lastPos.y() > 1080 - 170){ //下を左右スワイプ。
-    m_lastGlbPos = ev->globalPos();
-    m_lastPos.setY(-1);
   }
 }
 
@@ -603,8 +603,21 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
-  if(m_lastPos.y() < 0){ //下を左右スワイプで地図サイズの調整。負荷が高くて落ちる？
-    QPointF delta = ev->globalPos() - m_lastGlbPos;
+  QPointF g_delta;
+  bool window_resize = false;
+  bool zoom_change = false;
+  if(map_dynamic_edit){
+    g_delta = ev->globalPos() - m_lastGlbPos;
+    if(fabs(g_delta.x()) < fabs(g_delta.y())){
+      //縦スワイプ
+      zoom_change = true;
+    } else {
+      //横スワイプ
+      window_resize = true;
+    }
+    m_lastGlbPos = ev->globalPos();
+  }
+  if(window_resize){ //端から左右スワイプで地図サイズの調整。負荷が高くて落ちる？
     static float width_rate = 0;
     if(width_rate == 0){
       std::string my_mapbox_width = util::read_file("/data/mb_width_rate.txt");
@@ -615,9 +628,9 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
       }
     }
     if(uiState()->scene.map_on_left){
-      width_rate += delta.x() / DEVICE_SCREEN_SIZE.width();
+      width_rate += g_delta.x() / DEVICE_SCREEN_SIZE.width();
     } else {
-      width_rate -= delta.x() / DEVICE_SCREEN_SIZE.width();
+      width_rate -= g_delta.x() / DEVICE_SCREEN_SIZE.width();
     }
     width_rate = std::clamp(width_rate, 0.265f, 0.535f);
     static int old_width;
@@ -631,24 +644,17 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
         emit LimitspeedChanged(rect().width());
       }
     }
-    m_lastGlbPos = ev->globalPos();
-    //使わない。m_lastPos = ev->localPos();
-    m_lastPos.setY(-1); //Yをフラグとして使っている。
-    //ev->accept();
     return;
   }
-
-  QPointF delta = ev->localPos() - m_lastPos;
-  if(m_lastPos.x() < 0){
-    zoom_offset += delta.y() / 100;
-    m_lastPos = ev->localPos();
-    m_lastPos.setX(-1); //Xをフラグとして使っている。
-    //ev->accept();
+  if(zoom_change){ //上下で高度調整。
+    zoom_offset += g_delta.y() / 100;
     float zoom = util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM);
     m_map->setZoom(zoom);
     emit BearingScaleChanged(rect().width(),*last_bearing,zoom , g_latitude);
     return; //地図は動かさない。
   }
+
+  QPointF delta = ev->localPos() - m_lastPos;
 
   if (!delta.isNull()) {
     interaction_counter = INTERACTION_TIMEOUT;
