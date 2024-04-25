@@ -1240,19 +1240,9 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     face_down_ct = 0;
   }
 
-  if(face_up_ct > 20){ //顔上向ジェスチャー
-    face_up_ct = -20; //連続動作しないように工夫。
-    face_up_timer = 0;
-    if(Limit_speed_mode == 0){
-      Limit_speed_mode = 1;
-    } else {
-      Limit_speed_mode = 0; //2にはならない。
-    }
-  }
-
   //首を傾けるジェスチャー
-  float r_face_r = -0.5;
-  float l_face_r = 0.5;
+  float r_face_r = -0.2*thr_face;
+  float l_face_r = 0.2*thr_face;
   float delta_r = scene.driver_pose_sins[2]; //傾げ？
   g_delta_r = delta_r;
 
@@ -1265,7 +1255,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_rr_timer > 0){
       face_rr_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-90) * 16, (180) * 16);
+    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-90-20) * 16, (180) * 16);
     face_rr_ct ++;
   } else {
     face_rr_ct = 0;
@@ -1279,10 +1269,21 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_lr_timer > 0){
       face_lr_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+90) * 16, (180) * 16);
+    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+90+20) * 16, (180) * 16);
     face_lr_ct ++;
   } else {
     face_lr_ct = 0;
+  }
+
+
+  if(face_up_ct > 20){ //顔上向ジェスチャー
+    face_up_ct = -20; //連続動作しないように工夫。
+    face_up_timer = 0;
+    if(Limit_speed_mode == 0){
+      Limit_speed_mode = 1;
+    } else {
+      Limit_speed_mode = 0; //2にはならない。
+    }
   }
 
 
