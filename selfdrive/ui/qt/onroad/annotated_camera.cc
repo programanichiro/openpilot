@@ -46,6 +46,7 @@ static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
 extern void setButtonInt(const char*fn , int num);
+extern int getButtonInt(const char*fn , int defaultNum);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
   int SET_SPEED_NA = 409; //406; //557; //255; ,
   const SubMaster &sm = *(s.sm);
