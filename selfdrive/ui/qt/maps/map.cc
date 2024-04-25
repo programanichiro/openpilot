@@ -606,11 +606,11 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   if(m_lastPos.y() < 0){
     static float width_rate = 0;
     if(width_rate == 0){
-      std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
+      std::string my_mapbox_width = util::read_file("/data/mb_width_rate.txt");
       if(my_mapbox_width.empty() == false){
         width_rate = std::stof(my_mapbox_width);
       } else {
-        width_rate = 50;
+        width_rate = 0.5;
       }
     }
     if(uiState()->scene.map_on_left){
@@ -618,8 +618,12 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     } else {
       width_rate -= delta.y() * 100 / DEVICE_SCREEN_SIZE.width();
     }
-    m_panel->setFixedWidth((DEVICE_SCREEN_SIZE.width() * 0.3 - UI_BORDER_SIZE));
-    // m_panel->setGeometry(QRect(0,0,(DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE),this->height()));
+    if(width_rate > 0.6){
+      width_rate = 0.6;
+    } else if(width_rate < 0.3){
+      width_rate = 0.3
+    }
+    m_panel->setFixedWidth((DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE));
 
     m_lastPos = ev->localPos();
     m_lastPos.setY(-1); //Yをフラグとして使っている。

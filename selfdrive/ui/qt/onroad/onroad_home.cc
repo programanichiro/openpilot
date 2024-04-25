@@ -93,7 +93,7 @@ void OnroadWindow::createMapWidget() {
   QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
   nvg->map_settings_btn->setEnabled(true);
 
-  std::string my_mapbox_width = util::read_file("../../../mb_width_rate.txt");
+  std::string my_mapbox_width = util::read_file("/data/mb_width_rate.txt");
   m->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
   if(my_mapbox_width.empty() == false){
     this->mb_width_rate = std::stof(my_mapbox_width);
