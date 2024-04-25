@@ -1205,7 +1205,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   static int face_left_ct = 0;
   if(delta_x < left_face_x || face_left_timer > 0){
     if(delta_x < left_face_x){
-      face_left_timer = face_left_timer;
+      face_left_timer = face_left_timer0;
     } else if(face_left_timer > 0){
       face_left_timer --;
     }
@@ -1219,7 +1219,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   static int face_up_ct = 0;
   if(delta_y < up_face_y || face_up_timer > 0){
     if(delta_y < up_face_y){
-      face_up_timer = face_up_timer;
+      face_up_timer = face_up_timer0;
     } else if(face_up_timer > 0){
       face_up_timer --;
     }
@@ -1233,7 +1233,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   static int face_down_ct = 0;
   if(delta_y > down_face_y || face_down_timer > 0){
     if(delta_y > down_face_y){
-      face_down_timer = face_down_timer;
+      face_down_timer = face_down_timer0;
     } else if(face_down_timer > 0){
       face_down_timer --;
     }
