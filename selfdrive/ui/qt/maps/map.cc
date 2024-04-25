@@ -602,6 +602,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   interaction_counter = 0;
 }
 
+static float width_rate = -1;
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   QPointF g_delta;
   bool window_resize = false;
@@ -618,8 +619,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     m_lastGlbPos = ev->globalPos();
   }
   if(window_resize){ //端から左右スワイプで地図サイズの調整。負荷が高くて落ちる？
-    static float width_rate = 0;
-    if(width_rate == 0){
+    if(width_rate < 0){
       std::string my_mapbox_width = util::read_file("/data/mb_width_rate.txt");
       if(my_mapbox_width.empty() == false){
         width_rate = std::stof(my_mapbox_width);
@@ -716,6 +716,13 @@ void MapWindow::offroadTransition(bool offroad) {
     setButtonInt("/data/mb_last_bearing_info.txt",(int)(*last_bearing * 1000)); //"%.2f"の代わり。
     //不要setButtonInt("/data/mb_north_up.txt",north_up);
     setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
+    if(width_rate >= 0){
+      FILE *fp = fopen("/data/mb_width_rate.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
+      if(fp != NULL){
+        fprintf(fp,"%.3f",width_rate);
+        fclose(fp);
+      }
+    }
   } else {
     auto dest = coordinate_from_param("NavDestination");
     emit requestVisible(dest.has_value());
