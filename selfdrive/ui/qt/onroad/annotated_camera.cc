@@ -1122,6 +1122,8 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.restore();
 }
 
+static float g_delta_x;
+static float g_delta_y;
 void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
   const UIScene &scene = s->scene;
 
@@ -1168,6 +1170,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   QPen pen = QPen(QColor(200,200,0,250), 20);
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   painter.setPen(pen);
+  g_delta_x = delta_x;
+  g_delta_y = delta_y;
   if(delta_x > 50){
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
   } else if(delta_x < -50){
@@ -1534,6 +1538,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
+  debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , "#"+QString::number(g_delta_x,'f',3) +","+QString::number(g_delta_y,'f',3)  , 200 , false , 0xdf, 0xdf, 0x00);
 #endif
 }
 
