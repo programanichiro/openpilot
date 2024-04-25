@@ -591,17 +591,17 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(tssp_47700){
     label_blu = 0;
   }
-  if((float)rect_w / rect_h > 1.4f){
+  if((float)rect_w / rect_h > 1.5f){
     p.setFont(InterFont(44, QFont::DemiBold));
     drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
-  } else if((float)rect_w / rect_h > 1.05f){
+  } else if((float)rect_w / rect_h > 1.02f){
     p.setFont(InterFont(44, QFont::DemiBold));
     drawText(p, rect().left()+140, 55, "COMMA.AI", logo_trs, brake_light);
-  } else if((float)rect_w / rect_h >= 0.98f){
+  } else if((float)rect_w / rect_h >= 0.975f){ //消えるタイミングは合わせたい。
     p.setFont(InterFont(44, QFont::DemiBold));
     drawText(p, rect().left()+102, 55, "COMMA", logo_trs, brake_light);
   }
-  if((float)rect_w / rect_h > 1.4f){
+  if((float)rect_w / rect_h > 1.35f){
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
       int next_x = drawTextRight(p, rect().right()-20, 60 , " TSSP", logo_trs, brake_light, label_red, label_grn, label_blu); //47060車はTSSP部分が黄色くなる。
@@ -617,7 +617,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     } else {
       drawTextRight(p, rect().right()-20, 60 , "toyota TSS2", logo_trs, brake_light);
     }
-  } else if((float)rect_w / rect_h >= 0.98f){
+  } else if((float)rect_w / rect_h >= 0.975f){ //消えるタイミングは合わせたい。
     p.setFont(InterFont(50, QFont::DemiBold));
     if(tss_type <= 1){
       int next_x = drawTextRight(p, rect().right()-20, 60 , " P", logo_trs, brake_light, label_red, label_grn, label_blu);
