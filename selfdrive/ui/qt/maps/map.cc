@@ -613,9 +613,11 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
         width_rate = 0.5;
       }
     }
+    float dx_right = 0;
     if(uiState()->scene.map_on_left){
       width_rate += delta.x() / DEVICE_SCREEN_SIZE.width();
     } else {
+      dx_right = delta.x();
       width_rate -= delta.x() / DEVICE_SCREEN_SIZE.width();
     }
     if(width_rate > 0.65){
@@ -628,10 +630,17 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     if(old_width != width_px){
       old_width = width_px;
       m_panel->setFixedWidth((width_px - UI_BORDER_SIZE));
-      emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+      if(uiState()->scene.map_on_left){
+        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+      } else {
+        emit LimitspeedChanged(rect().width());
+      }
     }
 
     m_lastPos = ev->localPos();
+    if(dx_right != 0){
+      m_lastPos.setX(m_lastPos.x()-dx_right)
+    }
     m_lastPos.setY(-1); //Yをフラグとして使っている。
     ev->accept();
     return;
