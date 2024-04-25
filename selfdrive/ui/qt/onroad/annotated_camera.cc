@@ -1164,6 +1164,10 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   painter.setPen(QPen(arc_color, arc_t_default+arc_t_extend*fmin(1.0, scene.driver_pose_diff[0] * 5.0), Qt::SolidLine, Qt::RoundCap));
   painter.drawArc(QRectF(x - arc_l / 2, std::fmin(y + delta_y, y), arc_l, fabs(delta_y)), (scene.driver_pose_sins[0]>0 ? 0 : 180) * 16, 180 * 16);
 
+  //顔が向いてる方を上下左右で表示する。
+  painter.setPen(QPen(QColor(200,200,0,250), 20), Qt::SolidLine, Qt::FlatCap);
+  painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+5) * 16, (360-5*2) * 16);
+
   painter.restore();
 }
 
