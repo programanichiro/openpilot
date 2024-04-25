@@ -1190,11 +1190,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(delta_x > right_face_x || face_x_timer > 0){
     if(delta_x > right_face_x){
       face_x_timer = face_x_timer0;
+    } else if(face_x_timer > 0){
+      face_x_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
   } else if(delta_x < left_face_x || face_x_timer < 0){
     if(delta_x < left_face_x){
       face_x_timer = -face_x_timer0;
+    } else if(face_x_timer < 0){
+      face_x_timer ++;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+135) * 16, (90) * 16);
   } else {
@@ -1209,11 +1213,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(delta_y > up_face_y || face_y_timer > 0){
     if(delta_y > up_face_y){
       face_y_timer = face_y_timer0;
+    } else if(face_y_timer > 0){
+      face_y_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+45) * 16, (90) * 16);
   } else if(delta_y < down_face_y || face_y_timer < 0){
     if(delta_y < down_face_y){
       face_y_timer = -face_y_timer0;
+    } else if(face_y_timer < 0){
+      face_y_timer ++;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (-90) * 16);
   } else {
