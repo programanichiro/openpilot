@@ -1123,7 +1123,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.restore();
 }
 
-float g_delta_r;
+//float g_delta_r;
 void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
   const UIScene &scene = s->scene;
 
@@ -1241,10 +1241,10 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
   //首を傾けるジェスチャー
-  float r_face_r = -0.2*thr_face;
-  float l_face_r = 0.2*thr_face;
-  float delta_r = scene.driver_pose_sins[2]; //傾げ？
-  g_delta_r = delta_r;
+  float r_face_r = -0.22*thr_face;
+  float l_face_r = 0.22*thr_face;
+  float delta_r = scene.driver_pose_sins[2]; //首のかしげ角度のsin
+  //g_delta_r = delta_r;
 
   static int face_rr_timer = 0; //右に傾げる
   const int face_rr_timer0 = 10;
@@ -1642,7 +1642,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
-  debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , "#"+QString::number(g_delta_r,'f',3)  , 200 , false , 0xdf, 0xdf, 0x00);
+  //debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , "#"+QString::number(g_delta_r,'f',3)  , 200 , false , 0xdf, 0xdf, 0x00);
 #endif
 }
 
