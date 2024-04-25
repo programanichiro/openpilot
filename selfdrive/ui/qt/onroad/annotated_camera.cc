@@ -1186,52 +1186,56 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   float down_face_y = 22*thr_face;
   g_delta_x = delta_x;
   g_delta_y = delta_y;
-  static int face_x_timer = 0;
-  const int face_x_timer0 = 10;
+  static int face_right_timer = 0;
+  const int face_right_timer0 = 10;
   static int face_right_ct = 0;
-  static int face_left_ct = 0;
-  if(delta_x > right_face_x || face_x_timer > 0){
+  if(delta_x > right_face_x || face_right_timer > 0){
     if(delta_x > right_face_x){
-      face_x_timer = face_x_timer0;
-    } else if(face_x_timer > 0){
-      face_x_timer --;
+      face_right_timer = face_right_timer0;
+    } else if(face_right_timer > 0){
+      face_right_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
     face_right_ct ++;
   } else {
     face_right_ct = 0;
   }
-  if(delta_x < left_face_x || face_x_timer < 0){
+  static int face_left_timer = 0;
+  const int face_left_timer0 = 10;
+  static int face_left_ct = 0;
+  if(delta_x < left_face_x || face_left_timer > 0){
     if(delta_x < left_face_x){
-      face_x_timer = -face_x_timer0;
-    } else if(face_x_timer < 0){
-      face_x_timer ++;
+      face_left_timer = face_left_timer;
+    } else if(face_left_timer > 0){
+      face_left_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+135) * 16, (90) * 16);
     face_left_ct ++;
   } else {
     face_left_ct = 0;
   }
-  static int face_y_timer = 0;
-  const int face_y_timer0 = 10;
+  static int face_up_timer = 0;
+  const int face_up_timer0 = 10;
   static int face_up_ct = 0;
-  static int face_down_ct = 0;
-  if(delta_y < up_face_y || face_y_timer > 0){
+  if(delta_y < up_face_y || face_up_timer > 0){
     if(delta_y < up_face_y){
-      face_y_timer = face_y_timer0;
-    } else if(face_y_timer > 0){
-      face_y_timer --;
+      face_up_timer = face_up_timer;
+    } else if(face_up_timer > 0){
+      face_up_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+45) * 16, (90) * 16);
     face_up_ct ++;
   } else {
     face_up_ct = 0;
   }
-  if(delta_y > down_face_y || face_y_timer < 0){
+  static int face_down_timer = 0;
+  const int face_down_timer0 = 10;
+  static int face_down_ct = 0;
+  if(delta_y > down_face_y || face_down_timer > 0){
     if(delta_y > down_face_y){
-      face_y_timer = -face_y_timer0;
-    } else if(face_y_timer < 0){
-      face_y_timer ++;
+      face_down_timer = face_down_timer;
+    } else if(face_down_timer > 0){
+      face_down_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (-90) * 16);
     face_down_ct ++;
@@ -1243,6 +1247,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     extern void soundButton(int onOff);
     extern int Limit_speed_mode;
     face_up_ct = 0;
+    face_up_timer = 0;
     Limit_speed_mode = getButtonInt("/data/limitspeed_sw.txt",0);
     if(Limit_speed_mode == 0){
       Limit_speed_mode = 1;
