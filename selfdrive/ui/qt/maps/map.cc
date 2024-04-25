@@ -619,7 +619,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     } else {
       width_rate -= delta.x() / DEVICE_SCREEN_SIZE.width();
     }
-    width_rate = std::clamp(width_rate, 0.265, 0.535);
+    width_rate = std::clamp(width_rate, 0.265f, 0.535f);
     static int old_width;
     int width_px = DEVICE_SCREEN_SIZE.width() * width_rate;
     if(old_width != width_px){
