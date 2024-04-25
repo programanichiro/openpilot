@@ -618,8 +618,8 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     } else {
       width_rate -= delta.y() * 100 / DEVICE_SCREEN_SIZE.width();
     }
-    //m_panel->setFixedWidth((topWidget(this)->width() * width_rate - UI_BORDER_SIZE));
-    m_panel->setGeometry(QRect(0,0,(DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE),this->height()));
+    m_panel->setFixedWidth((DEVICE_SCREEN_SIZE.width() * 0.3 - UI_BORDER_SIZE));
+    // m_panel->setGeometry(QRect(0,0,(DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE),this->height()));
 
     m_lastPos = ev->localPos();
     m_lastPos.setY(-1); //Yをフラグとして使っている。
