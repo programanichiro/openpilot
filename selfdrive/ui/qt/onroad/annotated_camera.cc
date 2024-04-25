@@ -1171,7 +1171,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   QPen pen = QPen(QColor(200,200,0,250), 20);
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   painter.setPen(pen);
-  const float thr_face = 0.7;
+  const float thr_face = 0.9;
   float left_face_x;
   float right_face_x;
   if(rightHandDM == false){
@@ -1190,7 +1190,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   const int face_right_timer0 = 10;
   static int face_right_ct = 0;
   if(delta_x > right_face_x || face_right_timer > 0){
-    if(delta_x > right_face_x){
+    if(delta_x > right_face_x && face_right_ct >= 0){
       face_right_timer = face_right_timer0;
     } else if(face_right_timer > 0){
       face_right_timer --;
@@ -1204,7 +1204,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   const int face_left_timer0 = 10;
   static int face_left_ct = 0;
   if(delta_x < left_face_x || face_left_timer > 0){
-    if(delta_x < left_face_x){
+    if(delta_x < left_face_x && face_left_ct >= 0){
       face_left_timer = face_left_timer0;
     } else if(face_left_timer > 0){
       face_left_timer --;
@@ -1218,7 +1218,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   const int face_up_timer0 = 10;
   static int face_up_ct = 0;
   if(delta_y < up_face_y || face_up_timer > 0){
-    if(delta_y < up_face_y){
+    if(delta_y < up_face_y && face_up_ct >= 0){
       face_up_timer = face_up_timer0;
     } else if(face_up_timer > 0){
       face_up_timer --;
@@ -1232,7 +1232,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   const int face_down_timer0 = 10;
   static int face_down_ct = 0;
   if(delta_y > down_face_y || face_down_timer > 0){
-    if(delta_y > down_face_y){
+    if(delta_y > down_face_y && face_down_ct >= 0){
       face_down_timer = face_down_timer0;
     } else if(face_down_timer > 0){
       face_down_timer --;
@@ -1244,7 +1244,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
   if(face_up_ct > 20){ //顔上向ジェスチャー
-    face_up_ct = 0;
+    face_up_ct = -20; //連続動作しないように工夫。
     face_up_timer = 0;
     if(Limit_speed_mode == 0){
       Limit_speed_mode = 1;
