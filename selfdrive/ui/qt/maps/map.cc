@@ -637,9 +637,10 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
       }
     }
 
-    m_lastPos = ev->localPos();
     if(dx_right != 0){
-      m_lastPos.setX(m_lastPos.x()+dx_right);
+      //Xを動かさないのが正解？m_lastPos.setX(m_lastPos.x()+dx_right);
+    } else {
+      m_lastPos = ev->localPos();
     }
     m_lastPos.setY(-1); //Yをフラグとして使っている。
     ev->accept();
