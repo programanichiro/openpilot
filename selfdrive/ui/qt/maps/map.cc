@@ -602,7 +602,6 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   interaction_counter = 0;
 }
 
-float g_width_rate;
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   if(m_lastPos.y() < 0){
     QPointF delta = ev->globalPos() - m_lastGlbPos;
@@ -620,12 +619,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     } else {
       width_rate -= delta.x() / DEVICE_SCREEN_SIZE.width();
     }
-    if(width_rate > 0.65){
-      width_rate = 0.65;
-    } else if(width_rate < 0.25){
-      width_rate = 0.25;
-    }
-    g_width_rate = width_rate;
+    width_rate = std::clamp(width_rate, 0.265, 0.535);
     static int old_width;
     int width_px = DEVICE_SCREEN_SIZE.width() * width_rate;
     if(old_width != width_px){
@@ -1054,16 +1048,14 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   //ラベルを使わず直に距離描画する
   QString scl;
-#if 0
+#if 1
   if(map_scale_num < 1000){
     scl = QString::number(map_scale_num, 'f', 0) + "m";
   } else {
     scl = QString::number(map_scale_num / 1000, 'f', 1) + "K";
   }
 #elif 0
-  scl = QString::number(tmp_map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
-#elif 1
-  scl = QString::number(g_width_rate, 'f', 3);
+    scl = QString::number(tmp_map_bearing_num) + "°"; //本当に-180〜180か？->確かにその通りだった。
 #endif
   p.setFont(InterFont(40, QFont::ExtraBold));
   const int SCL_H = d_h;
