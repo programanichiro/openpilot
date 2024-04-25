@@ -589,7 +589,31 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
   }
 }
 
+static float width_rate = -1;
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
+  if(m_lastPos.y() < 1080 - 200){ //ボタンの位置は避ける。
+    bool clear_width_rate = false;
+    if(uiState()->scene.map_on_left){
+      if(m_lastPos.x() > this->width() - 150){
+        clear_width_rate = true;
+      }
+    } else {
+      if(m_lastPos.x() < 150){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
+        clear_width_rate = true;
+      }
+    }
+    if(clear_width_rate == true){
+      width_rate = 0.5;
+      m_panel->setFixedWidth((DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE));
+      if(uiState()->scene.map_on_left){
+        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+      } else {
+        emit LimitspeedChanged(rect().width());
+      }
+      return;
+    }
+  }
+
   if (last_position) m_map->setCoordinate(*last_position);
   if(north_up == 0){
     if (last_bearing) m_map->setBearing(*last_bearing);
@@ -602,7 +626,6 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   interaction_counter = 0;
 }
 
-static float width_rate = -1;
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   QPointF g_delta;
   bool window_resize = false;
