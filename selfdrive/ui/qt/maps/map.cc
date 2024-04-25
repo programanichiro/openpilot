@@ -583,7 +583,7 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
       }
     }
   }
-  if(m_lastPos.y() > 1080 - 170){ //下をスワイプ。
+  if(m_lastPos.y() > 1080 - 170){ //下を左右スワイプ。
     m_lastGlbPos = ev->globalPos();
     m_lastPos.setY(-1);
   }
@@ -603,7 +603,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
-  if(m_lastPos.y() < 0){
+  if(m_lastPos.y() < 0){ //下を左右スワイプで地図サイズの調整。負荷が高くて落ちる？
     QPointF delta = ev->globalPos() - m_lastGlbPos;
     static float width_rate = 0;
     if(width_rate == 0){
