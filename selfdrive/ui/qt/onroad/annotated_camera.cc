@@ -591,7 +591,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(tssp_47700){
     label_blu = 0;
   }
-  if((float)rect_w / rect_h > 1.4f){
+  if((float)rect_w / rect_h > 1.5f){
     p.setFont(InterFont(44, QFont::DemiBold));
     drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));
@@ -601,7 +601,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     } else {
       drawTextRight(p, rect().right()-20, 60 , "for toyota TSS2", logo_trs, brake_light);
     }
-  } else if((float)rect_w / rect_h > 1.1f){
+  } else if((float)rect_w / rect_h > 1.15f){
     p.setFont(InterFont(44, QFont::DemiBold));
     drawText(p, rect().left()+140, 55, "COMMA.AI", logo_trs, brake_light);
     p.setFont(InterFont(55, QFont::DemiBold));

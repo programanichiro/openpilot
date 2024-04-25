@@ -614,9 +614,9 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
       }
     }
     if(uiState()->scene.map_on_left){
-      width_rate += delta.x() * 100 / DEVICE_SCREEN_SIZE.width();
+      width_rate += delta.x() / DEVICE_SCREEN_SIZE.width();
     } else {
-      width_rate -= delta.x() * 100 / DEVICE_SCREEN_SIZE.width();
+      width_rate -= delta.x() / DEVICE_SCREEN_SIZE.width();
     }
     if(width_rate > 0.65){
       width_rate = 0.65;
