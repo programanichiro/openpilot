@@ -1170,7 +1170,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   QPen pen = QPen(QColor(200,200,0,250), 20);
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   painter.setPen(pen);
-  const thr_face = 0.7;
+  const float thr_face = 0.7;
   float left_face_x;
   float right_face_x;
   if(rightHandDM == false){
