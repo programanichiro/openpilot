@@ -1170,17 +1170,58 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   QPen pen = QPen(QColor(200,200,0,250), 20);
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   painter.setPen(pen);
+  const thr_face = 0.7;
+  float left_face_x;
+  float right_face_x;
+  if(rightHandDM == false){
+    //左ハンドル？未検証
+    left_face_x = -20*thr_face;
+    right_face_x = 15*thr_face;
+  } else {
+    left_face_x = -15*thr_face;
+    right_face_x = 20*thr_face;
+  }
+  float up_face_y = -25*thr_face;
+  float down_face_y = 22*thr_face;
   g_delta_x = delta_x;
   g_delta_y = delta_y;
-  if(delta_x > 50){
+  static int face_x_timer = 0;
+  const int face_x_timer0 = 10;
+  if(delta_x > right_face_x || face_x_timer > 0){
+    if(delta_x > right_face_x){
+      face_x_timer = face_x_timer0;
+    }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
-  } else if(delta_x < -50){
+  } else if(delta_x < left_face_x || face_x_timer < 0){
+    if(delta_x < left_face_x){
+      face_x_timer = -face_x_timer0;
+    }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+135) * 16, (90) * 16);
+  } else {
+    if(face_x_timer > 0){
+      face_x_timer ++;
+    } else if(face_x_timer < 0){
+      face_x_timer --;
+    }
   }
-  if(delta_y > 50){
+  static int face_y_timer = 0;
+  const int face_y_timer0 = 10;
+  if(delta_y > up_face_y || face_y_timer > 0){
+    if(delta_y > up_face_y){
+      face_y_timer = face_y_timer0;
+    }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+45) * 16, (90) * 16);
-  } else if(delta_y < -50){
+  } else if(delta_y < down_face_y || face_y_timer < 0){
+    if(delta_y < down_face_y){
+      face_y_timer = -face_y_timer0;
+    }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (-90) * 16);
+  } else {
+    if(face_y_timer > 0){
+      face_y_timer ++;
+    } else if(face_y_timer < 0){
+      face_y_timer --;
+    }
   }
 
   painter.restore();
