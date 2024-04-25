@@ -1187,6 +1187,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   g_delta_y = delta_y;
   static int face_x_timer = 0;
   const int face_x_timer0 = 10;
+  static int face_right_ct = 0;
+  static int face_left_ct = 0;
   if(delta_x > right_face_x || face_x_timer > 0){
     if(delta_x > right_face_x){
       face_x_timer = face_x_timer0;
@@ -1194,42 +1196,60 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       face_x_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
-  } else if(delta_x < left_face_x || face_x_timer < 0){
+    face_right_ct ++;
+  } else {
+    face_right_ct = 0;
+  }
+  if(delta_x < left_face_x || face_x_timer < 0){
     if(delta_x < left_face_x){
       face_x_timer = -face_x_timer0;
     } else if(face_x_timer < 0){
       face_x_timer ++;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+135) * 16, (90) * 16);
+    face_left_ct ++;
   } else {
-    if(face_x_timer > 0){
-      face_x_timer ++;
-    } else if(face_x_timer < 0){
-      face_x_timer --;
-    }
+    face_left_ct = 0;
   }
   static int face_y_timer = 0;
   const int face_y_timer0 = 10;
-  if(delta_y > up_face_y || face_y_timer > 0){
-    if(delta_y > up_face_y){
+  static int face_up_ct = 0;
+  static int face_down_ct = 0;
+  if(delta_y < up_face_y || face_y_timer > 0){
+    if(delta_y < up_face_y){
       face_y_timer = face_y_timer0;
     } else if(face_y_timer > 0){
       face_y_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+45) * 16, (90) * 16);
-  } else if(delta_y < down_face_y || face_y_timer < 0){
-    if(delta_y < down_face_y){
+    face_up_ct ++;
+  } else {
+    face_up_ct = 0;
+  }
+  if(delta_y > down_face_y || face_y_timer < 0){
+    if(delta_y > down_face_y){
       face_y_timer = -face_y_timer0;
     } else if(face_y_timer < 0){
       face_y_timer ++;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (-90) * 16);
+    face_down_ct ++;
   } else {
-    if(face_y_timer > 0){
-      face_y_timer ++;
-    } else if(face_y_timer < 0){
-      face_y_timer --;
+    face_down_ct = 0;
+  }
+
+  if(face_up_ct > 20){ //顔上向ジェスチャー
+    extern void soundButton(int onOff);
+    extern int Limit_speed_mode;
+    face_up_ct = 0;
+    Limit_speed_mode = getButtonInt("/data/limitspeed_sw.txt",0);
+    if(Limit_speed_mode == 0){
+      Limit_speed_mode = 1;
+    } else {
+      Limit_speed_mode = 0; //2にはならない。
     }
+    setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
+    soundButton(Limit_speed_mode);
   }
 
   painter.restore();
