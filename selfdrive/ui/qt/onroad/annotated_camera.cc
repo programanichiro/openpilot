@@ -1123,8 +1123,6 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.restore();
 }
 
-static float g_delta_x;
-static float g_delta_y;
 void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
   const UIScene &scene = s->scene;
 
@@ -1184,8 +1182,6 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
   float up_face_y = -25*thr_face;
   float down_face_y = 22*thr_face;
-  g_delta_x = delta_x;
-  g_delta_y = delta_y;
   static int face_right_timer = 0;
   const int face_right_timer0 = 10;
   static int face_right_ct = 0;
@@ -1608,7 +1604,6 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
-  debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , "#"+QString::number(g_delta_x,'f',3) +","+QString::number(g_delta_y,'f',3)  , 200 , false , 0xdf, 0xdf, 0x00);
 #endif
 }
 
