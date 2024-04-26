@@ -279,22 +279,15 @@ void MapWindow::updateState(const UIState &s) {
     auto locationd_pos = locationd_location.getPositionGeodetic();
     auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
     auto locationd_velocity = locationd_location.getVelocityCalibrated();
+    auto locationd_ecef = locationd_location.getPositionECEF();
 
-    // Check std norm
-    auto pos_ecef_std = locationd_location.getPositionECEF().getStd();
-    bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
-#if 0
-    FILE *fp = fopen("/tmp/pos_accurate_info.txt","w");
-    if(fp != NULL){
-      char buf[64];
-      double pos_accurate = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2));
-      sprintf(buf,"gps(%d,%d,%d):%.1f",locationd_pos.getValid(),locationd_orientation.getValid(),locationd_velocity.getValid(),pos_accurate);
-      fwrite(buf,strlen(buf),1,fp);
-      fclose(fp);
+    locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && locationd_ecef.getValid());
+    if (locationd_valid) {
+      // Check std norm
+      auto pos_ecef_std = locationd_ecef.getStd();
+      bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
+      locationd_valid = pos_accurate_enough;
     }
-#endif
-
-    locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && pos_accurate_enough);
 
     if (locationd_valid) {
       if (already_vego_over_8 == true) {
