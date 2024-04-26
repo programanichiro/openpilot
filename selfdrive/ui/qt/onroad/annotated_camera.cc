@@ -1210,7 +1210,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       face_right_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
-    face_right_ct ++;
+    if(face_right_ct < 30)
+      face_right_ct ++;
     all_centering = false;
   } else {
     //face_right_ct = 0;
@@ -1226,7 +1227,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       face_left_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+135) * 16, (90) * 16);
-    face_left_ct ++;
+    if(face_left_ct < 30)
+      face_left_ct ++;
     all_centering = false;
   } else {
     //face_left_ct = 0;
@@ -1242,7 +1244,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       face_up_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+45) * 16, (90) * 16);
-    face_up_ct ++;
+    if(face_up_ct < 30)
+      face_up_ct ++;
     all_centering = false;
   } else {
     //face_up_ct = 0;
@@ -1258,7 +1261,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       face_down_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (-90) * 16);
-    face_down_ct ++;
+    if(face_down_ct < 30)
+      face_down_ct ++;
     all_centering = false;
   } else {
     //face_down_ct = 0;
@@ -1278,7 +1282,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       face_rr_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-90-20) * 16, (180) * 16);
-    face_rr_ct ++;
+    if(face_rr_ct < 30)
+      face_rr_ct ++;
     all_centering = false;
   } else {
     //face_rr_ct = 0;
@@ -1294,7 +1299,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       face_lr_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+90+20) * 16, (180) * 16);
-    face_lr_ct ++;
+    if(face_lr_ct < 30)
+      face_lr_ct ++;
     all_centering = false;
   } else {
     //face_lr_ct = 0;
@@ -1331,7 +1337,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
 
-  if(face_up_ct > 25 && face_down_ct > 5 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
+  if(face_up_ct > 25 && face_down_ct > 2 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
     face_up_ct = -20; //連続動作しないように工夫。
     face_up_timer = 0;
     face_down_ct = -20; //連続動作しないように工夫。
