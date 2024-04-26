@@ -1338,9 +1338,9 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
 
 
   if(face_up_ct > 25 && face_down_ct > 1 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
-    face_up_ct = -20; //連続動作しないように工夫。
+    face_up_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     face_up_timer = 0;
-    face_down_ct = -20; //連続動作しないように工夫。
+    face_down_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     face_down_timer = 0;
     up_face_key_n = 0;
     down_face_key_n = 0;
