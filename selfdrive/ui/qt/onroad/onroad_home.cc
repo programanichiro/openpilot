@@ -50,6 +50,7 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
 }
 
 bool mapVisible;
+bool head_gesture_onroad_home;
 void OnroadWindow::updateState(const UIState &s) {
   if (!s.scene.started) {
     return;
@@ -71,6 +72,16 @@ void OnroadWindow::updateState(const UIState &s) {
     bg = bgColor;
     update();
   }
+
+  if(head_gesture_onroad_home){
+    head_gesture_onroad_home = false;
+    if (map != nullptr) {
+      void soundButton(int onOff);
+      soundButton(!this->isMapVisible());
+      map->setVisible(!this->isMapVisible());
+    }
+  }
+
 }
 
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {

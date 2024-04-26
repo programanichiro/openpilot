@@ -1173,15 +1173,21 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   const float thr_face = 0.9;
   float left_face_x;
   float right_face_x;
+  float r_face_r;
+  float l_face_r;
   if(rightHandDM == false){
     //左ハンドル？未検証
     left_face_x = -20*thr_face;
     right_face_x = 15*thr_face;
+    r_face_r = -0.22*thr_face;
+    l_face_r = 0.21*thr_face;
   } else {
     left_face_x = -15*thr_face;
     right_face_x = 20*thr_face;
+    r_face_r = -0.21*thr_face;
+    l_face_r = 0.22*thr_face;
   }
-  float up_face_y = -25*thr_face;
+  float up_face_y = -27*thr_face;
   float down_face_y = 22*thr_face;
   static int face_right_timer = 0;
   const int face_right_timer0 = 10;
@@ -1241,11 +1247,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
   //首を傾けるジェスチャー
-  float r_face_r = -0.22*thr_face;
-  float l_face_r = 0.22*thr_face;
   float delta_r = scene.driver_pose_sins[2]; //首のかしげ角度のsin
   //g_delta_r = delta_r;
-
   static int face_rr_timer = 0; //右に傾げる
   const int face_rr_timer0 = 10;
   static int face_rr_ct = 0;
@@ -1276,7 +1279,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
 
-  if(face_up_ct > 20){ //顔上向ジェスチャー
+  if(face_up_ct > 25){ //顔上向ジェスチャー
     face_up_ct = -20; //連続動作しないように工夫。
     face_up_timer = 0;
     if(Limit_speed_mode == 0){
@@ -1286,6 +1289,16 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
+  if(face_rr_ct > 25){ //顔右肩向けジェスチャー
+    face_rr_ct = -20; //連続動作しないように工夫。
+    face_rr_timer = 0;
+    {
+      extern bool head_gesture_home;
+      extern bool head_gesture_onroad_home;
+      head_gesture_home = true;
+      head_gesture_onroad_home = true;
+    }
+  }
 
   painter.restore();
 }

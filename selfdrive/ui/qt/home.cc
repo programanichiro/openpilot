@@ -61,6 +61,7 @@ void HomeWindow::showMapPanel(bool show) {
   onroad->showMapPanel(show);
 }
 
+bool head_gesture_home;
 void HomeWindow::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
 
@@ -68,6 +69,11 @@ void HomeWindow::updateState(const UIState &s) {
   if (onroad->isVisible() && !body->isEnabled() && sm["carParams"].getCarParams().getNotCar()) {
     body->setEnabled(true);
     slayout->setCurrentWidget(body);
+  }
+
+  if(head_gesture_home){
+    head_gesture_home = false;
+    sidebar->setVisible(false);
   }
 
   static bool blinker_stat = false;
