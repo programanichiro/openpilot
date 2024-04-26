@@ -1170,6 +1170,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   QPen pen = QPen(QColor(200,200,0,250), 20);
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   painter.setPen(pen);
+
+  static unsigned int key_n_ct = 0; //キーが入った順番
+  static unsigned int left_face_key_n;
+  static unsigned int right_face_key_n;
+  static unsigned int up_face_key_n;
+  static unsigned int down_face_key_n;
+  static unsigned int lr_face_key_n;
+  static unsigned int rr_face_key_n;
+
   const float thr_face = 0.9;
   float left_face_x;
   float right_face_x;
@@ -1177,13 +1186,13 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   float l_face_r;
   if(rightHandDM == false){
     //左ハンドル？未検証
-    left_face_x = -20*thr_face;
+    left_face_x = -18*thr_face;
     right_face_x = 15*thr_face;
     r_face_r = -0.22*thr_face;
     l_face_r = 0.21*thr_face;
   } else {
     left_face_x = -15*thr_face;
-    right_face_x = 20*thr_face;
+    right_face_x = 18*thr_face;
     r_face_r = -0.21*thr_face;
     l_face_r = 0.22*thr_face;
   }
@@ -1192,16 +1201,19 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   static int face_right_timer = 0;
   const int face_right_timer0 = 10;
   static int face_right_ct = 0;
+  bool all_centering = true;
   if(delta_x > right_face_x || face_right_timer > 0){
     if(delta_x > right_face_x && face_right_ct >= 0){
       face_right_timer = face_right_timer0;
+      right_face_key_n = key_n_ct ++;
     } else if(face_right_timer > 0){
       face_right_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
     face_right_ct ++;
+    all_centering = false;
   } else {
-    face_right_ct = 0;
+    //face_right_ct = 0;
   }
   static int face_left_timer = 0;
   const int face_left_timer0 = 10;
@@ -1209,13 +1221,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(delta_x < left_face_x || face_left_timer > 0){
     if(delta_x < left_face_x && face_left_ct >= 0){
       face_left_timer = face_left_timer0;
+      left_face_key_n = key_n_ct ++;
     } else if(face_left_timer > 0){
       face_left_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+135) * 16, (90) * 16);
     face_left_ct ++;
+    all_centering = false;
   } else {
-    face_left_ct = 0;
+    //face_left_ct = 0;
   }
   static int face_up_timer = 0;
   const int face_up_timer0 = 10;
@@ -1223,13 +1237,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(delta_y < up_face_y || face_up_timer > 0){
     if(delta_y < up_face_y && face_up_ct >= 0){
       face_up_timer = face_up_timer0;
+      up_face_key_n = key_n_ct ++;
     } else if(face_up_timer > 0){
       face_up_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+45) * 16, (90) * 16);
     face_up_ct ++;
+    all_centering = false;
   } else {
-    face_up_ct = 0;
+    //face_up_ct = 0;
   }
   static int face_down_timer = 0;
   const int face_down_timer0 = 10;
@@ -1237,13 +1253,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(delta_y > down_face_y || face_down_timer > 0){
     if(delta_y > down_face_y && face_down_ct >= 0){
       face_down_timer = face_down_timer0;
+      down_face_key_n = key_n_ct ++;
     } else if(face_down_timer > 0){
       face_down_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (-90) * 16);
     face_down_ct ++;
+    all_centering = false;
   } else {
-    face_down_ct = 0;
+    //face_down_ct = 0;
   }
 
   //首を傾けるジェスチャー
@@ -1255,13 +1273,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(delta_r < r_face_r || face_rr_timer > 0){
     if(delta_r < r_face_r && face_rr_ct >= 0){
       face_rr_timer = face_rr_timer0;
+      rr_face_key_n = key_n_ct ++;
     } else if(face_rr_timer > 0){
       face_rr_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-90-20) * 16, (180) * 16);
     face_rr_ct ++;
+    all_centering = false;
   } else {
-    face_rr_ct = 0;
+    //face_rr_ct = 0;
   }
   static int face_lr_timer = 0;
   const int face_lr_timer0 = 10;
@@ -1269,19 +1289,55 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(delta_r > l_face_r || face_lr_timer > 0){
     if(delta_r > l_face_r && face_lr_ct >= 0){
       face_lr_timer = face_lr_timer0;
+      lr_face_key_n = key_n_ct ++;
     } else if(face_lr_timer > 0){
       face_lr_timer --;
     }
     painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+90+20) * 16, (180) * 16);
     face_lr_ct ++;
+    all_centering = false;
   } else {
-    face_lr_ct = 0;
+    //face_lr_ct = 0;
+  }
+
+  if(all_centering == true){
+    if(face_right_ct > 0)
+      face_right_ct --;
+    if(face_left_ct > 0)
+      face_left_ct --;
+    if(face_up_ct > 0)
+      face_up_ct --;
+    if(face_down_ct > 0)
+      face_down_ct --;
+    if(face_rr_ct > 0)
+      face_rr_ct --;
+    if(face_lr_ct > 0)
+      face_lr_ct --;
+
+    if(face_right_ct == 0
+      && face_left_ct == 0
+      && face_up_ct == 0
+      && face_down_ct == 0
+      && face_rr_ct == 0
+      && face_lr_ct == 0){
+      key_n_ct = 0;
+      left_face_key_n = 0;
+      right_face_key_n = 0;
+      up_face_key_n = 0;
+      down_face_key_n = 0;
+      lr_face_key_n = 0;
+      rr_face_key_n = 0;
+    }
   }
 
 
-  if(face_up_ct > 25){ //顔上向ジェスチャー
+  if(face_up_ct > 25 && face_down_ct > 5 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
     face_up_ct = -20; //連続動作しないように工夫。
     face_up_timer = 0;
+    face_down_ct = -20; //連続動作しないように工夫。
+    face_down_timer = 0;
+    up_face_key_n = 0;
+    down_face_key_n = 0;
     if(Limit_speed_mode == 0){
       Limit_speed_mode = 1;
     } else {
@@ -1289,9 +1345,10 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  if(face_rr_ct > 25){ //顔右肩向けジェスチャー
+  if(face_rr_ct > 25){ //↘︎ジェスチャー
     face_rr_ct = -20; //連続動作しないように工夫。
     face_rr_timer = 0;
+    rr_face_key_n = 0;
     {
       extern bool head_gesture_home;
       extern bool head_gesture_onroad_home;
