@@ -1187,11 +1187,11 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   if(rightHandDM == false){
     //左ハンドル？未検証
     left_face_x = -18*thr_face;
-    right_face_x = 15*thr_face;
+    right_face_x = 14*thr_face;
     r_face_r = -0.21*thr_face;
     l_face_r = 0.20*thr_face;
   } else {
-    left_face_x = -15*thr_face;
+    left_face_x = -14*thr_face;
     right_face_x = 18*thr_face;
     r_face_r = -0.20*thr_face;
     l_face_r = 0.21*thr_face;
