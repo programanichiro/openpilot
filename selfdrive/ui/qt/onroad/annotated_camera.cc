@@ -1188,15 +1188,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     //左ハンドル？未検証
     left_face_x = -18*thr_face;
     right_face_x = 15*thr_face;
-    r_face_r = -0.22*thr_face;
-    l_face_r = 0.21*thr_face;
+    r_face_r = -0.21*thr_face;
+    l_face_r = 0.20*thr_face;
   } else {
     left_face_x = -15*thr_face;
     right_face_x = 18*thr_face;
-    r_face_r = -0.21*thr_face;
-    l_face_r = 0.22*thr_face;
+    r_face_r = -0.20*thr_face;
+    l_face_r = 0.21*thr_face;
   }
-  float up_face_y = -27*thr_face;
+  float up_face_y = -25*thr_face;
   float down_face_y = 22*thr_face;
   static int face_right_timer = 0;
   const int face_right_timer0 = 10;
@@ -1337,7 +1337,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
 
-  if(face_up_ct > 25 && face_down_ct > 2 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
+  if(face_up_ct > 25 && face_down_ct > 1 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
     face_up_ct = -20; //連続動作しないように工夫。
     face_up_timer = 0;
     face_down_ct = -20; //連続動作しないように工夫。
