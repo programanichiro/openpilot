@@ -1123,7 +1123,15 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.restore();
 }
 
-//float g_delta_r;
+static void set_face_gesture_arc(QPainter &painter,float x, float y, int start_ang , int ang_width ,const QColor &col){
+  //顔が向いてる方を上下左右で表示する。
+  QPen pen = QPen(col, 20);
+  pen.setCapStyle(Qt::FlatCap); //端をフラットに
+  painter.setPen(pen);
+
+  painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , start_ang * 16, ang_width * 16);
+}
+
 void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
   const UIScene &scene = s->scene;
 
@@ -1167,10 +1175,6 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   painter.drawArc(QRectF(x - arc_l / 2, std::fmin(y + delta_y, y), arc_l, fabs(delta_y)), (scene.driver_pose_sins[0]>0 ? 0 : 180) * 16, 180 * 16);
 
   //顔が向いてる方を上下左右で表示する。
-  QPen pen = QPen(QColor(200,200,0,250), 20);
-  pen.setCapStyle(Qt::FlatCap); //端をフラットに
-  painter.setPen(pen);
-
   static unsigned int key_n_ct = 0; //キーが入った順番
   static unsigned int left_face_key_n;
   static unsigned int right_face_key_n;
@@ -1179,6 +1183,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   static unsigned int lr_face_key_n;
   static unsigned int rr_face_key_n;
 
+  const int long_press = 20;
   const float thr_face = 0.9;
   float left_face_x;
   float right_face_x;
@@ -1209,7 +1214,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_right_timer > 0){
       face_right_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (90) * 16);
+    set_face_gesture_arc(painter,x,y,QColor(200,face_right_ct < long_press ? 200 : 100,0,250) , -45 , 90);
     if(face_right_ct < 30)
       face_right_ct ++;
     all_centering = false;
@@ -1226,7 +1231,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_left_timer > 0){
       face_left_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+135) * 16, (90) * 16);
+    set_face_gesture_arc(painter,x,y,QColor(200,face_left_ct < long_press ? 200 : 100,0,250) , 135 , 90);
     if(face_left_ct < 30)
       face_left_ct ++;
     all_centering = false;
@@ -1243,7 +1248,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_up_timer > 0){
       face_up_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+45) * 16, (90) * 16);
+    set_face_gesture_arc(painter,x,y,QColor(200,face_up_ct < long_press ? 200 : 100,0,250) , 45 , 90);
     if(face_up_ct < 30)
       face_up_ct ++;
     all_centering = false;
@@ -1260,7 +1265,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_down_timer > 0){
       face_down_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-45) * 16, (-90) * 16);
+    set_face_gesture_arc(painter,x,y,QColor(200,face_down_ct < long_press ? 200 : 100,0,250) , -45 , -90);
     if(face_down_ct < 30)
       face_down_ct ++;
     all_centering = false;
@@ -1270,7 +1275,6 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
 
   //首を傾けるジェスチャー
   float delta_r = scene.driver_pose_sins[2]; //首のかしげ角度のsin
-  //g_delta_r = delta_r;
   static int face_rr_timer = 0; //右に傾げる
   const int face_rr_timer0 = 10;
   static int face_rr_ct = 0;
@@ -1281,7 +1285,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_rr_timer > 0){
       face_rr_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0-90-20) * 16, (180) * 16);
+    set_face_gesture_arc(painter,x,y,QColor(200,face_rr_ct < long_press ? 200 : 100,0,250) , -90-20 , 180);
     if(face_rr_ct < 30)
       face_rr_ct ++;
     all_centering = false;
@@ -1298,7 +1302,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_lr_timer > 0){
       face_lr_timer --;
     }
-    painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , (0+90+20) * 16, (180) * 16);
+    set_face_gesture_arc(painter,x,y,QColor(200,face_lr_ct < long_press ? 200 : 100,0,250) , 90+20 , 180);
     if(face_lr_ct < 30)
       face_lr_ct ++;
     all_centering = false;
@@ -1336,8 +1340,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-
-  if(face_up_ct > 25 && face_down_ct > 1 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
+  if(face_up_ct > long_press && face_down_ct > 1 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
     face_up_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     face_up_timer = 0;
     face_down_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
@@ -1351,8 +1354,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  if(face_rr_ct > 25){ //↘︎ジェスチャー
-    face_rr_ct = -20; //連続動作しないように工夫。
+  if(face_rr_ct > long_press){ //↘︎ジェスチャー
+    face_rr_ct = -long_press; //連続動作しないように工夫。
     face_rr_timer = 0;
     rr_face_key_n = 0;
     {
@@ -1718,7 +1721,6 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
 #endif
-  //debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , "#"+QString::number(g_delta_r,'f',3)  , 200 , false , 0xdf, 0xdf, 0x00);
 #endif
 }
 
