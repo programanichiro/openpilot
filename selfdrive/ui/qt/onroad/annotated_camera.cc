@@ -1214,7 +1214,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_right_timer > 0){
       face_right_timer --;
     }
-    set_face_gesture_arc(painter,x,y,QColor(200,face_right_ct < long_press ? 200 : 100,0,250) , -45 , 90);
+    set_face_gesture_arc(painter,x,y , -45 , 90 ,QColor(200,face_right_ct < long_press ? 200 : 100,0,250));
     if(face_right_ct < 30)
       face_right_ct ++;
     all_centering = false;
@@ -1231,7 +1231,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_left_timer > 0){
       face_left_timer --;
     }
-    set_face_gesture_arc(painter,x,y,QColor(200,face_left_ct < long_press ? 200 : 100,0,250) , 135 , 90);
+    set_face_gesture_arc(painter,x,y , 135 , 90 ,QColor(200,face_left_ct < long_press ? 200 : 100,0,250));
     if(face_left_ct < 30)
       face_left_ct ++;
     all_centering = false;
@@ -1248,7 +1248,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_up_timer > 0){
       face_up_timer --;
     }
-    set_face_gesture_arc(painter,x,y,QColor(200,face_up_ct < long_press ? 200 : 100,0,250) , 45 , 90);
+    set_face_gesture_arc(painter,x,y , 45 , 90, QColor(200,face_up_ct < long_press ? 200 : 100,0,250));
     if(face_up_ct < 30)
       face_up_ct ++;
     all_centering = false;
@@ -1265,7 +1265,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_down_timer > 0){
       face_down_timer --;
     }
-    set_face_gesture_arc(painter,x,y,QColor(200,face_down_ct < long_press ? 200 : 100,0,250) , -45 , -90);
+    set_face_gesture_arc(painter,x,y , -45 , -90, QColor(200,face_down_ct < long_press ? 200 : 100,0,250));
     if(face_down_ct < 30)
       face_down_ct ++;
     all_centering = false;
@@ -1285,7 +1285,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_rr_timer > 0){
       face_rr_timer --;
     }
-    set_face_gesture_arc(painter,x,y,QColor(200,face_rr_ct < long_press ? 200 : 100,0,250) , -90-20 , 180);
+    set_face_gesture_arc(painter,x,y , -90-20 , 180, QColor(200,face_rr_ct < long_press ? 200 : 100,0,250));
     if(face_rr_ct < 30)
       face_rr_ct ++;
     all_centering = false;
@@ -1302,7 +1302,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_lr_timer > 0){
       face_lr_timer --;
     }
-    set_face_gesture_arc(painter,x,y,QColor(200,face_lr_ct < long_press ? 200 : 100,0,250) , 90+20 , 180);
+    set_face_gesture_arc(painter,x,y , 90+20 , 180, QColor(200,face_lr_ct < long_press ? 200 : 100,0,250));
     if(face_lr_ct < 30)
       face_lr_ct ++;
     all_centering = false;
