@@ -350,6 +350,20 @@ class LongitudinalPlanner:
       with open('/tmp/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
+    # if CVS_FRAME % 10 == 0 and v_ego >= 1/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled:
+    #   try: #首ジェスチャーでエクストラエンゲージ解除をやろうと思ったが、誤作動懸念で保留。アクセル踏み込みとレバーアップがあるし
+    #     with open('/tmp/gesture_onpe2AP.txt','r') as fp:
+    #       gesture_onpe2AP_str = fp.read()
+    #       if gesture_onpe2AP_str and int(gesture_onpe2AP_str) == 1:
+    #         OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
+    #         signal_scan_ct = 200 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
+    #         with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+    #           fp.write('%d' % (2)) #engage.wavを鳴らす。
+    #         with open('/tmp/gesture_onpe2AP.txt','w') as fp:
+    #           fp.write('%d' % (0))
+    #   except Exception as e:
+    #     pass
+
     global red_signal_scan_ct , red_signal_scan_ct_2 , red_signal_speed_down_before , red_signal_scan_span , long_speeddown_flag , before_v_cruise_kph_max_1
     red_signal_scan_flag_1 = red_signal_scan_flag
     red_signal_speed_down = 1.0
