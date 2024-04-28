@@ -88,10 +88,10 @@ void OnroadWindow::updateState(const UIState &s) {
     if (map != nullptr) {
       if(this->isMapVisible() == false){
         //地図を強制的に出す。
-        void soundButton(int onOff);
-        soundButton(true);
         map->setVisible(true);
       }
+      void soundButton(int onOff);
+      soundButton(true);
     }
   }
 
