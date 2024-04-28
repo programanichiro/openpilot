@@ -300,6 +300,8 @@ void MapWindow::updateState(const UIState &s) {
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
         if(head_gesture_map_north_heading_toggle){
           head_gesture_map_north_heading_toggle = false;
+          void soundButton(int onOff);
+          soundButton(true);
           if(MIN_PITCH_ == 0){ // 0<->-1
             MIN_PITCH_ = -1;
           } else if(MIN_PITCH_ == -1){

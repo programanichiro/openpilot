@@ -1373,7 +1373,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     rr_face_key_n = 0;
     {
       //カメラ↔︎地図の画面切り替え
-      extern bool head_gesture_home;
+      extern bool head_gesture_home; //サイドバーを消す
       extern bool head_gesture_onroad_home;
       head_gesture_home = true;
       head_gesture_onroad_home = true;
@@ -1386,12 +1386,10 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     lr_face_key_n = 0;
     {
       //ノースアップ↔︎ヘディングアップの画面切り替え
-      extern bool head_gesture_home;
-      extern bool head_gesture_onroad_home_map_on;
+      extern bool head_gesture_home; //サイドバーを消す
       extern bool head_gesture_map_north_heading_toggle;
       head_gesture_home = true;
       head_gesture_onroad_home_map_on = true; //地図を強制的に出す。
-      head_gesture_map_north_heading_toggle = true;
     }
   }
 

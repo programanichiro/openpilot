@@ -89,9 +89,13 @@ void OnroadWindow::updateState(const UIState &s) {
       if(this->isMapVisible() == false){
         //地図を強制的に出す。
         map->setVisible(true);
+        void soundButton(int onOff);
+        soundButton(true);
+      } else {
+        //地図が出ていたらノース↔︎ヘディング切り替え信号を送る。
+        extern bool head_gesture_onroad_home_map_on;
+        head_gesture_map_north_heading_toggle = true;
       }
-      void soundButton(int onOff);
-      soundButton(true);
     }
   }
 
