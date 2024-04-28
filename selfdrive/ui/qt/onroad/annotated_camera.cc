@@ -1193,13 +1193,13 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     //左ハンドル？未検証
     left_face_x = -17*thr_face;
     right_face_x = 14*thr_face;
-    // r_face_r = -0.20*thr_face; //同じならいらない
-    // l_face_r = 0.20*thr_face;
+    // r_face_r = -0.19*thr_face; //同じならいらない
+    // l_face_r = 0.19*thr_face;
   } else {
     left_face_x = -14*thr_face;
     right_face_x = 18*thr_face;
-    r_face_r = -0.20*thr_face;
-    l_face_r = 0.20*thr_face;
+    r_face_r = -0.19*thr_face;
+    l_face_r = 0.19*thr_face;
   }
   float up_face_y = -25*thr_face;
   float down_face_y = 22*thr_face;
@@ -1339,7 +1339,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       rr_face_key_n = 0;
     }
   }
-
+#if 0 //顔一回転は流石に無理があるか。
   if(face_up_ct > 1 && face_down_ct > 1 && face_left_ct > 1 && face_right_ct > 1){
     face_left_ct = 0;
     face_right_ct = 0;
@@ -1352,7 +1352,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     void soundPikiri();
     soundPikiri();
   }
-
+#endif
   if(face_up_ct > long_press && face_down_ct > 1 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
     face_up_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     face_up_timer = 0;
