@@ -1191,15 +1191,15 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   float l_face_r;
   if(rightHandDM == false){
     //左ハンドル？未検証
-    left_face_x = -18*thr_face;
+    left_face_x = -17*thr_face;
     right_face_x = 14*thr_face;
-    r_face_r = -0.21*thr_face;
-    l_face_r = 0.20*thr_face;
+    // r_face_r = -0.20*thr_face; //同じならいらない
+    // l_face_r = 0.20*thr_face;
   } else {
     left_face_x = -14*thr_face;
     right_face_x = 18*thr_face;
     r_face_r = -0.20*thr_face;
-    l_face_r = 0.21*thr_face;
+    l_face_r = 0.20*thr_face;
   }
   float up_face_y = -25*thr_face;
   float down_face_y = 22*thr_face;
@@ -1359,10 +1359,26 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     face_rr_timer = 0;
     rr_face_key_n = 0;
     {
+      //カメラ↔︎地図の画面切り替え
       extern bool head_gesture_home;
       extern bool head_gesture_onroad_home;
       head_gesture_home = true;
       head_gesture_onroad_home = true;
+    }
+  }
+
+  if(face_lr_ct > long_press){ //↙︎ジェスチャー
+    face_lr_ct = -long_press; //連続動作しないように工夫。
+    face_lr_timer = 0;
+    lr_face_key_n = 0;
+    {
+      //ノースアップ↔︎ヘディングアップの画面切り替え
+      extern bool head_gesture_home;
+      extern bool head_gesture_onroad_home_map_on;
+      extern bool head_gesture_map_north_heading_toggle;
+      head_gesture_home = true;
+      head_gesture_onroad_home_map_on = true; //地図を強制的に出す。
+      head_gesture_map_north_heading_toggle = true;
     }
   }
 

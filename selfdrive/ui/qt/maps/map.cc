@@ -263,6 +263,7 @@ void MapWindow::initLayers() {
 bool now_navigation = false;
 int style_reload = 0;
 float g_latitude;
+bool head_gesture_map_north_heading_toggle;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -297,6 +298,20 @@ void MapWindow::updateState(const UIState &s) {
       velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
+        if(head_gesture_map_north_heading_toggle){
+          head_gesture_map_north_heading_toggle = false;
+          if(MIN_PITCH_ == 0){ // 0<->-1
+            MIN_PITCH_ = -1;
+          } else if(MIN_PITCH_ == -1){
+            MIN_PITCH_ = 0;
+          } else {
+            MIN_PITCH_ = -MIN_PITCH_;
+          }
+          max_zoom_pitch_effect();
+          setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
+          chg_pitch = true;
+        }
+
         if(north_up == 0){
           if(m_map->margins().top() == 0){
             m_map->setMargins({0, 350, 0, 50});
@@ -924,6 +939,9 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
       } else /*if(north_up == 0)*/{
         //qDebug() << "clicked";
         //bs_color_revert ^= 1;
+        if(MIN_PITCH_ < 0){
+          MIN_PITCH_ = -10; //ジェスチャー切り替えでノースアップが-10以外になっている可能性を考慮。
+        }
 
         MIN_PITCH_ /= 10;
         MIN_PITCH_ += 1;

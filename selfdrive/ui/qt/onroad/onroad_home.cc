@@ -51,6 +51,7 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
 
 bool mapVisible;
 bool head_gesture_onroad_home;
+bool head_gesture_onroad_home_map_on;
 void OnroadWindow::updateState(const UIState &s) {
   if (!s.scene.started) {
     return;
@@ -79,6 +80,18 @@ void OnroadWindow::updateState(const UIState &s) {
       void soundButton(int onOff);
       soundButton(!this->isMapVisible());
       map->setVisible(!this->isMapVisible());
+    }
+  }
+
+  if(head_gesture_onroad_home_map_on){ //ジェスチャーでノースアップ切り替えした時の強制地図出し。
+    head_gesture_onroad_home_map_on = false;
+    if (map != nullptr) {
+      if(this->isMapVisible() == false){
+        //地図を強制的に出す。
+        void soundButton(int onOff);
+        soundButton(true);
+        map->setVisible(true);
+      }
     }
   }
 
