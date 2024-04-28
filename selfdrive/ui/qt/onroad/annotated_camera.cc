@@ -1387,7 +1387,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     {
       //ノースアップ↔︎ヘディングアップの画面切り替え
       extern bool head_gesture_home; //サイドバーを消す
-      extern bool head_gesture_map_north_heading_toggle;
+      extern bool head_gesture_onroad_home_map_on;
       head_gesture_home = true;
       head_gesture_onroad_home_map_on = true; //地図を強制的に出す。
     }
