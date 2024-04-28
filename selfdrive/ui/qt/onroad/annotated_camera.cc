@@ -1340,6 +1340,19 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
+  if(face_up_ct > 1 && face_down_ct > 1 && face_left_ct > 1 && face_right_ct > 1){
+    face_left_ct = 0;
+    face_right_ct = 0;
+    face_up_ct = 0;
+    face_down_ct = 0;
+    left_face_key_n = 0;
+    right_face_key_n = 0;
+    up_face_key_n = 0;
+    down_face_key_n = 0;
+    void soundPikiri();
+    soundPikiri();
+  }
+
   if(face_up_ct > long_press && face_down_ct > 1 && up_face_key_n > down_face_key_n){ //↓↑ジェスチャー
     face_up_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     face_up_timer = 0;
