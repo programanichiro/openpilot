@@ -1317,9 +1317,11 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   const float center_eye_rate = 0.2;
   if((delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
     && delta_y > up_face_y*center_eye_rate && delta_y < down_face_y*center_eye_rate
+    && delta_r > r_face_r*center_eye_rate && delta_r < l_face_r*center_eye_rate
     || face_center_timer > 0)){
     if(delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
       && delta_y > up_face_y*center_eye_rate && delta_y < down_face_y*center_eye_rate
+      && delta_r > r_face_r*center_eye_rate && delta_r < l_face_r*center_eye_rate
       && face_center_ct >= 0){
       face_center_timer = face_center_timer0;
     } else if(face_center_timer > 0){
