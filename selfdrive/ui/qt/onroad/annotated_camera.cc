@@ -1123,13 +1123,13 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.restore();
 }
 
-static void set_face_gesture_arc(QPainter &painter,float x, float y, int start_ang , int ang_width ,const QColor &col){
+static void set_face_gesture_arc(QPainter &painter,float x, float y, int start_ang , int ang_width ,const QColor &col , int ww=20){
   //顔が向いてる方を上下左右で表示する。
-  QPen pen = QPen(col, 20);
+  QPen pen = QPen(col, ww);
   pen.setCapStyle(Qt::FlatCap); //端をフラットに
   painter.setPen(pen);
 
-  painter.drawArc(QRectF(x - btn_size / 2 +10, y - btn_size / 2 +10 , btn_size-20, btn_size-20) , start_ang * 16, ang_width * 16);
+  painter.drawArc(QRectF(x - btn_size / 2 +ww/2, y - btn_size / 2 +ww/2 , btn_size-ww, btn_size-ww) , start_ang * 16, ang_width * 16);
 }
 
 void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
@@ -1325,7 +1325,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     } else if(face_center_timer > 0){
       face_center_timer --;
     }
-    set_face_gesture_arc(painter,x,y , 0 , 360 ,QColor(200,face_left_ct < long_press ? 200 : 100,0,250));
+    set_face_gesture_arc(painter,x,y , 0 , 360 ,QColor(200,face_center_ct < long_press ? 200 : 100,0,250) , 10);
     if(face_center_ct < 30)
       face_center_ct ++;
   } else {
