@@ -1310,6 +1310,26 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     //face_lr_ct = 0;
   }
 
+  //中央視線検出
+  const float center_eye_rate = 0.4;
+  if((delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
+    && delta_y > up_face_y*center_eye_rate && delta_y < down_face_y*center_eye_rate
+    || face_center_timer > 0)){
+    if(delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
+      && delta_y > up_face_y*center_eye_rate && delta_y < down_face_y*center_eye_rate
+      && face_center_ct >= 0){
+      face_center_timer = face_center_timer0;
+    } else if(face_center_timer > 0){
+      face_center_timer --;
+    }
+    set_face_gesture_arc(painter,x,y , 0 , 360 ,QColor(200,face_left_ct < long_press ? 200 : 100,0,250));
+    if(face_center_ct < 30)
+      face_center_ct ++;
+  } else {
+    if(face_center_ct > 0)
+      face_center_ct --;
+  }
+
   if(all_centering == true){
     if(face_right_ct > 0)
       face_right_ct --;
