@@ -1311,6 +1311,9 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
   //中央視線検出
+  static int face_center_timer = 0;
+  const int face_center_timer0 = 10;
+  static int face_center_ct = 0;
   const float center_eye_rate = 0.4;
   if((delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
     && delta_y > up_face_y*center_eye_rate && delta_y < down_face_y*center_eye_rate
