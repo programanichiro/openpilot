@@ -299,7 +299,7 @@ void MapWindow::updateState(const UIState &s) {
       velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
-        if(map_pitch_up){
+        if(false && map_pitch_up){
           map_pitch_up = false;
           void soundButton(int onOff);
           soundButton(true);
@@ -318,7 +318,7 @@ void MapWindow::updateState(const UIState &s) {
           chg_pitch = true;
         }
 
-        if(false && map_pitch_down){
+        if(map_pitch_down){
           map_pitch_down = false;
           void soundButton(int onOff);
           soundButton(true);

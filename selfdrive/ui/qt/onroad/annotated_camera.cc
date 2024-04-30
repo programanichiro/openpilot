@@ -1408,8 +1408,10 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     face_left_timer = 0;
     up_face_key_n = 0;
     left_face_key_n = 0;
-    extern bool map_pitch_up;
-    map_pitch_up = true;
+    // extern bool map_pitch_up;
+    // map_pitch_up = true;
+    extern bool map_pitch_down;
+    map_pitch_down = true;
   }
 
   if(false && mapVisible && face_left_ct > 1 && face_down_ct > long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
