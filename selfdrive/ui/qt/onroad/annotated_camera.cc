@@ -1412,7 +1412,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     map_pitch_up = true;
   }
 
-  if(mapVisible && face_left_ct > 1 && face_down_ct > long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
+  if(false && mapVisible && face_left_ct > 1 && face_down_ct > long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
       && face_up_ct == 0 && face_right_ct == 0 //検知以外の向き防止
     ){
     //地図ピッチダウン
