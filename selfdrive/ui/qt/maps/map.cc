@@ -264,6 +264,7 @@ bool now_navigation = false;
 int style_reload = 0;
 float g_latitude;
 bool head_gesture_map_north_heading_toggle;
+bool map_pich_up,map_pich_down;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -298,6 +299,44 @@ void MapWindow::updateState(const UIState &s) {
       velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
+        if(map_pich_up){
+          map_pich_up = false;
+          void soundButton(int onOff);
+          soundButton(true);
+          if(MIN_PITCH_ < 0){
+            MIN_PITCH_ = -10; //ジェスチャー切り替えでノースアップが-10以外になっている可能性を考慮。
+          }
+
+          MIN_PITCH_ /= 10;
+          MIN_PITCH_ += 1;
+          if(MIN_PITCH_ > 4){
+            MIN_PITCH_ = -1;
+          }
+          MIN_PITCH_ *= 10;
+          max_zoom_pitch_effect();
+          setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
+          chg_pitch = true;
+        }
+
+        if(map_pich_down){
+          map_pich_down = false;
+          void soundButton(int onOff);
+          soundButton(true);
+          if(MIN_PITCH_ < 0){
+            MIN_PITCH_ = -10; //ジェスチャー切り替えでノースアップが-10以外になっている可能性を考慮。
+          }
+
+          MIN_PITCH_ /= 10;
+          MIN_PITCH_ -= 1;
+          if(MIN_PITCH_ < 1){
+            MIN_PITCH_ = 4;
+          }
+          MIN_PITCH_ *= 10;
+          max_zoom_pitch_effect();
+          setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
+          chg_pitch = true;
+        }
+
         if(head_gesture_map_north_heading_toggle){
           head_gesture_map_north_heading_toggle = false;
           void soundButton(int onOff);
