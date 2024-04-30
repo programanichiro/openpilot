@@ -97,13 +97,14 @@ void HomeWindow::updateState(const UIState &s) {
 #else
   static bool lsta_can_get = false;
   uint16_t lsta = 0;
-  const bool left_blinker = sm["carState"].getCarState().getLeftBlinker();
-  const bool right_blinker = sm["carState"].getCarState().getRightBlinker();
+  const bool left_blinker = false; //sm["carState"].getCarState().getLeftBlinker();
+  const bool right_blinker = false; //sm["carState"].getCarState().getRightBlinker();
   if(left_blinker == false && right_blinker == false){
     lsta_can_get = true;
   }
   if(lsta_can_get == true){
-    lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
+    lsta = 0; //あまり有用で無いので、レーンチェンジ時の室内カメラ切り替えを廃止。
+    //lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
   }
   bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
   if(back_gear){
