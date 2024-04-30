@@ -981,6 +981,8 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //2秒以上長押しでzoom_offsetクリア。
         zoom_offset = 0;
+        void soundButton(int onOff);
+        soundButton(false);
       } else if(now - m_pressedTime > 500){
         bs_color_revert  ^= 1; //0.5秒以上の長押しでダークモード反転。
       } else /*if(north_up == 0)*/{
