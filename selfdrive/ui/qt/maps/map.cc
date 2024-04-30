@@ -264,7 +264,7 @@ bool now_navigation = false;
 int style_reload = 0;
 float g_latitude;
 bool head_gesture_map_north_heading_toggle;
-bool map_pitch_up; //,map_pitch_down;
+bool map_pitch_up,map_pitch_down;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
