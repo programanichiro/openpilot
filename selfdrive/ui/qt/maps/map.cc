@@ -328,7 +328,7 @@ void MapWindow::updateState(const UIState &s) {
 
           MIN_PITCH_ /= 10;
           MIN_PITCH_ -= 1;
-          if(MIN_PITCH_ < 1){
+          if(MIN_PITCH_ < -1){
             MIN_PITCH_ = 4;
           }
           MIN_PITCH_ *= 10;

@@ -1398,30 +1398,30 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  if(face_right_ct > 1 && face_up_ct > long_press && right_face_key_n < up_face_key_n //←↑ジェスチャー
-      && face_down_ct == 0 && face_left_ct == 0 //検知以外の向き防止
+  if(face_left_ct > 1 && face_up_ct > long_press && left_face_key_n < up_face_key_n //←↑ジェスチャー
+      && face_down_ct == 0 && face_right_ct == 0 //検知以外の向き防止
     ){
     //地図ピッチアップ
     face_up_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     face_up_timer = 0;
-    face_right_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    face_right_timer = 0;
+    face_left_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
+    face_left_timer = 0;
     up_face_key_n = 0;
-    right_face_key_n = 0;
+    left_face_key_n = 0;
     extern bool map_pitch_up;
     map_pitch_up = true;
   }
 
-  if(face_right_ct > 1 && face_down_ct > long_press && right_face_key_n < down_face_key_n //←↓ジェスチャー
-      && face_up_ct == 0 && face_left_ct == 0 //検知以外の向き防止
+  if(face_left_ct > 1 && face_down_ct > long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
+      && face_up_ct == 0 && face_right_ct == 0 //検知以外の向き防止
     ){
     //地図ピッチダウン
     face_down_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     face_down_timer = 0;
-    face_right_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    face_right_timer = 0;
+    face_left_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
+    face_left_timer = 0;
     down_face_key_n = 0;
-    right_face_key_n = 0;
+    left_face_key_n = 0;
     extern bool map_pitch_down;
     map_pitch_down = true;
   }
