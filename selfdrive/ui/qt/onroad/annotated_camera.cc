@@ -1174,7 +1174,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   painter.setPen(QPen(arc_color, arc_t_default+arc_t_extend*fmin(1.0, scene.driver_pose_diff[0] * 5.0), Qt::SolidLine, Qt::RoundCap));
   painter.drawArc(QRectF(x - arc_l / 2, std::fmin(y + delta_y, y), arc_l, fabs(delta_y)), (scene.driver_pose_sins[0]>0 ? 0 : 180) * 16, 180 * 16);
 
-  //顔が向いてる方を上下左右で表示する。
+  //顔が向いてる方を上下左右かしげで表示する。
+  float delta_r = scene.driver_pose_sins[2]; //首のかしげ角度のsin
   static unsigned int key_n_ct = 0; //キーが入った順番
   static unsigned int left_face_key_n;
   static unsigned int right_face_key_n;
@@ -1302,7 +1303,6 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
   //首を傾けるジェスチャー
-  float delta_r = scene.driver_pose_sins[2]; //首のかしげ角度のsin
   static int face_rr_timer = 0; //右に傾げる
   const int face_rr_timer0 = 10;
   static int face_rr_ct = 0;
@@ -1412,7 +1412,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     map_pich_up = true;
   }
 
-  if(face_right_ct > 1 && face_down_ct > long_press && right_face_key_n < donw_face_key_n //←↓ジェスチャー
+  if(face_right_ct > 1 && face_down_ct > long_press && right_face_key_n < down_face_key_n //←↓ジェスチャー
       && face_up_ct == 0 && face_left_ct == 0 //検知以外の向き防止
     ){
     //地図ピッチダウン
