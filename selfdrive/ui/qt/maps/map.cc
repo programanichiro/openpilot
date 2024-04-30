@@ -264,7 +264,7 @@ bool now_navigation = false;
 int style_reload = 0;
 float g_latitude;
 bool head_gesture_map_north_heading_toggle;
-bool map_pich_up,map_pich_down;
+bool map_pitch_up,map_pitch_down;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -299,8 +299,8 @@ void MapWindow::updateState(const UIState &s) {
       velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
-        if(map_pich_up){
-          map_pich_up = false;
+        if(map_pitch_up){
+          map_pitch_up = false;
           void soundButton(int onOff);
           soundButton(true);
           if(MIN_PITCH_ < 0){
@@ -318,8 +318,8 @@ void MapWindow::updateState(const UIState &s) {
           chg_pitch = true;
         }
 
-        if(map_pich_down){
-          map_pich_down = false;
+        if(map_pitch_down){
+          map_pitch_down = false;
           void soundButton(int onOff);
           soundButton(true);
           if(MIN_PITCH_ < 0){
