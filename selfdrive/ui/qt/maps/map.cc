@@ -320,8 +320,6 @@ void MapWindow::updateState(const UIState &s) {
 
         if(map_pitch_down){
           map_pitch_down = false;
-          void soundButton(int onOff);
-          soundButton(true);
           if(MIN_PITCH_ < 0){
             MIN_PITCH_ = -10; //ジェスチャー切り替えでノースアップが-10以外になっている可能性を考慮。
           }
@@ -335,6 +333,14 @@ void MapWindow::updateState(const UIState &s) {
           max_zoom_pitch_effect();
           setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
           chg_pitch = true;
+
+          if(MIN_PITCH_ == 0){
+            void soundPikiri();
+            soundPikiri();
+          } else {
+            extern void soundPipo();
+            soundPipo();
+          }
         }
 
         if(head_gesture_map_north_heading_toggle){
@@ -993,6 +999,13 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         max_zoom_pitch_effect();
         setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
         chg_pitch = true;
+        if(MIN_PITCH_ == 40){
+          void soundPikiri();
+          soundPikiri();
+        } else {
+          extern void soundPipo();
+          soundPipo();
+        }
       }
       m_pressedTime = 0;
       this->update(0,0,this->width(),this->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
