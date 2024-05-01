@@ -665,6 +665,8 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
       } else {
         emit LimitspeedChanged(rect().width());
       }
+      void soundButton(int onOff);
+      soundButton(false);
       return;
     }
   }
