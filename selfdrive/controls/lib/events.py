@@ -483,7 +483,8 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
 
   EventName.resumeRequired: {
     ET.WARNING: Alert(
-      "Press Resume to Exit Standstill",
+      #"Press Resume to Exit Standstill",
+      "Auto brake holding!",
       "",
       AlertStatus.normal, AlertSize.small,
       Priority.MID, VisualAlert.none, AudibleAlert.none, .2),
