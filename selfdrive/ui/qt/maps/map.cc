@@ -637,7 +637,7 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
         map_dynamic_edit_y = true;
         m_lastGlbPos = ev->globalPos();
       }
-      if(m_lastPos.x() > this->width() - 100){
+      if(m_lastPos.x() > this->width() - 70){
         map_dynamic_edit_x = true;
         m_lastGlbPos = ev->globalPos();
       }
@@ -646,7 +646,7 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
         map_dynamic_edit_y = true;
         m_lastGlbPos = ev->globalPos();
       }
-      if(m_lastPos.x() < 100){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
+      if(m_lastPos.x() < 70){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
         map_dynamic_edit_x = true;
         m_lastGlbPos = ev->globalPos();
       }
