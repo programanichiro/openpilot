@@ -698,13 +698,14 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
       if(map_dynamic_edit_y){
         map_dynamic_edit_x = false;
         zoom_change = true;
+        m_lastGlbPos = ev->globalPos();
       }
     } else if(map_dynamic_edit_x){
       //横スワイプ
       map_dynamic_edit_y = false;
       window_resize = true;
+      m_lastGlbPos = ev->globalPos();
     }
-    m_lastGlbPos = ev->globalPos();
   }
   if(window_resize){ //端から左右スワイプで地図サイズの調整。負荷が高くて落ちる？
     if(width_rate < 0){
