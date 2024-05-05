@@ -693,7 +693,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   bool zoom_change = false;
   if(map_dynamic_edit_x || map_dynamic_edit_y){
     g_delta = ev->globalPos() - m_lastGlbPos;
-    if((map_dynamic_edit_y && map_dynamic_edit_x == false) || fabs(g_delta.x()) < fabs(g_delta.y())){
+    if((map_dynamic_edit_y && map_dynamic_edit_x == false) || (map_dynamic_edit_y && map_dynamic_edit_x && fabs(g_delta.x()) < fabs(g_delta.y()))){
       //縦スワイプ
       if(map_dynamic_edit_y){
         map_dynamic_edit_x = false;
