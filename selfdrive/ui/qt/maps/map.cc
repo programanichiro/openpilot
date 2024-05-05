@@ -622,22 +622,32 @@ void MapWindow::clearRoute() {
   last_valid_nav_dest = std::nullopt;
 }
 
-bool map_dynamic_edit;
+bool map_dynamic_edit_x; //横スワイプでウインドウリサイズ
+bool map_dynamic_edit_y; //縦スワイプで高度変更
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
 
-  map_dynamic_edit = false;
+  map_dynamic_edit_x = false;
+  map_dynamic_edit_y = false;
   //方位磁石の上の端っこを上下でMAX_ZOOM調整。
   if(m_lastPos.y() < 1080 - 200){ //ボタンの位置は避ける。
     if(uiState()->scene.map_on_left){
       if(m_lastPos.x() > this->width() - 150){
-        map_dynamic_edit = true;
+        map_dynamic_edit_y = true;
+        m_lastGlbPos = ev->globalPos();
+      }
+      if(m_lastPos.x() > this->width() - 100){
+        map_dynamic_edit_x = true;
         m_lastGlbPos = ev->globalPos();
       }
     } else {
       if(m_lastPos.x() < 150){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
-        map_dynamic_edit = true;
+        map_dynamic_edit_y = true;
+        m_lastGlbPos = ev->globalPos();
+      }
+      if(m_lastPos.x() < 100){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
+        map_dynamic_edit_x = true;
         m_lastGlbPos = ev->globalPos();
       }
     }
@@ -687,12 +697,14 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   QPointF g_delta;
   bool window_resize = false;
   bool zoom_change = false;
-  if(map_dynamic_edit){
+  if(map_dynamic_edit_x || map_dynamic_edit_y){
     g_delta = ev->globalPos() - m_lastGlbPos;
     if(fabs(g_delta.x()) < fabs(g_delta.y())){
       //縦スワイプ
-      zoom_change = true;
-    } else {
+      if(map_dynamic_edit_y){
+        zoom_change = true;
+      }
+    } else if(map_dynamic_edit_x){
       //横スワイプ
       window_resize = true;
     }
@@ -733,6 +745,8 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     emit BearingScaleChanged(rect().width(),*last_bearing,zoom , g_latitude);
     return; //地図は動かさない。
   }
+  map_dynamic_edit_x = false;
+  map_dynamic_edit_y = false;
 
   QPointF delta = ev->localPos() - m_lastPos;
 
