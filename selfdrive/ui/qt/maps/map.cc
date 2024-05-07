@@ -501,17 +501,6 @@ void MapWindow::updateState(const UIState &s) {
       }
       clearRoute();
     }
-  } else {
-    if(now_navigation == true){ //Waiting for route中にナビが終わったら、スタイルを戻す。
-      now_navigation = false;
-      if(my_mapbox_style_night.empty() == false && check_night_mode()){ //夜だったら
-        night_mode = 1;
-        m_map->setStyleUrl(my_mapbox_style_night.c_str());
-      } else if(my_mapbox_style.empty() == false){ //昼だったら
-        night_mode = 0;
-        m_map->setStyleUrl(my_mapbox_style.c_str());
-      }
-    }
   }
 
   if(style_reload == 1 && locationd_valid == true && routing_problem == false){
