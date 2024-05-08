@@ -1062,7 +1062,7 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
   //n^2
   //pow(2,18-scale) * 25
   //map_scale_num = pow(2,(18-scale)) * 23 * cos(DEG2RAD(latitude));
-  map_scale_num = QMapLibre::metersPerPixelAtLatitude(latitude, scale) * BS_SIZE_W; //地図のサービス関数でやる方法。
+  map_scale_num = QMapLibre::metersPerPixelAtLatitude(latitude, scale) * (BS_SIZE_W / MAP_SCALE); //地図のサービス関数でやる方法。
   // if(map_scale_num < 1000){
   //   bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   // } else {
