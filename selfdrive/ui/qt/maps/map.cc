@@ -58,7 +58,7 @@ float calc_max_zoom(){
   //   zoom_offset = MIN_ZOOM - MAX_ZOOM_;
   //   return MIN_ZOOM;
   // }
-  const float tmp_MIN_ZOOM = 1;
+  const float tmp_MIN_ZOOM = 6; //大きな川から島が入る。1で地球レベル
   if(m_o < tmp_MIN_ZOOM){
     zoom_offset = tmp_MIN_ZOOM - MAX_ZOOM_;
     return tmp_MIN_ZOOM;
