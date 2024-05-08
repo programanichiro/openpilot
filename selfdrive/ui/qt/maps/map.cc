@@ -19,7 +19,15 @@ const float MAX_ZOOM0 = 17;
 float MAX_ZOOM_;
 #define MAX_ZOOM calc_max_zoom()
 float zoom_offset;
-const float MIN_ZOOM = 14;
+//const float MIN_ZOOM = 14;
+const float MIN_ZOOM0 = 14;
+#define MIN_ZOOM calc_min_zoom()
+float calc_min_zoom(){
+  if(MAX_ZOOM < MIN_ZOOM0){ //14（関東で300m程度）より高度を上げると、速度による高度制御がなくなる
+    return MAX_ZOOM;
+  }
+  return MIN_ZOOM0;
+}
 const float MAX_PITCH = 50;
 #define MIN_PITCH calc_pich()
 float MIN_PITCH_ = 0;
@@ -52,9 +60,14 @@ float calc_max_zoom(){
     zoom_offset = 22 - MAX_ZOOM_;
     return 22;
   }
-  if(m_o < MIN_ZOOM){
-    zoom_offset = MIN_ZOOM - MAX_ZOOM_;
-    return MIN_ZOOM;
+  // if(m_o < MIN_ZOOM){ //calc_min_zoomを使うならここで無限再起になるので注意。
+  //   zoom_offset = MIN_ZOOM - MAX_ZOOM_;
+  //   return MIN_ZOOM;
+  // }
+  const float tmp_MIN_ZOOM = 1;
+  if(m_o < tmp_MIN_ZOOM){
+    zoom_offset = tmp_MIN_ZOOM - MAX_ZOOM_;
+    return tmp_MIN_ZOOM;
   }
   return m_o; //もしくはMIN_ZOOMを、MAX_ZOOMより大きくならないように小さくする制御も考えられる。
 }
@@ -1061,8 +1074,8 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
   //1,2,3,4,5, 6, 7, 8
   //n^2
   //pow(2,18-scale) * 25
-  //map_scale_num = pow(2,(18-scale)) * 23 * cos(DEG2RAD(latitude));
-  map_scale_num = QMapLibre::metersPerPixelAtLatitude(latitude, scale) * (BS_SIZE_W / MAP_SCALE); //地図のサービス関数でやる方法。
+  //map_scale_num = pow(2,(18-scale)) * 23 * cos(DEG2RAD(latitude)); //metersPerPixelAtLatitudeと比べてほぼ合っている結果になった。
+  map_scale_num = QMapLibre::metersPerPixelAtLatitude(latitude, scale) * (BS_SIZE_W / MAP_SCALE); //地図のサービス関数でやる方法。独自300メートルが292メートルになってしまう（緯度によって変わる）MIN_ZOOM=14固定をやめることにする。
   // if(map_scale_num < 1000){
   //   bearing_scale->setText(QString::number(map_scale_num, 'f', 0) + "m");
   // } else {
