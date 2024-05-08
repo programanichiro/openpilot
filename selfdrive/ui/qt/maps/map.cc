@@ -22,12 +22,6 @@ float zoom_offset;
 //const float MIN_ZOOM = 14;
 const float MIN_ZOOM0 = 14;
 #define MIN_ZOOM calc_min_zoom()
-float calc_min_zoom(){
-  if(MAX_ZOOM < MIN_ZOOM0){ //14（関東で300m程度）より高度を上げると、速度による高度制御がなくなる
-    return MAX_ZOOM;
-  }
-  return MIN_ZOOM0;
-}
 const float MAX_PITCH = 50;
 #define MIN_PITCH calc_pich()
 float MIN_PITCH_ = 0;
@@ -70,6 +64,12 @@ float calc_max_zoom(){
     return tmp_MIN_ZOOM;
   }
   return m_o; //もしくはMIN_ZOOMを、MAX_ZOOMより大きくならないように小さくする制御も考えられる。
+}
+float calc_min_zoom(){
+  if(MAX_ZOOM < MIN_ZOOM0){ //14（関東で300m程度）より高度を上げると、速度による高度制御がなくなる
+    return MAX_ZOOM;
+  }
+  return MIN_ZOOM0;
 }
 int chk_north_up(){
   if(MIN_PITCH_ < 0){
