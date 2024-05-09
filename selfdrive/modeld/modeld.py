@@ -150,7 +150,7 @@ def main(demo=False):
 
   # messaging
   pm = PubMaster(["modelV2", "cameraOdometry"])
-  sm = SubMaster(["deviceState", "carState", "roadCameraState", "liveCalibration", "driverMonitoringState", "carControl"])
+  sm = SubMaster(["deviceState", "carState", "roadCameraState", "liveCalibration", "driverMonitoringState", "carControl", "controlsState"])
 
   publish_state = PublishState()
   params = Params()
@@ -262,7 +262,7 @@ def main(demo=False):
       modelv2_send = messaging.new_message('modelV2')
       posenet_send = messaging.new_message('cameraOdometry')
       fill_model_msg(modelv2_send, model_output, publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id, frame_drop_ratio,
-                      meta_main.timestamp_eof, model_execution_time, live_calib_seen, sm['carState'].steeringAngleDeg, sm["carState"].vEgo, DH)
+                      meta_main.timestamp_eof, model_execution_time, live_calib_seen, sm['carState'].steeringAngleDeg, sm["carState"].vEgo, DH , sm['controlsState'].experimentalMode)
 
       desire_state = modelv2_send.modelV2.meta.desireState
       l_lane_change_prob = desire_state[log.Desire.laneChangeLeft]

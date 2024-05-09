@@ -51,9 +51,10 @@ class LanePlanner:
     self.frame_ct = 0
     self.lta_mode = False
 
-  def parse_model(self, md, v_ego_car):
+  def parse_model(self, md, v_ego_car, experimentalMode):
     #ここでlta_mode判定を行う。
     if self.frame_ct % 20 == 0:
+      # chill_enable = experimentalMode #果たしてこうするべき？ , 速度条件は常に↓でいいのでは。
       chill_enable = False #(sm['controlsState'].experimentalMode == False) #ここにsmはないので、experimentalMode判定を復活するなら一手間かかる。
       lta_enable_sw = False
       try:
@@ -65,6 +66,8 @@ class LanePlanner:
       except Exception as e:
         pass
       self.lta_mode = (v_ego_car > 16/3.6 or chill_enable) and lta_enable_sw
+
+    self.camera_offset = -CAMERA_OFFSET if experimentalMode else CAMERA_OFFSET #experimentalMode == wide_camでいいの？
 
     self.frame_ct += 1
     if self.lta_mode == False:

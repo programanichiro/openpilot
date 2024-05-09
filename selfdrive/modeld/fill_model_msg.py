@@ -60,7 +60,7 @@ def fill_xyvat(builder, t, x, y, v, a, x_std=None, y_std=None, v_std=None, a_std
 
 def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, np.ndarray], publish_state: PublishState,
                    vipc_frame_id: int, vipc_frame_id_extra: int, frame_id: int, frame_drop: float,
-                   timestamp_eof: int, model_execution_time: float, valid: bool , STEER_CTRL_Y: float, v_ego: float, DH) -> None:
+                   timestamp_eof: int, model_execution_time: float, valid: bool , STEER_CTRL_Y: float, v_ego: float, DH, experimentalMode) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   msg.valid = valid
 
@@ -116,7 +116,7 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
   if len(position.x) == TRAJECTORY_SIZE and len(orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
-    LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
+    LP.parse_model(modelV2,v_ego,experimentalMode) #ichiropilot,lta_mode判定をこの中で行う。
     path_xyz = np.column_stack([position.x, position.y, position.z])
     t_idxs = np.array(position.t)
 
