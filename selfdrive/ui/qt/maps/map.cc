@@ -273,6 +273,25 @@ void MapWindow::initLayers() {
   }
 }
 
+extern bool g_rightHandDM;
+float bearing_ofs(){
+  if(g_rightHandDM){
+    //右ハンドル
+    if(uiState()->scene.map_on_left){
+      return 10;
+    } else {
+      return 5;
+    }
+  } else {
+    //左ハンドル
+    if(uiState()->scene.map_on_left){
+      return -5;
+    } else {
+      return -10;
+    }
+  }
+}
+
 bool now_navigation = false;
 int style_reload = 0;
 float g_latitude;
@@ -391,7 +410,7 @@ void MapWindow::updateState(const UIState &s) {
           if(m_map->margins().top() != 0){
             m_map->setMargins({0, 0, 0, 0});
             m_map->setPitch(0);
-            m_map->setBearing(0);
+            m_map->setBearing(0+bearing_ofs());
             MAX_ZOOM_ = MAX_ZOOM0;
             //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
           }
@@ -463,9 +482,9 @@ void MapWindow::updateState(const UIState &s) {
   if (interaction_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
     if(north_up == 0){
-      if (last_bearing) m_map->setBearing(*last_bearing);
+      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
     } else {
-      if (last_bearing) m_map->setBearing(0);
+      if (last_bearing) m_map->setBearing(0+bearing_ofs());
     }
     m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   } else {
@@ -565,7 +584,7 @@ void MapWindow::initializeGL() {
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
     last_bearing = (float)((double)getButtonInt("/data/mb_last_bearing_info.txt",0) / 1000);
-    if (last_bearing) m_map->setBearing(*last_bearing);
+    if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
   } else {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
@@ -576,7 +595,7 @@ void MapWindow::initializeGL() {
   } else {
     m_map->setMargins({0, 0, 0, 0});
     m_map->setPitch(0);
-    m_map->setBearing(0);
+    m_map->setBearing(0+bearing_ofs());
   }
 
   my_mapbox_style = util::read_file("/data/mb_style.txt");
@@ -692,9 +711,9 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 
   if (last_position) m_map->setCoordinate(*last_position);
   if(north_up == 0){
-    if (last_bearing) m_map->setBearing(*last_bearing);
+    if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
   } else {
-    if (last_bearing) m_map->setBearing(0);
+    if (last_bearing) m_map->setBearing(0+bearing_ofs());
   }
   m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   update();
