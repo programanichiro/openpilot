@@ -904,7 +904,7 @@ class LongitudinalPlanner:
       if vl > 0:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
-        add_k = interp(v_ego,[0,10/3.6],[0.1,0.2]) #0.2固定だと雨の日ホイールスピンする
+        add_k = interp(v_ego,[0,10/3.6],[0.15,0.25]) #0.2固定だと雨の日ホイールスピンする
         self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
         try:
           with open('/tmp/start_accel_power_up_disp_enable.txt','r') as fp:
