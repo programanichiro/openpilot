@@ -278,16 +278,16 @@ float bearing_ofs(){
   if(g_rightHandDM){
     //右ハンドル
     if(uiState()->scene.map_on_left){
-      return 10;
+      return -8;
     } else {
-      return 5;
+      return -4;
     }
   } else {
     //左ハンドル
     if(uiState()->scene.map_on_left){
-      return -5;
+      return 4;
     } else {
-      return -10;
+      return 8;
     }
   }
 }
@@ -410,7 +410,7 @@ void MapWindow::updateState(const UIState &s) {
           if(m_map->margins().top() != 0){
             m_map->setMargins({0, 0, 0, 0});
             m_map->setPitch(0);
-            m_map->setBearing(0+bearing_ofs());
+            m_map->setBearing(0);
             MAX_ZOOM_ = MAX_ZOOM0;
             //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
           }
@@ -484,7 +484,7 @@ void MapWindow::updateState(const UIState &s) {
     if(north_up == 0){
       if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
     } else {
-      if (last_bearing) m_map->setBearing(0+bearing_ofs());
+      if (last_bearing) m_map->setBearing(0);
     }
     m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   } else {
@@ -595,7 +595,7 @@ void MapWindow::initializeGL() {
   } else {
     m_map->setMargins({0, 0, 0, 0});
     m_map->setPitch(0);
-    m_map->setBearing(0+bearing_ofs());
+    m_map->setBearing(0);
   }
 
   my_mapbox_style = util::read_file("/data/mb_style.txt");
@@ -713,7 +713,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   if(north_up == 0){
     if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
   } else {
-    if (last_bearing) m_map->setBearing(0+bearing_ofs());
+    if (last_bearing) m_map->setBearing(0);
   }
   m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   update();
