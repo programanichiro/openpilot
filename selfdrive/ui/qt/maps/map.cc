@@ -273,25 +273,6 @@ void MapWindow::initLayers() {
   }
 }
 
-extern bool g_rightHandDM;
-float bearing_ofs(){
-  if(g_rightHandDM){
-    //右ハンドル
-    if(uiState()->scene.map_on_left){
-      return -8;
-    } else {
-      return -4;
-    }
-  } else {
-    //左ハンドル
-    if(uiState()->scene.map_on_left){
-      return 4;
-    } else {
-      return 8;
-    }
-  }
-}
-
 bool now_navigation = false;
 int style_reload = 0;
 float g_latitude;
@@ -482,7 +463,7 @@ void MapWindow::updateState(const UIState &s) {
   if (interaction_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
     if(north_up == 0){
-      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
+      if (last_bearing) m_map->setBearing(*last_bearing);
     } else {
       if (last_bearing) m_map->setBearing(0);
     }
@@ -584,7 +565,7 @@ void MapWindow::initializeGL() {
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
     last_bearing = (float)((double)getButtonInt("/data/mb_last_bearing_info.txt",0) / 1000);
-    if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
+    if (last_bearing) m_map->setBearing(*last_bearing);
   } else {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
@@ -711,7 +692,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 
   if (last_position) m_map->setCoordinate(*last_position);
   if(north_up == 0){
-    if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs());
+    if (last_bearing) m_map->setBearing(*last_bearing);
   } else {
     if (last_bearing) m_map->setBearing(0);
   }
