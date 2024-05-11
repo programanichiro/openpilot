@@ -25,7 +25,7 @@ const float MIN_ZOOM0 = 14;
 const float MAX_PITCH = 50;
 #define MIN_PITCH calc_pich()
 float MIN_PITCH_ = 0;
-const float MAP_SCALE = 2;
+const float MAP_SCALE = 1;
 
 std::string my_mapbox_triangle;
 std::string my_mapbox_style;
