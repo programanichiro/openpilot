@@ -374,7 +374,7 @@ void MapWindow::updateState(const UIState &s) {
 
         if(north_up == 0){
           if(m_map->margins().top() == 0){
-            m_map->setMargins({0, 350*2/MAP_SCALE, 0, 50*2/MAP_SCALE});
+            m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
             chg_pitch = true;
             max_zoom_pitch_effect();
           }
@@ -485,7 +485,7 @@ void MapWindow::updateState(const UIState &s) {
 
       if (locationd_valid) {
         if(north_up == 0){
-          m_map->setMargins({0, 350*2/MAP_SCALE, 0, 50*2/MAP_SCALE});
+          m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
           m_map->setPitch(MAX_PITCH); // TODO: smooth pitching based on maneuver distance
         } else {
           m_map->setMargins({0, 0, 0, 0});
@@ -571,7 +571,7 @@ void MapWindow::initializeGL() {
   }
 
   if(north_up == 0){
-    m_map->setMargins({0, 350*2/MAP_SCALE, 0, 50*2/MAP_SCALE});
+    m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
     m_map->setPitch(MIN_PITCH);
   } else {
     m_map->setMargins({0, 0, 0, 0});
@@ -623,7 +623,7 @@ void MapWindow::clearRoute() {
   if (!m_map.isNull()) {
     m_map->setLayoutProperty("navLayer", "visibility", "none");
     if(north_up == 0){
-      m_map->setMargins({0, 350*2/MAP_SCALE, 0, 50*2/MAP_SCALE});
+      m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
       m_map->setPitch(MIN_PITCH);
     } else {
       m_map->setMargins({0, 0, 0, 0});
