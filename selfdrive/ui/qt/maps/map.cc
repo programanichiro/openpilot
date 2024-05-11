@@ -15,17 +15,18 @@
 
 const int INTERACTION_TIMEOUT = 100;
 
-const float MAX_ZOOM0 = 17;
+const float MAP_SCALE = 3;
+const float log2_MAP_SCALE = 0.58496250072; //log2(MAP_SCALE/2)
+const float MAX_ZOOM0 = (17-log2_MAP_SCALE);
 float MAX_ZOOM_;
 #define MAX_ZOOM calc_max_zoom()
 float zoom_offset;
 //const float MIN_ZOOM = 14;
-const float MIN_ZOOM0 = 14;
+const float MIN_ZOOM0 = (14-log2_MAP_SCALE);
 #define MIN_ZOOM calc_min_zoom()
 const float MAX_PITCH = 50;
 #define MIN_PITCH calc_pich()
 float MIN_PITCH_ = 0;
-const float MAP_SCALE = 3;
 
 std::string my_mapbox_triangle;
 std::string my_mapbox_style;
@@ -58,7 +59,7 @@ float calc_max_zoom(){
   //   zoom_offset = MIN_ZOOM - MAX_ZOOM_;
   //   return MIN_ZOOM;
   // }
-  const float tmp_MIN_ZOOM = 6; //大きな川から島が入る(関東で70〜80km四方)。1で地球レベル
+  const float tmp_MIN_ZOOM = (6-log2_MAP_SCALE); //大きな川から島が入る(関東で70〜80km四方)。1で地球レベル
   if(m_o < tmp_MIN_ZOOM){
     zoom_offset = tmp_MIN_ZOOM - MAX_ZOOM_;
     return tmp_MIN_ZOOM;
