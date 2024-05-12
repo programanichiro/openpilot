@@ -278,6 +278,33 @@ void MapWindow::initLayers() {
   }
 }
 
+extern bool g_rightHandDM;
+float bearing_ofs(float v_ego){
+  float k=0;
+  if(v_ego > 30/3.6){
+    k=1;
+  } else if(v_ego < 0){
+    ;
+  } else {
+    k = v_ego / (30/3.6); //0〜1.0
+  }
+  if(g_rightHandDM){
+    //右ハンドル
+    if(uiState()->scene.map_on_left){
+      return -8 * k;
+    } else {
+      return -6 * k;
+    }
+  } else {
+    //左ハンドル
+    if(uiState()->scene.map_on_left){
+      return 6 * k;
+    } else {
+      return 8 * k;
+    }
+  }
+}
+
 bool now_navigation = false;
 int style_reload = 0;
 float g_latitude;
@@ -468,7 +495,7 @@ void MapWindow::updateState(const UIState &s) {
   if (interaction_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
     if(north_up == 0){
-      if (last_bearing) m_map->setBearing(*last_bearing);
+      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
     } else {
       if (last_bearing) m_map->setBearing(0);
     }
@@ -570,7 +597,7 @@ void MapWindow::initializeGL() {
   if (last_position) {
     m_map->setCoordinateZoom(*last_position, MAX_ZOOM);
     last_bearing = (float)((double)getButtonInt("/data/mb_last_bearing_info.txt",0) / 1000);
-    if (last_bearing) m_map->setBearing(*last_bearing);
+    if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
   } else {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
@@ -697,7 +724,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 
   if (last_position) m_map->setCoordinate(*last_position);
   if(north_up == 0){
-    if (last_bearing) m_map->setBearing(*last_bearing);
+    if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
   } else {
     if (last_bearing) m_map->setBearing(0);
   }

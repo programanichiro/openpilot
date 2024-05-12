@@ -45,6 +45,7 @@ float vc_speed;
 static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
+bool g_rightHandDM;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -141,6 +142,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
   dmActive = dm_state.getIsActiveMode();
   rightHandDM = dm_state.getIsRHD();
+  g_rightHandDM = rightHandDM;
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
 
