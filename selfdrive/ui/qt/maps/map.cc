@@ -17,7 +17,7 @@ const int INTERACTION_TIMEOUT = 100;
 #if 0
 const float MAP_SCALE = 3;
 const float log2_MAP_SCALE = 0.58496250072; //log2(MAP_SCALE/2)
-#elif 0
+#elif 1
 const float MAP_SCALE = 2;
 const float log2_MAP_SCALE = 0; //log2(MAP_SCALE/2)
 #else
