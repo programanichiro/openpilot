@@ -100,12 +100,13 @@ void Sidebar::updateState(const UIState &s) {
     if(nanos_since_boot() - last_ping < 80e9){//端末起動後にWifi接続されたときネットメーターが中々反映しないのを調査。
       if(strength == 0){
         setProperty("netStrength", 1);
+        ipaddress[0] = 0;
       }
       if(net_type == "--"){
         setProperty("netType", "Ping");
         ipaddress[0] = 0;
 #if 1
-      } else if(net_type == "Wi-Fi"){
+      } else if(strength > 0 && net_type == "Wi-Fi"){
         while(ipaddress[0] == 0 || ipaddress_update == true){ //サイドバーが表示された時にも更新する
           std::string result = util::check_output("ifconfig wlan0");
           if (result.empty()) break;
