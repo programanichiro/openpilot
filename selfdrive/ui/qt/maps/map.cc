@@ -14,12 +14,15 @@
 
 
 const int INTERACTION_TIMEOUT = 100;
-#if 3 == 0
+#if 0
 const float MAP_SCALE = 3;
 const float log2_MAP_SCALE = 0.58496250072; //log2(MAP_SCALE/2)
-#else
+#elif 0
 const float MAP_SCALE = 2;
 const float log2_MAP_SCALE = 0; //log2(MAP_SCALE/2)
+#else
+const float MAP_SCALE = 2.5;
+const float log2_MAP_SCALE = 0.32192809488; //log2(MAP_SCALE/2)
 #endif
 const float MAX_ZOOM0 = (17-log2_MAP_SCALE);
 float MAX_ZOOM_;
