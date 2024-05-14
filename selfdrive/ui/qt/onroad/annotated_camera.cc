@@ -1430,7 +1430,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     map_pitch_down = true;
   }
 
-  if(face_rr_ct > long_press){ //↘︎ジェスチャー
+  if(face_rr_ct > long_press && face_left_ct == 0 && face_up_ct == 0){ //↘︎ジェスチャー
     face_rr_ct = -long_press; //連続動作しないように工夫。
     face_rr_timer = 0;
     rr_face_key_n = 0;
@@ -1443,7 +1443,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  if(face_lr_ct > long_press){ //↙︎ジェスチャー
+  if(face_lr_ct > long_press && face_right_ct == 0 && face_up_ct == 0){ //↙︎ジェスチャー
     face_lr_ct = -long_press; //連続動作しないように工夫。
     face_lr_timer = 0;
     lr_face_key_n = 0;
