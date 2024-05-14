@@ -36,8 +36,6 @@ from openpilot.system.hardware import HARDWARE
 
 handle_center = 0 #STEERING_CENTER # キャリブレーション前の手抜き
 handle_center_ct = 0
-ACCEL_PUSH_COUNT = 0
-accel_engaged_str = '0'
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -103,7 +101,6 @@ class Controls:
     self.joystick_mode = self.params.get_bool("JoystickDebugMode")
 
     # read params
-    self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
     self.is_metric = self.params.get_bool("IsMetric")
     self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
 
@@ -118,7 +115,6 @@ class Controls:
     if not self.CP.openpilotLongitudinalControl:
       self.params.remove("ExperimentalMode")
 
-    self.CS_prev = car.CarState.new_message()
     self.AM = AlertManager()
     self.events = Events()
 
@@ -214,37 +210,6 @@ class Controls:
     resume_pressed = any(be.type in (ButtonType.accelCruise, ButtonType.resumeCruise) for be in CS.buttonEvents)
     if not self.CP.pcmCruise and not self.v_cruise_helper.v_cruise_initialized and resume_pressed:
       self.events.add(EventName.resumeBlocked)
-
-    global ACCEL_PUSH_COUNT,accel_engaged_str
-    engage_disable = False
-    if CS.gasPressed:
-      accel_engaged = False
-      if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
-        try:
-          with open('/tmp/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
-            accel_engaged_str = fp.read()
-        except Exception as e:
-          pass
-      if accel_engaged_str:
-        if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
-          accel_engaged = True
-        if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
-          accel_engaged = True
-          ACCEL_PUSH_COUNT = 100
-      if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
-        engage_disable = True
-      ACCEL_PUSH_COUNT += 1
-    else:
-      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
-        engage_disable = True
-      ACCEL_PUSH_COUNT = 0
-
-    # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-    #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
-    if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
-      (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
-      (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
-      self.events.add(EventName.pedalPressed)
 
     if not self.CP.notCar:
       self.events.add_from_msg(self.sm['driverMonitoringState'].events)
@@ -853,8 +818,6 @@ class Controls:
 
     # Publish data
     self.publish_logs(CS, start_time, CC, lac_log)
-
-    self.CS_prev = CS
 
   def read_personality_param(self):
     try:
