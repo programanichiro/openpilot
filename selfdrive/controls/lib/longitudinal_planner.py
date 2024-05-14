@@ -978,12 +978,12 @@ class LongitudinalPlanner:
       longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory * self.v_cruise_onep_k, 119/3.6).tolist() #全要素を119km/h以下にする
     else:
       longitudinalPlan.speeds = (self.v_desired_trajectory * self.v_cruise_onep_k).tolist()
-    with open('/tmp/long_e2e_ready.txt','w') as fp:
+    # with open('/tmp/long_e2e_ready.txt','w') as fp:
       # fp.write('v%f / %f' % (self.v_desired_trajectory[0],self.v_desired_filter.x)) #long e2eに備えて、確認してみる。v_desired_filter.xへの扱いはv_desired_trajectoryを直に改変で代用できるか？、基本的にはオーバースピードさせないためにだけ使っている。
       # fp.write('V%f / %f' % (self.v_desired_trajectory[CONTROL_N-1],self.v_desired_filter.x))
       # fp.write('a%f / %f' % (self.a_desired_trajectory[0],self.a_desired)) #aもvも大体同じ値らしい。aは全体にa_desired_mulをかけるだけで済みそう。
-      #fp.write('A%f / %f' % (self.a_desired_trajectory[CONTROL_N-1],self.a_desired)) #aもvも大体同じ値らしい。
-      fp.write('Ak:%f' % (self.a_desired_mul))
+      # fp.write('A%f / %f' % (self.a_desired_trajectory[CONTROL_N-1],self.a_desired)) #aもvも大体同じ値らしい。
+      # fp.write('Ak:%f' % (self.a_desired_mul))
     # longitudinalPlan.accels = self.a_desired_trajectory.tolist()
     longitudinalPlan.accels = (self.a_desired_trajectory * self.a_desired_mul).tolist()
     longitudinalPlan.jerks = self.j_desired_trajectory.tolist()
