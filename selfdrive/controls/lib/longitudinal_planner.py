@@ -70,7 +70,8 @@ on_onepedal_ct = -1
 cruise_info_power_up = False
 one_pedal_chenge_restrict_time = 0
 
-START_DASH_CUT    = [0, 17/3.6, 26/3.6, 36/3.6, 45/3.6, 55/3.6, 64/3.6, 74/3.6, 83/3.6,  93/3.6]
+#START_DASH_CUT   = [0, 17/3.6, 26/3.6, 36/3.6, 45/3.6, 55/3.6, 64/3.6, 74/3.6, 83/3.6,  93/3.6]
+START_DASH_CUT    = [0, 27/3.6, 35/3.6, 43/3.6, 51/3.6, 60/3.6, 69/3.6, 78/3.6, 86/3.6,  95/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
 
 LON_MPC_STEP = 0.2  # first step is 0.2s
@@ -904,6 +905,7 @@ class LongitudinalPlanner:
       if vl > 0 and vd < vl:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
+        vd = math.sqrt(vd) #sqrt(vd)
         add_k = interp(v_ego,[0,10/3.6],[0.12,0.22]) #0.2固定だと雨の日ホイールスピンする
         self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
         try:
