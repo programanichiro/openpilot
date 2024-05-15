@@ -941,7 +941,7 @@ class LongitudinalPlanner:
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
+    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired * self.a_desired_mul)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
@@ -984,8 +984,8 @@ class LongitudinalPlanner:
       # fp.write('a%f / %f' % (self.a_desired_trajectory[0],self.a_desired)) #aもvも大体同じ値らしい。aは全体にa_desired_mulをかけるだけで済みそう。
       # fp.write('A%f / %f' % (self.a_desired_trajectory[CONTROL_N-1],self.a_desired)) #aもvも大体同じ値らしい。
       # fp.write('Ak:%f' % (self.a_desired_mul))
-    # longitudinalPlan.accels = self.a_desired_trajectory.tolist()
-    longitudinalPlan.accels = (self.a_desired_trajectory * self.a_desired_mul).tolist()
+    longitudinalPlan.accels = self.a_desired_trajectory.tolist()
+    # longitudinalPlan.accels = (self.a_desired_trajectory * self.a_desired_mul).tolist() #ここにかけても挙動変わらない？
     longitudinalPlan.jerks = self.j_desired_trajectory.tolist()
 
     longitudinalPlan.hasLead = sm['radarState'].leadOne.status
