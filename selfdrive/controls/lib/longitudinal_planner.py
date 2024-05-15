@@ -902,9 +902,8 @@ class LongitudinalPlanner:
       if vd > vl:
         vd = vl #vdの最大値はvl
       if vl > 0 and vd < vl:
-        vd = 1 #vlに達するまではきっちり加速する。現状の制御だとまったりしすぎで徐々に減らすとほとんど効果が感じられない。
-        # vd /= vl #0〜1
-        # vd = 1 - vd #1〜0
+        vd /= vl #0〜1
+        vd = 1 - vd #1〜0
         add_k = interp(v_ego,[0,10/3.6],[0.12,0.22]) #0.2固定だと雨の日ホイールスピンする
         self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
         try:
