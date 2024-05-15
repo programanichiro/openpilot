@@ -624,7 +624,7 @@ void MapWindow::initializeGL() {
     if(my_mapbox_style_night.empty() == true){
       my_mapbox_style_night = "x"; //昼が独自設定で夜が空なら、夜の変更はしない（独自設定の昼のまま）
     }
-  } else if(my_mapbox_style.empty() == false){ //mb_style.txtに x t記述。
+  } else if(my_mapbox_style.empty() == false){ //mb_style.txtに x と記述。
     my_mapbox_style = std::string(); //公式スタイルを使う
     my_mapbox_style_night = "x"; //夜も公式スタイルを使う。下の制御でstd::stringを代入する。
   } else {
