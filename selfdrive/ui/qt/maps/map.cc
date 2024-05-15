@@ -615,22 +615,27 @@ void MapWindow::initializeGL() {
   }
 
   my_mapbox_style = util::read_file("/data/mb_style.txt");
-  if(my_mapbox_style.empty() == true){
-    my_mapbox_style = "mapbox://styles/kawombop0/clw7ei7g0029q01rja2dy341n"; //イチロウパイロット昼用公開スタイル
-  }
-  if(my_mapbox_style.empty() == false && my_mapbox_style.c_str()[0] != 'm'){
+  my_mapbox_style_night = util::read_file("/data/mb_style_night.txt");
+
+  if(my_mapbox_style.empty() == false && my_mapbox_style.c_str()[0] == 'm'){
     while(my_mapbox_style.c_str()[my_mapbox_style.length()-1] == 0x0a){
       my_mapbox_style = my_mapbox_style.substr(0,my_mapbox_style.length()-1);
     }
+  } else if(my_mapbox_style.empty() == false){ //mb_style.txtに x t記述。
+    my_mapbox_style = std::string; //公式スタイルを使う
+    my_mapbox_style_night = "x"; //夜も公式スタイルを使う。下の制御でstd::stringを代入する。
+  } else {
+    my_mapbox_style = "mapbox://styles/kawombop0/clw7ei7g0029q01rja2dy341n"; //イチロウパイロット昼用公開スタイル
   }
-  my_mapbox_style_night = util::read_file("/data/mb_style_night.txt");
-  if(my_mapbox_style_night.empty() == true){
-    my_mapbox_style_night = "mapbox://styles/kawombop0/clw7ekw91004c01rd7rtx1g3r"; //イチロウパイロット夜用公開スタイル
-  }
-  if(my_mapbox_style_night.empty() == false && my_mapbox_style_night.c_str()[0] != 'm'){
+
+  if(my_mapbox_style_night.empty() == false && my_mapbox_style_night.c_str()[0] == 'm'){
     while(my_mapbox_style_night.c_str()[my_mapbox_style_night.length()-1] == 0x0a){
       my_mapbox_style_night = my_mapbox_style_night.substr(0,my_mapbox_style_night.length()-1);
     }
+  } else if(my_mapbox_style_night.empty() == false){
+    my_mapbox_style_night = std::string; //公式スタイルを使う
+  } else {
+    my_mapbox_style_night = "mapbox://styles/kawombop0/clw7ekw91004c01rd7rtx1g3r"; //イチロウパイロット夜用公開スタイル
   }
 
   if(my_mapbox_style_night.empty() == false && check_night_mode()){ //夜だったら
