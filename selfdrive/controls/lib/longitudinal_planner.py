@@ -941,7 +941,7 @@ class LongitudinalPlanner:
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
-    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired * self.a_desired_mul)
+    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
@@ -975,9 +975,9 @@ class LongitudinalPlanner:
     # longitudinalPlan.speeds = self.v_desired_trajectory.tolist()
     # longitudinalPlan.accels = self.a_desired_trajectory.tolist()
     if g_tss_type < 2:
-      longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory * self.v_cruise_onep_k, 119/3.6).tolist() #全要素を119km/h以下にする
+      longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory * self.v_cruise_onep_k * self.a_desired_mul, 119/3.6).tolist() #全要素を119km/h以下にする
     else:
-      longitudinalPlan.speeds = (self.v_desired_trajectory * self.v_cruise_onep_k).tolist()
+      longitudinalPlan.speeds = (self.v_desired_trajectory * self.v_cruise_onep_k * self.a_desired_mul).tolist()
     # with open('/tmp/long_e2e_ready.txt','w') as fp:
       # fp.write('v%f / %f' % (self.v_desired_trajectory[0],self.v_desired_filter.x)) #long e2eに備えて、確認してみる。v_desired_filter.xへの扱いはv_desired_trajectoryを直に改変で代用できるか？、基本的にはオーバースピードさせないためにだけ使っている。
       # fp.write('V%f / %f' % (self.v_desired_trajectory[CONTROL_N-1],self.v_desired_filter.x))
