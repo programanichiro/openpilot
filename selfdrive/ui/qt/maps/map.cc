@@ -622,7 +622,7 @@ void MapWindow::initializeGL() {
       my_mapbox_style = my_mapbox_style.substr(0,my_mapbox_style.length()-1);
     }
   } else if(my_mapbox_style.empty() == false){ //mb_style.txtに x t記述。
-    my_mapbox_style = std::string; //公式スタイルを使う
+    my_mapbox_style = std::string(); //公式スタイルを使う
     my_mapbox_style_night = "x"; //夜も公式スタイルを使う。下の制御でstd::stringを代入する。
   } else {
     my_mapbox_style = "mapbox://styles/kawombop0/clw7ei7g0029q01rja2dy341n"; //イチロウパイロット昼用公開スタイル
@@ -633,7 +633,7 @@ void MapWindow::initializeGL() {
       my_mapbox_style_night = my_mapbox_style_night.substr(0,my_mapbox_style_night.length()-1);
     }
   } else if(my_mapbox_style_night.empty() == false){
-    my_mapbox_style_night = std::string; //公式スタイルを使う
+    my_mapbox_style_night = std::string(); //公式スタイルを使う
   } else {
     my_mapbox_style_night = "mapbox://styles/kawombop0/clw7ekw91004c01rd7rtx1g3r"; //イチロウパイロット夜用公開スタイル
   }
