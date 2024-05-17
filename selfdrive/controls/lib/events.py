@@ -488,7 +488,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       "Auto brake holding!",
       "",
       AlertStatus.normal, AlertSize.small,
-      Priority.MID, VisualAlert.none, AudibleAlert.none, .2),
+      Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
   },
 
   EventName.belowSteerSpeed: {
