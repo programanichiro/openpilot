@@ -38,7 +38,7 @@ public:
   void setBackgroundColor(const QColor &color) { bg = color; }
   void setFrameId(int frame_id) { draw_frame_id = frame_id; }
   void setStreamType(VisionStreamType type) { pi_requested_stream_type = type; }
-  inline VisionStreamType streamType() const { return (stream_type == VISION_STREAM_WIDE_ROAD || pi_requested_stream_type == VISION_STREAM_WIDE_ROAD) ? VISION_STREAM_WIDE_ROAD : stream_type; }
+  inline VisionStreamType streamType() const { return stream_type; }
   inline const std::set<VisionStreamType> &availableStreams() const { return available_streams; }
   VisionBuf *receiveFrame(uint64_t request_frame_id = INVALID_FRAME_ID);
 
