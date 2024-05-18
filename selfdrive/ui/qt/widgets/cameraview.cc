@@ -167,7 +167,7 @@ void CameraWidget::updateFrameMat() {
   int w = glWidth(), h = glHeight();
 
   if (zoomed_view) {
-    if (streamType() != VISION_STREAM_WIDE_ROAD) {
+    if (streamType() == VISION_STREAM_ROAD) {
       // Always ready to switch if wide is not active, start at full zoom
       zoom_transition = 1;
       ready_to_switch_stream = true;
@@ -186,13 +186,15 @@ void CameraWidget::updateFrameMat() {
         const float cam_trs_speed_k = 0.4; //0.2;
         // If narrow road camera is requested, start zooming in.
         // Mark ready to switch once we're fully zoomed in
-        if (pi_requested_stream_type != VISION_STREAM_WIDE_ROAD) {
-          zoom_transition += zoom_transition * cam_trs_speed_k + 0.01;
+        if (pi_requested_stream_type == VISION_STREAM_ROAD) {
+          zoom_transition += zoom_transition * cam_trs_speed_k + 0.01; //zoom_transition=0->1
+          zoom_transition = std::clamp(zoom_transition, 0.0f, 1.0f);
+          ready_to_switch_stream = zoom_transition > 0.9; //ちょっと早めに切り上げる
         } else {
-          zoom_transition -= (1.0 - zoom_transition) * cam_trs_speed_k + 0.01;
+          zoom_transition -= (1.0 - zoom_transition) * cam_trs_speed_k + 0.01; //zoom_transition=1->0
+          zoom_transition = std::clamp(zoom_transition, 0.0f, 1.0f);
+          ready_to_switch_stream = false; //常にfalse fabs(zoom_transition - 1) < 1e-3;
         }
-        zoom_transition = std::clamp(zoom_transition, 0.0f, 1.0f);
-        ready_to_switch_stream = fabs(zoom_transition - 1) < 1e-3;
 
         intrinsic_matrix = ECAM_INTRINSIC_MATRIX;
         intrinsic_matrix.v[5] -= 70 * zoom_transition; //中心位置がズレるのを誤魔化す。
