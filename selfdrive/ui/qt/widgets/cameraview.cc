@@ -99,6 +99,7 @@ mat4 get_fit_view_transform(float widget_aspect_ratio, float frame_aspect_ratio)
 
 CameraWidget::CameraWidget(std::string stream_name, VisionStreamType type, bool zoom, QWidget *parent)
     : stream_name(stream_name), stream_type(type), zoomed_view(zoom), QOpenGLWidget(parent) {
+      pi_requested_stream_type = type; //これがないとドライバーカメラの初期化がミスる。
 }
 
 CameraWidget::~CameraWidget() {
@@ -191,6 +192,7 @@ void CameraWidget::updateFrameMat() {
           zoom_transition = std::clamp(zoom_transition, 0.0f, 1.0f);
           ready_to_switch_stream = zoom_transition > 0.9; //ちょっと早めに切り上げる
         } else {
+          if(zoom_transition > 0.95)zoom_transition = 0.95; //ちょっと最初を前に出す。
           zoom_transition -= (1.0 - zoom_transition) * cam_trs_speed_k + 0.01; //zoom_transition=1->0
           zoom_transition = std::clamp(zoom_transition, 0.0f, 1.0f);
           ready_to_switch_stream = false; //常にfalse fabs(zoom_transition - 1) < 1e-3;
