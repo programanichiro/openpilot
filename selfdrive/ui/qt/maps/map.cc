@@ -910,11 +910,11 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     speed = new QPushButton;
     //speed->setAlignment(Qt::AlignCenter);
     //speed->setStyleSheet(QString(btn_styleb_trs).arg("#2457A1"));
-    int on_vavi_highway = getButtonInt("/data/mb_navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
+    int on_vavi_highway = getButtonInt("/data/navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
     if(on_vavi_highway){
-      speed->setStyleSheet(QString(btn_styleb_trs).arg("#2457A1"));
+      speed->setStyleSheet(QString(btn_styleb_trs).arg("#10A010"));
     } else {
-      speed->setStyleSheet(QString(btn_styleb_trs).arg("#10E010"));
+      speed->setStyleSheet(QString(btn_styleb_trs).arg("#2457A1"));
     }
     //this->updateLimitspeed(0);
     speed->setText("━");
@@ -924,16 +924,16 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
     QObject::connect(speed, &QPushButton::pressed, [=]() {
       const SubMaster &sm = *(uiState()->sm);
-      int on_vavi_highway = getButtonInt("/data/mb_navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
+      int on_vavi_highway = getButtonInt("/data/navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
       if (sm.valid("navInstruction")) {
         //ナビ中
         on_vavi_highway ^= 1; //反転
       }
-      setButtonInt("/data/mb_navi_highway.txt",on_vavi_highway);
+      setButtonInt("/data/navi_highway.txt",on_vavi_highway);
       if(on_vavi_highway){
-        speed->setStyleSheet(QString(btn_styleb_trs).arg("#2457A1"));
+        speed->setStyleSheet(QString(btn_styleb_trs).arg("#10A010"));
       } else {
-        speed->setStyleSheet(QString(btn_styleb_trs).arg("#10E010"));
+        speed->setStyleSheet(QString(btn_styleb_trs).arg("#2457A1"));
       }
       std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
       if(last_navi_dest.empty() == false){

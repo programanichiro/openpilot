@@ -157,9 +157,19 @@ class RouteEngine:
       'banner_instructions': 'true',
       'alternatives': 'false',
       'language': lang,
-      'max_width': '2.4',
-      'max_weight': '2.5',
     }
+
+    navi_highway = 0
+    try:
+      with open('/data/navi_highway.txt','r') as fp:
+        navi_highway_str = fp.read()
+        if navi_highway_str:
+          navi_highway = int(navi_highway_str)
+    except Exception as e:
+      pass
+    if navi_highway == 0:
+      params['exclude'] = 'toll' #有料区間を避ける
+      # params['exclude'] = 'motorway,toll' #高速と有料区間を避ける
 
     # TODO: move waypoints into NavDestination param?
     waypoints = self.params.get('NavDestinationWaypoints', encoding='utf8')
