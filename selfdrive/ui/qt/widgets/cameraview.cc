@@ -126,7 +126,7 @@ void CameraWidget::initializeGL() {
   GLint frame_pos_loc = program->attributeLocation("aPosition");
   GLint frame_texcoord_loc = program->attributeLocation("aTexCoord");
 
-  auto [x1, x2, y1, y2] = stream_type == VISION_STREAM_DRIVER ? std::tuple(0.f, 1.f, 1.f, 0.f) : std::tuple(1.f, 0.f, 1.f, 0.f);
+  auto [x1, x2, y1, y2] = pi_requested_stream_type == VISION_STREAM_DRIVER ? std::tuple(0.f, 1.f, 1.f, 0.f) : std::tuple(1.f, 0.f, 1.f, 0.f);
   const uint8_t frame_indicies[] = {0, 1, 2, 0, 2, 3};
   const float frame_coords[4][4] = {
     {-1.0, -1.0, x2, y1}, // bl
@@ -186,7 +186,7 @@ void CameraWidget::updateFrameMat() {
         const float cam_trs_speed_k = 0.4; //0.2;
         // If narrow road camera is requested, start zooming in.
         // Mark ready to switch once we're fully zoomed in
-        if (requested_stream_type != VISION_STREAM_WIDE_ROAD) {
+        if (pi_requested_stream_type != VISION_STREAM_WIDE_ROAD) {
           zoom_transition += zoom_transition * cam_trs_speed_k + 0.01;
         } else {
           zoom_transition -= (1.0 - zoom_transition) * cam_trs_speed_k + 0.01;
@@ -337,57 +337,11 @@ VisionBuf *CameraWidget::receiveFrame(uint64_t request_frame_id) {
     return nullptr;
   }
 
-#if 0//<<<<<<< HEAD
-void CameraWidget::vipcThread() {
-  VisionStreamType cur_stream = requested_stream_type;
-  std::unique_ptr<VisionIpcClient> vipc_client;
-  VisionIpcBufExtra meta_main = {0};
-
-  while (!QThread::currentThread()->isInterruptionRequested()) {
-    if (!vipc_client || cur_stream != requested_stream_type && ready_to_switch_stream) {
-      clearFrames();
-      qDebug().nospace() << "connecting to stream " << requested_stream_type << ", was connected to " << cur_stream;
-      cur_stream = requested_stream_type;
-      vipc_client.reset(new VisionIpcClient(stream_name, cur_stream, false));
-      active_stream_type = cur_stream;
-    }
-
-    if (!vipc_client->connected) {
-      clearFrames();
-      auto streams = VisionIpcClient::getAvailableStreams(stream_name, false);
-      if (streams.empty()) {
-        QThread::msleep(100);
-        continue;
-      }
-      emit vipcAvailableStreamsUpdated(streams);
-
-      if (!vipc_client->connect(false)) {
-        QThread::msleep(100);
-        continue;
-      }
-      emit vipcThreadConnected(vipc_client.get());
-    }
-
-    if (VisionBuf *buf = vipc_client->recv(&meta_main, 1000)) {
-      {
-        std::lock_guard lk(frame_lock);
-        frames.push_back(std::make_pair(meta_main.frame_id, buf));
-        while (frames.size() > FRAME_BUFFER_SIZE) {
-          frames.pop_front();
-        }
-      }
-      emit vipcThreadFrameReceived();
-    } else {
-      if (!isVisible()) {
-        vipc_client->connected = false;
-      }
-#else//=======
   // Receive frames and store them in recent_frames
   while (auto buf = vipc_client->recv(nullptr, 0)) {
     recent_frames.emplace_back(buf);
     if (recent_frames.size() > FRAME_BUFFER_SIZE) {
       recent_frames.pop_front();
-#endif//>>>>>>> dd6e2a400b1b9543fad0c3c4a78463abf756da6b
     }
   }
   if (!vipc_client->connected || recent_frames.empty()) {
@@ -402,8 +356,9 @@ void CameraWidget::vipcThread() {
 
 bool CameraWidget::ensureConnection() {
   // Reconnect if the client is not initialized or the stream type has changed
-  if (!vipc_client || vipc_client->type != stream_type) {
-    qDebug() << "connecting to stream" << stream_type;
+  if (!vipc_client || vipc_client->type != pi_requested_stream_type && ready_to_switch_stream) {
+    qDebug() << "connecting to stream" << pi_requested_stream_type;
+    stream_type = pi_requested_stream_type;
     vipc_client.reset(new VisionIpcClient(stream_name, stream_type, false));
   }
 
