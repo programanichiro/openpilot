@@ -78,6 +78,8 @@ protected:
   int stream_stride = 0;
   VisionStreamType stream_type;
   VisionStreamType pi_requested_stream_type;
+  bool ready_to_switch_stream = true;  // stream transition may be delayed by a zoom animation
+  float zoom_transition = 0;
 
   // Calibration
   float x_offset = 0;
