@@ -928,6 +928,11 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
       if (sm.valid("navInstruction")) {
         //ナビ中
         on_vavi_highway ^= 1; //反転
+        FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+        if(fp != NULL){
+          fprintf(fp,"%d",1);
+          fclose(fp);
+        }
       }
       setButtonInt("/data/navi_highway.txt",on_vavi_highway);
       if(on_vavi_highway){
