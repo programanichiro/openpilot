@@ -59,11 +59,11 @@ class RouteEngine:
       self.mapbox_host = "https://maps.comma.ai"
 
     try:
-      with open('../../../mb_token.txt','r') as fp:
+      with open('/data/mb_token.txt','r') as fp:
         self.mapbox_token = fp.read().rstrip()
         self.mapbox_host = "https://api.mapbox.com"
     except Exception as e:
-      pass    
+      pass
 
   def update(self):
     self.sm.update(0)

@@ -140,7 +140,7 @@ void OnroadWindow::offroadTransition(bool offroad) {
 #ifdef ENABLE_MAPS
   if (!offroad) {
     bool mapbox_extra = false;
-    std::string my_mapbox_token = util::read_file("../../../mb_token.txt");
+    std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
     if(my_mapbox_token.empty() == false){
       mapbox_extra = true;
     }

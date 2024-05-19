@@ -13,7 +13,7 @@
 
 QString get_mapbox_token() {
   // Valid for 4 weeks since we can't swap tokens on the fly
-  std::string my_mapbox_token = util::read_file("../../../mb_token.txt");
+  std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
   if(my_mapbox_token.empty() == false){
     while(my_mapbox_token.c_str()[my_mapbox_token.length()-1] == 0x0a){
       my_mapbox_token = my_mapbox_token.substr(0,my_mapbox_token.length()-1);
@@ -32,7 +32,7 @@ QMapLibre::Settings get_mapbox_settings() {
     settings.setCacheDatabaseMaximumSize(100 * 1024 * 1024);
   }
   bool mapbox_extra = false;
-  std::string my_mapbox_token = util::read_file("../../../mb_token.txt");
+  std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
   if(my_mapbox_token.empty() == false){
     mapbox_extra = true;
   }

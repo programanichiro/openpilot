@@ -29,6 +29,24 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   versionLbl = new LabelControl(tr("Current Version"), "");
   addItem(versionLbl);
 
+  // APN settings
+  ButtonControl* editMapboxTokenButton = new ButtonControl(tr("Mapbox Token"), tr("EDIT"));
+  connect(editMapboxTokenButton, &ButtonControl::clicked, [=]() {
+    std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
+    if(my_mapbox_token.empty() == false){
+
+    const QString cur_token = QString::fromStdString("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+    QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
+
+    if (mb_token.isEmpty() == false) {
+      // FILE *fp = fopen("/data/mb_token.txt","w"){
+      //   fprintf(fp,"%s",mb_token.toUtf8().constData())
+      //   fclose(fp);
+      // }
+    }
+  });
+  addItem(editMapboxTokenButton);
+
   // download update btn
   downloadBtn = new ButtonControl(tr("Download"), tr("CHECK"));
   connect(downloadBtn, &ButtonControl::clicked, [=]() {
