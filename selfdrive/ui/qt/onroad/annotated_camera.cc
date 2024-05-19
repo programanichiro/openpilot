@@ -857,17 +857,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+4, traffic_speed_y-arc_w/2+4, traffic_speed_r*2+arc_w-8,traffic_speed_r*2+arc_w-8, (90-car_bearing+5)*16, (360-5*2)*16);
     int f_size = traffic_speed_r * 67 / (150 / 2);
     p.setFont(InterFont(f_size, QFont::Bold));
-    QColor traffic_speed_color;
-    static int on_vavi_highway;
-    if(limitspeed_info_read_ct % 10 == 0){
-      on_vavi_highway = getButtonInt("/tmp/navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
-    }
-    if(on_vavi_highway){
-      traffic_speed_color = QColor(0x10, 0xa0, 0x10 , 255);
-    } else {
-      traffic_speed_color = QColor(0x24, 0x57, 0xa1 , 255);
-    }
-    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , traffic_speed_color);
+    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
