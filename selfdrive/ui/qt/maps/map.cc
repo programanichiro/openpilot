@@ -172,7 +172,7 @@ bool check_night_mode(){
     clipped_brightness = std::clamp(100.0f * clipped_brightness, 10.0f, 100.0f);
 
     //night = clipped_brightness < 50; //どのくらいが妥当？
-    night = clipped_brightness < (night_mode == -1 ? 80 : (night_mode == 1 ? 90 : 75)); //ばたつかないようにする。80程度でかなり夕方。
+    night = clipped_brightness < (night_mode == 1 ? 90 : 75); //ばたつかないようにする。80程度でかなり夕方。
 #if 0 //昼間で97以上。多少影に入っても関係ない。トンネルで一気に10まで下がった。上の制御で十分だが、夕方の切り替わるタイミングはlight_sensorの挙動依存となる。
     if(1 || (night == true && night_mode != 1) || (night == false && night_mode != 0)){
       //切り替わるなら書き出し。

@@ -170,6 +170,7 @@ extern bool Long_enable;
 extern bool mapVisible;
 extern void soundButton2(int onOff);
 extern void setButtonEnabled0(const char*fn , bool flag);
+static int night_mode;
 void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.save();
   int y_ofs = 150;
@@ -263,12 +264,17 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
   } else {
     if(maxspeed_org+12 > ms.toDouble() || maxspeed_org+5 >= vc_speed * 3.6){
-      p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
+  AUTO_back_color:
+      if(night_mode == 0){
+        p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
+      } else {
+        p.setBrush(QColor::fromRgbF(0.625, 0.625, 0.625, 0.9)); //標識バックを薄暗く。
+      }
     } else {
       if(yellow_flash_ct %6 < 3){
         p.setBrush(QColor::fromRgbF(1.0, 1.0, 0, 1.0)); //速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
       } else {
-        p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
+        goto AUTO_back_color;
       }
     }
   }
@@ -344,10 +350,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
       if(clipped_brightness0 != clipped_brightness){
         clipped_brightness0 = clipped_brightness;
-        //bool night = clipped_brightness < 50; //どのくらいが妥当？
-        //bool night = clipped_brightness < (night_mode == -1 ? 50 : (night_mode == 1 ? 60 : 40)); //ばたつかないようにする。
-        //setButtonEnabled0("../manager/night_time_info.txt" , night);
         setButtonInt("/tmp/night_time_info.txt" , (int)clipped_brightness);
+
+        night_mode = clipped_brightness0 < (night_mode == 1 ? 90 : 75); //ばたつかないようにする。80程度でかなり夕方。
       }
     }
   }
@@ -833,7 +838,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
     const float traffic_speed_r = 120 / 2 , traffic_speed_x = 247 , traffic_speed_y = rect().height() - traffic_speed_r*2 - 50;
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.85));
+    if(night_mode == 0){
+      p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.85));
+    } else {
+      p.setBrush(QColor::fromRgbF(0.625, 0.625, 0.625, 0.85)); //標識バックを薄暗く。
+    }
     p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
 
     int arc_w = -22; //内側に描画
@@ -848,7 +857,14 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+4, traffic_speed_y-arc_w/2+4, traffic_speed_r*2+arc_w-8,traffic_speed_r*2+arc_w-8, (90-car_bearing+5)*16, (360-5*2)*16);
     int f_size = traffic_speed_r * 67 / (150 / 2);
     p.setFont(InterFont(f_size, QFont::Bold));
-    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
+    QColor traffic_speed_color;
+    int on_vavi_highway = getButtonInt("/tmp/navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
+    if(on_vavi_highway){
+      traffic_speed_color = QColor(0x10, 0xa0, 0x10 , 255);
+    } else {
+      traffic_speed_color = QColor(0x24, 0x57, 0xa1 , 255);
+    }
+    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , traffic_speed_color);
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
