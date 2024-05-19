@@ -268,7 +268,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       if(night_mode == 0){
         p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
       } else {
-        p.setBrush(QColor::fromRgbF(0.625, 0.625, 0.625, 0.9)); //標識バックを薄暗く。
+        p.setBrush(QColor::fromRgbF(0.8, 0.8, 0.9, 0.9)); //標識バックを薄暗く。
       }
     } else {
       if(yellow_flash_ct %6 < 3){
@@ -333,7 +333,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   red_signal_scan_flag_txt_ct ++;
 
   static long long int night_mode_ct;
-  if((red_signal_scan_flag >= 2 && (night_mode_ct ++) % 11 == 0) || red_signal_scan_flag_txt_ct % 200 == 1 /*10秒に一回は更新*/){
+  if((red_signal_scan_flag >= 2 && (night_mode_ct ++) % 11 == 0) || red_signal_scan_flag_txt_ct % (20*5) == 1 /*5秒に一回は更新*/){
     //static int night_mode = -1;
     if (uiState()->scene.started) {
       float clipped_brightness = uiState()->scene.light_sensor;
@@ -841,7 +841,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     if(night_mode == 0){
       p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.85));
     } else {
-      p.setBrush(QColor::fromRgbF(0.625, 0.625, 0.625, 0.85)); //標識バックを薄暗く。
+      p.setBrush(QColor::fromRgbF(0.8, 0.8, 0.9, 0.85)); //標識バックを薄暗く。
     }
     p.drawEllipse(traffic_speed_x,traffic_speed_y,traffic_speed_r*2,traffic_speed_r*2);
 
