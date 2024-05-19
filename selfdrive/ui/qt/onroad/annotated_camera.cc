@@ -858,7 +858,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     int f_size = traffic_speed_r * 67 / (150 / 2);
     p.setFont(InterFont(f_size, QFont::Bold));
     QColor traffic_speed_color;
-    int on_vavi_highway = getButtonInt("/tmp/navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
+    static int on_vavi_highway;
+    if(limitspeed_info_read_ct % 10 == 0){
+      on_vavi_highway = getButtonInt("/tmp/navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
+    }
     if(on_vavi_highway){
       traffic_speed_color = QColor(0x10, 0xa0, 0x10 , 255);
     } else {
