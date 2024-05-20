@@ -170,7 +170,7 @@ extern bool Long_enable;
 extern bool mapVisible;
 extern void soundButton2(int onOff);
 extern void setButtonEnabled0(const char*fn , bool flag);
-static int night_mode;
+int g_night_mode;
 void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.save();
   int y_ofs = 150;
@@ -265,7 +265,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   } else {
     if(maxspeed_org+12 > ms.toDouble() || maxspeed_org+5 >= vc_speed * 3.6){
   AUTO_back_color:
-      if(night_mode == 0){
+      if(g_night_mode == 0){
         p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.9)); //速度標識の地の色に合わせる。
       } else {
         p.setBrush(QColor::fromRgbF(0.8, 0.8, 0.9, 0.9)); //標識バックを薄暗く。
@@ -334,7 +334,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   static long long int night_mode_ct;
   if((red_signal_scan_flag >= 2 && (night_mode_ct ++) % 11 == 0) || red_signal_scan_flag_txt_ct % (20*5) == 1 /*5秒に一回は更新*/){
-    //static int night_mode = -1;
     if (uiState()->scene.started) {
       float clipped_brightness = uiState()->scene.light_sensor;
 
@@ -352,7 +351,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
         clipped_brightness0 = clipped_brightness;
         setButtonInt("/tmp/night_time_info.txt" , (int)clipped_brightness);
 
-        night_mode = clipped_brightness0 < (night_mode == 1 ? 90 : 75); //ばたつかないようにする。80程度でかなり夕方。
+        g_night_mode = clipped_brightness0 < (g_night_mode == 1 ? 90 : 75); //ばたつかないようにする。80程度でかなり夕方。
       }
     }
   }
@@ -838,7 +837,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
     const float traffic_speed_r = 120 / 2 , traffic_speed_x = 247 , traffic_speed_y = rect().height() - traffic_speed_r*2 - 50;
     p.setPen(Qt::NoPen);
-    if(night_mode == 0){
+    if(g_night_mode == 0){
       p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.85));
     } else {
       p.setBrush(QColor::fromRgbF(0.8, 0.8, 0.9, 0.85)); //標識バックを薄暗く。

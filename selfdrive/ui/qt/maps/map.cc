@@ -1028,12 +1028,13 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
   }
 }
 
+extern int g_night_mode; //onroadの制御を使う。
 void MapLimitspeed::paintEvent(QPaintEvent *event) {
 
   float r = LS_SIZE / 2;
   QPainter p(this);
   p.setPen(Qt::NoPen);
-  if(night_mode == 1){
+  if((g_night_mode == 1 && night_mode == -1) || night_mode == 1){
     p.setBrush(QColor::fromRgbF(0.8, 0.8, 0.9, 1.0));
   } else {
     p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 1.0));
@@ -1177,7 +1178,7 @@ void MapBearingScale::paintEvent(QPaintEvent *event) {
 
 
   bool tmp_bs_color_revert = bs_color_revert;
-  if(night_mode == 1){
+  if((g_night_mode == 1 && night_mode == -1) || night_mode == 1){
     tmp_bs_color_revert ^= 1;
   }
 
