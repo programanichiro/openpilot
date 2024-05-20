@@ -53,7 +53,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     if (mb_token.isEmpty() == false) {
       FILE *fp = fopen("/data/mb_token.txt","w");
       if(fp != NULL){
-        fprintf(fp,"%s",mb_token.toUtf8().constData())
+        fprintf(fp,"%s",mb_token.toUtf8().constData());
         fclose(fp);
       }
       editMapboxTokenButton->setValue(mb_token);
