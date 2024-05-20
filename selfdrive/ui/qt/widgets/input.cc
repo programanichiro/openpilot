@@ -95,7 +95,21 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
   QHBoxLayout *textbox_layout = new QHBoxLayout(textbox_widget);
   textbox_layout->setContentsMargins(50, 0, 50, 0);
 
-  textbox_widget->setStyleSheet(R"(
+  textbox_widget->setStyleSheet(
+    title != tr("Enter Mapbox Token") ? R"(
+    #textbox {
+      margin-left: 50px;
+      margin-right: 50px;
+      border-radius: 0;
+      border-bottom: 3px solid #BDBDBD;
+    }
+    * {
+      border: none;
+      font-size: 80px;
+      font-weight: light;
+      background-color: transparent;
+    }
+  )" : R"(
     #textbox {
       margin-left: 50px;
       margin-right: 50px;
