@@ -29,7 +29,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   versionLbl = new LabelControl(tr("Current Version"), "");
   addItem(versionLbl);
 
-  // APN settings
+  // Mapbox Token
   ButtonControl* editMapboxTokenButton = new ButtonControl(tr("Mapbox Token"), tr("EDIT"));
   connect(editMapboxTokenButton, &ButtonControl::clicked, [=]() {
     std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
