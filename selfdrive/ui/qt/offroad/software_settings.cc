@@ -36,6 +36,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     QString cur_token;
     if(my_mapbox_token.empty() == false){
       cur_token = QString::fromStdString(my_mapbox_token);
+      //editMapboxTokenButton->setValue(cur_token);
     }
     QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
 
@@ -44,6 +45,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
       //   fprintf(fp,"%s",mb_token.toUtf8().constData())
       //   fclose(fp);
       // }
+      editMapboxTokenButton->setValue(mb_token);
     }
   });
   addItem(editMapboxTokenButton);
