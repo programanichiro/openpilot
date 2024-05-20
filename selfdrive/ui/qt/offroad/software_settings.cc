@@ -35,7 +35,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
     QString cur_token;
     if(my_mapbox_token.empty() == false){
-      cur_token = QString(my_mapbox_token);
+      cur_token = QString::fromStdString(my_mapbox_token);
     }
     QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
 
