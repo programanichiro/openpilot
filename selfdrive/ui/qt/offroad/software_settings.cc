@@ -30,9 +30,19 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   addItem(versionLbl);
 
   // Mapbox Token
-  ButtonControl* editMapboxTokenButton = new ButtonControl(tr("Mapbox Token"), tr("EDIT"));
+  ButtonControl *editMapboxTokenButton = new ButtonControl(tr("Mapbox Token"), tr("EDIT"));
+  std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
+  my_mapbox_token.erase(std::remove(my_mapbox_token.begin(), my_mapbox_token.end(), '\n'), my_mapbox_token.end());
+  my_mapbox_token.erase(std::remove(my_mapbox_token.begin(), my_mapbox_token.end(), '\r'), my_mapbox_token.end());
+  QString cur_token;
+  if(my_mapbox_token.empty() == false){
+    cur_token = QString::fromStdString(my_mapbox_token);
+    editMapboxTokenButton->setValue(cur_token);
+  }
   connect(editMapboxTokenButton, &ButtonControl::clicked, [=]() {
     std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
+    my_mapbox_token.erase(std::remove(my_mapbox_token.begin(), my_mapbox_token.end(), '\n'), my_mapbox_token.end());
+    my_mapbox_token.erase(std::remove(my_mapbox_token.begin(), my_mapbox_token.end(), '\r'), my_mapbox_token.end());
     QString cur_token;
     if(my_mapbox_token.empty() == false){
       cur_token = QString::fromStdString(my_mapbox_token);
@@ -41,13 +51,14 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
 
     if (mb_token.isEmpty() == false) {
-      // FILE *fp = fopen("/data/mb_token.txt","w"){
-      //   fprintf(fp,"%s",mb_token.toUtf8().constData())
-      //   fclose(fp);
-      // }
+      FILE *fp = fopen("/data/mb_token.txt","w"){
+        fprintf(fp,"%s",mb_token.toUtf8().constData())
+        fclose(fp);
+      }
       editMapboxTokenButton->setValue(mb_token);
     } else {
-      editMapboxTokenButton->setValue("canceled...");
+      //キャンセルと空文字OKの区別がつかない。
+      //editMapboxTokenButton->setValue("canceled...");
     }
   });
   addItem(editMapboxTokenButton);

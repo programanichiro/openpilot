@@ -118,7 +118,7 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
     }
     * {
       border: none;
-      font-size: 50px;
+      font-size: 35px;
       font-weight: light;
       background-color: transparent;
     }
