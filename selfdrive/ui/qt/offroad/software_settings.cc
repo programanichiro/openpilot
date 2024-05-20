@@ -41,11 +41,13 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
 
     if (mb_token.isEmpty() == false) {
-      FILE *fp = fopen("/data/mb_token.txt","w"){
-        fprintf(fp,"%s",mb_token.toUtf8().constData())
-        fclose(fp);
-      }
+      // FILE *fp = fopen("/data/mb_token.txt","w"){
+      //   fprintf(fp,"%s",mb_token.toUtf8().constData())
+      //   fclose(fp);
+      // }
       editMapboxTokenButton->setValue(mb_token);
+    } else {
+      editMapboxTokenButton->setValue("canceled...");
     }
   });
   addItem(editMapboxTokenButton);
