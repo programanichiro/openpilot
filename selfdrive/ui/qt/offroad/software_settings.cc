@@ -33,9 +33,10 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   ButtonControl* editMapboxTokenButton = new ButtonControl(tr("Mapbox Token"), tr("EDIT"));
   connect(editMapboxTokenButton, &ButtonControl::clicked, [=]() {
     std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
+    QString cur_token;
     if(my_mapbox_token.empty() == false){
-
-    const QString cur_token = QString::fromStdString("XXXXXXXXXXXXXXXXXXXXXXXXXXX");
+      cur_token = QString(my_mapbox_token);
+    }
     QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
 
     if (mb_token.isEmpty() == false) {
