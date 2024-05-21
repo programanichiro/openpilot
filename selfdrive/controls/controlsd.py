@@ -11,7 +11,7 @@ import cereal.messaging as messaging
 from cereal import car, log
 from cereal.visionipc import VisionIpcClient, VisionStreamType
 
-from openpilot.selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.git import get_short_branch
