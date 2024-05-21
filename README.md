@@ -1,4 +1,4 @@
-![](https://imgur.com/g10LvmK)
+![](https://i.imgur.com/g10LvmK.jpeg)
 
 Table of Contents
 =======================
