@@ -733,7 +733,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
 
-      double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()); // / MAP_SCALEを以下考えない。辻褄は合う？
+      double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
       QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
 
       //中央からpまでのピクセル差分。
