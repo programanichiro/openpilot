@@ -734,14 +734,14 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
     if(latlon){
 
       double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()); // / MAP_SCALEを以下考えない。辻褄は合う？
-      ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
+      QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
 
       //中央からpまでのピクセル差分。
       int dx = p.x() - (width() / 2.0);
       int dy = p.y() - (height() / 2.0);
       mm = QMapLibre::ProjectedMeters(mm.first + dx*len, mm.second + dy*len);
 
-      Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
+      QMapLibre::Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
 
       fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",point.first,point.second); //タッチしてる緯度経度
       //fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
