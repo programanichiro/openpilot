@@ -438,7 +438,7 @@ void MapWindow::updateState(const UIState &s) {
     }
   }
   if(set_g_latitude == false && last_position){
-    g_latitude = last_position.first;
+    g_latitude = last_position->first;
   }
 
   static unsigned int LimitspeedChanged_ct;
