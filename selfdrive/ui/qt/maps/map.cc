@@ -881,7 +881,7 @@ void MapWindow::offroadTransition(bool offroad) {
     clearRoute();
     routing_problem = false;
 
-    setButtonInt("/data/mb_last_bearing_info.txt",(int)(*last_bearing * 1000)); //"%.2f"の代わり。
+    if (last_bearing) setButtonInt("/data/mb_last_bearing_info.txt",(int)(*last_bearing * 1000)); //"%.2f"の代わり。
     //不要setButtonInt("/data/mb_north_up.txt",north_up);
     setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
     if(width_rate >= 0){
