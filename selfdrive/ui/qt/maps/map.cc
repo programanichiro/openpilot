@@ -438,6 +438,10 @@ void MapWindow::updateState(const UIState &s) {
         MAX_ZOOM_ = MAX_ZOOM0;
         //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
         m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+      } else if(chg_pitch){
+        chg_pitch = false;
+        m_map->setPitch(0);
+        m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       }
     }
   }
@@ -1130,6 +1134,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //2秒以上長押しでzoom_offsetクリア。
         zoom_offset = 0;
+        chg_pitch = true; //これを呼ばないとsetZoomも呼ばれない。
         void soundButton(int onOff);
         soundButton(false);
       } else if(now - m_pressedTime > 500){
