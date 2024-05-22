@@ -551,7 +551,9 @@ void MapWindow::updateState(const UIState &s) {
             m_map->setStyleUrl(my_mapbox_style.c_str());
           }
         }
+        chg_pitch = true;
       }
+
       clearRoute();
     }
   }
@@ -734,6 +736,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
     if(latlon){
       double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
       QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
+      const SubMaster &sm = *(uiState()->sm);
 
       if(north_up){
         //中央からpまでのピクセル差分。
@@ -755,9 +758,14 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
         dx = sin(rad) * dy + cos(rad) * dx;
         dy = tmp_dy;
 
-        dx /= cos(DEG2RAD(MIN_PITCH));
-        dy /= cos(DEG2RAD(MIN_PITCH));
-
+        //傾きによる補正はなんちゃって式。前後左右で考えないとダメだがめんどくさすぎる。十分拡大するか、ノースアップでやってね。
+        if (sm.valid("navInstruction")) {
+          dx /= cos(DEG2RAD(MAX_PITCH));
+          dy /= cos(DEG2RAD(MAX_PITCH));
+        } else {
+          dx /= cos(DEG2RAD(MIN_PITCH));
+          dy /= cos(DEG2RAD(MIN_PITCH));
+        }
         mm = QMapLibre::ProjectedMeters(mm.first - dy*len, mm.second + dx*len);
 
         QMapLibre::Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
@@ -767,9 +775,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
       }
       fclose(latlon);
 
-      const SubMaster &sm = *(uiState()->sm);
       if (sm.valid("navInstruction")) {
-        //ナビ中にやる操作じゃないから、ここは無くてもいいかもね。
         FILE *fp = fopen("/tmp/route_style_reload.txt","w");
         if(fp != NULL){
           fprintf(fp,"%d",1);
