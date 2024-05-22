@@ -422,6 +422,7 @@ void MapWindow::updateState(const UIState &s) {
       }
       if(chg_pitch){
         chg_pitch = false;
+        if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
         if (sm.valid("navInstruction")) {
           m_map->setPitch(MAX_PITCH); //ナビ中
         } else {
@@ -436,6 +437,7 @@ void MapWindow::updateState(const UIState &s) {
         m_map->setBearing(0);
         MAX_ZOOM_ = MAX_ZOOM0;
         //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
+        m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       }
     }
   }
@@ -727,10 +729,33 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   void soundButton(int onOff);
   quint64 now = QDateTime::currentMSecsSinceEpoch();
   //ボタンを押した時に何かしたいならここで。
-  if(now - mouse_pressedTime > 2000){
+  if(now - mouse_pressedTime > 2000 && m_map){
     soundButton(true);
+
+    FILE *latlon = fopen("/data/last_navi_dest.json","w");
+    if(latlon){
+      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate->first,m_map->coordinate->secound); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
+      fclose(latlon);
+
+      const SubMaster &sm = *(uiState()->sm);
+      if (sm.valid("navInstruction")) {
+        //ナビ中にやる操作じゃないから、ここは無くてもいいかもね。
+        FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+        if(fp != NULL){
+          fprintf(fp,"%d",1);
+          fclose(fp);
+        }
+      }
+      std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
+      if(last_navi_dest.empty() == false){
+        extern void soundPipo();
+        soundPipo();
+        Params().put("NavDestination", last_navi_dest);
+      }
+    }
+
   } else if(now - mouse_pressedTime > 500){
-    soundButton(false);
+    //soundButton(false);
   }
 }
 
@@ -774,6 +799,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
+  mouse_pressedTime = QDateTime::currentMSecsSinceEpoch() + 1000*1000; //動かしたら長押し判定されないように1000秒後を設定する。
   QPointF g_delta;
   bool window_resize = false;
   bool zoom_change = false;
@@ -955,8 +981,8 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
           fprintf(fp,"%d",1);
           fclose(fp);
         }
+        setButtonInt("/data/navi_highway.txt",on_vavi_highway);
       }
-      setButtonInt("/data/navi_highway.txt",on_vavi_highway);
       if(on_vavi_highway){
         speed->setStyleSheet(QString(btn_styleb_trs).arg("#10A010"));
       } else {
