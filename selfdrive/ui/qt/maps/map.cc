@@ -553,7 +553,6 @@ void MapWindow::updateState(const UIState &s) {
         }
         chg_pitch = true;
       }
-
       clearRoute();
     }
   }
