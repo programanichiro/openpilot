@@ -719,7 +719,7 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
   }
 }
 
-void mouseReleaseEvent(QMouseEvent *ev) {
+void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   //QPointF p = ev->localPos();
   ev->accept();
 
