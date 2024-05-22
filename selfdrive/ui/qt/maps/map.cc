@@ -732,19 +732,21 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
+      if(north_up){
+        double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
+        QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
 
-      double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
-      QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
+        //中央からpまでのピクセル差分。
+        int dx = p.x() - (width() / 2.0);
+        int dy = p.y() - (height() / 2.0);
+        mm = QMapLibre::ProjectedMeters(mm.first - dy*len, mm.second + dx*len);
 
-      //中央からpまでのピクセル差分。
-      int dx = p.x() - (width() / 2.0);
-      int dy = p.y() - (height() / 2.0);
-      mm = QMapLibre::ProjectedMeters(mm.first - dy*len, mm.second + dx*len);
+        QMapLibre::Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
 
-      QMapLibre::Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
-
-      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",point.first,point.second); //タッチしてる緯度経度。ノースアップじゃないとうまくいかないはず。
-      //fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
+        fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",point.first,point.second); //タッチしてる緯度経度。ノースアップじゃないとうまくいかないはず。
+      } else {
+        fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ノースアップじゃない時はタッチ位置の計算が困難になるから、地図座標を使う。
+      }
       fclose(latlon);
 
       const SubMaster &sm = *(uiState()->sm);
