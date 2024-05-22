@@ -551,7 +551,6 @@ void MapWindow::updateState(const UIState &s) {
             m_map->setStyleUrl(my_mapbox_style.c_str());
           }
         }
-        chg_pitch = true;
       }
       clearRoute();
     }
