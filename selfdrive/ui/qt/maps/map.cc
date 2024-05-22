@@ -433,24 +433,17 @@ void MapWindow::updateState(const UIState &s) {
         }
       }
       g_latitude = locationd_pos.getValue()[0];
-
-      static unsigned int LimitspeedChanged_ct;
-      if ((LimitspeedChanged_ct++ % 10) == 0 && last_bearing && last_position) { //0.5秒ごとに速度標識を更新
-        map_limitspeed->setVisible(true);
-        emit LimitspeedChanged(rect().width());
-
-        map_bearing_scale->setVisible(true);
-        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
-      }
     }
   }
-  // static bool emit_LimitspeedChanged_first_set = false; //最初非表示にしているので要らないかも
-  // if(emit_LimitspeedChanged_first_set == false){
-  //   emit_LimitspeedChanged_first_set = true;
-  //   //このタイミングではrect().width()の値がおかしい。
-  //   emit LimitspeedChanged(rect().width()); //最初に右に寄せるために必要。
-  //   emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
-  // }
+
+  static unsigned int LimitspeedChanged_ct;
+  if ((LimitspeedChanged_ct++ % 10) == 0 && LimitspeedChanged_ct >= 10) { //0.5秒ごとに速度標識を更新
+    map_limitspeed->setVisible(true);
+    emit LimitspeedChanged(rect().width());
+
+    map_bearing_scale->setVisible(true);
+    emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+  }
 
   if (sm.updated("navRoute") && sm["navRoute"].getNavRoute().getCoordinates().size()) {
     auto nav_dest = coordinate_from_param("NavDestination");
