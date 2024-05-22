@@ -324,6 +324,7 @@ void MapWindow::updateState(const UIState &s) {
   if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
+  bool set_g_latitude = false;
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
@@ -406,34 +407,38 @@ void MapWindow::updateState(const UIState &s) {
           setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
           chg_pitch = true;
         }
-
-        if(north_up == 0){
-          if(m_map->margins().top() == 0){
-            m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
-            chg_pitch = true;
-            max_zoom_pitch_effect();
-          }
-          if(chg_pitch){
-            chg_pitch = false;
-            if (sm.valid("navInstruction")) {
-              m_map->setPitch(MAX_PITCH); //ナビ中
-            } else {
-              m_map->setPitch(MIN_PITCH);
-            }
-            m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
-          }
-        } else {
-          if(m_map->margins().top() != 0){
-            m_map->setMargins({0, 0, 0, 0});
-            m_map->setPitch(0);
-            m_map->setBearing(0);
-            MAX_ZOOM_ = MAX_ZOOM0;
-            //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
-          }
-        }
       }
+      set_g_latitude = true;
       g_latitude = locationd_pos.getValue()[0];
     }
+  }
+
+  if(north_up == 0){
+    if(m_map->margins().top() == 0){
+      m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
+      chg_pitch = true;
+      max_zoom_pitch_effect();
+    }
+    if(chg_pitch){
+      chg_pitch = false;
+      if (sm.valid("navInstruction")) {
+        m_map->setPitch(MAX_PITCH); //ナビ中
+      } else {
+        m_map->setPitch(MIN_PITCH);
+      }
+      m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+    }
+  } else {
+    if(m_map->margins().top() != 0){
+      m_map->setMargins({0, 0, 0, 0});
+      m_map->setPitch(0);
+      m_map->setBearing(0);
+      MAX_ZOOM_ = MAX_ZOOM0;
+      //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
+    }
+  }
+  if(set_g_latitude == false && last_position){
+    g_latitude = last_position[0];
   }
 
   static unsigned int LimitspeedChanged_ct;
