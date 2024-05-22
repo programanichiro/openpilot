@@ -734,7 +734,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
-      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate->first,m_map->coordinate->secound); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
+      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate.first,m_map->coordinate.second); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
       fclose(latlon);
 
       const SubMaster &sm = *(uiState()->sm);
