@@ -413,7 +413,7 @@ void MapWindow::updateState(const UIState &s) {
   if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
     if(north_up == 0){
       if(m_map->margins().top() == 0){
-        m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
+        m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)}); //(1080-350*2-50*2) / 2 = 140 , 700+140=840=yの位置に出ている。
         chg_pitch = true;
         max_zoom_pitch_effect();
       }
@@ -732,10 +732,10 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
-      if(north_up){
-        double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
-        QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
+      double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
+      QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
 
+      if(north_up){
         //中央からpまでのピクセル差分。
         int dx = p.x() - (width() / 2.0);
         int dy = p.y() - (height() / 2.0);
@@ -745,7 +745,25 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
         fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",point.first,point.second); //タッチしてる緯度経度。ノースアップじゃないとうまくいかないはず。
       } else {
-        fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ノースアップじゃない時はタッチ位置の計算が困難になるから、地図座標を使う。
+        int dx = p.x() - (width() / 2.0);
+        //int dy = p.y() - 840; //(height() / 2.0);ヘッドアップはy=840が地図座標の位置にくる。
+        int dy = p.y() - (height() - (m_map->margins().top()*MAP_SCALE - m_map->margins().botom()*MAP_SCALE) / 2 + (m_map->margins().top()*MAP_SCALE)); //840を引くはず。
+
+        double rad = DEG2RAD(m_map->bearing());
+
+        double tmp_dy = cos(rad) * dy - sin(rad) * dx;
+        dx = sin(rad) * dy + cos(rad) * dx;
+        dy = tmp_dy;
+
+        dx /= cos(DEG2RAD(MIN_PITCH));
+        dy /= cos(DEG2RAD(MIN_PITCH));
+
+        mm = QMapLibre::ProjectedMeters(mm.first - dy*len, mm.second + dx*len);
+
+        QMapLibre::Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
+
+        fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",point.first,point.second); //ヘッドアップにも対応。
+        //fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ノースアップじゃない時はタッチ位置の計算が困難になるから、地図座標を使う。
       }
       fclose(latlon);
 
