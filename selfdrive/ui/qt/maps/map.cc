@@ -695,7 +695,7 @@ void MapWindow::clearRoute() {
 
 bool map_dynamic_edit_x; //横スワイプでウインドウリサイズ
 bool map_dynamic_edit_y; //縦スワイプで高度変更
-quint64 mouse_pressedTime;
+qint64 mouse_pressedTime; //quint64だとマイナス計算ができない。
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
@@ -727,9 +727,9 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
   //ここで長押し判定できる？
   void soundButton(int onOff);
-  quint64 now = QDateTime::currentMSecsSinceEpoch();
+  qint64 now = QDateTime::currentMSecsSinceEpoch();
   //ボタンを押した時に何かしたいならここで。
-  if(now - mouse_pressedTime > 2000 && !m_map.isNull()){
+  if(now - mouse_pressedTime > 5000 && !m_map.isNull()){
     soundButton(true);
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
@@ -901,6 +901,7 @@ bool MapWindow::gestureEvent(QGestureEvent *event) {
 
 void MapWindow::pinchTriggered(QPinchGesture *gesture) {
   QPinchGesture::ChangeFlags changeFlags = gesture->changeFlags();
+  mouse_pressedTime = QDateTime::currentMSecsSinceEpoch() + 1000*1000; //動かしたら長押し判定されないように1000秒後を設定する。
   if (changeFlags & QPinchGesture::ScaleFactorChanged) {
     // TODO: figure out why gesture centerPoint doesn't work
     m_map->scaleBy(gesture->scaleFactor(), {width() / 2.0 / MAP_SCALE, height() / 2.0 / MAP_SCALE});
