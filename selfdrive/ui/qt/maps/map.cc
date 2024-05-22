@@ -495,7 +495,12 @@ void MapWindow::updateState(const UIState &s) {
     }
   }
 
-  if (interaction_counter == 0) {
+  if(sm["carState"].getCarState().getVEgo() < 1/3.6){
+    ; //速度が出ていない時は座標をリセットしない。
+    if (interaction_counter < 0){
+      interaction_counter--; //カウントダウンだけはやっておく。
+    }
+  } else if (interaction_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
     if(north_up == 0){
       if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
@@ -688,12 +693,14 @@ void MapWindow::clearRoute() {
 
 bool map_dynamic_edit_x; //横スワイプでウインドウリサイズ
 bool map_dynamic_edit_y; //縦スワイプで高度変更
+quint64 mouse_pressedTime;
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
 
   map_dynamic_edit_x = false;
   map_dynamic_edit_y = false;
+  mouse_pressedTime = QDateTime::currentMSecsSinceEpoch();
   //方位磁石の上の端っこを上下でMAX_ZOOM調整。
   if(m_lastPos.y() < 1080 - 200){ //ボタンの位置は避ける。
     if(uiState()->scene.map_on_left){
@@ -709,6 +716,21 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
         m_lastGlbPos = ev->globalPos();
       }
     }
+  }
+}
+
+void mouseReleaseEvent(QMouseEvent *ev) {
+  QPointF p = ev->localPos();
+  ev->accept();
+
+  //ここで長押し判定できる？
+  void soundButton(int onOff);
+  quint64 now = QDateTime::currentMSecsSinceEpoch();
+  //ボタンを押した時に何かしたいならここで。
+  if(now - mouse_pressedTime > 2000){
+    soundButton(true);
+  } else if(now - mouse_pressedTime > 500){
+    soundButton(false);
   }
 }
 
