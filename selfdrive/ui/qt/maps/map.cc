@@ -747,7 +747,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
       } else {
         int dx = p.x() - (width() / 2.0);
         //int dy = p.y() - 840; //(height() / 2.0);ヘッドアップはy=840が地図座標の位置にくる。
-        int dy = p.y() - (height() - (m_map->margins().top()*MAP_SCALE - m_map->margins().botom()*MAP_SCALE) / 2 + (m_map->margins().top()*MAP_SCALE)); //840を引くはず。
+        int dy = p.y() - (height() - (m_map->margins().top()*MAP_SCALE - m_map->margins().bottom()*MAP_SCALE) / 2 + (m_map->margins().top()*MAP_SCALE)); //840を引くはず。
 
         double rad = DEG2RAD(m_map->bearing());
 
