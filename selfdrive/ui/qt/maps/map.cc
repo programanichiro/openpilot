@@ -720,7 +720,7 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
 }
 
 void mouseReleaseEvent(QMouseEvent *ev) {
-  QPointF p = ev->localPos();
+  //QPointF p = ev->localPos();
   ev->accept();
 
   //ここで長押し判定できる？
