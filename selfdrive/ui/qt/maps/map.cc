@@ -729,12 +729,12 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   void soundButton(int onOff);
   quint64 now = QDateTime::currentMSecsSinceEpoch();
   //ボタンを押した時に何かしたいならここで。
-  if(now - mouse_pressedTime > 2000 && m_map){
+  if(now - mouse_pressedTime > 2000 && !m_map.isNull()){
     soundButton(true);
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
-      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate.first,m_map->coordinate.second); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
+      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
       fclose(latlon);
 
       const SubMaster &sm = *(uiState()->sm);
