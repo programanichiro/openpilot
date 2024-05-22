@@ -324,7 +324,6 @@ void MapWindow::updateState(const UIState &s) {
   if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
-  bool set_g_latitude = false;
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
@@ -408,8 +407,6 @@ void MapWindow::updateState(const UIState &s) {
           chg_pitch = true;
         }
       }
-      set_g_latitude = true;
-      g_latitude = locationd_pos.getValue()[0];
     }
   }
 
@@ -435,8 +432,7 @@ void MapWindow::updateState(const UIState &s) {
         m_map->setMargins({0, 0, 0, 0});
         m_map->setPitch(0);
         m_map->setBearing(0);
-        MAX_ZOOM_ = MAX_ZOOM0;
-        //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
+        MAX_ZOOM_ = MAX_ZOOM0; //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
         m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       } else if(chg_pitch){
         chg_pitch = false;
@@ -444,9 +440,7 @@ void MapWindow::updateState(const UIState &s) {
         m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       }
     }
-  }
-  if(set_g_latitude == false && last_position){
-    g_latitude = last_position->first;
+    g_latitude = m_map->coordinate().first;
   }
 
   static unsigned int LimitspeedChanged_ct;
@@ -726,19 +720,31 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
-  //QPointF p = ev->localPos();
+  QPointF p = ev->localPos();
   ev->accept();
 
   //ここで長押し判定できる？
   void soundButton(int onOff);
   qint64 now = QDateTime::currentMSecsSinceEpoch();
   //ボタンを押した時に何かしたいならここで。
-  if(now - mouse_pressedTime > 5000 && !m_map.isNull()){
+  if(now - mouse_pressedTime > 3000 && !m_map.isNull()){
     soundButton(true);
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
-      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
+
+      double len = metersPerPixelAtLatitude(g_latitude, m_map->zoom()); // / MAP_SCALEを以下考えない。辻褄は合う？
+      ProjectedMeters mm = projectedMetersForCoordinate(m_map->coordinate());
+
+      //中央からpまでのピクセル差分。
+      int dx = p.x() - (width() / 2.0);
+      int dy = p.y() - (height() / 2.0);
+      mm = QMapLibre::ProjectedMeters(mm.first + dx*len, mm.second + dy*len);
+
+      Coordinate point = coordinateForProjectedMeters(mm);
+
+      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",point.first,point.second); //タッチしてる緯度経度
+      //fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ToDO:長押ししてるタッチポジションの座標が取れれば尚良い。
       fclose(latlon);
 
       const SubMaster &sm = *(uiState()->sm);
