@@ -1028,7 +1028,21 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
     layout->addWidget(speed);
     main_layout->addLayout(layout);
 
+    m_pressedTime = 0;
     QObject::connect(speed, &QPushButton::pressed, [=]() {
+      m_pressedTime = QDateTime::currentMSecsSinceEpoch();
+      //ボタンを押した時に何かしたいならここで。
+    });
+
+    QObject::connect(speed, &QPushButton::released, [=]() {
+      quint64 now = QDateTime::currentMSecsSinceEpoch();
+      if(now - m_pressedTime > 2000){
+        extern void soundPikiri();
+        soundPikiri();
+        //Params().put("NavDestination", last_navi_dest);
+        return;
+      }
+
       const SubMaster &sm = *(uiState()->sm);
       int on_vavi_highway = getButtonInt("/data/navi_highway.txt",0); //1:高速有料を除外する。（exclude=toll,motorway）
       if (sm.valid("navInstruction")) {

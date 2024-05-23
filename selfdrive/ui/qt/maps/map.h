@@ -32,6 +32,7 @@ private:
   QPushButton *speed;
 
 public:
+  quint64 m_pressedTime;
   MapLimitspeed(QWidget * parent=nullptr);
 
 public slots:
