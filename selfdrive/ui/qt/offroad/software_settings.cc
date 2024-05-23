@@ -43,7 +43,6 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     QString cur_token;
     if(my_mapbox_token.empty() == false){
       cur_token = QString::fromStdString(my_mapbox_token);
-      editMapboxTokenButton->setValue(cur_token);
     }
     QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
 
@@ -75,7 +74,6 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     QString cur_key;
     if(my_google_key.empty() == false){
       cur_key = QString::fromStdString(my_google_key);
-      editGoogleApiKeynButton->setValue(cur_key);
     }
     QString gg_key = InputDialog::getText(tr("Google API key"), this, tr("Enter a API key obtained from the Google Cloud"), false, -1, cur_key).trimmed();
 
