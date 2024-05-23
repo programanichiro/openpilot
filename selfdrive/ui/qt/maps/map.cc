@@ -694,12 +694,14 @@ void MapWindow::clearRoute() {
 bool map_dynamic_edit_x; //横スワイプでウインドウリサイズ
 bool map_dynamic_edit_y; //縦スワイプで高度変更
 qint64 mouse_pressedTime; //quint64だとマイナス計算ができない。
+bool start_window_resize;
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
 
   map_dynamic_edit_x = false;
   map_dynamic_edit_y = false;
+  start_window_resize = false;
   mouse_pressedTime = QDateTime::currentMSecsSinceEpoch();
   //方位磁石の上の端っこを上下でMAX_ZOOM調整。
   if(m_lastPos.y() < 1080 - 200){ //ボタンの位置は避ける。
@@ -708,12 +710,18 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
         map_dynamic_edit_x = true;
         map_dynamic_edit_y = true;
         m_lastGlbPos = ev->globalPos();
+        if(m_lastPos.y() > this->height()/2 - 100 && m_lastPos.y() < this->height()/2 + 100){
+          start_window_resize = true;
+        }
       }
     } else {
       if(m_lastPos.x() < 150){ //ちょっと広めに取らないと感度悪い。右ハンドルだからタッチの見た目ズレ？
         map_dynamic_edit_x = true;
         map_dynamic_edit_y = true;
         m_lastGlbPos = ev->globalPos();
+        if(m_lastPos.y() > this->height()/2 - 100 && m_lastPos.y() < this->height()/2 + 100){
+          start_window_resize = true;
+        }
       }
     }
   }
@@ -851,6 +859,10 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
       map_dynamic_edit_y = false;
       window_resize = true;
       m_lastGlbPos = ev->globalPos();
+      if(start_window_resize == false){
+        window_resize = false;
+        map_dynamic_edit_x = false;
+      }
     }
   }
   if(window_resize){ //端から左右スワイプで地図サイズの調整。負荷が高くて落ちる？
