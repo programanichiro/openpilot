@@ -425,7 +425,9 @@ void MapWindow::updateState(const UIState &s) {
         } else {
           m_map->setPitch(MIN_PITCH);
         }
-        m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+        if(interaction_counter == 0){
+          m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+        }
       }
     } else {
       if(m_map->margins().top() != 0){
@@ -433,11 +435,15 @@ void MapWindow::updateState(const UIState &s) {
         m_map->setPitch(0);
         m_map->setBearing(0);
         MAX_ZOOM_ = MAX_ZOOM0; //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
-        m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+        if(interaction_counter == 0){
+          m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+        }
       } else if(chg_pitch){
         chg_pitch = false;
         m_map->setPitch(0);
-        m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+        if(interaction_counter == 0){
+          m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+        }
       }
     }
     g_latitude = m_map->coordinate().first;
@@ -497,8 +503,8 @@ void MapWindow::updateState(const UIState &s) {
 
   if(sm["carState"].getCarState().getVEgo() < 1/3.6){
     ; //速度が出ていない時は座標をリセットしない。
-    if (interaction_counter < 0){
-      interaction_counter--; //カウントダウンだけはやっておく。
+    if (interaction_counter < 1){
+      interaction_counter--; //カウントダウンだけはやっておく。わざと1まで。m_map->setZoomさせないため。
     }
   } else if (interaction_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
