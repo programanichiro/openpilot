@@ -695,10 +695,12 @@ bool map_dynamic_edit_x; //横スワイプでウインドウリサイズ
 bool map_dynamic_edit_y; //縦スワイプで高度変更
 qint64 mouse_pressedTime; //quint64だとマイナス計算ができない。
 bool start_window_resize;
+QPointF firstPos;
 void MapWindow::mousePressEvent(QMouseEvent *ev) {
   m_lastPos = ev->localPos();
   ev->accept();
 
+  firstPos = m_lastPos;
   map_dynamic_edit_x = false;
   map_dynamic_edit_y = false;
   start_window_resize = false;
@@ -841,7 +843,10 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
-  mouse_pressedTime = QDateTime::currentMSecsSinceEpoch() + 1000*1000; //動かしたら長押し判定されないように1000秒後を設定する。
+  QPointF f_delta = ev->localPos() - firstPos;
+  if(f_delta.x()*f_delta.x() + f_delta.y()*f_delta.y() > 10*10){ //最初の位置から10ドット以上動いたらmouse_pressedTimeを長押し無判定ロジックに。
+    mouse_pressedTime = QDateTime::currentMSecsSinceEpoch() + 1000*1000; //動かしたら長押し判定されないように1000秒後を設定する。
+  }
   QPointF g_delta;
   bool window_resize = false;
   bool zoom_change = false;
