@@ -32,11 +32,8 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   // Mapbox Token
   ButtonControl *editMapboxTokenButton = new ButtonControl(tr("Mapbox Token"), tr("EDIT"));
   std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
-  my_mapbox_token.erase(std::remove(my_mapbox_token.begin(), my_mapbox_token.end(), '\n'), my_mapbox_token.end());
-  my_mapbox_token.erase(std::remove(my_mapbox_token.begin(), my_mapbox_token.end(), '\r'), my_mapbox_token.end());
-  QString cur_token;
   if(my_mapbox_token.empty() == false){
-    cur_token = QString::fromStdString(my_mapbox_token);
+    QString cur_token = QString::fromStdString(my_mapbox_token);
     editMapboxTokenButton->setValue(cur_token);
   }
   connect(editMapboxTokenButton, &ButtonControl::clicked, [=]() {
@@ -63,6 +60,38 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     }
   });
   addItem(editMapboxTokenButton);
+
+  // Google API key
+  ButtonControl *editGoogleApiKeynButton = new ButtonControl(tr("Google API key"), tr("EDIT"));
+  std::string my_google_key = util::read_file("/data/google_key.txt");
+  if(my_google_key.empty() == false){
+    QString cur_key = QString::fromStdString(my_google_key);
+    editGoogleApiKeynButton->setValue(cur_key);
+  }
+  connect(editGoogleApiKeynButton, &ButtonControl::clicked, [=]() {
+    std::string my_google_key = util::read_file("/data/google_key.txt");
+    my_google_key.erase(std::remove(my_google_key.begin(), my_google_key.end(), '\n'), my_google_key.end());
+    my_google_key.erase(std::remove(my_google_key.begin(), my_google_key.end(), '\r'), my_google_key.end());
+    QString cur_key;
+    if(my_google_key.empty() == false){
+      cur_key = QString::fromStdString(my_google_key);
+      editGoogleApiKeynButton->setValue(cur_key);
+    }
+    QString gg_key = InputDialog::getText(tr("Google API key"), this, tr("Enter a API key obtained from the Google Cloud"), false, -1, cur_key).trimmed();
+
+    if (gg_key.isEmpty() == false) {
+      FILE *fp = fopen("/data/google_key.txt","w");
+      if(fp != NULL){
+        fprintf(fp,"%s",gg_key.toUtf8().constData());
+        fclose(fp);
+      }
+      editGoogleApiKeynButton->setValue(gg_key);
+    } else {
+      //キャンセルと空文字OKの区別がつかない。
+      //editGoogleApiKeynButton->setValue("canceled...");
+    }
+  });
+  addItem(editGoogleApiKeynButton);
 
   // download update btn
   downloadBtn = new ButtonControl(tr("Download"), tr("CHECK"));
