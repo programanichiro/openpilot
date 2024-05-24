@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 #include <QMapLibre/Utils>
 #include <QJsonDocument>
+#include <QJsonObject>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
@@ -1087,7 +1088,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             QNetworkAccessManager *manager = new QNetworkAccessManager();
 
             // Create the request
-            QNetworkRequest request("https://places.googleapis.com/v1/places:searchText");
+            QNetworkRequest request(QUrl("https://places.googleapis.com/v1/places:searchText"));
             request.setHeader(QNetworkRequest::ContentTypeHeader, "application/json");
             request.setRawHeader("X-Goog-Api-Key", gg_key.toUtf8());
             request.setRawHeader("X-Goog-FieldMask", "places.location");
