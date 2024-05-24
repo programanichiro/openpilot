@@ -44,7 +44,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     if(my_mapbox_token.empty() == false){
       cur_token = QString::fromStdString(my_mapbox_token);
     }
-    QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), true, -1, cur_token).trimmed();
+    QString mb_token = InputDialog::getText(tr("Enter Mapbox Token"), this, tr("Enter a token obtained from the Mapbox website"), false, -1, cur_token).trimmed();
 
     if (mb_token.isEmpty() == false) {
       FILE *fp = fopen("/data/mb_token.txt","w");
@@ -75,7 +75,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     if(my_google_key.empty() == false){
       cur_key = QString::fromStdString(my_google_key);
     }
-    QString gg_key = InputDialog::getText(tr("Google API key"), this, tr("Enter a API key obtained from the Google Cloud"), true, -1, cur_key).trimmed();
+    QString gg_key = InputDialog::getText(tr("Google API key"), this, tr("Enter a API key obtained from the Google Cloud"), false, -1, cur_key).trimmed();
 
     if (gg_key.isEmpty() == false) {
       FILE *fp = fopen("/data/google_key.txt","w");
