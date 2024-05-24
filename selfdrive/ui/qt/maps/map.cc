@@ -439,7 +439,9 @@ void MapWindow::updateState(const UIState &s) {
         m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       } else if(chg_pitch){
         chg_pitch = false;
-        if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
+        if(interaction_counter == 0){
+          if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
+        }
         if (sm.valid("navInstruction")) {
           m_map->setPitch(MAX_PITCH); //ナビ中
         } else {
@@ -453,7 +455,9 @@ void MapWindow::updateState(const UIState &s) {
       if(m_map->margins().top() != 0){
         m_map->setMargins({0, 0, 0, 0});
         m_map->setPitch(0);
-        m_map->setBearing(0);
+        if(interaction_counter == 0){
+          m_map->setBearing(0);
+        }
         MAX_ZOOM_ = MAX_ZOOM0; //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
         if(interaction_counter == 0){
           m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
@@ -1016,12 +1020,16 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
     update();
     interaction_counter = INTERACTION_TIMEOUT;
   }
-  // if (changeFlags & QPinchGesture::RotationAngleChanged) {
-  //   // TODO: figure out why gesture centerPoint doesn't work
-  //   m_map->rotateBy(gesture->rotationAngle()); //???どうする。あとinteraction_counterでsetBearingもキャンセルしなくては。
-  //   update();
-  //   interaction_counter = INTERACTION_TIMEOUT;
-  // }
+  if (changeFlags & QPinchGesture::RotationAngleChanged) {
+    //m_map->rotateBy(gesture->rotationAngle()); //???どうする。あとinteraction_counterでsetBearingもキャンセルしなくては。
+    if(north_up == 0){
+      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()) + gesture->totalRotationAngle());
+    } else {
+      if (last_bearing) m_map->setBearing(0 + gesture->totalRotationAngle());
+    }
+    update();
+    interaction_counter = INTERACTION_TIMEOUT;
+  }
 }
 
 void MapWindow::offroadTransition(bool offroad) {
