@@ -852,6 +852,11 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
 static float width_rate = -1;
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
+  if(interaction_counter > INTERACTION_TIMEOUT * 0.8){
+    //移動直後の１秒以内のダブルクリックはリセット動作をしない。
+    return;
+  }
+
   if(m_lastPos.y() < 1080 - 200 && start_window_resize == true){ //ボタンの位置は避ける。
     bool clear_width_rate = false;
     if(uiState()->scene.map_on_left){
