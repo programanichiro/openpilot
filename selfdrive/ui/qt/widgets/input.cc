@@ -72,6 +72,7 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
   cancel_btn->setFixedSize(386, 125);
   cancel_btn->setStyleSheet(R"(
     QPushButton {
+      border: none;
       font-size: 48px;
       border-radius: 10px;
       color: #E4E4E4;
