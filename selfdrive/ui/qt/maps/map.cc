@@ -48,6 +48,7 @@ int night_mode = -1;
 //int north_up = 0; //1で北上モード
 #define north_up chk_north_up()
 bool chg_pitch;
+bool reset_zoom;
 bool chg_coordinate;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
@@ -424,7 +425,10 @@ void MapWindow::updateState(const UIState &s) {
         chg_pitch = true;
         max_zoom_pitch_effect();
       }
-      if(chg_pitch){
+      if(reset_zoom){
+        reset_zoom = false;
+        m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
+      } else if(chg_pitch){
         chg_pitch = false;
         if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
         if (sm.valid("navInstruction")) {
@@ -445,6 +449,9 @@ void MapWindow::updateState(const UIState &s) {
         if(interaction_counter == 0){
           m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
         }
+      } else if(reset_zoom){
+        reset_zoom = false;
+        m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       } else if(chg_pitch){
         chg_pitch = false;
         m_map->setPitch(0);
@@ -1318,7 +1325,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //2秒以上長押しでzoom_offsetクリア。
         zoom_offset = 0;
-        chg_pitch = true; //これを呼ばないとsetZoomも呼ばれない。
+        reset_zoom = true; //ズームリセット専用。
         void soundButton(int onOff);
         soundButton(false);
       } else if(now - m_pressedTime > 500){
