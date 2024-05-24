@@ -479,14 +479,14 @@ void MapWindow::updateState(const UIState &s) {
   }
 
   static unsigned int LimitspeedChanged_ct;
-  if ((LimitspeedChanged_ct++ % 10) == 0 && LimitspeedChanged_ct >= 10) { //0.5秒ごとに速度標識を更新
+  if ((LimitspeedChanged_ct++ % 10) == 0 && LimitspeedChanged_ct >= 10 && isVisible()) { //0.5秒ごとに速度標識を更新
     map_limitspeed->setVisible(true);
     emit LimitspeedChanged(rect().width());
 
     map_bearing_scale->setVisible(true);
     emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
 
-    if(map_WindowResizePoint->isVisible() == false || LimitspeedChanged_ct <= 100){
+    if(map_WindowResizePoint->isVisible() == false){
       map_WindowResizePoint->setVisible(true); //最初位置が安定するまで毎回セット。
       if (uiState()->scene.map_on_left) {
         map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
