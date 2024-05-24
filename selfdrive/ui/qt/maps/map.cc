@@ -1074,9 +1074,12 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
         if (gg_key.isEmpty() == false) {
           //gg_keyがある場合は、poi検索を行う。
           static QString poi_name;
-          poi_name = InputDialog::getText(tr("POI name or keyword"), this, tr("Enter a POI name or keyword"), false, -1, poi_name).trimmed(); //起動中は最後に入れた文字を覚えておくのもいいか？
+          QString poi_name_ = InputDialog::getText(tr("POI name or keyword"), this, tr("Enter a POI name or keyword"), false, -1, poi_name).trimmed(); //起動中は最後に入れた文字を覚えておくのもいいか？
+          if(poi_name_.isEmpty() == false) {
+            poi_name = poi_name_;
+          }
 
-          if (poi_name.isEmpty() == false) {
+          if (poi_name_.isEmpty() == false &&  poi_name.isEmpty() == false) {
             //Places API呼び出し。
             // g_latitude = m_map->coordinate().first;
             // g_longitude = m_map->coordinate().second;
