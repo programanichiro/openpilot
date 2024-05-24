@@ -153,7 +153,7 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_set
 //マップウインドウリサイズポイント
 #define WRP_SIZE_H 50
 #define WRP_SIZE_W 50
-  map_WindowResizePoint = new QLabel(this)
+  map_WindowResizePoint = new QLabel(this);
   map_WindowResizePoint->setStyleSheet(R"(color:rgba(128, 128, 128, 200); font-size: 20px; background-color:rgba(0, 0, 0, 0);)");
   map_WindowResizePoint->setVisible(false);
   map_WindowResizePoint->setFixedHeight(WRP_SIZE_H);
@@ -486,7 +486,7 @@ void MapWindow::updateState(const UIState &s) {
     emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
 
     if(map_WindowResizePoint->isVisible() == false){
-      map_WindowResizePoint->setVisible(true;)
+      map_WindowResizePoint->setVisible(true);
       float r_w = WRP_SIZE_W / 2;
       float r_h = WRP_SIZE_H / 2;
       if (uiState()->scene.map_on_left) {
