@@ -796,7 +796,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   void soundButton(int onOff);
   qint64 now = QDateTime::currentMSecsSinceEpoch();
   //ボタンを押した時に何かしたいならここで。
-  if(now - mouse_pressedTime > 3000 && !m_map.isNull()){
+  if(now - mouse_pressedTime > 2500 && !m_map.isNull()){
     soundButton(true);
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
@@ -1111,7 +1111,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
     QObject::connect(speed, &QPushButton::released, [=]() {
       quint64 now = QDateTime::currentMSecsSinceEpoch();
-      if(now - m_pressedTime > 2000){
+      if(now - m_pressedTime > 1500){
         extern void soundPikiri();
         soundPikiri();
 
@@ -1370,7 +1370,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
     QObject::connect(bearing_scale, &QPushButton::released, [=]() {
       quint64 now = QDateTime::currentMSecsSinceEpoch();
       //ボタンを押した時に何かしたいならここで。
-      if(now - m_pressedTime > 2000){
+      if(now - m_pressedTime > 1500){
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //2秒以上長押しでzoom_offsetクリア。
         zoom_offset = 0;
