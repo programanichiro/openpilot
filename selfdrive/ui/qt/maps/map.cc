@@ -1092,7 +1092,9 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             center["longitude"] = g_longitude;
             QJsonObject circle;
             circle["center"] = center;
-            jsonObject["locationBias"] = circle;
+            QJsonObject locationBias;
+            locationBias["circle"] = circle;
+            jsonObject["locationBias"] = locationBias;
 
             QNetworkAccessManager *manager = new QNetworkAccessManager();
 
