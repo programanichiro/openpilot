@@ -1116,7 +1116,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
                         if (value.isObject()) {
                           QJsonObject jsonObj = value.toObject();
                           if (jsonObj.contains("location")) {
-                            QJsonObject location = jsonObj["location"];
+                            QJsonObject location = jsonObj["location"].toObject();
                             double poi_lat = location["latitude"];
                             double poi_lon = location["longitude"];
                           }
