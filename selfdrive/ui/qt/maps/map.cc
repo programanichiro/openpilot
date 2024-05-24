@@ -152,12 +152,13 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_set
 
 //マップウインドウリサイズポイント
 #define WRP_SIZE_H 100
-#define WRP_SIZE_W 100
+#define WRP_SIZE_W 80
   map_WindowResizePoint = new QLabel(this);
-  map_WindowResizePoint->setStyleSheet(R"(color:rgba(128, 128, 128, 200); font-size: 60px; background-color:rgba(0, 0, 0, 0);)");
+  map_WindowResizePoint->setStyleSheet(R"(color:rgba(128, 128, 128, 200); font-size: 65px; background-color:rgba(0, 0, 0, 0);)");
   map_WindowResizePoint->setVisible(false);
   map_WindowResizePoint->setFixedHeight(WRP_SIZE_H);
   map_WindowResizePoint->setFixedWidth(WRP_SIZE_W);
+  map_WindowResizePoint->setAlignment(Qt::AlignCenter);
 }
 
 MapWindow::~MapWindow() {
@@ -489,10 +490,10 @@ void MapWindow::updateState(const UIState &s) {
       map_WindowResizePoint->setVisible(true);
       if (uiState()->scene.map_on_left) {
         map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
-        map_WindowResizePoint->setText("⬅︎");
+        map_WindowResizePoint->setText("◀︎"); //⬅︎
       } else {
         map_WindowResizePoint->move(0, rect().height()/2 - WRP_SIZE_H/2); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
-        map_WindowResizePoint->setText("➡︎");
+        map_WindowResizePoint->setText("▶︎"); //➡︎
       }
       map_WindowResizePoint->update(0,0,map_WindowResizePoint->width(),map_WindowResizePoint->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
     }
@@ -867,7 +868,6 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
       m_panel->setFixedWidth((DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE));
       if(uiState()->scene.map_on_left){
         emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
-
         map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
       } else {
         emit LimitspeedChanged(rect().width());
@@ -940,6 +940,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
       m_panel->setFixedWidth((width_px - UI_BORDER_SIZE));
       if(uiState()->scene.map_on_left){
         emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+        map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
       } else {
         emit LimitspeedChanged(rect().width());
       }
