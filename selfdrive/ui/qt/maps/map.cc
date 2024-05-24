@@ -151,10 +151,10 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_set
   map_bearing_scale->setVisible(false);
 
 //マップウインドウリサイズポイント
-#define WRP_SIZE_H 50
-#define WRP_SIZE_W 50
+#define WRP_SIZE_H 100
+#define WRP_SIZE_W 100
   map_WindowResizePoint = new QLabel(this);
-  map_WindowResizePoint->setStyleSheet(R"(color:rgba(128, 128, 128, 200); font-size: 20px; background-color:rgba(0, 0, 0, 0);)");
+  map_WindowResizePoint->setStyleSheet(R"(color:rgba(128, 128, 128, 200); font-size: 60px; background-color:rgba(0, 0, 0, 0);)");
   map_WindowResizePoint->setVisible(false);
   map_WindowResizePoint->setFixedHeight(WRP_SIZE_H);
   map_WindowResizePoint->setFixedWidth(WRP_SIZE_W);
@@ -487,13 +487,11 @@ void MapWindow::updateState(const UIState &s) {
 
     if(map_WindowResizePoint->isVisible() == false){
       map_WindowResizePoint->setVisible(true);
-      float r_w = WRP_SIZE_W / 2;
-      float r_h = WRP_SIZE_H / 2;
       if (uiState()->scene.map_on_left) {
-        map_WindowResizePoint->move(rect().width() - r_w,  1080/2 - r_h*2);
+        map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
         map_WindowResizePoint->setText("⬅︎");
       } else {
-        map_WindowResizePoint->move(0, rect().height()/2 - r_h*2); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
+        map_WindowResizePoint->move(0, rect().height()/2 - WRP_SIZE_H/2); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
         map_WindowResizePoint->setText("➡︎");
       }
       map_WindowResizePoint->update(0,0,map_WindowResizePoint->width(),map_WindowResizePoint->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
@@ -870,9 +868,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
       if(uiState()->scene.map_on_left){
         emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
 
-        float r_w = WRP_SIZE_W / 2;
-        float r_h = WRP_SIZE_H / 2;
-        map_WindowResizePoint->move(rect().width() - r_w,  1080/2 - r_h*2);
+        map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
       } else {
         emit LimitspeedChanged(rect().width());
       }
