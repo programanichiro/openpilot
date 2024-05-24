@@ -4,6 +4,7 @@
 #include <eigen3/Eigen/Dense>
 #include <QMapLibre/Utils>
 #include <QJsonObject>
+#include <QNetworkReply>
 
 #include <QDebug>
 
