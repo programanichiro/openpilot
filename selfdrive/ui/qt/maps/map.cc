@@ -1104,11 +1104,11 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
             // Convert JSON object to QByteArray
             QJsonDocument jsonDoc(jsonObject);
-            QByteArray jsonData = jsonDoc.toJson();
+            QByteArray jsonData = jsonDoc;
 
             FILE *debug_fp = fopen("/tmp/gggeee0.txt","w");
             if(debug_fp){
-              fprintf(debug_fp,"%s",jsonData.constData())
+              fprintf(debug_fp,"%s",jsonData.constData());
               fclose(debug_fp);
             }
 
@@ -1120,7 +1120,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
               FILE *debug_fp = fopen("/tmp/gggeee.txt","w");
               if(debug_fp){
                 QByteArray responseData = reply->readAll();
-                fprintf(debug_fp,"%s",responseData.constData())
+                fprintf(debug_fp,"%s",responseData.constData());
                 fclose(debug_fp);
               }
               if (reply->error() == QNetworkReply::NoError) {
