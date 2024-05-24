@@ -791,6 +791,7 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
 void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
   before_pinch_angle += last_pinch_angle;
+  last_pinch_angle = 0;
 
   QPointF p = ev->localPos();
   ev->accept();
@@ -1017,6 +1018,9 @@ bool MapWindow::event(QEvent *event) {
 bool MapWindow::gestureEvent(QGestureEvent *event) {
   if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
     pinchTriggered(static_cast<QPinchGesture *>(pinch));
+  } else {
+    before_pinch_angle += last_pinch_angle;
+    last_pinch_angle = 0;
   }
   return true;
 }
