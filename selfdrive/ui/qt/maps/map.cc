@@ -456,6 +456,7 @@ void MapWindow::updateState(const UIState &s) {
     if(chg_coordinate){
       chg_coordinate = false;
       m_map->setCoordinate(QMapLibre::Coordinate(g_latitude, g_longitude));
+      interaction_counter = INTERACTION_TIMEOUT;
     }
     g_latitude = m_map->coordinate().first;
     g_longitude = m_map->coordinate().second;
@@ -1125,12 +1126,6 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
             // Connect to the reply's finished signal to handle the response
             QObject::connect(reply, &QNetworkReply::finished, [reply]() {
-              FILE *debug_fp = fopen("/tmp/gggeee.txt","w");
-              if(debug_fp){
-                QByteArray responseData = reply->readAll();
-                fprintf(debug_fp,"%s",responseData.constData());
-                fclose(debug_fp);
-              }
               if (reply->error() == QNetworkReply::NoError) {
                 // Parse the response
                 QByteArray responseData = reply->readAll();
@@ -1147,8 +1142,13 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
                             QJsonObject location = jsonObj["location"].toObject();
                             g_latitude = location["latitude"].toDouble();
                             g_longitude = location["longitude"].toDouble();
-                            interaction_counter = INTERACTION_TIMEOUT;
                             chg_coordinate = true;
+                            FILE *debug_fp = fopen("/tmp/gggeee2.txt","w");
+                            if(debug_fp){
+                              QByteArray responseData = reply->readAll();
+                              fprintf(debug_fp,"%s",responseData.constData());
+                              fclose(debug_fp);
+                            }
                           }
                         }
                         break; //最初の一個だけで良い。
