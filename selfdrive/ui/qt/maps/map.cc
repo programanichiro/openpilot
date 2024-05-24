@@ -3,7 +3,8 @@
 #include <algorithm>
 #include <eigen3/Eigen/Dense>
 #include <QMapLibre/Utils>
-#include <QJsonObject>
+#include <QJsonDocument>
+#include <QNetworkRequest>
 #include <QNetworkReply>
 
 #include <QDebug>
