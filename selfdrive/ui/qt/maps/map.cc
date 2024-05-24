@@ -486,13 +486,13 @@ void MapWindow::updateState(const UIState &s) {
     map_bearing_scale->setVisible(true);
     emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
 
-    if(map_WindowResizePoint->isVisible() == false){ //m_panel->ならサイズ決定している。
+    if(map_WindowResizePoint->isVisible() == false && LimitspeedChanged_ct >= 30){
       map_WindowResizePoint->setVisible(true);
       if (uiState()->scene.map_on_left) {
-        map_WindowResizePoint->move(m_panel->rect().width() - WRP_SIZE_W,  m_panel->rect().height()/2 - WRP_SIZE_H/2);
+        map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
         map_WindowResizePoint->setText("◀︎"); //⬅︎
       } else {
-        map_WindowResizePoint->move(0, m_panel->rect().height()/2 - WRP_SIZE_H/2); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
+        map_WindowResizePoint->move(0, rect().height()/2 - WRP_SIZE_H/2); //地図にナビ用ボタンが追加されたので、こちらは使わない。->復活？
         map_WindowResizePoint->setText("▶︎"); //➡︎
       }
       map_WindowResizePoint->update(0,0,map_WindowResizePoint->width(),map_WindowResizePoint->height()); //これを呼ばないとpaintEventがすぐに呼ばれない。
