@@ -977,6 +977,12 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
     update();
     interaction_counter = INTERACTION_TIMEOUT;
   }
+  // if (changeFlags & QPinchGesture::RotationAngleChanged) {
+  //   // TODO: figure out why gesture centerPoint doesn't work
+  //   m_map->rotateBy(gesture->rotationAngle()); //???どうする。あとinteraction_counterでsetBearingもキャンセルしなくては。
+  //   update();
+  //   interaction_counter = INTERACTION_TIMEOUT;
+  // }
 }
 
 void MapWindow::offroadTransition(bool offroad) {
@@ -1141,6 +1147,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
                             QJsonObject location = jsonObj["location"].toObject();
                             g_latitude = location["latitude"].toDouble();
                             g_longitude = location["longitude"].toDouble();
+                            interaction_counter = INTERACTION_TIMEOUT;
                             chg_coordinate = true;
                           }
                         }
