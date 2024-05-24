@@ -1085,7 +1085,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             // g_longitude = m_map->coordinate().second;
 
             QJsonObject jsonObject;
-            jsonObject["textQuery"] = poi_name;
+            jsonObject["textQuery"] = poi_name.toUtf8();
             jsonObject["pageSize"] = 1;
             QJsonObject center;
             center["latitude"] = g_latitude;
@@ -1106,11 +1106,23 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             QJsonDocument jsonDoc(jsonObject);
             QByteArray jsonData = jsonDoc.toJson();
 
+            FILE *debug_fp = fopen("/tmp/gggeee0.txt","w");
+            if(debug_fp){
+              fprintf(debug_fp,"%s",jsonData.constData())
+              fclose(debug_fp);
+            }
+
             // Send the POST request
             QNetworkReply *reply = manager->post(request, jsonData);
 
             // Connect to the reply's finished signal to handle the response
             QObject::connect(reply, &QNetworkReply::finished, [reply]() {
+              FILE *debug_fp = fopen("/tmp/gggeee.txt","w");
+              if(debug_fp){
+                QByteArray responseData = reply->readAll();
+                fprintf(debug_fp,"%s",responseData.constData())
+                fclose(debug_fp);
+              }
               if (reply->error() == QNetworkReply::NoError) {
                 // Parse the response
                 QByteArray responseData = reply->readAll();
