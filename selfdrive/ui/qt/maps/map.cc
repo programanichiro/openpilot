@@ -1085,7 +1085,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             // g_longitude = m_map->coordinate().second;
 
             QJsonObject jsonObject;
-            jsonObject["textQuery"] = poi_name.toUtf8();
+            jsonObject["textQuery"] = poi_name;
             jsonObject["pageSize"] = 1;
             QJsonObject center;
             center["latitude"] = g_latitude;
@@ -1104,7 +1104,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
 
             // Convert JSON object to QByteArray
             QJsonDocument jsonDoc(jsonObject);
-            QByteArray jsonData = jsonDoc;
+            QByteArray jsonData = jsonDoc.toJson();
 
             FILE *debug_fp = fopen("/tmp/gggeee0.txt","w");
             if(debug_fp){
