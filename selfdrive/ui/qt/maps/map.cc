@@ -1115,12 +1115,6 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             QJsonDocument jsonDoc(jsonObject);
             QByteArray jsonData = jsonDoc.toJson();
 
-            FILE *debug_fp = fopen("/tmp/gggeee0.txt","w");
-            if(debug_fp){
-              fprintf(debug_fp,"%s",jsonData.constData());
-              fclose(debug_fp);
-            }
-
             // Send the POST request
             QNetworkReply *reply = manager->post(request, jsonData);
 
@@ -1143,11 +1137,6 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
                             g_latitude = location["latitude"].toDouble();
                             g_longitude = location["longitude"].toDouble();
                             chg_coordinate = true;
-                            FILE *debug_fp = fopen("/tmp/gggeee2.txt","w");
-                            if(debug_fp){
-                              fprintf(debug_fp,"%s",responseData.constData());
-                              fclose(debug_fp);
-                            }
                           }
                         }
                         break; //最初の一個だけで良い。
