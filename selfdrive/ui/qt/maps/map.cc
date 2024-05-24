@@ -48,6 +48,7 @@ int night_mode = -1;
 //int north_up = 0; //1で北上モード
 #define north_up chk_north_up()
 bool chg_pitch;
+bool chg_coordinate;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 float calc_pich(){
@@ -451,6 +452,10 @@ void MapWindow::updateState(const UIState &s) {
           m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
         }
       }
+    }
+    if(chg_coordinate){
+      chg_coordinate = false;
+      m_map->setCoordinate(QMapLibre::Coordinate(g_latitude, g_longitude));
     }
     g_latitude = m_map->coordinate().first;
     g_longitude = m_map->coordinate().second;
@@ -1117,8 +1122,9 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
                           QJsonObject jsonObj = value.toObject();
                           if (jsonObj.contains("location")) {
                             QJsonObject location = jsonObj["location"].toObject();
-                            double poi_lat = location["latitude"].toDouble();
-                            double poi_lon = location["longitude"].toDouble();
+                            g_latitude = location["latitude"].toDouble();
+                            g_longitude = location["longitude"].toDouble();
+                            chg_coordinate = true;
                           }
                         }
                         break; //最初の一個だけで良い。
