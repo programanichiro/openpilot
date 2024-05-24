@@ -330,6 +330,7 @@ int style_reload = 0;
 float g_latitude,g_longitude;
 bool head_gesture_map_north_heading_toggle;
 bool map_pitch_up,map_pitch_down;
+qreal before_pinch_angle,last_pinch_angle;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -564,6 +565,10 @@ void MapWindow::updateState(const UIState &s) {
     m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   } else {
     interaction_counter--;
+    if(interaction_counter == 0){
+      before_pinch_angle = 0;
+      last_pinch_angle = 0;
+    }
   }
 
   if (sm.updated("navInstruction")) {
@@ -784,6 +789,9 @@ void MapWindow::mousePressEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
+
+  before_pinch_angle += last_pinch_angle;
+
   QPointF p = ev->localPos();
   ev->accept();
 
@@ -899,6 +907,8 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   update();
 
+  before_pinch_angle = 0;
+  last_pinch_angle = 0;
   interaction_counter = 0;
 }
 
@@ -1023,12 +1033,13 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
   if (changeFlags & QPinchGesture::RotationAngleChanged) {
     //m_map->rotateBy(gesture->rotationAngle()); //???どうする。あとinteraction_counterでsetBearingもキャンセルしなくては。
     if(north_up == 0){
-      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()) - gesture->rotationAngle());
+      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()) - gesture->rotationAngle() - before_pinch_angle);
     } else {
-      if (last_bearing) m_map->setBearing(0 - gesture->rotationAngle());
+      if (last_bearing) m_map->setBearing(0 - gesture->rotationAngle() - before_pinch_angle);
     }
     update();
     interaction_counter = INTERACTION_TIMEOUT;
+    last_pinch_angle = gesture->rotationAngle();
   }
 }
 
