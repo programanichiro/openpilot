@@ -1079,7 +1079,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             poi_name = poi_name_;
           }
 
-          if (poi_name_.isEmpty() == false &&  poi_name.isEmpty() == false) {
+          if (poi_name_.isEmpty() == false && poi_name.isEmpty() == false) {
             //Places API呼び出し。
             // g_latitude = m_map->coordinate().first;
             // g_longitude = m_map->coordinate().second;
