@@ -5,6 +5,7 @@
 #include <QMapLibre/Utils>
 #include <QJsonDocument>
 #include <QJsonObject>
+#include <QJsonArray>
 #include <QNetworkRequest>
 #include <QNetworkReply>
 
