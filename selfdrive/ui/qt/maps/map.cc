@@ -1145,7 +1145,6 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
                             chg_coordinate = true;
                             FILE *debug_fp = fopen("/tmp/gggeee2.txt","w");
                             if(debug_fp){
-                              QByteArray responseData = reply->readAll();
                               fprintf(debug_fp,"%s",responseData.constData());
                               fclose(debug_fp);
                             }
