@@ -104,6 +104,7 @@ private:
 
   MapLimitspeed* map_limitspeed;
   MapBearingScale* map_bearing_scale;
+  QLabel* map_WindowResizePoint;
 
   void clearRoute();
   void updateDestinationMarker();
