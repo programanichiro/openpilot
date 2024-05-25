@@ -330,7 +330,7 @@ int style_reload = 0;
 float g_latitude,g_longitude;
 bool head_gesture_map_north_heading_toggle;
 bool map_pitch_up,map_pitch_down;
-//qreal before_pinch_angle,last_pinch_angle;
+qreal before_pinch_angle,last_pinch_angle;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -566,8 +566,8 @@ void MapWindow::updateState(const UIState &s) {
   } else {
     interaction_counter--;
     if(interaction_counter == 0){
-      // before_pinch_angle = 0;
-      // last_pinch_angle = 0;
+      before_pinch_angle = 0;
+      last_pinch_angle = 0;
     }
   }
 
@@ -801,7 +801,8 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
-#if 1
+#if 0
+      //？　お話にならない。なんか根本的に勘違いしてる？
       QMapLibre::Coordinate coord = m_map->coordinateForPixel(p);
       fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",coord.first,coord.second);
       const SubMaster &sm = *(uiState()->sm);
@@ -910,8 +911,8 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   update();
 
-  // before_pinch_angle = 0;
-  // last_pinch_angle = 0;
+  before_pinch_angle = 0;
+  last_pinch_angle = 0;
   interaction_counter = 0;
 }
 
@@ -1012,6 +1013,9 @@ void MapWindow::wheelEvent(QWheelEvent *ev) {
 bool MapWindow::event(QEvent *event) {
   if (event->type() == QEvent::Gesture) {
     return gestureEvent(static_cast<QGestureEvent*>(event));
+  } else {
+    before_pinch_angle += last_pinch_angle;
+    last_pinch_angle = 0;
   }
 
   return QWidget::event(event);
@@ -1020,9 +1024,6 @@ bool MapWindow::event(QEvent *event) {
 bool MapWindow::gestureEvent(QGestureEvent *event) {
   if (QGesture *pinch = event->gesture(Qt::PinchGesture)) {
     pinchTriggered(static_cast<QPinchGesture *>(pinch));
-  } else {
-    // before_pinch_angle += last_pinch_angle;
-    // last_pinch_angle = 0;
   }
   return true;
 }
@@ -1039,10 +1040,11 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
   if (changeFlags & QPinchGesture::RotationAngleChanged) {
     //m_map->rotateBy(gesture->rotationAngle()); //???どうする。あとinteraction_counterでsetBearingもキャンセルしなくては。
     if(north_up == 0){
-      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()) - gesture->totalRotationAngle());
+      if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()) - gesture->rotationAngle() - before_pinch_angle);
     } else {
-      if (last_bearing) m_map->setBearing(0 - gesture->totalRotationAngle());
+      if (last_bearing) m_map->setBearing(0 - gesture->rotationAngle() - before_pinch_angle);
     }
+    last_pinch_angle = gesture->rotationAngle();
     update();
     interaction_counter = INTERACTION_TIMEOUT;
   }
