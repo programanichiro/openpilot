@@ -838,7 +838,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
 #if 1
-      //MAP_SCALEを加味してみる。
+      //MAP_SCALEを加味したらうまく行った。
       QPointF p2(p.x()/MAP_SCALE,p.y()/MAP_SCALE);
       QMapLibre::Coordinate coord = m_map->coordinateForPixel(p2);
       fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",coord.first,coord.second);
@@ -876,14 +876,14 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
         dy = sin(rad) * dx + cos(rad) * dy;
         dx = tmp_dx;
 
-        //傾きによる補正はなんちゃって式。機体と違い随分遠くを指してしまう。
-        if (sm.valid("navInstruction")) {
-          dx /= cos(DEG2RAD(MAX_PITCH));
-          dy /= cos(DEG2RAD(MAX_PITCH));
-        } else {
-          dx /= cos(DEG2RAD(MIN_PITCH));
-          dy /= cos(DEG2RAD(MIN_PITCH));
-        }
+        // //傾きによる補正はなんちゃって式。機体と違い随分遠くを指してしまう。ない方がマシ？
+        // if (sm.valid("navInstruction")) {
+        //   dx /= cos(DEG2RAD(MAX_PITCH));
+        //   dy /= cos(DEG2RAD(MAX_PITCH));
+        // } else {
+        //   dx /= cos(DEG2RAD(MIN_PITCH));
+        //   dy /= cos(DEG2RAD(MIN_PITCH));
+        // }
         mm = QMapLibre::ProjectedMeters(mm.first - dy*len, mm.second + dx*len);
 
         QMapLibre::Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
@@ -936,7 +936,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
       width_rate = 0.5;
       m_panel->setFixedWidth((DEVICE_SCREEN_SIZE.width() * width_rate - UI_BORDER_SIZE));
       if(uiState()->scene.map_on_left){
-        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+        emit BearingScaleChanged(rect().width(),m_map->bearing(),util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
         map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
       } else {
         emit LimitspeedChanged(rect().width());
@@ -1010,7 +1010,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
       old_width = width_px;
       m_panel->setFixedWidth((width_px - UI_BORDER_SIZE));
       if(uiState()->scene.map_on_left){
-        emit BearingScaleChanged(rect().width(),*last_bearing,util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+        emit BearingScaleChanged(rect().width(),m_map->bearing(),util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
         map_WindowResizePoint->move(rect().width() - WRP_SIZE_W,  rect().height()/2 - WRP_SIZE_H/2);
       } else {
         emit LimitspeedChanged(rect().width());
@@ -1022,7 +1022,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     zoom_offset += g_delta.y() / 100;
     float zoom = util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM);
     m_map->setZoom(zoom);
-    emit BearingScaleChanged(rect().width(),*last_bearing,zoom , g_latitude);
+    emit BearingScaleChanged(rect().width(),m_map->bearing(),zoom , g_latitude);
     return; //地図は動かさない。
   }
 
