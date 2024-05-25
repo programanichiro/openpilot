@@ -1036,13 +1036,13 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
   }
   if (changeFlags & QPinchGesture::RotationAngleChanged) {
     //m_map->rotateBy(gesture->rotationAngle()); //???どうする。あとinteraction_counterでsetBearingもキャンセルしなくては。
+    if(gesture->rotationAngle() == 0){
+      //最初の瞬間を判定したい。
+      before_pinch_angle += last_pinch_angle;
+    }
     if(north_up == 0){
       if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()) - gesture->rotationAngle() - before_pinch_angle);
     } else {
-      if(gesture->rotationAngle() == 0){
-        //最初の瞬間を判定したい。
-        before_pinch_angle += last_pinch_angle;
-      }
       if (last_bearing) m_map->setBearing(0 - gesture->rotationAngle() - before_pinch_angle);
     }
     last_pinch_angle = gesture->rotationAngle();
