@@ -489,7 +489,7 @@ void MapWindow::updateState(const UIState &s) {
     emit LimitspeedChanged(rect().width());
 
     map_bearing_scale->setVisible(true);
-    emit BearingScaleChanged(rect().width(),(loaded_once ? m_map->bearing : *last_bearing),util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
+    emit BearingScaleChanged(rect().width(),(loaded_once ? m_map->bearing() : *last_bearing),util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
 
     bool map_w_isVisible = isVisible();
     if(map_WindowResizePoint->isVisible() == false && map_w_isVisible){
