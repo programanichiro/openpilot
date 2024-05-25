@@ -330,7 +330,7 @@ int style_reload = 0;
 float g_latitude,g_longitude;
 bool head_gesture_map_north_heading_toggle;
 bool map_pitch_up,map_pitch_down;
-qreal before_pinch_angle,last_pinch_angle;
+qreal before_pinch_angle;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {
     return;
@@ -567,7 +567,6 @@ void MapWindow::updateState(const UIState &s) {
     interaction_counter--;
     if(interaction_counter == 0){
       before_pinch_angle = 0;
-      last_pinch_angle = 0;
     }
   }
 
@@ -912,7 +911,6 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   update();
 
   before_pinch_angle = 0;
-  last_pinch_angle = 0;
   interaction_counter = 0;
 }
 
@@ -1038,14 +1036,14 @@ void MapWindow::pinchTriggered(QPinchGesture *gesture) {
     //m_map->rotateBy(gesture->rotationAngle()); //???どうする。あとinteraction_counterでsetBearingもキャンセルしなくては。
     if(gesture->rotationAngle() == 0){
       //これで最初の瞬間を判定？
-      before_pinch_angle += last_pinch_angle;
+      before_pinch_angle += gesture->lastRotationAngle();
     }
     if(north_up == 0){
       if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()) - gesture->rotationAngle() - before_pinch_angle);
     } else {
       if (last_bearing) m_map->setBearing(0 - gesture->rotationAngle() - before_pinch_angle);
     }
-    last_pinch_angle = gesture->rotationAngle();
+    emit BearingScaleChanged(rect().width(),m_map->bearing(),util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM) , g_latitude);
     update();
     interaction_counter = INTERACTION_TIMEOUT;
   }
@@ -1475,10 +1473,6 @@ void MapBearingScale::updateBearingScale(int map_width, int angle, double scale 
 void MapBearingScale::paintEvent(QPaintEvent *event) {
 
   int tmp_map_bearing_num = map_bearing_num;
-  if(north_up != 0){
-    tmp_map_bearing_num = 0;
-  }
-
 
   bool tmp_bs_color_revert = bs_color_revert;
   if((g_night_mode == 1 && night_mode == -1) || night_mode == 1){
