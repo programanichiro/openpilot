@@ -837,9 +837,10 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
-#if 0
-      //？　お話にならない。なんか根本的に勘違いしてる？
-      QMapLibre::Coordinate coord = m_map->coordinateForPixel(p);
+#if 1
+      //MAP_SCALEを加味してみる。
+      QPointF p2(p.x()/MAP_SCALE,p.y()/MAP_SCALE);
+      QMapLibre::Coordinate coord = m_map->coordinateForPixel(p2);
       fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",coord.first,coord.second);
       const SubMaster &sm = *(uiState()->sm);
 #else
@@ -875,7 +876,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
         dy = sin(rad) * dx + cos(rad) * dy;
         dx = tmp_dx;
 
-        //傾きによる補正はなんちゃって式。前後左右で考えないとダメだがめんどくさすぎる。十分拡大するか、ノースアップでやってね。
+        //傾きによる補正はなんちゃって式。機体と違い随分遠くを指してしまう。
         if (sm.valid("navInstruction")) {
           dx /= cos(DEG2RAD(MAX_PITCH));
           dy /= cos(DEG2RAD(MAX_PITCH));
