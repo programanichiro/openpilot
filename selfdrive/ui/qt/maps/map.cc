@@ -819,9 +819,9 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
         //pinchローテーションしている場合を考慮
         double rad = DEG2RAD(m_map->bearing());
 
-        double tmp_dy = cos(rad) * dy - sin(rad) * dx;
-        dx = sin(rad) * dy + cos(rad) * dx;
-        dy = tmp_dy;
+        double tmp_dx = cos(rad) * dx - sin(rad) * dy;
+        dy = sin(rad) * dx + cos(rad) * dy;
+        dx = tmp_dx;
 
         mm = QMapLibre::ProjectedMeters(mm.first - dy*len, mm.second + dx*len);
 
