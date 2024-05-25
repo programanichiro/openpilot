@@ -50,6 +50,7 @@ int night_mode = -1;
 bool chg_pitch;
 bool reset_zoom;
 bool chg_coordinate;
+bool north_head , head_north;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 float calc_pich(){
@@ -378,6 +379,13 @@ void MapWindow::updateState(const UIState &s) {
           if(MIN_PITCH_ > 4){
             MIN_PITCH_ = -1;
           }
+          if(MIN_PITCH_ == -1){
+            //head->north
+            head_north = true; //地図の角度をリセットする。
+          } else if(MIN_PITCH_ == 0){
+            //north->head
+            north_head = true; //地図の角度をリセットする。
+          }
           MIN_PITCH_ *= 10;
           max_zoom_pitch_effect();
           setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
@@ -394,6 +402,13 @@ void MapWindow::updateState(const UIState &s) {
           MIN_PITCH_ -= 1;
           if(MIN_PITCH_ < -1){
             MIN_PITCH_ = 4;
+          }
+          if(MIN_PITCH_ == -1){
+            //head->north
+            head_north = true; //地図の角度をリセットする。
+          } else if(MIN_PITCH_ == 4){
+            //north->head
+            north_head = true; //地図の角度をリセットする。
           }
           MIN_PITCH_ *= 10;
           max_zoom_pitch_effect();
@@ -415,10 +430,17 @@ void MapWindow::updateState(const UIState &s) {
           soundButton(true);
           if(MIN_PITCH_ == 0){ // 0<->-1
             MIN_PITCH_ = -1;
+            head_north = true; //地図の角度をリセットする。
           } else if(MIN_PITCH_ == -1){
             MIN_PITCH_ = 0;
+            north_head = true; //地図の角度をリセットする。
           } else {
             MIN_PITCH_ = -MIN_PITCH_;
+            if(MIN_PITCH_ >= 0){
+              north_head = true; //地図の角度をリセットする。
+            } else {
+              head_north = true; //地図の角度をリセットする。
+            }
           }
           max_zoom_pitch_effect();
           setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
@@ -440,7 +462,14 @@ void MapWindow::updateState(const UIState &s) {
         m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
       } else if(chg_pitch){
         chg_pitch = false;
-        if(interaction_counter == 0){
+        if(interaction_counter == 0 || north_head || head_north){
+          if(north_head || head_north){
+            // setBearingに - last_pinch_angle - before_pinch_angleを加える方法もあるが、一旦リセットする意図で。
+            before_pinch_angle = 0;
+            last_pinch_angle = 0;
+          }
+          north_head = false;
+          head_north = false;
           if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
         }
         if (sm.valid("navInstruction")) {
@@ -456,7 +485,14 @@ void MapWindow::updateState(const UIState &s) {
       if(m_map->margins().top() != 0){
         m_map->setMargins({0, 0, 0, 0});
         m_map->setPitch(0);
-        if(interaction_counter == 0){
+        if(interaction_counter == 0 || north_head || head_north){
+          if(north_head || head_north){
+            // setBearingに - last_pinch_angle - before_pinch_angleを加える方法もあるが、一旦リセットする意図で。
+            before_pinch_angle = 0;
+            last_pinch_angle = 0;
+          }
+          north_head = false;
+          head_north = false;
           m_map->setBearing(0);
         }
         MAX_ZOOM_ = MAX_ZOOM0; //max_zoom_pitch_effect(); //これだとノースアップでも方位磁石タップでスケールが変わってしまう。
@@ -835,9 +871,9 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
         double rad = DEG2RAD(m_map->bearing());
 
-        double tmp_dy = cos(rad) * dy - sin(rad) * dx;
-        dx = sin(rad) * dy + cos(rad) * dx;
-        dy = tmp_dy;
+        double tmp_dx = cos(rad) * dx - sin(rad) * dy;
+        dy = sin(rad) * dx + cos(rad) * dy;
+        dx = tmp_dx;
 
         //傾きによる補正はなんちゃって式。前後左右で考えないとダメだがめんどくさすぎる。十分拡大するか、ノースアップでやってね。
         if (sm.valid("navInstruction")) {
@@ -1408,6 +1444,13 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         MIN_PITCH_ += 1;
         if(MIN_PITCH_ > 4){
           MIN_PITCH_ = -1;
+        }
+        if(MIN_PITCH_ == -1){
+          //head->north
+          head_north = true; //地図の角度をリセットする。
+        } else if(MIN_PITCH_ == 0){
+          //north->head
+          north_head = true; //地図の角度をリセットする。
         }
         MIN_PITCH_ *= 10;
         max_zoom_pitch_effect();
