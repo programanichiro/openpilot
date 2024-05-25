@@ -801,6 +801,10 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
     FILE *latlon = fopen("/data/last_navi_dest.json","w");
     if(latlon){
+#if 1
+      QMapLibre::Coordinate coord = m_map->coordinateForPixel(p);
+      fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",coord.first,coord.second);
+#else
       double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
       QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
       const SubMaster &sm = *(uiState()->sm);
@@ -840,6 +844,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
         fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",point.first,point.second); //ヘッドアップにも対応。
         //fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",m_map->coordinate().first,m_map->coordinate().second); //ノースアップじゃない時はタッチ位置の計算が困難になるから、地図座標を使う。
       }
+#endif
       fclose(latlon);
 
       if (sm.valid("navInstruction")) {
