@@ -814,6 +814,14 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
         //中央からpまでのピクセル差分。
         int dx = p.x() - (width() / 2.0);
         int dy = p.y() - (height() / 2.0);
+
+        //pinchローテーションしている場合を考慮
+        double rad = DEG2RAD(m_map->bearing());
+
+        double tmp_dy = cos(rad) * dy - sin(rad) * dx;
+        dx = sin(rad) * dy + cos(rad) * dx;
+        dy = tmp_dy;
+
         mm = QMapLibre::ProjectedMeters(mm.first - dy*len, mm.second + dx*len);
 
         QMapLibre::Coordinate point = QMapLibre::coordinateForProjectedMeters(mm);
@@ -870,8 +878,8 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 
 static float width_rate = -1;
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
-  if(interaction_counter > INTERACTION_TIMEOUT * 0.8){
-    //移動直後の１秒以内のダブルクリックはリセット動作をしない。
+  if(interaction_counter > INTERACTION_TIMEOUT * 0.9){
+    //移動直後の0.5秒以内のダブルクリックはリセット動作をしない。
     return;
   }
 
