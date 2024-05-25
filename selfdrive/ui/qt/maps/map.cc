@@ -804,6 +804,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 #if 1
       QMapLibre::Coordinate coord = m_map->coordinateForPixel(p);
       fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",coord.first,coord.second);
+      const SubMaster &sm = *(uiState()->sm);
 #else
       double len = QMapLibre::metersPerPixelAtLatitude(g_latitude, m_map->zoom()) / MAP_SCALE;
       QMapLibre::ProjectedMeters mm = QMapLibre::projectedMetersForCoordinate(m_map->coordinate());
