@@ -1203,7 +1203,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
           }
           if(poi_name_.isEmpty() == false){
             //緯度経度として解釈できるか
-            static const QRegularExpression re(R"(^([-+]?\d+\.\d+([ ,])[-+]?\d+\.\d+)$)"); //緯度,軽度の正規表現。カンマの前後のスペースは許容しない。
+            static QRegularExpression re(R"(^([-+]?\d+\.\d+([ ,])[-+]?\d+\.\d+)$)"); //緯度,軽度の正規表現。カンマの前後のスペースは許容しない。
             QRegularExpressionMatch match = re.match(poi_name_);
             if (match.hasMatch()) {
               g_latitude = match.captured(1).toDouble(); // 1つ目の浮動小数を取得
