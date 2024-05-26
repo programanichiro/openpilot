@@ -1210,6 +1210,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
             if (match.hasMatch()) {
               g_latitude = match.captured(1).toDouble(); // 1つ目の浮動小数を取得
               g_longitude = match.captured(2).toDouble(); // 2つ目の浮動小数を取得
+              chg_coordinate = true;
               return;
             }
             //APIキーなし(x)で緯度経度のダイレクト数値以外の場合は、Places APIを呼び出さない（latlon_mode == true）
