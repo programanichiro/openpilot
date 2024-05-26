@@ -1179,7 +1179,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
         }
         if(my_google_key.empty() == true){
           //先にGoogle API Keyを入れる
-          gg_key = InputDialog::getText(tr("Google API key"), this, tr("Enter a API key obtained from the Google Cloud"), false, -1, gg_key).trimmed();
+          gg_key = InputDialog::getText(tr("Google API key"), this, tr("Enter Google API key. If using only Lat/Lon, input x."), false, -1, gg_key).trimmed();
           if (gg_key.isEmpty() == false) {
             FILE *fp = fopen("/data/google_key.txt","w");
             if(fp != NULL){
@@ -1192,12 +1192,28 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
         if (gg_key.isEmpty() == false) {
           //gg_keyがある場合は、poi検索を行う。
           static QString poi_name;
-          QString poi_name_ = InputDialog::getText(tr("POI name or keyword"), this, tr("Enter a POI name or keyword"), false, -1, poi_name).trimmed(); //起動中は最後に入れた文字を覚えておくのもいいか？
+          QString poi_name_ = InputDialog::getText(tr("POI name or keyword"), this, tr("Enter a POI name or keyword or Lat,Lon"), false, -1, poi_name).trimmed(); //起動中は最後に入れた文字を覚えておくのもいいか？
           if(poi_name_.isEmpty() == false) {
             poi_name = poi_name_;
           }
 
-          if (poi_name_.isEmpty() == false && poi_name.isEmpty() == false) {
+          bool latlon_mode = false; //緯度経度座標モード
+          if(gg_key == "x"){
+            latlon_mode = true; //APIキーなしではplacesAPIを呼び出せない。
+          }
+          if(poi_name_.isEmpty() == false){
+            //緯度経度として解釈できるか
+            static const QRegularExpression re(R"(^([-+]?\d+\.\d+([ ,])[-+]?\d+\.\d+)$)"); //緯度,軽度の正規表現。カンマの前後のスペースは許容しない。
+            QRegularExpressionMatch match = re.match(poi_name_);
+            if (match.hasMatch()) {
+              g_latitude = match.captured(1).toDouble(); // 1つ目の浮動小数を取得
+              g_longitude = match.captured(2).toDouble(); // 2つ目の浮動小数を取得
+              return;
+            }
+            //APIキーなし(x)で緯度経度のダイレクト数値以外の場合は、Places APIを呼び出さない（latlon_mode == true）
+          }
+
+          if (poi_name_.isEmpty() == false /*&& poi_name.isEmpty() == false*/ && latlon_mode == false){
             //Places API呼び出し。
             // g_latitude = m_map->coordinate().first;
             // g_longitude = m_map->coordinate().second;
