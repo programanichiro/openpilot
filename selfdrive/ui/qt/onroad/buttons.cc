@@ -49,11 +49,10 @@ void soundButton2(int onOff){
 
 void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //txt_mngはtxt.c_str()を渡す。
   int dir_ofs = 0;
-  if(strstr(fn_mng,"../manager/"))dir_ofs = 11;
-  else if(strstr(fn_mng,"/data/"))dir_ofs = 6;
+  if(strstr(fn_mng,"/data/"))dir_ofs = 6;
   if(dir_ofs > 0){
     char tmpfn[128];
-    sprintf(tmpfn,"/tmp/%s",fn_mng + dir_ofs); //11 = strlen("../manager/");
+    sprintf(tmpfn,"/tmp/%s",fn_mng + dir_ofs);
     if(first == true){
       FILE *dst_tmp = fopen(tmpfn,"r");
       if(dst_tmp){
@@ -73,7 +72,7 @@ void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //tx
 bool getButtonEnabled(const char*fn){ //fn="/data/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // ../manager/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
+    // /data/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return true; //ファイルが無効値なのでtrue
@@ -85,10 +84,10 @@ bool getButtonEnabled(const char*fn){ //fn="/data/lockon_disp_disable.txt"など
   }
 }
 
-bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
+bool getButtonEnabled0(const char*fn){ //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // ../manager/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
+    // /data/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return false; //ファイルが無効値なのでfalse
@@ -100,10 +99,10 @@ bool getButtonEnabled0(const char*fn){ //旧fn="../manager/accel_engaged.txt"な
   }
 }
 
-int getButtonInt(const char*fn , int defaultNum){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
+int getButtonInt(const char*fn , int defaultNum){ //新fn="/data/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // ../manager/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
+    // /data/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     return std::stoi(txt);
   }
@@ -122,14 +121,14 @@ void setButtonEnabled(const char*fn , bool flag){ //fn="/data/lockon_disp_disabl
       fwrite("1",1,1,fp);
     }
     fclose(fp);
-    // ../manager/abc.txtを/tmp/abc.txtにコピーする
+    // /data/abc.txtを/tmp/abc.txtにコピーする
     copy_manager2tmp(fn,flag ? "0" : "1",false);
   } else {
     fp_error = true;
   }
 }
 
-void setButtonEnabled0(const char*fn , bool flag){ //旧fn="../manager/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
+void setButtonEnabled0(const char*fn , bool flag){ //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
@@ -139,14 +138,14 @@ void setButtonEnabled0(const char*fn , bool flag){ //旧fn="../manager/accel_eng
       fwrite("0",1,1,fp);
     }
     fclose(fp);
-    // ../manager/abc.txtを/tmp/abc.txtにコピーする
+    // /data/abc.txtを/tmp/abc.txtにコピーする
     copy_manager2tmp(fn,flag ? "1" : "0",false);
   } else {
     fp_error = true;
   }
 }
 
-void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.txt"など、このファイルが無かったら0。num(0〜3)はそのまま数字で。
+void setButtonInt(const char*fn , int num){ //新fn="/data/accel_engaged.txt"など、このファイルが無かったら0。num(0〜3)はそのまま数字で。
   FILE *fp = fopen(fn,"w"); //write_fileだと書き込めないが、こちらは書き込めた。
   if(fp != NULL){
     fp_error = false;
@@ -166,7 +165,7 @@ void setButtonInt(const char*fn , int num){ //新fn="../manager/accel_engaged.tx
     fwrite(buf,strlen(buf),1,fp);
 #endif
     fclose(fp);
-    // ../manager/abc.txt(or /data/abc.txt)を/tmp/abc.txtにコピーする
+    // /data/abc.txt(or /data/abc.txt)を/tmp/abc.txtにコピーする
     copy_manager2tmp(fn,buf,false);
   } else {
     fp_error = true;
