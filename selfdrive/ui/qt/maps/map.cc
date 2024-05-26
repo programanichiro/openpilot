@@ -8,6 +8,8 @@
 #include <QJsonArray>
 #include <QNetworkRequest>
 #include <QNetworkReply>
+#include <QRegularExpression>
+#include <QRegularExpressionValidator>
 
 #include <QDebug>
 
