@@ -167,8 +167,10 @@ class RouteEngine:
     except Exception as e:
       pass
     if navi_highway == 0:
-      params['exclude'] = 'toll' #有料区間を避ける
+      params['exclude'] = 'toll,ferry' #有料区間を避ける
       # params['exclude'] = 'motorway,toll' #高速と有料区間を避ける
+    else:
+      params['exclude'] = 'ferry' #フェリーだけ除外する。
 
     # TODO: move waypoints into NavDestination param?
     waypoints = self.params.get('NavDestinationWaypoints', encoding='utf8')
