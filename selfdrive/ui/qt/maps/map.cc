@@ -667,12 +667,14 @@ void MapWindow::updateState(const UIState &s) {
 
   static unsigned int save_period_counter;
   unsigned int save_period_counter_check = (save_period_counter ++) % (20*60); //60秒周期
-  if(save_period_counter_check == 15){ //60秒に一回セーブ
+  if(save_period_counter_check == 20*10){ //60秒に一回セーブ
     if (last_bearing) setButtonInt("/data/mb_last_bearing_info.txt",(int)(*last_bearing * 1000)); //"%.2f"の代わり。
     //不要setButtonInt("/data/mb_north_up.txt",north_up);
+  }
+  if(save_period_counter_check == 20*30){ //60秒に一回セーブ
     setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
   }
-  if(save_period_counter_check == 45){ //60秒に一回セーブ。mb_zoom_offsetと半周期ずらす。
+  if(save_period_counter_check == 20*50){ //60秒に一回セーブ
     if(width_rate >= 0){
       FILE *fp = fopen("/data/mb_width_rate.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
       if(fp != NULL){
