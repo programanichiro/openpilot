@@ -96,6 +96,7 @@ int chk_north_up(){
   }
   return 0;
 }
+static float width_rate = -1;
 
 //MapWindow::MapWindow(const QMapLibre::Settings &settings) : m_settings(settings), velocity_filter(0, 10, 0.05, false) {
 MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_settings(settings), m_panel(panel), velocity_filter(0, 10, 0.05, false) {
@@ -933,7 +934,6 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   }
 }
 
-static float width_rate = -1;
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   if(interaction_counter > INTERACTION_TIMEOUT * 0.9){
     //移動直後の0.5秒以内のダブルクリックはリセット動作をしない。
