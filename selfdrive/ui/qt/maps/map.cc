@@ -343,7 +343,8 @@ void MapWindow::updateState(const UIState &s) {
   update();
 
   static bool already_vego_over_8 = false;
-  if(already_vego_over_8 == false && sm["carState"].getCarState().getVEgo() > 1/3.6){ //8->4->1km/h
+  float sm_vego = sm["carState"].getCarState().getVEgo();
+  if(already_vego_over_8 == false && sm_vego > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
   if (sm.updated("liveLocationKalman")) {
@@ -589,7 +590,7 @@ void MapWindow::updateState(const UIState &s) {
     }
   }
 
-  if(sm["carState"].getCarState().getVEgo() < 1/3.6){
+  if(sm_vego < 1/3.6){
     ; //速度が出ていない時は座標をリセットしない。
     if (interaction_counter > 1){
       interaction_counter--; //カウントダウンだけはやっておく。わざと1まで。m_map->setZoomさせないため。
@@ -603,7 +604,7 @@ void MapWindow::updateState(const UIState &s) {
       if (last_bearing) m_map->setBearing(0);
     }
     m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
-  } else if(sm["carState"].getCarState().getVEgo() >= 1/3.6){
+  } else if(sm_vego >= 1/3.6){
     interaction_counter--;
     if(interaction_counter == 0){
       before_pinch_angle = 0;
