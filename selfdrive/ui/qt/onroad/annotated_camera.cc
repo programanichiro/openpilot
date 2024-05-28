@@ -988,7 +988,7 @@ int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStrin
   return x - real_rect.width(); //続けて並べるxposを返す。
 }
 
-int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs , int before_width) {
+int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs) {
   QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
