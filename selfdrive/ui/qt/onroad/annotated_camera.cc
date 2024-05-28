@@ -46,6 +46,7 @@ static int tss_type = 0;
 static float maxspeed_org;
 std::string road_info_txt;
 bool g_rightHandDM;
+int ACC_speed;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
@@ -60,7 +61,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
-  int ACC_speed = std::nearbyint(v_cruise); //45〜
+  ACC_speed = std::nearbyint(v_cruise); //45〜
   v_cruise = cs.getVCruise(); //41〜,間違いない、表示して確認した。改めてこちらを使う。
   maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
   //maxspeed_org = v_cruise; //getVCruiseを使うと点滅しすぎる？
