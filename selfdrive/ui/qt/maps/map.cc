@@ -594,7 +594,8 @@ void MapWindow::updateState(const UIState &s) {
     if (interaction_counter > 1){
       interaction_counter--; //カウントダウンだけはやっておく。わざと1まで。m_map->setZoomさせないため。
     }
-  } else if (interaction_counter == 0) {
+  }
+  if (interaction_counter == 0) {
     if (last_position) m_map->setCoordinate(*last_position);
     if(north_up == 0){
       if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
@@ -602,7 +603,7 @@ void MapWindow::updateState(const UIState &s) {
       if (last_bearing) m_map->setBearing(0);
     }
     m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
-  } else {
+  } else if(sm["carState"].getCarState().getVEgo() >= 1/3.6){
     interaction_counter--;
     if(interaction_counter == 0){
       before_pinch_angle = 0;
