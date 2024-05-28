@@ -839,8 +839,9 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   ev->accept();
 
   { //以下はタッチが放された瞬間に記録する。
-    setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
+    setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000)); //コンパス長押しのクリアはここでは保存されない。
     if(width_rate >= 0){
+      //ダブつタップでクリアしてもここで保存される。
       FILE *fp = fopen("/data/mb_width_rate.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
       if(fp != NULL){
         fprintf(fp,"%.3f",width_rate);
@@ -1469,6 +1470,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         reset_zoom = true; //ズームリセット専用。
         void soundButton(int onOff);
         soundButton(false);
+        setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
       } else if(now - m_pressedTime > 500){
         bs_color_revert  ^= 1; //0.5秒以上の長押しでダークモード反転。
       } else /*if(north_up == 0)*/{
