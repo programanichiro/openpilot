@@ -125,9 +125,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
   is_metric = s.scene.is_metric;
   speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
-  if(is_cruise_set){
-    speedUnit = QString::number(ACC_speed) + speedUnit;
-  }
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   status = s.status;
 
@@ -457,10 +454,15 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 //  [STATUS_ALERT] = QColor(0xC9, 0x22, 0x31, 0xf1),
     drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, COLOR_STATUS_WARNING); //縦制御無効状態でkm/hを警告色に。
   } else {
+    int w;
     if(velo_for_trans < velo_for_trans_limit){
-      drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, speed_num);
+      w = drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, speed_num);
     } else {
-      drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
+      w = drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
+    }
+    if(is_cruise_set){
+      p.setFont(InterFont(44, QFont::ExtraBold));
+      drawTextCenter(p, rect().center().x() + w/2 + 30, 290 + y_ofs-40 , QString::number(ACC_speed) , 255 , false , 0x10, 0x10, 0x10 , 255,255,255,200 , 6);
     }
   }
 
@@ -642,8 +644,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if(road_info_txt.empty() == false){
     int i = 0; // インデックス
     std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
-    std::string kmh; // 一時的にトークンを格納する変数
-    std::string token; // 一時的にトークンを格納する変数
+    std::string kmh; //制限速度
+    std::string token; // 一時的にトークンを格納する変数(最終的に道路名)
     static int road_th_ct_ct = 0;
     static int before_road_th_ct = 0;
     while (i < 3 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
@@ -913,7 +915,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   p.restore();
 }
 
-void AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
+int AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight) {
   QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
@@ -927,9 +929,11 @@ void AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &t
     p.setPen(QColor(0xff, 0, 0, alpha));
   }
   p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return real_rect.width(); //続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
 }
 
-void AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &text, const QColor &col) {
+int AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &text, const QColor &col) {
   QFontMetrics fm(p.font());
   QRect init_rect = fm.boundingRect(text);
   QRect real_rect = fm.boundingRect(init_rect, 0, text);
@@ -937,6 +941,8 @@ void AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &t
 
   p.setPen(col);
   p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return real_rect.width(); //続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
 }
 
 int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn) {
@@ -979,6 +985,30 @@ int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStrin
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 
   return x - real_rect.width(); //続けて並べるxposを返す。
+}
+
+int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs , int before_width) {
+  QRect real_rect = p.fontMetrics().boundingRect(text);
+  real_rect.moveCenter({x, y - real_rect.height() / 2});
+
+  if(bk_alp > 0){
+    //バックを塗る。
+    p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
+    p.drawRect(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+  }
+
+  if(brakeLight == false){
+    p.setPen(QColor(red, blu, grn, alpha));
+  } else {
+    alpha += 100;
+    if(alpha > 255){
+      alpha = 255;
+    }
+    p.setPen(QColor(0xff, 0, 0, alpha));
+  }
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return real_rect.width(); //続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
 }
 
 void AnnotatedCameraWidget::my_drawIcon(QPainter &p, int x, int y, QPixmap &img, QBrush bg, float opacity , float ang) {
