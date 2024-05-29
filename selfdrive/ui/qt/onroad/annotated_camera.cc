@@ -935,9 +935,7 @@ int AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &te
 }
 
 int AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &text, const QColor &col) {
-  QFontMetrics fm(p.font());
-  QRect init_rect = fm.boundingRect(text);
-  QRect real_rect = fm.boundingRect(init_rect, 0, text);
+  QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
   p.setPen(col);
