@@ -463,7 +463,11 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     if(is_cruise_set){
       p.setFont(InterFont(44, QFont::ExtraBold));
-      drawTextCenter(p, rect().center().x() + w/2 + 30, 290 + y_ofs-40 , QString::number(ACC_speed) , 255 , false , 0x10, 0x10, 0x10 , 255,255,255,200 , 6);
+      p.setBrush(QColor(240, 240, 240, 200));
+      int ofs_x = 30;
+      QRect rc(rect().center().x() + w/2+2 ,290 + y_ofs-40-20,ofs_x*2,50);
+      p.drawRoundedRect(rc, 15, 15);
+      drawTextCenter(p, rect().center().x() + w/2 + ofs_x, 290 + y_ofs-40 , QString::number(ACC_speed) , 255 , false , 0x30, 0x30, 0x30);
     }
   }
 
