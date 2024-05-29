@@ -463,7 +463,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     if(is_cruise_set){
       p.setFont(InterFont(44, QFont::ExtraBold));
-      drawTextCenter(p, rect().center().x() + w/2 + 30, 290 + y_ofs-40 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 255 , false , 0x30, 0x30, 0x30 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 150 , 9 , 15 , 20 , 2);
+      drawTextCenter(p, rect().center().x() + w/2 + 30, 290 + y_ofs-40 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 255 , false , 0x30, 0x30, 0x30 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 240 , 9 , 15 , 20 , 2);
     }
   }
 
@@ -998,7 +998,7 @@ int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QStri
     if(bk_corner_r == 0){
       p.drawRect(real_rect.x()-bk_add_w/2+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height());
     } else {
-      QRect rc(real_rect.x()-bk_add_w/2*bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height());
+      QRect rc(real_rect.x()-bk_add_w/2+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height());
       p.drawRoundedRect(rc, bk_corner_r, bk_corner_r);
     }
   }
