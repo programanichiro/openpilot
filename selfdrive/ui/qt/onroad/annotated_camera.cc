@@ -463,7 +463,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     if(is_cruise_set){
       p.setFont(InterFont(40, QFont::ExtraBold));
-      drawTextCenter(p, rect().center().x() + w/2 + 31, 290 + y_ofs-40 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 255 , false , 0x30, 0x30, 0x30 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 240 , 9 , 15 , 20 , 2);
+      drawTextCenter(p, rect().center().x() + w/2 + 31, 290 + y_ofs-40 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 255 , false , 0x30, 0x30, 0x30 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 240 , 9 , 15 , 9 , 4);
     }
   }
 
@@ -675,7 +675,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       p.setFont(InterFont(33, QFont::Bold));
       int next_x = drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
       if(kmh != "0"){
-        drawTextRight(p, next_x-4, rect().bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6);
+        drawTextRight(p, next_x-4, rect().bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5);
       }
     }
   }
@@ -859,7 +859,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+4, traffic_speed_y-arc_w/2+4, traffic_speed_r*2+arc_w-8,traffic_speed_r*2+arc_w-8, (90-car_bearing+5)*16, (360-5*2)*16);
     int f_size = traffic_speed_r * 67 / (150 / 2);
     p.setFont(InterFont(f_size, QFont::Bold));
-    drawText(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
+    drawText(p, traffic_speed_x+traffic_speed_r-2, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
@@ -962,14 +962,19 @@ int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString
   return x + real_rect.width(); //続けて並べるxposを返す。
 }
 
-int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs) {
+int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r) {
   QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x - real_rect.width() / 2, y - real_rect.height() / 2});
 
   if(bk_alp > 0){
     //バックを塗る。
     p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
-    p.drawRect(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+    if(bk_corner_r == 0){
+      p.drawRect(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+    } else {
+      QRect rc(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+      p.drawRoundedRect(rc, bk_corner_r, bk_corner_r);
+    }
   }
 
   if(brakeLight == false){
