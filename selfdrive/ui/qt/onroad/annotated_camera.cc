@@ -859,7 +859,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+4, traffic_speed_y-arc_w/2+4, traffic_speed_r*2+arc_w-8,traffic_speed_r*2+arc_w-8, (90-car_bearing+5)*16, (360-5*2)*16);
     int f_size = traffic_speed_r * 67 / (150 / 2);
     p.setFont(InterFont(f_size, QFont::Bold));
-    drawText(p, traffic_speed_x+traffic_speed_r-1, traffic_speed_y+traffic_speed_r+f_size/2 -7-1, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
+    drawText(p, traffic_speed_x+traffic_speed_r-2, traffic_speed_y+traffic_speed_r+f_size/2 -7-1, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
