@@ -463,11 +463,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     if(is_cruise_set){
       p.setFont(InterFont(44, QFont::ExtraBold));
-      p.setBrush(QColor(240, 240, 240, 200));
-      int ofs_x = 30;
-      QRect rc(rect().center().x() + w/2+2 ,290 + y_ofs-40-20,ofs_x*2,50);
-      p.drawRoundedRect(rc, 15, 15);
-      drawTextCenter(p, rect().center().x() + w/2 + ofs_x, 290 + y_ofs-40 , QString::number(ACC_speed) , 255 , false , 0x30, 0x30, 0x30);
+      drawTextCenter(p, rect().center().x() + w/2 + ofs_x, 290 + y_ofs-40 , QString::number(ACC_speed) , 255 , false , 0x30, 0x30, 0x30 , 240, 240, 240, 150 , 10 , 15 , 20);
     }
   }
 
@@ -992,14 +988,19 @@ int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStrin
   return x - real_rect.width(); //続けて並べるxposを返す。
 }
 
-int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs) {
+int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int corner_r=0 , int add_w=0) {
   QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
   if(bk_alp > 0){
     //バックを塗る。
     p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
-    p.drawRect(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+    if(corner_r == 0){
+      p.drawRect(real_rect.x()-add_w/2,real_rect.y() + bk_yofs , real_rect.width()+add_w , real_rect.height());
+    } else {
+      QRect rc(real_rect.x()-add_w/2,real_rect.y() + bk_yofs , real_rect.width()+add_w , real_rect.height());
+      p.drawRoundedRect(rc, corner_r, corner_r);
+    }
   }
 
   if(brakeLight == false){
