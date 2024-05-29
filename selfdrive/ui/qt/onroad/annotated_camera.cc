@@ -463,7 +463,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     if(is_cruise_set){
       p.setFont(InterFont(44, QFont::ExtraBold));
-      drawTextCenter(p, rect().center().x() + w/2 + 30, 290 + y_ofs-40 , QString::number(ACC_speed) , 255 , false , 0x30, 0x30, 0x30 , 240, 240, 240, 150 , 10 , 15 , 20);
+      drawTextCenter(p, rect().center().x() + w/2 + 30, 290 + y_ofs-40 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 255 , false , 0x30, 0x30, 0x30 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 150 , 9 , 15 , 20 , 2);
     }
   }
 
@@ -988,18 +988,18 @@ int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStrin
   return x - real_rect.width(); //続けて並べるxposを返す。
 }
 
-int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int corner_r , int add_w) {
+int AnnotatedCameraWidget::drawTextCenter(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r , int bk_add_w, int bk_xofs) {
   QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x, y - real_rect.height() / 2});
 
   if(bk_alp > 0){
     //バックを塗る。
     p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
-    if(corner_r == 0){
-      p.drawRect(real_rect.x()-add_w/2,real_rect.y() + bk_yofs , real_rect.width()+add_w , real_rect.height());
+    if(bk_corner_r == 0){
+      p.drawRect(real_rect.x()-bk_add_w/2+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height());
     } else {
-      QRect rc(real_rect.x()-add_w/2,real_rect.y() + bk_yofs , real_rect.width()+add_w , real_rect.height());
-      p.drawRoundedRect(rc, corner_r, corner_r);
+      QRect rc(real_rect.x()-bk_add_w/2*bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height());
+      p.drawRoundedRect(rc, bk_corner_r, bk_corner_r);
     }
   }
 
