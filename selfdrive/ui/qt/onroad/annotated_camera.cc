@@ -859,7 +859,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     p.drawArc(traffic_speed_x-arc_w/2+4, traffic_speed_y-arc_w/2+4, traffic_speed_r*2+arc_w-8,traffic_speed_r*2+arc_w-8, (90-car_bearing+5)*16, (360-5*2)*16);
     int f_size = traffic_speed_r * 67 / (150 / 2);
     p.setFont(InterFont(f_size, QFont::Bold));
-    drawText(p, traffic_speed_x+traffic_speed_r-3, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
+    drawTextCircleCenter(p, traffic_speed_x+traffic_speed_r, traffic_speed_y+traffic_speed_r+f_size/2 -7, traffic_speed , QColor(0x24, 0x57, 0xa1 , 255));
   }
 
   //キャリブレーション値の表示。dm iconより先にやらないと透明度が連動してしまう。
@@ -929,6 +929,18 @@ int AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &te
     }
     p.setPen(QColor(0xff, 0, 0, alpha));
   }
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return real_rect.width(); //続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
+}
+
+int AnnotatedCameraWidget::drawTextCircleCenter(QPainter &p, int x, int y, const QString &text, const QColor &col) { //円の中央とxを共有したいときに使いやすいので残す。
+  QFontMetrics fm(p.font());
+  QRect init_rect = fm.boundingRect(text);
+  QRect real_rect = fm.boundingRect(init_rect, 0, text);
+  real_rect.moveCenter({x, y - real_rect.height() / 2});
+
+  p.setPen(col);
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 
   return real_rect.width(); //続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
