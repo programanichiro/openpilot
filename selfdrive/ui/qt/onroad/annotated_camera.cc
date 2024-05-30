@@ -1689,6 +1689,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
   static float vc_accel;
+  extern float _1_vc_accel;
   vc_accel = vc_accel + (vc_accel0 - vc_accel) / 5;
   //vc_accel = -0.5;
   float hha = 0;
@@ -1703,6 +1704,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   if(hha < 0){
     hha = 0;
   }
+  _1_vc_accel = hha;
   hha = hha * rect_h;
   float wp = 35;
   if(vc_accel > 0){
@@ -1714,6 +1716,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     p.drawPolygon(meter, std::size(meter));
 #endif
   } else {
+    _1_vc_accel = -_1_vc_accel;
 #if 0
     QRect ra = QRect(rect_w - wp , rect_h/2         , wp , hha/2);
     p.drawRect(ra);
