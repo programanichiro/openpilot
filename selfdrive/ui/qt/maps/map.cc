@@ -62,7 +62,7 @@ float calc_pich(){
     return 0; //north_up用。方位磁石タップにノースアップも混ぜる0->10->20->30->40->ノースアップ
   }
   _2_vc_accel = _2_vc_accel + (_1_vc_accel - _2_vc_accel) / 5; //若干緩衝処理。
-  return MIN_PITCH_ + (_2_vc_accel*5); //*10だと思ったより動いてしまう。
+  return MIN_PITCH_ - (_2_vc_accel*5); //*10だと思ったより動いてしまう。
 }
 void max_zoom_pitch_effect(){
   float tmp_1_vc_accel = _1_vc_accel;
