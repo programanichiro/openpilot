@@ -480,14 +480,15 @@ void MapWindow::updateState(const UIState &s) {
           head_north = false;
           if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
         }
-        if (sm.valid("navInstruction")) {
-          m_map->setPitch(MAX_PITCH); //ナビ中
-        } else {
-          m_map->setPitch(MIN_PITCH);
-        }
         if(interaction_counter == 0){
           m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
         }
+      }
+      //ウイリー演出のために常にpitchセットする。
+      if (sm.valid("navInstruction")) {
+        m_map->setPitch(MAX_PITCH); //ナビ中
+      } else {
+        m_map->setPitch(MIN_PITCH);
       }
     } else {
       if(m_map->margins().top() != 0){
