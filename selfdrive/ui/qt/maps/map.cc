@@ -59,17 +59,17 @@ extern int getButtonInt(const char*fn , int defaultNum);
 float _1_vc_accel; //-1〜0〜+1で加速度っぽい値。
 float _2_vc_accel;
 float calc_pich(){
+  _2_vc_accel = _2_vc_accel + (_1_vc_accel - _2_vc_accel) / 5; //若干緩衝処理。
   if(MIN_PITCH_ < 0){
     return 0; //north_up用。方位磁石タップにノースアップも混ぜる0->10->20->30->40->ノースアップ
   }
-  _2_vc_accel = _2_vc_accel + (_1_vc_accel - _2_vc_accel) / 5; //若干緩衝処理。
   return MIN_PITCH_ - (_2_vc_accel*5); //*10だと思ったより動いてしまう。
 }
 void max_zoom_pitch_effect(){
   float tmp_1_vc_accel = _1_vc_accel;
   float tmp_2_vc_accel = _2_vc_accel;
-  _1_vc_accel = 0; //影響を与えない。
-  _2_vc_accel = 0; //影響を与えない。
+  // _1_vc_accel = 0; //影響を与えない。
+  // _2_vc_accel = 0; //影響を与えない。
   MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 1.7; //30度でMAX_ZOOM=18くらいになる。
   _1_vc_accel = tmp_1_vc_accel;
   _2_vc_accel = tmp_2_vc_accel;
