@@ -68,8 +68,8 @@ float calc_pich(){
 void max_zoom_pitch_effect(){
   float tmp_1_vc_accel = _1_vc_accel;
   float tmp_2_vc_accel = _2_vc_accel;
-  // _1_vc_accel = 0; //影響を与えない。
-  // _2_vc_accel = 0; //影響を与えない。
+  _1_vc_accel = 0; //影響を与えない。
+  _2_vc_accel = 0; //影響を与えない。
   MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 1.7; //30度でMAX_ZOOM=18くらいになる。
   _1_vc_accel = tmp_1_vc_accel;
   _2_vc_accel = tmp_2_vc_accel;
@@ -78,7 +78,6 @@ void max_zoom_pitch_effect(){
   }
 }
 float calc_max_zoom(){
-  max_zoom_pitch_effect();
   const float m_o = MAX_ZOOM_+zoom_offset;
   if(m_o > 22){
     zoom_offset = 22 - MAX_ZOOM_;
