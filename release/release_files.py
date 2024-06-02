@@ -27,6 +27,10 @@ blacklist = [
   ".devcontainer/",
   "Darwin/",
   ".vscode",
+
+  # no LFS
+  ".lfsconfig",
+  ".gitattributes",
 ]
 
 # gets you through the blacklist
@@ -50,7 +54,7 @@ whitelist = [
   "tinygrad_repo/tinygrad/runtime/ops_disk.py",
   "tinygrad_repo/tinygrad/runtime/ops_gpu.py",
   "tinygrad_repo/tinygrad/shape/*",
-  "tinygrad_repo/tinygrad/*.py",
+  "tinygrad_repo/tinygrad/.*.py",
 ]
 
 if __name__ == "__main__":
