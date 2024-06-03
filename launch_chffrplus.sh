@@ -83,7 +83,7 @@ function launch {
 
   # start manager
   cd system/manager
-  if [ ! -f $DIR/prebuilt ]; then
+  if [ ! -f $DIR/prebuilt ] && [ ! -f $DIR/../prebuilt ]; then
     ./build.py
   fi
   ./manager.py
