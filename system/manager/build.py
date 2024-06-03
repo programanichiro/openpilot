@@ -82,6 +82,10 @@ def build(spinner: Spinner, dirty: bool = False, minimal: bool = False) -> None:
     cache_size -= f.stat().st_size
     f.unlink()
 
+  #echo 1 > /data/prebuilt
+  with open('/data/prebuilt','w') as fp:
+    fp.write('1')
+
 
 if __name__ == "__main__":
   spinner = Spinner()
