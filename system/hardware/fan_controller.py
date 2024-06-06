@@ -7,7 +7,7 @@ import threading
 import requests
 import math
 
-from openpilot.common.realtime import DT_TRML
+from openpilot.common.realtime import DT_HW
 from openpilot.common.numpy_fast import interp
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.controls.lib.pid import PIDController
@@ -24,7 +24,7 @@ class TiciFanController(BaseFanController):
     cloudlog.info("Setting up TICI fan handler")
 
     self.last_ignition = False
-    self.controller = PIDController(k_p=0, k_i=4e-3, k_f=1, rate=(1 / DT_TRML))
+    self.controller = PIDController(k_p=0, k_i=4e-3, k_f=1, rate=(1 / DT_HW))
 
     #ここが2Hzだから、limitspeed.db操作に利用する。
     self.db_path = "../../../limitspeed.db" #例によって遅くないか？
