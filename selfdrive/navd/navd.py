@@ -58,6 +58,13 @@ class RouteEngine:
       self.api = Api(self.params.get("DongleId", encoding='utf8'))
       self.mapbox_host = "https://maps.comma.ai"
 
+    try:
+      with open('/data/mb_token.txt','r') as fp:
+        self.mapbox_token = fp.read().rstrip()
+        self.mapbox_host = "https://api.mapbox.com"
+    except Exception as e:
+      pass
+
   def update(self):
     self.sm.update(0)
 
@@ -101,6 +108,19 @@ class RouteEngine:
       cloudlog.warning(f"Got new destination from NavDestination param {new_destination}")
       should_recompute = True
 
+    try: #1Hzなら毎回判定しても構わない。
+      with open('/tmp/route_style_reload.txt','r') as fp:
+        route_style_reload_str = fp.read()
+        if route_style_reload_str:
+          if int(route_style_reload_str) == 1:
+            should_recompute = True
+            self.recompute_countdown = 0
+      if should_recompute == True:
+        with open('/tmp/route_style_reload.txt','w') as fp:
+          fp.write('%d' % (0))
+    except Exception as e:
+      pass
+
     # Don't recompute when GPS drifts in tunnels
     if not self.gps_ok and self.step_idx is not None:
       return
@@ -118,6 +138,8 @@ class RouteEngine:
     self.nav_destination = destination
 
     lang = self.params.get('LanguageSetting', encoding='utf8')
+    if '1131d250d405' in os.environ['DONGLE_ID']:
+      lang = "main_ja"
     if lang is not None:
       lang = lang.replace('main_', '')
 
@@ -135,6 +157,20 @@ class RouteEngine:
       'alternatives': 'false',
       'language': lang,
     }
+
+    navi_highway = 0
+    try:
+      with open('/data/navi_highway.txt','r') as fp:
+        navi_highway_str = fp.read()
+        if navi_highway_str:
+          navi_highway = int(navi_highway_str)
+    except Exception as e:
+      pass
+    if navi_highway == 0:
+      params['exclude'] = 'toll,ferry' #有料区間を避ける
+      # params['exclude'] = 'motorway,toll' #高速と有料区間を避ける
+    else:
+      params['exclude'] = 'ferry' #フェリーだけ除外する。
 
     # TODO: move waypoints into NavDestination param?
     waypoints = self.params.get('NavDestinationWaypoints', encoding='utf8')

@@ -81,9 +81,13 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  if [ ! -f $DIR/common/params_pyx.so ] && [ -f $DIR/../prebuilt ]; then
+    rm $DIR/../prebuilt
+  fi
+
   # start manager
   cd system/manager
-  if [ ! -f $DIR/prebuilt ]; then
+  if [ ! -f $DIR/prebuilt ] && [ ! -f $DIR/../prebuilt ]; then
     ./build.py
   fi
   ./manager.py

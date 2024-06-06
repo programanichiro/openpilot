@@ -1,4 +1,5 @@
 venv/
+.vscode/settings.json
 .venv/
 .ci_cache
 .env
