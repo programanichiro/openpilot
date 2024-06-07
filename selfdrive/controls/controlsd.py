@@ -9,7 +9,7 @@ import numpy as np
 import cereal.messaging as messaging
 
 from cereal import car, log
-from cereal.visionipc import VisionIpcClient, VisionStreamType
+from msgq.visionipc import VisionIpcClient, VisionStreamType
 
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
