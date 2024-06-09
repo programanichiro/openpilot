@@ -1855,7 +1855,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     // double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
     // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     double ahr = (h_autopilot_dist * 100) / (h_autopilot_dist + h_manual_dist); //autopilot hybrid rate
-    debug_disp_xpos = drawTextLeft(p , QString("AP") , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 200 , 6 , 5);
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("AP") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 200 , 6 , 5);
     QString debug_disp = QString::number((int)ahr) + "%";
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
@@ -1868,7 +1868,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     // }
   }
   {
-    debug_disp_xpos = drawTextLeft(p , QString("Trip") , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 200 , 6 , 5);
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("Trip") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 200 , 6 , 5);
     QString debug_disp = QString::number(distance_traveled / 1000,'f',1) + QString("km");
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
