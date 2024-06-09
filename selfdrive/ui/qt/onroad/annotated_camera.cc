@@ -675,7 +675,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       p.setFont(InterFont(33, QFont::Bold));
       int next_x = drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
       if(kmh != "0"){
-        drawTextRight(p, next_x-4, rect().bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5);
+        drawTextRight(p, next_x-4, rect().bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 1 , 0);
       }
     }
   }
@@ -985,7 +985,7 @@ int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString
   return x + real_rect.width(); //続けて並べるxposを返す。
 }
 
-int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r) {
+int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r , int bk_add_w, int bk_xofs) {
   QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x - real_rect.width() / 2, y - real_rect.height() / 2});
 
@@ -993,9 +993,9 @@ int AnnotatedCameraWidget::drawTextRight(QPainter &p, int x, int y, const QStrin
     //バックを塗る。
     p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
     if(bk_corner_r == 0){
-      p.drawRect(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+      p.drawRect(real_rect.x()+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height());
     } else {
-      QRect rc(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+      QRect rc(real_rect.x()+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height());
       p.drawRoundedRect(rc, bk_corner_r, bk_corner_r);
     }
   }
