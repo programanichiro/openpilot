@@ -1806,7 +1806,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   int debug_disp_xpos = 0+20;
   {
     p.setPen(Qt::NoPen);
-    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("↓") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 150 , 13 , 5 , 11 , 0 , -3) + 11;
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("↓") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 150 , 13 , 5 , 11 , 0 , -4) + 11;
     QString debug_disp = QString::number(cv,'f',0);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
   }
@@ -1838,7 +1838,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     double ahr = (h_autopilot_dist * 100) / (h_autopilot_dist + h_manual_dist); //autopilot hybrid rate
     p.setPen(Qt::NoPen);
-    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+4 , rect_h - 10 , QString("AP") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 150 , 13 , 5 , 4 , 0 , -3) + 4;
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+4 , rect_h - 10 , QString("AP") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 150 , 13 , 5 , 4 , -1 , -4) + 4;
     QString debug_disp = QString::number((int)ahr) + "%";
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
@@ -1852,7 +1852,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   }
   {
     p.setPen(Qt::NoPen);
-    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("Trip") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 150 , 13 , 5 , 10 , -5 , -3) + 5;
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("Trip") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 150 , 13 , 5 , 10 , -5 , -4) + 5;
     QString debug_disp = QString::number(distance_traveled / 1000,'f',1) + QString("km");
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
