@@ -956,9 +956,20 @@ int AnnotatedCameraWidget::drawText(QPainter &p, int x, int y, const QString &te
   return real_rect.width(); //続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
 }
 
-int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn) {
+int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r) {
   QRect real_rect = p.fontMetrics().boundingRect(text);
   real_rect.moveCenter({x + real_rect.width() / 2, y - real_rect.height() / 2});
+
+  if(bk_alp > 0){
+    //バックを塗る。
+    p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
+    if(bk_corner_r == 0){
+      p.drawRect(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+    } else {
+      QRect rc(real_rect.x(),real_rect.y() + bk_yofs , real_rect.width() , real_rect.height());
+      p.drawRoundedRect(rc, bk_corner_r, bk_corner_r);
+    }
+  }
 
   if(brakeLight == false){
     p.setPen(QColor(red, blu, grn, alpha));
@@ -1795,11 +1806,9 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   p.setPen(QColor(0xdf, 0xdf, 0x00 , 200));
   int debug_disp_xpos = 0+20;
   {
-    //float vegostopping = (*s->sm)["carParams"].getCarParams().getVEgoStopping();
-    //QString debug_disp = QString("Stop:") + QString::number(vegostopping,'f',0);
-    QString debug_disp = QString("↓:") + QString::number(cv,'f',0);
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("↓") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 200 , 6 , 5);
+    QString debug_disp = QString::number(cv,'f',0);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
-    //p.drawText(QRect(0+20, rect_h - 46, 130, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   if(0){
     QString debug_disp = QString(",Fps:") + QString::number(global_fps,'f',1);
@@ -1846,7 +1855,8 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     // double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
     // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
     double ahr = (h_autopilot_dist * 100) / (h_autopilot_dist + h_manual_dist); //autopilot hybrid rate
-    QString debug_disp = QString(",AP:") + QString::number((int)ahr) + "%";
+    debug_disp_xpos = drawTextLeft(p , QString("AP") , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 200 , 6 , 5);
+    QString debug_disp = QString::number((int)ahr) + "%";
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
     // FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
@@ -1858,7 +1868,8 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     // }
   }
   {
-    QString debug_disp = QString(",Trip:") + QString::number(distance_traveled / 1000,'f',1) + QString("km");
+    debug_disp_xpos = drawTextLeft(p , QString("Trip") , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 200 , 6 , 5);
+    QString debug_disp = QString::number(distance_traveled / 1000,'f',1) + QString("km");
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
