@@ -223,7 +223,7 @@ class TiciFanController(BaseFanController):
 
       now_latitude = self.latitude
       now_longitude = self.longitude
-      now_car_bear = self.bearing
+      # now_car_bear = self.bearing #通信遅れを考慮して、角度だけは保存値を使わない。
       lat_min = self.latitude - lat_diff
       lat_max = self.latitude + lat_diff
       lon_min = self.longitude - lon_diff
@@ -304,7 +304,7 @@ class TiciFanController(BaseFanController):
           coords = road_info["coords"]
           bears = road_info["bears"]
           idx = self.find_nearest_coordinate(now_latitude,now_longitude,coords)
-          if self.check_angle_match(bears[idx],now_car_bear):
+          if self.check_angle_match(bears[idx],self.bearing): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
             dup = False
             if True:
               if speed_limit == "0":
