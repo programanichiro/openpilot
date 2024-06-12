@@ -16,6 +16,7 @@ from openpilot.common.git import get_short_branch
 from openpilot.common.numpy_fast import clip
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
+from openpilot.selfdrive.athena.registration import UNREGISTERED_DONGLE_ID
 from openpilot.common.swaglog import cloudlog
 
 from openpilot.selfdrive.car.car_helpers import get_car_interface, get_startup_event
@@ -378,7 +379,8 @@ class Controls:
     # TODO: fix simulator
     if not SIMULATION or REPLAY:
       # Not show in first 1 km to allow for driving out of garage. This event shows after 5 minutes
-      if not self.sm['liveLocationKalman'].gpsOK and self.sm['liveLocationKalman'].inputsOK and (self.distance_traveled > 1500):
+      if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID and not self.sm['liveLocationKalman'].gpsOK and self.sm['liveLocationKalman'].inputsOK and (self.distance_traveled > 1500 and self.distance_traveled < 3000):
+        # Not show in first 1 km to allow for driving out of garage. This event shows after 5 minutes
         self.events.add(EventName.noGps)
       if self.sm['liveLocationKalman'].gpsOK:
         self.distance_traveled = 0
