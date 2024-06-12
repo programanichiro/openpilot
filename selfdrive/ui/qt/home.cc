@@ -49,14 +49,19 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::offroadTransition, sidebar, &Sidebar::offroadTransition);
 }
 
+extern bool ipaddress_update;
 void HomeWindow::showSidebar(bool show) {
   sidebar->setVisible(show);
+  if(show == true){
+    ipaddress_update = true;
+  }
 }
 
 void HomeWindow::showMapPanel(bool show) {
   onroad->showMapPanel(show);
 }
 
+bool head_gesture_home;
 void HomeWindow::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
 
@@ -65,6 +70,66 @@ void HomeWindow::updateState(const UIState &s) {
     body->setEnabled(true);
     slayout->setCurrentWidget(body);
   }
+
+  if(head_gesture_home){
+    head_gesture_home = false;
+    sidebar->setVisible(false);
+  }
+
+  static bool blinker_stat = false;
+#if 0
+  uint16_t lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
+  double vEgo = sm["carState"].getCarState().getVEgo() * 3.6;
+  bool left_blinker = sm["carState"].getCarState().getLeftBlinker() && vEgo > 45 && lsta == 1;
+  bool right_blinker = sm["carState"].getCarState().getRightBlinker() && vEgo > 45 && lsta == 1;
+  bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
+  if(left_blinker || right_blinker || back_gear){
+    if(blinker_stat == false){
+      blinker_stat = true;
+      showDriverView(true);
+    }
+  } else {
+    if(blinker_stat == true){
+      blinker_stat = false;
+      showDriverView(false);
+    }
+  }
+#else
+  static bool lsta_can_get = false;
+  uint16_t lsta = 0;
+  const bool left_blinker = false; //sm["carState"].getCarState().getLeftBlinker();
+  const bool right_blinker = false; //sm["carState"].getCarState().getRightBlinker();
+  if(left_blinker == false && right_blinker == false){
+    lsta_can_get = true;
+  }
+  if(lsta_can_get == true){
+    lsta = 0; //あまり有用で無いので、レーンチェンジ時の室内カメラ切り替えを廃止。
+    //lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
+  }
+  bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
+  if(back_gear){
+    //developer control
+    std::string branch = Params().get("GitBranch");
+    std::string dongleId = Params().get("DongleId");
+    if(branch != "release3" && branch != "release2" && branch.find("release3-pi")  == std::string::npos && branch.find("release2-pi")  == std::string::npos && branch.find("rehearsal")  == std::string::npos && dongleId.find("1131d250d405") == std::string::npos && branch.find("debug") == std::string::npos){
+      back_gear = false;
+      lsta = 0;
+      blinker_stat = false;
+    }
+  }
+  if(lsta == 1 /*left_blinker || right_blinker*/ || back_gear){
+    if(blinker_stat == false){
+      blinker_stat = true;
+      showDriverView(true);
+    }
+  } else {
+    if(blinker_stat == true){
+      blinker_stat = false;
+      showDriverView(false);
+      lsta_can_get = false; //一旦ウインカーを戻すまでは発動しない。
+    }
+  }
+#endif
 }
 
 void HomeWindow::offroadTransition(bool offroad) {
@@ -78,23 +143,47 @@ void HomeWindow::offroadTransition(bool offroad) {
 }
 
 void HomeWindow::showDriverView(bool show) {
+  static bool sidebar_disp = false;
   if (show) {
-    emit closeSettings();
+    if (uiState()->scene.started) {
+      sidebar_disp = sidebar->isVisible();
+      sidebar->setVisible(false);
+    } else {
+      emit closeSettings();
+    }
     slayout->setCurrentWidget(driver_view);
   } else {
-    slayout->setCurrentWidget(home);
+    if (!uiState()->scene.started) {
+      slayout->setCurrentWidget(home);
+    } else {
+      slayout->setCurrentWidget(onroad);
+      if(sidebar_disp == true){
+        sidebar_disp = false;
+        sidebar->setVisible(true);
+        ipaddress_update = true;
+      }
+    }
   }
-  sidebar->setVisible(show == false);
+  if (!uiState()->scene.started) {
+    sidebar->setVisible(show == false);
+  }
 }
 
 void HomeWindow::mousePressEvent(QMouseEvent* e) {
   // Handle sidebar collapsing
   if ((onroad->isVisible() || body->isVisible()) && (!sidebar->isVisible() || e->x() > sidebar->width())) {
     sidebar->setVisible(!sidebar->isVisible() && !onroad->isMapVisible());
+    if(!sidebar->isVisible() && !onroad->isMapVisible()){
+      ipaddress_update = true;
+    }
   }
 }
 
 void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
+  if(uiState()->scene.started){
+    showDriverView(true);
+    return;
+  }
   HomeWindow::mousePressEvent(e);
   const SubMaster &sm = *(uiState()->sm);
   if (sm["carParams"].getCarParams().getNotCar()) {
@@ -108,6 +197,15 @@ void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
 }
 
 // OffroadHome: the offroad home page
+void OffroadHome::poweroff() {
+  if (!uiState()->engaged()) {
+      if (!uiState()->engaged()) {
+        params.putBool("DoShutdown", true);
+      }
+  // } else {
+  //   ConfirmationDialog::alert(tr("Disengage to Power Off"), this);
+  }
+}
 
 OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
   QVBoxLayout* main_layout = new QVBoxLayout(this);
@@ -177,6 +275,11 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     QObject::connect(setup_widget, &SetupWidget::openSettings, this, &OffroadHome::openSettings);
     right_column->addWidget(setup_widget, 1);
 
+    QPushButton *poweroff_btn = new QPushButton(tr("Power Off"));
+    poweroff_btn->setObjectName("poweroff_btn");
+    right_column->addWidget(poweroff_btn , 1);
+    QObject::connect(poweroff_btn, &QPushButton::clicked, this, &OffroadHome::poweroff);
+
     home_layout->addWidget(right_widget, 1);
   }
   center_layout->addWidget(home_widget);
@@ -211,6 +314,8 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     OffroadHome > QLabel {
       font-size: 55px;
     }
+    #poweroff_btn {font-size: 60px; font-weight: bold; height: 120px; border-radius: 10px; background-color: #E22C2C; }
+    #poweroff_btn:pressed { background-color: #FF2424; }
   )");
 }
 
@@ -227,6 +332,9 @@ void OffroadHome::refresh() {
   version->setText(getBrand() + " " +  QString::fromStdString(params.get("UpdaterCurrentDescription")));
 
   bool updateAvailable = update_widget->refresh();
+  if(updateAvailable){
+    std::system("rm /data/prebuilt");
+  }
   int alerts = alerts_widget->refresh();
 
   // pop-up new notification

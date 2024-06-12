@@ -3,6 +3,7 @@
 #include <QMouseEvent>
 
 #include "selfdrive/ui/qt/util.h"
+#include <string.h>
 
 void Sidebar::drawMetric(QPainter &p, const QPair<QString, QString> &label, QColor c, int y) {
   const QRect rect = {30, y, 240, 126};
@@ -64,7 +65,12 @@ void Sidebar::mouseReleaseEvent(QMouseEvent *event) {
   }
 }
 
+char ipaddress[32];
+bool ipaddress_update;
 void Sidebar::offroadTransition(bool offroad) {
+  if(onroad != !offroad && offroad == true){
+    ipaddress[0] = 0;
+  }
   onroad = !offroad;
   update();
 }
@@ -83,17 +89,61 @@ void Sidebar::updateState(const UIState &s) {
   auto last_ping = deviceState.getLastAthenaPingTime();
   if (last_ping == 0) {
     connectStatus = ItemStatus{{tr("CONNECT"), tr("OFFLINE")}, warning_color};
+    setProperty("netStrength", 0);
+    if(net_type != "Wi-Fi"){
+      ipaddress[0] = 0;
+    }
   } else {
     connectStatus = nanos_since_boot() - last_ping < 80e9
                         ? ItemStatus{{tr("CONNECT"), tr("ONLINE")}, good_color}
                         : ItemStatus{{tr("CONNECT"), tr("ERROR")}, danger_color};
+    if(nanos_since_boot() - last_ping < 80e9){//端末起動後にWifi接続されたときネットメーターが中々反映しないのを調査。
+      if(strength == 0){
+        setProperty("netStrength", 1);
+        ipaddress[0] = 0;
+      }
+      if(net_type == "--"){
+        setProperty("netType", "Ping");
+        ipaddress[0] = 0;
+#if 1
+      } else if(strength > 0 && net_type == "Wi-Fi"){
+        while(ipaddress[0] == 0 || ipaddress_update == true){ //サイドバーが表示された時にも更新する
+          std::string result = util::check_output("ifconfig wlan0");
+          if (result.empty()) break;
+
+          const std::string inetaddrr = "inet "; //inet addr:
+          std::string::size_type begin = result.find(inetaddrr);
+          if (begin == std::string::npos) break;
+
+          begin += inetaddrr.length();
+          begin = result.find('.', begin)+1;
+          begin = result.find('.', begin)+1;
+          begin = result.find('.', begin); //最後の一桁を取る。
+          std::string::size_type end = result.find(' ', begin);
+          if (end == std::string::npos) break;
+
+          ipaddress[0] = 0;
+          ipaddress_update = false;
+          strcpy(ipaddress,result.substr(begin, end - begin).c_str());
+          break;
+        }
+#endif
+      }
+    } else {
+      setProperty("netStrength", 0);
+      ipaddress[0] = 0;
+    }
   }
   setProperty("connectStatus", QVariant::fromValue(connectStatus));
 
   ItemStatus tempStatus = {{tr("TEMP"), tr("HIGH")}, danger_color};
   auto ts = deviceState.getThermalStatus();
   if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
-    tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
+    // int temp = (int)deviceState.getAmbientTempC(); 2024/2/22,もう温度取れない？
+    int temp = (int)deviceState.getMaxTempC(); //代用。ファン制御に使っている。
+    QString good_disp = QString::number(temp) + "°C";
+    tempStatus = {{tr("TEMP"), tr(good_disp.toUtf8().data())}, good_color};
+    //tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
   } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
     tempStatus = {{tr("TEMP"), tr("OK")}, warning_color};
   }
@@ -134,7 +184,11 @@ void Sidebar::paintEvent(QPaintEvent *event) {
   p.setFont(InterFont(35));
   p.setPen(QColor(0xff, 0xff, 0xff));
   const QRect r = QRect(50, 247, 100, 50);
-  p.drawText(r, Qt::AlignCenter, net_type);
+  if(ipaddress[0] == 0 || net_type != "Wi-Fi"){
+    p.drawText(r, Qt::AlignCenter, net_type);
+  } else {
+    p.drawText(QRect(60, 247, 180, 50), Qt::AlignLeft, net_type + ipaddress);
+  }
 
   // metrics
   drawMetric(p, temp_status.first, temp_status.second, 338);
