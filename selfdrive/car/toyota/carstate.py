@@ -1,10 +1,12 @@
 import copy
+import os
 
 from cereal import car
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.numpy_fast import mean
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_CTRL
+from openpilot.common.params import Params
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from openpilot.selfdrive.car.interfaces import CarStateBase
@@ -40,6 +42,14 @@ class CarState(CarStateBase):
     self.accurate_steer_angle_seen = False
     self.angle_offset = FirstOrderFilter(None, 60.0, DT_CTRL, initialized=False)
 
+    self.brake_state = False
+    self.params = Params()
+    # self.flag_eps_TSS2 = True if CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value else False
+    self.before_ang = 0
+    self.prob_ang = 0
+    self.steeringAngleDegs = []
+    self.knight_scanner_bit3_ct = 0
+
     self.prev_distance_button = 0
     self.distance_button = 0
 
@@ -51,7 +61,19 @@ class CarState(CarStateBase):
 
   def update(self, cp, cp_cam):
     ret = car.CarState.new_message()
-
+    if self.knight_scanner_bit3_ct == 0:
+      try:
+        with open('/tmp/knight_scanner_bit3.txt','r') as fp:
+          knight_scanner_bit3_str = fp.read()
+          if knight_scanner_bit3_str:
+            self.knight_scanner_bit3  = int(knight_scanner_bit3_str)
+      except Exception as e:
+        # self.knight_scanner_bit3  = 7 #ここでデフォ設定はしない、値を継続させるため。
+        # ⚫︎⚪︎⚪︎　47700用カーブ曲率抑制,2024/1/13
+        # ⚪︎⚫︎⚪︎　new_steer平滑化,2024/1/14
+        # ⚪︎⚪︎⚫︎　ハンドル高精細化未来予想2024/1/19
+        pass
+    self.knight_scanner_bit3_ct = (self.knight_scanner_bit3_ct + 1) % 101
     ret.doorOpen = any([cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_FR"],
                         cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RL"], cp.vl["BODY_CONTROL_STATE"]["DOOR_OPEN_RR"]])
     ret.seatbeltUnlatched = cp.vl["BODY_CONTROL_STATE"]["SEATBELT_DRIVER_UNLATCHED"] != 0
@@ -61,6 +83,9 @@ class CarState(CarStateBase):
     ret.brakeHoldActive = cp.vl["ESP_CONTROL"]["BRAKE_HOLD_ACTIVE"] == 1
 
     ret.gasPressed = cp.vl["PCM_CRUISE"]["GAS_RELEASED"] == 0
+    #ichiropilot
+    msg = "GAS_PEDAL_HYBRID" if (self.CP.flags & ToyotaFlags.HYBRID) else "GAS_PEDAL"
+    ret.gas = cp.vl[msg]["GAS_PEDAL"]
 
     ret.wheelSpeeds = self.get_wheel_speeds(
       cp.vl["WHEEL_SPEEDS"]["WHEEL_SPEED_FL"],
@@ -80,8 +105,10 @@ class CarState(CarStateBase):
 
     # On some cars, the angle measurement is non-zero while initializing
     if abs(torque_sensor_angle_deg) > 1e-3 and not bool(cp.vl["STEER_TORQUE_SENSOR"]["STEER_ANGLE_INITIALIZING"]):
-      self.accurate_steer_angle_seen = True
+      # self.accurate_steer_angle_seen = (not self.flag_eps_TSS2) if (self.knight_scanner_bit3 & 0x04) else True #True , 自分だけFalseにする, ただし knight_scanner_bit3.txt ⚪︎⚪︎⚫︎を切ると常にTrue
+      self.accurate_steer_angle_seen = True #あれば常にグッドアングルセンサーを使う
 
+    # steeringAngleDeg_ = ret.steeringAngleDeg
     if self.accurate_steer_angle_seen:
       # Offset seems to be invalid for large steering angles and high angle rates
       if abs(ret.steeringAngleDeg) < 90 and abs(ret.steeringRateDeg) < 100 and cp.can_valid:
@@ -91,6 +118,33 @@ class CarState(CarStateBase):
         ret.steeringAngleOffsetDeg = self.angle_offset.x
         ret.steeringAngleDeg = torque_sensor_angle_deg - self.angle_offset.x
 
+    self.steeringAngleDegOrg = ret.steeringAngleDeg #回転先予想する前のオリジナル値
+    if (self.knight_scanner_bit3_ct & 0x3) == 1:
+      with open('/tmp/steer_ang_info.txt','w') as fp:
+       fp.write('%f' % (self.steeringAngleDegOrg))
+    # if self.CP.carFingerprint not in TSS2_CAR:
+    if (self.knight_scanner_bit3 & 0x04) and abs(self.steeringAngleDegOrg) < 35: # knight_scanner_bit3.txt ⚪︎⚪︎⚫︎をONで有効, 35度以上急カーブは補正止める
+      steeringAngleDeg0 = ret.steeringAngleDeg
+      self.steeringAngleDegs.append(float(steeringAngleDeg0))
+      if len(self.steeringAngleDegs) > 13:
+        self.steeringAngleDegs.pop(0)
+        # 過去13フレーム(0.13秒)の角度から、角速度と角加速度の平均を求める。
+        angVs = [self.steeringAngleDegs[i + 1] - self.steeringAngleDegs[i] for i in range(len(self.steeringAngleDegs) - 1)] #過去９回の角速度
+        angAs = [angVs[i + 1] - angVs[i] for i in range(len(angVs) - 1)]
+        angV = sum(angVs) / len(angVs)
+        angA = sum(angAs) / len(angAs)
+        self.prob_ang += angV
+        prob_ct = 10 # 0.1秒先の未来を推定。
+        prob_ang2 = prob_ct * angV + (prob_ct-1) * prob_ct / 2 * angA
+        if self.before_ang != ret.steeringAngleDeg or self.accurate_steer_angle_seen:
+          self.prob_ang = 0
+        self.before_ang = ret.steeringAngleDeg
+        # with open('/tmp/debug_out_v','w') as fp:
+        #   fp.write("%+.2f(%+.2f),%+.2f/%+.2f" % (ret.steeringAngleDeg+self.prob_ang+prob_ang2,self.prob_ang+prob_ang2,angV,angA))
+        ret.steeringAngleDeg += self.prob_ang + prob_ang2 #未来推定と現時点高精細処理を同時に行う。
+
+    # with open('/tmp/debug_out_o','w') as fp:
+    #   fp.write("%+.3f/%+.4f" % (steeringAngleDeg_ , ret.steeringAngleDeg))
     can_gear = int(cp.vl["GEAR_PACKET"]["GEAR"])
     ret.gearShifter = self.parse_gear_shifter(self.shifter_values.get(can_gear, None))
     ret.leftBlinker = cp.vl["BLINKERS_STATE"]["TURN_SIGNALS"] == 1
@@ -111,6 +165,12 @@ class CarState(CarStateBase):
     if self.CP.steerControlType == SteerControlType.angle:
       ret.steerFaultTemporary = ret.steerFaultTemporary or cp.vl["EPS_STATUS"]["LTA_STATE"] in TEMP_STEER_FAULTS
       ret.steerFaultPermanent = ret.steerFaultPermanent or cp.vl["EPS_STATUS"]["LTA_STATE"] in PERM_STEER_FAULTS
+
+    new_brake_state = bool(cp.vl["ESP_CONTROL"]['BRAKE_LIGHTS_ACC'] or cp.vl["BRAKE_MODULE"]["BRAKE_PRESSED"] != 0)
+    if self.brake_state != new_brake_state:
+      self.brake_state = new_brake_state
+      with open('/tmp/brake_light_state.txt','w') as fp:
+        fp.write('%d' % (new_brake_state))
 
     if self.CP.carFingerprint in UNSUPPORTED_DSU_CAR:
       # TODO: find the bit likely in DSU_CRUISE that describes an ACC fault. one may also exist in CLUTCH
@@ -150,6 +210,7 @@ class CarState(CarStateBase):
       ret.cruiseState.standstill = self.pcm_acc_status == 7
     ret.cruiseState.enabled = bool(cp.vl["PCM_CRUISE"]["CRUISE_ACTIVE"])
     ret.cruiseState.nonAdaptive = self.pcm_acc_status in (1, 2, 3, 4, 5, 6)
+    self.pcm_neutral_force = cp.vl["PCM_CRUISE"]["NEUTRAL_FORCE"]
 
     ret.genericToggle = bool(cp.vl["LIGHT_STALK"]["AUTO_HIGH_BEAM"])
     ret.espDisabled = cp.vl["ESP_CONTROL"]["TC_DISABLED"] != 0
@@ -164,8 +225,16 @@ class CarState(CarStateBase):
     if self.CP.carFingerprint != CAR.TOYOTA_PRIUS_V:
       self.lkas_hud = copy.copy(cp_cam.vl["LKAS_HUD"])
 
+    # if self.pcm_follow_distance != cp.vl["PCM_CRUISE_2"]['PCM_FOLLOW_DISTANCE']:
+    #   if self.pcm_follow_distance != 0 and cp.vl["PCM_CRUISE_2"]['PCM_FOLLOW_DISTANCE'] != 0:
+    #     #ボタン切り替え
+    #     lines = cp.vl["PCM_CRUISE_2"]['PCM_FOLLOW_DISTANCE']
+    #     #button(1,2,3) -> LongitudinalPersonality(2,1,0) #大小逆になる
+    #     self.params.put("LongitudinalPersonality", str(3-int(lines))) #公式距離ボタン対応で不要に。
+
     if self.CP.carFingerprint not in UNSUPPORTED_DSU_CAR:
-      self.pcm_follow_distance = cp.vl["PCM_CRUISE_2"]["PCM_FOLLOW_DISTANCE"]
+      self.pcm_follow_distance = cp.vl["PCM_CRUISE_2"]["PCM_FOLLOW_DISTANCE"] #DISTANCE_LINESと逆1,2,3（遠い、中間、近い）
+      # self.pcm_follow_distance = cp.vl["PCM_CRUISE_SM"]["DISTANCE_LINES"] #3,2,1
 
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
       # distance button is wired to the ACC module (camera or radar)
@@ -197,6 +266,12 @@ class CarState(CarStateBase):
 
     if CP.carFingerprint != CAR.TOYOTA_MIRAI:
       messages.append(("ENGINE_RPM", 42))
+
+    #ichiropilot
+    if CP.flags & ToyotaFlags.HYBRID:
+      messages.append(("GAS_PEDAL_HYBRID", 33))
+    else:
+      messages.append(("GAS_PEDAL", 33))
 
     if CP.carFingerprint in UNSUPPORTED_DSU_CAR:
       messages.append(("DSU_CRUISE", 5))

@@ -50,6 +50,9 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::primeChanged, this, &OnroadWindow::primeChanged);
 }
 
+bool mapVisible;
+bool head_gesture_onroad_home;
+bool head_gesture_onroad_home_map_on;
 void OnroadWindow::updateState(const UIState &s) {
   if (!s.scene.started) {
     return;
@@ -63,6 +66,7 @@ void OnroadWindow::updateState(const UIState &s) {
 
   alerts->updateState(s);
   nvg->updateState(s);
+  mapVisible = isMapVisible();
 
   QColor bgColor = bg_colors[s.status];
   if (bg != bgColor) {
@@ -70,6 +74,32 @@ void OnroadWindow::updateState(const UIState &s) {
     bg = bgColor;
     update();
   }
+
+  if(head_gesture_onroad_home){
+    head_gesture_onroad_home = false;
+    if (map != nullptr) {
+      void soundButton(int onOff);
+      soundButton(!this->isMapVisible());
+      map->setVisible(!this->isMapVisible());
+    }
+  }
+
+  if(head_gesture_onroad_home_map_on){ //ジェスチャーでノースアップ切り替えした時の強制地図出し。
+    head_gesture_onroad_home_map_on = false;
+    if (map != nullptr) {
+      if(this->isMapVisible() == false){
+        //地図を強制的に出す。
+        map->setVisible(true);
+        void soundButton(int onOff);
+        soundButton(true);
+      } else {
+        //地図が出ていたらノース↔︎ヘディング切り替え信号を送る。
+        extern bool head_gesture_map_north_heading_toggle;
+        head_gesture_map_north_heading_toggle = true;
+      }
+    }
+  }
+
 }
 
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {
@@ -92,7 +122,14 @@ void OnroadWindow::createMapWidget() {
   QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
   nvg->map_settings_btn->setEnabled(true);
 
-  m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
+  std::string my_mapbox_width = util::read_file("/data/mb_width_rate.txt");
+  m->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
+  if(my_mapbox_width.empty() == false){
+    this->mb_width_rate = std::stof(my_mapbox_width);
+    m->setFixedWidth((topWidget(this)->width() * this->mb_width_rate - UI_BORDER_SIZE));
+  } else {
+    m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
+  }
   split->insertWidget(0, m);
   // hidden by default, made visible when navRoute is published
   m->setVisible(false);
@@ -102,7 +139,12 @@ void OnroadWindow::createMapWidget() {
 void OnroadWindow::offroadTransition(bool offroad) {
 #ifdef ENABLE_MAPS
   if (!offroad) {
-    if (map == nullptr && (uiState()->hasPrime() || !MAPBOX_TOKEN.isEmpty())) {
+    bool mapbox_extra = false;
+    std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
+    if(my_mapbox_token.empty() == false){
+      mapbox_extra = true;
+    }
+    if (map == nullptr && (uiState()->hasPrime() || !MAPBOX_TOKEN.isEmpty() || mapbox_extra)) {
       createMapWidget();
     }
   }

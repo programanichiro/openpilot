@@ -24,11 +24,41 @@
 #include "selfdrive/ui/qt/maps/map_eta.h"
 #include "selfdrive/ui/qt/maps/map_instructions.h"
 
+class MapLimitspeed : public QWidget {
+  Q_OBJECT
+
+private:
+  void paintEvent(QPaintEvent *event) override;
+  QPushButton *speed;
+
+public:
+  quint64 m_pressedTime;
+  MapLimitspeed(QWidget * parent=nullptr);
+
+public slots:
+  void updateLimitspeed(int map_width);
+};
+
+class MapBearingScale : public QWidget {
+  Q_OBJECT
+
+private:
+  void paintEvent(QPaintEvent *event) override;
+  QPushButton *bearing_scale;
+
+public:
+  quint64 m_pressedTime;
+  MapBearingScale(QWidget * parent=nullptr);
+
+public slots:
+  void updateBearingScale(int map_width, int angle, double scale , double latitude);
+};
+
 class MapWindow : public QOpenGLWidget {
   Q_OBJECT
 
 public:
-  MapWindow(const QMapLibre::Settings &);
+  MapWindow(const QMapLibre::Settings & , QFrame *);
   ~MapWindow();
 
 private:
@@ -37,11 +67,13 @@ private:
   void resizeGL(int w, int h) override;
 
   QMapLibre::Settings m_settings;
+  QFrame *m_panel;
   QScopedPointer<QMapLibre::Map> m_map;
 
   void initLayers();
 
   void mousePressEvent(QMouseEvent *ev) final;
+  void mouseReleaseEvent(QMouseEvent *event) final;
   void mouseDoubleClickEvent(QMouseEvent *ev) final;
   void mouseMoveEvent(QMouseEvent *ev) final;
   void wheelEvent(QWheelEvent *ev) final;
@@ -55,6 +87,7 @@ private:
 
   // Panning
   QPointF m_lastPos;
+  QPointF m_lastGlbPos;
   int interaction_counter = 0;
 
   // Position
@@ -70,6 +103,10 @@ private:
   MapInstructions* map_instructions;
   MapETA* map_eta;
 
+  MapLimitspeed* map_limitspeed;
+  MapBearingScale* map_bearing_scale;
+  QLabel* map_WindowResizePoint;
+
   void clearRoute();
   void updateDestinationMarker();
   uint64_t route_rcv_frame = 0;
@@ -81,6 +118,8 @@ public slots:
   void offroadTransition(bool offroad);
 
 signals:
+  void LimitspeedChanged(int map_width);
+  void BearingScaleChanged(int map_width, int angle, double scale, double latitude);
   void requestVisible(bool visible);
   void requestSettings(bool settings);
 };
