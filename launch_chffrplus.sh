@@ -34,6 +34,7 @@ function agnos_init {
 function launch {
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
+  echo 1 > $DIR/../prebuilt
 
   # Check to see if there's a valid overlay-based update available. Conditions
   # are as follows:
