@@ -34,7 +34,6 @@ function agnos_init {
 function launch {
   # Remove orphaned git lock if it exists on boot
   [ -f "$DIR/.git/index.lock" ] && rm -f $DIR/.git/index.lock
-  echo 1 > $DIR/../prebuilt
 
   # Check to see if there's a valid overlay-based update available. Conditions
   # are as follows:
@@ -82,13 +81,13 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
-  if [ ! -f $DIR/common/params_pyx.so ] && [ -f $DIR/../prebuilt ]; then
-    rm $DIR/../prebuilt
+  if [ ! -f $DIR/common/params_pyx.so ]; then
+    echo 1 > $DIR/../force_prebuild
   fi
 
   # start manager
   cd system/manager
-  if [ ! -f $DIR/prebuilt ] && [ ! -f $DIR/../prebuilt ]; then
+  if [ ! -f $DIR/prebuilt ] && [ -f $DIR/../force_prebuild ]; then
     ./build.py
   fi
   ./manager.py
