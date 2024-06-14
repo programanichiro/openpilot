@@ -1320,7 +1320,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     set_face_gesture_arc(painter,x,y , -45 , 90 ,QColor(200,face_right_ct < long_press ? 200 : 100,0,250));
     if(face_right_ct < 30)
       face_right_ct ++;
-    all_centering = false;
+    if(delta_x > right_face_x)
+      all_centering = false;
   } else {
     //face_right_ct = 0;
   }
@@ -1336,7 +1337,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     set_face_gesture_arc(painter,x,y , 135 , 90 ,QColor(200,face_left_ct < long_press ? 200 : 100,0,250));
     if(face_left_ct < 30)
       face_left_ct ++;
-    all_centering = false;
+    if(delta_x < left_face_x)
+      all_centering = false;
   } else {
     //face_left_ct = 0;
   }
@@ -1352,7 +1354,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     set_face_gesture_arc(painter,x,y , 45 , 90, QColor(200,face_up_ct < long_press ? 200 : 100,0,250));
     if(face_up_ct < 30)
       face_up_ct ++;
-    all_centering = false;
+    if(delta_y < up_face_y)
+      all_centering = false;
   } else {
     //face_up_ct = 0;
   }
@@ -1368,7 +1371,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     set_face_gesture_arc(painter,x,y , -45 , -90, QColor(200,face_down_ct < long_press ? 200 : 100,0,250));
     if(face_down_ct < 30)
       face_down_ct ++;
-    all_centering = false;
+    if(delta_y > down_face_y)
+      all_centering = false;
   } else {
     //face_down_ct = 0;
   }
@@ -1387,7 +1391,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     set_face_gesture_arc(painter,x,y , -90-20 , 180, QColor(200,face_rr_ct < long_press ? 200 : 100,0,250));
     if(face_rr_ct < 30)
       face_rr_ct ++;
-    all_centering = false;
+    if(delta_r < r_face_r)
+      all_centering = false;
   } else {
     //face_rr_ct = 0;
   }
@@ -1404,7 +1409,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     set_face_gesture_arc(painter,x,y , 90+20 , 180, QColor(200,face_lr_ct < long_press ? 200 : 100,0,250));
     if(face_lr_ct < 30)
       face_lr_ct ++;
-    all_centering = false;
+    if(delta_r > l_face_r)
+      all_centering = false;
   } else {
     //face_lr_ct = 0;
   }
