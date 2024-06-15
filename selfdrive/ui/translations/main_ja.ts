@@ -109,6 +109,14 @@
         <source>LIMIT</source>
         <translation>制限速度</translation>
     </message>
+    <message>
+        <source>REC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AUTO</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ConfirmationDialog</name>
@@ -336,6 +344,10 @@
             <numerusform>%n文字以上でお願いします！</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Enter Mapbox Token</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Installer</name>
@@ -357,6 +369,25 @@
     <message>
         <source>hr</source>
         <translation>時間</translation>
+    </message>
+</context>
+<context>
+    <name>MapLimitspeed</name>
+    <message>
+        <source>Google API key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter Google API key. If using only Lat/Lon, input x.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>POI name or keyword</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter a POI name or keyword or Lat,Lon</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -481,6 +512,10 @@
         <source> ALERT</source>
         <translation> 警告</translation>
     </message>
+    <message>
+        <source>Power Off</source>
+        <translation type="unfinished">電源を切る</translation>
+    </message>
 </context>
 <context>
     <name>OnroadAlerts</name>
@@ -589,7 +624,7 @@
     </message>
     <message>
         <source>openpilot</source>
-        <translation>openpilot</translation>
+        <translation type="vanished">openpilot</translation>
     </message>
     <message numerus="yes">
         <source>%n minute(s) ago</source>
@@ -627,6 +662,10 @@
     </message>
     <message>
         <source>now</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>ichiropilot</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -831,7 +870,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>GOOD</source>
-        <translation>最適</translation>
+        <translation type="vanished">最適</translation>
     </message>
     <message>
         <source>OK</source>
@@ -958,6 +997,30 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>never</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Mapbox Token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EDIT</source>
+        <translation type="unfinished">編集</translation>
+    </message>
+    <message>
+        <source>Enter Mapbox Token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter a token obtained from the Mapbox website</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Google API key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter Google API key. If using only Lat/Lon, input x.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

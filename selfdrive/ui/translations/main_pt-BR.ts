@@ -109,6 +109,14 @@
         <source>LIMIT</source>
         <translation>VELO</translation>
     </message>
+    <message>
+        <source>REC</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>AUTO</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>ConfirmationDialog</name>
@@ -337,6 +345,10 @@
             <numerusform>Necessita no mínimo %n caracteres!</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Enter Mapbox Token</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>Installer</name>
@@ -358,6 +370,25 @@
     <message>
         <source>hr</source>
         <translation>hr</translation>
+    </message>
+</context>
+<context>
+    <name>MapLimitspeed</name>
+    <message>
+        <source>Google API key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter Google API key. If using only Lat/Lon, input x.</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>POI name or keyword</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter a POI name or keyword or Lat,Lon</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -483,6 +514,10 @@
         <source> ALERT</source>
         <translation> ALERTA</translation>
     </message>
+    <message>
+        <source>Power Off</source>
+        <translation type="unfinished">Desligar</translation>
+    </message>
 </context>
 <context>
     <name>OnroadAlerts</name>
@@ -591,7 +626,7 @@
     </message>
     <message>
         <source>openpilot</source>
-        <translation>openpilot</translation>
+        <translation type="vanished">openpilot</translation>
     </message>
     <message numerus="yes">
         <source>%n minute(s) ago</source>
@@ -633,6 +668,10 @@
     <message>
         <source>now</source>
         <translation>agora</translation>
+    </message>
+    <message>
+        <source>ichiropilot</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -837,7 +876,7 @@ Isso pode levar até um minuto.</translation>
     </message>
     <message>
         <source>GOOD</source>
-        <translation>BOA</translation>
+        <translation type="vanished">BOA</translation>
     </message>
     <message>
         <source>OK</source>
@@ -965,6 +1004,30 @@ Isso pode levar até um minuto.</translation>
     <message>
         <source>never</source>
         <translation>nunca</translation>
+    </message>
+    <message>
+        <source>Mapbox Token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>EDIT</source>
+        <translation type="unfinished">EDITAR</translation>
+    </message>
+    <message>
+        <source>Enter Mapbox Token</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter a token obtained from the Mapbox website</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Google API key</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Enter Google API key. If using only Lat/Lon, input x.</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
