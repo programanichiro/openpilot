@@ -364,7 +364,6 @@ void MapWindow::updateState(const UIState &s) {
   float sm_vego = sm["carState"].getCarState().getVEgo();
   if(already_vego_over_8 == false && sm_vego > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
-    resizeGL(width(), height());
   }
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
@@ -474,6 +473,11 @@ void MapWindow::updateState(const UIState &s) {
   }
 
   if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
+    static bool once_resizeGL = false;
+    if(once_resizeGL == false){
+      once_resizeGL = true;
+      resizeGL(width(), height());
+    }
     if(north_up == 0){
       if(m_map->margins().top() == 0){
         m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)}); //(1080-350*2-50*2) / 2 = 140 , 700+140=840=yの位置に出ている。
