@@ -364,6 +364,7 @@ void MapWindow::updateState(const UIState &s) {
   float sm_vego = sm["carState"].getCarState().getVEgo();
   if(already_vego_over_8 == false && sm_vego > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
+    resizeGL(width(), height());
   }
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
