@@ -92,8 +92,8 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   addItem(editGoogleApiKeynButton);
 
   // Map Language
-  auto mapTranslateBtn = new ButtonControl(tr("Map Language"), tr("CHANGE"), "");
-  std::string my_map_language = util::read_file("/data/mb_lang.txt"); //langs[selection]
+  auto mapTranslateBtn = new ButtonControl(tr("Navi Language"), tr("CHANGE"), "");
+  std::string my_map_language = util::read_file("/data/mb_navi_lang.txt"); //langs[selection]
   QMap<QString, QString> langs = getSupportedLanguages();
   QString cur_language; //langs[selection]
   if(my_map_language.empty() == false){
@@ -106,7 +106,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   connect(mapTranslateBtn, &ButtonControl::clicked, [=]() {
     QString selection = MultiOptionDialog::getSelection(tr("Select a language"), langs.keys(), langs.key(cur_language), this);
     if (!selection.isEmpty()) {
-      FILE *fp = fopen("/data/mb_lang.txt","w");
+      FILE *fp = fopen("/data/mb_navi_lang.txt","w");
       if(fp != NULL){
         fprintf(fp,"%s",langs[selection].toUtf8().constData()); //langs[selection]で保存する。
         fclose(fp);
