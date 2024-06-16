@@ -92,7 +92,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   addItem(editGoogleApiKeynButton);
 
   // Map Language
-  auto mapTranslateBtn = new ButtonControl(tr("Navi Language"), tr("CHANGE"), "");
+  auto mapTranslateBtn = new ButtonControl(tr("Navigation Language"), tr("CHANGE"), "");
   std::string my_map_language = util::read_file("/data/mb_navi_lang.txt"); //langs[selection]
   QMap<QString, QString> langs = getSupportedLanguages();
   QString cur_language; //langs[selection]
