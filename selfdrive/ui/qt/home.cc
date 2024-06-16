@@ -227,6 +227,9 @@ void OffroadHome::refresh() {
   version->setText(getBrand() + " " +  QString::fromStdString(params.get("UpdaterCurrentDescription")));
 
   bool updateAvailable = update_widget->refresh();
+  if(updateAvailable){
+    std::system("echo 1 > /data/force_prebuild");
+  }
   int alerts = alerts_widget->refresh();
 
   // pop-up new notification
