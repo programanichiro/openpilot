@@ -119,6 +119,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   // download update btn
   downloadBtn = new ButtonControl(tr("Download"), tr("CHECK"));
   connect(downloadBtn, &ButtonControl::clicked, [=]() {
+    std::system("echo 1 > /data/force_prebuild");
     downloadBtn->setEnabled(false);
     if (downloadBtn->text() == tr("CHECK")) {
       checkForUpdates();
@@ -152,6 +153,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     QString cur = QString::fromStdString(params.get("UpdaterTargetBranch"));
     QString selection = MultiOptionDialog::getSelection(tr("Select a branch"), branches, cur, this);
     if (!selection.isEmpty()) {
+      std::system("echo 1 > /data/force_prebuild");
       params.put("UpdaterTargetBranch", selection.toStdString());
       targetBranchBtn->setValue(QString::fromStdString(params.get("UpdaterTargetBranch")));
       checkForUpdates();
