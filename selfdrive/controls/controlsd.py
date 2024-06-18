@@ -384,7 +384,7 @@ class Controls:
         self.distance_traveled = 0
       self.distance_traveled += CS.vEgo * DT_CTRL
 
-      if self.sm['modelV2'].frameDropPerc > 85:
+      if self.sm['modelV2'].frameDropPerc > 20:
         self.events.add(EventName.modeldLagging)
 
   def data_sample(self):

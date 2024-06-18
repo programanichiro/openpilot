@@ -13,9 +13,9 @@ class ModelConstants:
   META_T_IDXS = [2., 4., 6., 8., 10.]
 
   # model inputs constants
-  MODEL_FREQ = 5
+  MODEL_FREQ = 20
   FEATURE_LEN = 512
-  HISTORY_BUFFER_LEN = 24
+  HISTORY_BUFFER_LEN = 99
   DESIRE_LEN = 8
   TRAFFIC_CONVENTION_LEN = 2
   LAT_PLANNER_STATE_LEN = 4

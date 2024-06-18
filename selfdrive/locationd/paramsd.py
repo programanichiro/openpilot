@@ -183,7 +183,7 @@ def main():
   roll_valid = True
 
   while True:
-    sm.update(500)
+    sm.update()
     if sm.all_checks():
       for which in sorted(sm.updated.keys(), key=lambda x: sm.logMonoTime[x]):
         if sm.updated[which]:

@@ -227,15 +227,16 @@ def main(demo=False):
     estimator = TorqueEstimator(CP)
 
   while True:
-    sm.update(500)
+    sm.update()
     if sm.all_checks():
       for which in sm.updated.keys():
         if sm.updated[which]:
           t = sm.logMonoTime[which] * 1e-9
           estimator.handle_log(t, which, sm[which])
 
-    # 5Hz driven by liveLocationKalman
-    pm.send('liveTorqueParameters', estimator.get_msg(valid=sm.all_checks()))
+    # 4Hz driven by liveLocationKalman
+    if sm.frame % 5 == 0:
+      pm.send('liveTorqueParameters', estimator.get_msg(valid=sm.all_checks()))
 
     # Cache points every 60 seconds while onroad
     if sm.frame % 240 == 0:
