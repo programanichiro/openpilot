@@ -284,8 +284,8 @@ class CarInterfaceBase(ABC):
               one_pedal = True
       except Exception as e:
         pass
-      if one_pedal == True and cs_out.vEgo < 5/3.6 and cs_out.cruiseState.enabled:
-        events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前でも可)にバックに入れたらディスエンゲージ
+      if one_pedal == True and cs_out.vEgo < 7/3.6 and cs_out.cruiseState.enabled:
+        events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前(7km/h未満)でも可)にバックに入れたらディスエンゲージ
       else:
         events.add(EventName.reverseGear)
     if not cs_out.cruiseState.available:
