@@ -104,7 +104,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
     mapTranslateBtn->setValue(langs.key(cur_language));
   }
   connect(mapTranslateBtn, &ButtonControl::clicked, [=]() {
-    QString my_map_language = util::read_file("/data/mb_navi_lang.txt"); //langs[selection]
+    std::string my_map_language = util::read_file("/data/mb_navi_lang.txt"); //langs[selection]
     QString cur_language; //langs[selection]
     if(my_map_language.empty() == false){
       cur_language = QString::fromStdString(my_map_language); //langs[selection]
