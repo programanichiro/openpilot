@@ -98,12 +98,18 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
   QString cur_language; //langs[selection]
   if(my_map_language.empty() == false){
     cur_language = QString::fromStdString(my_map_language); //langs[selection]
-    mapTranslateBtn->setValue(cur_language);
+    mapTranslateBtn->setValue(langs.key(cur_language));
   } else {
     cur_language = QString::fromStdString(params.get("LanguageSetting")); //langs[selection].toStdString());
-    mapTranslateBtn->setValue(cur_language);
+    mapTranslateBtn->setValue(langs.key(cur_language));
   }
   connect(mapTranslateBtn, &ButtonControl::clicked, [=]() {
+    my_map_language = util::read_file("/data/mb_navi_lang.txt"); //langs[selection]
+    if(my_map_language.empty() == false){
+      cur_language = QString::fromStdString(my_map_language); //langs[selection]
+    } else {
+      cur_language = QString::fromStdString(params.get("LanguageSetting")); //langs[selection].toStdString());
+    }
     QString selection = MultiOptionDialog::getSelection(tr("Select a language"), langs.keys(), langs.key(cur_language), this);
     if (!selection.isEmpty()) {
       FILE *fp = fopen("/data/mb_navi_lang.txt","w");
@@ -111,7 +117,7 @@ SoftwarePanel::SoftwarePanel(QWidget* parent) : ListWidget(parent) {
         fprintf(fp,"%s",langs[selection].toUtf8().constData()); //langs[selection]で保存する。
         fclose(fp);
       }
-      mapTranslateBtn->setValue(langs[selection]);
+      mapTranslateBtn->setValue(langs.key(langs[selection]));
     }
   });
   addItem(mapTranslateBtn);
