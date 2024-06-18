@@ -56,7 +56,7 @@ bool chg_coordinate;
 bool north_head , head_north;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
-float _1_vc_accel; //-1〜0〜+1で加速度っぽい値。
+extern float _1_vc_accel; //-1〜0〜+1で加速度っぽい値。
 float _2_vc_accel;
 float calc_pich(){
   _2_vc_accel = _2_vc_accel + (_1_vc_accel - _2_vc_accel) / 5; //若干緩衝処理。
@@ -342,7 +342,7 @@ float bearing_ofs(float v_ego){
 bool now_navigation = false;
 int style_reload = 0;
 float g_latitude,g_longitude;
-bool head_gesture_map_north_heading_toggle;
+extern bool head_gesture_map_north_heading_toggle;
 bool map_pitch_up,map_pitch_down;
 qreal before_pinch_angle,last_pinch_angle;
 void MapWindow::updateState(const UIState &s) {

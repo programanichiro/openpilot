@@ -1705,7 +1705,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
   static float vc_accel;
-  extern float _1_vc_accel;
+  float _1_vc_accel;
   vc_accel = vc_accel + (vc_accel0 - vc_accel) / 5;
   //vc_accel = -0.5;
   float hha = 0;
