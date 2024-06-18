@@ -343,7 +343,7 @@ bool now_navigation = false;
 int style_reload = 0;
 float g_latitude,g_longitude;
 extern bool head_gesture_map_north_heading_toggle;
-bool map_pitch_up,map_pitch_down;
+extern bool map_pitch_up,map_pitch_down;
 qreal before_pinch_angle,last_pinch_angle;
 void MapWindow::updateState(const UIState &s) {
   if (!uiState()->scene.started) {

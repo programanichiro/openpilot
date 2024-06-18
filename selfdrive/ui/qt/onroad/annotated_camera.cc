@@ -1487,7 +1487,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     left_face_key_n = 0;
     // extern bool map_pitch_up;
     // map_pitch_up = true;
-    extern bool map_pitch_down;
+    bool map_pitch_down;
     map_pitch_down = true;
   }
 
