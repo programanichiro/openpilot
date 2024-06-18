@@ -1487,7 +1487,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     left_face_key_n = 0;
     // extern bool map_pitch_up;
     // map_pitch_up = true;
-    bool map_pitch_down;
+    extern bool map_pitch_down;
     map_pitch_down = true;
   }
 
@@ -1705,7 +1705,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
   static float vc_accel;
-  float _1_vc_accel;
+  extern float _1_vc_accel;
   vc_accel = vc_accel + (vc_accel0 - vc_accel) / 5;
   //vc_accel = -0.5;
   float hha = 0;

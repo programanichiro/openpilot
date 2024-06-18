@@ -53,7 +53,7 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
 bool mapVisible;
 bool head_gesture_onroad_home;
 bool head_gesture_onroad_home_map_on;
-bool head_gesture_map_north_heading_toggle;
+extern bool head_gesture_map_north_heading_toggle;
 void OnroadWindow::updateState(const UIState &s) {
   if (!s.scene.started) {
     return;
