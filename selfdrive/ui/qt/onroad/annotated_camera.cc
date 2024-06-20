@@ -730,7 +730,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   { //タコメーター
     //double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm,1000回転で1.0？
-    QPointF taco_meter[] = {{(double)rect().center().x()-200-60,(double)30},{(double)rect().center().x()-100-60,(double)50 + 40*3+10}, {(double)rect().center().x()+100+60,(double)50 + 40*3+10}, {(double)rect().center().x()+200+60,(double)30}};
+    QPointF taco_meter[] = {{(double)rect().center().x()-200-80,(double)20},{(double)rect().center().x()-100-60,(double)50 + 40*3+10}, {(double)rect().center().x()+100+60,(double)50 + 40*3+10}, {(double)rect().center().x()+200+80,(double)20}};
     p.setPen(Qt::NoPen);
     p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65));
     p.setCompositionMode(QPainter::CompositionMode_Plus);
