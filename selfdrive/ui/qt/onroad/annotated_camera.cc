@@ -1,5 +1,6 @@
 
 #include "selfdrive/ui/qt/onroad/annotated_camera.h"
+#include "common/transformations/coordinates.hpp"
 
 #include <QPainter>
 #include <algorithm>
@@ -25,7 +26,7 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
 */
 
-  buttons = new ButtonsWindow(this , null); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
+  buttons = new ButtonsWindow(this); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
   QObject::connect(uiState(), &UIState::uiUpdate, buttons, &ButtonsWindow::updateState);
   main_layout->addWidget(buttons);
 
