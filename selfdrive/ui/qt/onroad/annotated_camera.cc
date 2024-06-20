@@ -739,7 +739,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     double lu = (double)rect().center().x()-upper_2w;
     double ur = lu + upper_2w * 2 * taco_rpm / taco_max; //(double)rect().center().x()+upper_2w;
     double ld = (double)rect().center().x()-under_2w;
-    double dr = ld + under_2w * 2 taco_rpm / taco_max; //(double)rect().center().x()+under_2w;
+    double dr = ld + under_2w * 2 * taco_rpm / taco_max; //(double)rect().center().x()+under_2w;
     QPointF taco_meter[] = {{lu,(double)20},{ld,(double)50 + 40*3+10}, {dr,(double)50 + 40*3+10}, {ur,(double)20}};
     p.setPen(Qt::NoPen);
     p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65));
