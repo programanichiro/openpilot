@@ -728,6 +728,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
   }
 
+  { //タコメーター
+    double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm
+  }
+
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
   drawText(p, rect().center().x(), 50 + 40*2 , "speed limit auto detect", a2 , brake_light);
@@ -1859,6 +1863,14 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     p.setPen(Qt::NoPen);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("Trip") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 10 , -5 , -5) + 5;
     QString debug_disp = QString::number(distance_traveled / 1000,'f',1) + QString("km");
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
+    //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
+  }
+  {
+    p.setPen(Qt::NoPen);
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("RPM") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 10 , -5 , -5) + 5;
+    double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm
+    QString debug_disp = QString::number(taco_rpm / 1000,'f',1);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
