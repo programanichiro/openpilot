@@ -731,8 +731,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   { //タコメーター
     double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm,1000回転で1.0？
     const double taco_max = 5.0;
-    if(taco_max > 5.0){
-      taco_max = 5.0 //5000回転表示がMAX。
+    if(taco_rpm > 5.0){
+      taco_rpm = 5.0 //5000回転表示がMAX。
     }
     double upper_2w = 200+80;
     double under_2w = 100+55;
