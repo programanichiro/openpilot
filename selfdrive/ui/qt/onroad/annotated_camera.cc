@@ -734,7 +734,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     if(taco_rpm > taco_max){
       taco_rpm = taco_max; //5000回転表示がMAX。
     }
-      taco_rpm = taco_max/2; //表示テスト
+    //taco_rpm = taco_max/2; //表示テスト
     double upper_2w = 200+80;
     double under_2w = 100+55;
     double lu = (double)rect().center().x()-upper_2w;
