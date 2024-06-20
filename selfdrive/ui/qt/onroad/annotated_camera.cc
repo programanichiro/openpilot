@@ -7,7 +7,6 @@
 #include <sstream>
 
 #include "common/swaglog.h"
-#include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/qt/onroad/buttons.h"
 #include "selfdrive/ui/qt/util.h"
 
