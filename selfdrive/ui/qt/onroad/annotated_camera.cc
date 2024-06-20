@@ -729,7 +729,13 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
   { //タコメーター
-    //double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm
+    //double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm,1000回転で1.0？
+    QPointF taco_meter[] = {{rect().center().x()-200,20},{rect().center().x()-100,50 + 40*3}, {rect().center().x()+100,50 + 40*3}, {rect().center().x()+200,20}};
+    p.setPen(Qt::NoPen);
+    p.setBrush(QColor::fromRgbF(0.9, 0.1, 0.1, 0.85));
+    p.setCompositionMode(QPainter::CompositionMode_Plus);
+    p.drawPolygon(taco_meter, std::size(taco_meter));
+    p.setCompositionMode(QPainter::CompositionMode_SourceOver);
   }
 
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
@@ -1866,11 +1872,11 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
-  {
+  if(1){
     p.setPen(Qt::NoPen);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("RPM") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 10 , -5 , -5) + 5;
     double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm
-    QString debug_disp = QString::number(taco_rpm / 1000,'f',1);
+    QString debug_disp = QString::number(taco_rpm / 1000,'f',3);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
