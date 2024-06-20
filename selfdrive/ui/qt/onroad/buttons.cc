@@ -604,7 +604,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   }
 
   { //ダミーボタン
-    QPushButton *dummylButton = new QPushButton("Dmy");
+    QPushButton *dummylButton = new QPushButton("➖");
     QObject::connect(dummylButton, &QPushButton::pressed, [=]() {
       soundButton(false);
     });
