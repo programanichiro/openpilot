@@ -1214,6 +1214,7 @@ static void set_face_gesture_arc(QPainter &painter,float x, float y, int start_a
   painter.drawArc(QRectF(x - btn_size / 2 +ww/2, y - btn_size / 2 +ww/2 , btn_size-ww, btn_size-ww) , start_ang * 16, ang_width * 16);
 }
 
+bool map_pitch_down;
 void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
   const UIScene &scene = s->scene;
 
@@ -1498,7 +1499,6 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     left_face_key_n = 0;
     // extern bool map_pitch_up;
     // map_pitch_up = true;
-    extern bool map_pitch_down;
     map_pitch_down = true;
   }
 
@@ -1512,7 +1512,6 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     face_left_timer = 0;
     down_face_key_n = 0;
     left_face_key_n = 0;
-    extern bool map_pitch_down;
     map_pitch_down = true;
   }
 
