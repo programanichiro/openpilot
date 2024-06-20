@@ -729,8 +729,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
   { //タコメーター
-    double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm,1000回転で1.0？
-    const double taco_max = 5.0;
+    double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm();
+    const double taco_max = 5000;
     if(taco_rpm > taco_max){
       taco_rpm = taco_max; //5000回転表示がMAX。
     }
@@ -742,7 +742,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     double dr = ld + under_2w * 2 * taco_rpm / taco_max; //(double)rect().center().x()+under_2w;
     QPointF taco_meter[] = {{lu,(double)20},{ld,(double)50 + 40*3+10}, {dr,(double)50 + 40*3+10}, {ur,(double)20}};
     p.setPen(Qt::NoPen);
-    p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65));
+    //p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
+    p.setBrush(QColor::fromRgbF(0.96, 0.51, 0.12, 0.65)); //オレンジ
     p.setCompositionMode(QPainter::CompositionMode_Plus);
     p.drawPolygon(taco_meter, std::size(taco_meter));
     p.setCompositionMode(QPainter::CompositionMode_SourceOver);
@@ -1886,7 +1887,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     p.setPen(Qt::NoPen);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("RPM") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 10 , -5 , -5) + 5;
     double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm
-    QString debug_disp = QString::number(taco_rpm / 1000,'f',3);
+    QString debug_disp = QString::number(taco_rpm);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
