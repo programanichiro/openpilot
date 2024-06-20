@@ -729,7 +729,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   }
 
   { //タコメーター
-    double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm
+    //double taco_rpm = (*s->sm)["carState"].getCarState().getEngineRpm(); //rpm
   }
 
   drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
