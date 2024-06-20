@@ -744,7 +744,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     QPointF taco_meter[] = {{lu,(double)20},{ld,(double)50 + 40*3+10}, {dr,(double)50 + 40*3+10}, {ur,(double)20}};
     p.setPen(Qt::NoPen);
     //p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
-    p.setBrush(QColor::fromRgbF(0.96/2, 0.51/2, 0.12/2, 0.65)); //オレンジ
+    p.setBrush(QColor::fromRgbF(0.96*0.7, 0.51*0.7, 0.12*0.7, 0.65)); //オレンジ
     p.setCompositionMode(QPainter::CompositionMode_Plus);
     p.drawPolygon(taco_meter, std::size(taco_meter));
     p.setCompositionMode(QPainter::CompositionMode_SourceOver);
