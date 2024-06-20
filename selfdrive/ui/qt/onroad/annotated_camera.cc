@@ -24,13 +24,9 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
 
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
-
-  map_settings_btn = new MapSettingsButton(this);
-  main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
 */
-  map_settings_btn = new MapSettingsButton(this);
 
-  buttons = new ButtonsWindow(this , map_settings_btn); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
+  buttons = new ButtonsWindow(this , null); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
   QObject::connect(uiState(), &UIState::uiUpdate, buttons, &ButtonsWindow::updateState);
   main_layout->addWidget(buttons);
 
@@ -143,13 +139,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   g_rightHandDM = rightHandDM;
   // DM icon transition
   dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
-
-  // hide map settings button for alerts and flip for right hand DM
-  // if (map_settings_btn->isEnabled()) {
-  //   map_settings_btn->setVisible(!hideBottomIcons);
-  //   main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
-  // }
-  map_settings_btn->setVisible(true); //他のボタンの位置へ影響するので、出しっぱなしにする。
 }
 
 static bool all_brake_light = false;

@@ -7,12 +7,11 @@
 const int btn_size = 192;
 const int img_size = (btn_size / 4) * 3;
 
-class MapSettingsButton;
 class ButtonsWindow : public QWidget {
   Q_OBJECT
 
 public:
-  ButtonsWindow(QWidget *parent = 0 , MapSettingsButton *map_settings_btn = 0);
+  ButtonsWindow(QWidget *parent = 0);
   void psn_update();
   void MAX_touch();
 
@@ -64,19 +63,6 @@ private:
   QPixmap experimental_img;
   bool experimental_mode;
   bool engageable;
-};
-
-
-class MapSettingsButton : public QPushButton {
-  Q_OBJECT
-
-public:
-  explicit MapSettingsButton(QWidget *parent = 0);
-
-private:
-  void paintEvent(QPaintEvent *event) override;
-
-  QPixmap settings_img;
 };
 
 void drawIcon(QPainter &p, const QPoint &center, const QPixmap &img, const QBrush &bg, float opacity);

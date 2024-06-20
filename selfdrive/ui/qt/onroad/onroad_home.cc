@@ -3,11 +3,6 @@
 #include <QPainter>
 #include <QStackedLayout>
 
-#ifdef ENABLE_MAPS
-#include "selfdrive/ui/qt/maps/map_helpers.h"
-#include "selfdrive/ui/qt/maps/map_panel.h"
-#endif
-
 #include "selfdrive/ui/qt/util.h"
 
 OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
@@ -30,11 +25,6 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
     split->insertWidget(0, arCam);
   }
 
-  if (getenv("MAP_RENDER_VIEW")) {
-    CameraWidget *map_render = new CameraWidget("navd", VISION_STREAM_MAP, false, this);
-    split->insertWidget(0, map_render);
-  }
-
   stacked_layout->addWidget(split_wrapper);
 
   alerts = new OnroadAlerts(this);
@@ -47,7 +37,6 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   setAttribute(Qt::WA_OpaquePaintEvent);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &OnroadWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &OnroadWindow::offroadTransition);
-  QObject::connect(uiState(), &UIState::primeChanged, this, &OnroadWindow::primeChanged);
 }
 
 bool mapVisible;
@@ -103,66 +92,12 @@ void OnroadWindow::updateState(const UIState &s) {
 }
 
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {
-#ifdef ENABLE_MAPS
-  if (map != nullptr) {
-    bool sidebarVisible = geometry().x() > 0;
-    bool show_map = !sidebarVisible;
-    map->setVisible(show_map && !map->isVisible());
-  }
-#endif
   // propagation event to parent(HomeWindow)
   QWidget::mousePressEvent(e);
 }
 
-void OnroadWindow::createMapWidget() {
-#ifdef ENABLE_MAPS
-  auto m = new MapPanel(get_mapbox_settings());
-  map = m;
-  QObject::connect(m, &MapPanel::mapPanelRequested, this, &OnroadWindow::mapPanelRequested);
-  QObject::connect(nvg->map_settings_btn, &MapSettingsButton::clicked, m, &MapPanel::toggleMapSettings);
-  nvg->map_settings_btn->setEnabled(true);
-
-  std::string my_mapbox_width = util::read_file("/data/mb_width_rate.txt");
-  m->setSizePolicy(QSizePolicy(QSizePolicy::Fixed, QSizePolicy::Expanding));
-  if(my_mapbox_width.empty() == false){
-    this->mb_width_rate = std::stof(my_mapbox_width);
-    m->setFixedWidth((topWidget(this)->width() * this->mb_width_rate - UI_BORDER_SIZE));
-  } else {
-    m->setFixedWidth(topWidget(this)->width() / 2 - UI_BORDER_SIZE);
-  }
-  split->insertWidget(0, m);
-  // hidden by default, made visible when navRoute is published
-  m->setVisible(false);
-#endif
-}
-
 void OnroadWindow::offroadTransition(bool offroad) {
-#ifdef ENABLE_MAPS
-  if (!offroad) {
-    bool mapbox_extra = false;
-    std::string my_mapbox_token = util::read_file("/data/mb_token.txt");
-    if(my_mapbox_token.empty() == false){
-      mapbox_extra = true;
-    }
-    if (map == nullptr && (uiState()->hasPrime() || !MAPBOX_TOKEN.isEmpty() || mapbox_extra)) {
-      createMapWidget();
-    }
-  }
-#endif
   alerts->clear();
-}
-
-void OnroadWindow::primeChanged(bool prime) {
-#ifdef ENABLE_MAPS
-  if (map && (!prime && MAPBOX_TOKEN.isEmpty())) {
-    nvg->map_settings_btn->setEnabled(false);
-    nvg->map_settings_btn->setVisible(false);
-    map->deleteLater();
-    map = nullptr;
-  } else if (!map && (prime || !MAPBOX_TOKEN.isEmpty())) {
-    createMapWidget();
-  }
-#endif
 }
 
 void OnroadWindow::paintEvent(QPaintEvent *event) {

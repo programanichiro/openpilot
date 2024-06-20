@@ -184,7 +184,7 @@ bool Long_enable = true;
 int Knight_scanner = 7;
 int DrivingPsn = 0; //運転傾向
 int Limit_speed_mode = 0; //標識
-ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_btn) : QWidget(parent) {
+ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
 
@@ -603,9 +603,16 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     decelCtrlButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mDecelCtrlButton)));
   }
 
-  { //ナビボタン
+  { //ダミーボタン
+    QPushButton dummylButton = new QPushButton("Dmy");
+    QObject::connect(dummylButton, &QPushButton::pressed, [=]() {
+      soundButton(false);
+    });
+    dummylButton->setFixedWidth(BTN_W_NORMAL);
+    dummylButton->setFixedHeight(BTN_W_NORMAL);
     btns_layout->addSpacing(15);
-    btns_layout->addWidget(map_settings_btn);
+    btns_layout->addWidget(dummylButton);
+    dummylButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(false)));
   }
 
   // std::string hide_model_long = "true";  // util::read_file("/data/community/params/hide_model_long");
@@ -798,32 +805,4 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
   QPainter p(this);
   QPixmap img = experimental_mode ? experimental_img : engage_img;
   drawIcon(p, QPoint(btn_size / 2, btn_size / 2), img, QColor(0, 0, 0, 166), (isDown() || !engageable) ? 0.6 : 1.0);
-}
-
-// MapSettingsButton
-MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
-  setFixedSize(152, 152);
-  settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size-20, img_size-20});
-
-  // hidden by default, made visible if map is created (has prime or mapbox token)
-  setVisible(false);
-  setEnabled(false);
-}
-
-void MapSettingsButton::paintEvent(QPaintEvent *event) {
-  QPainter p(this);
-  // drawIcon(p, QPoint(btn_size / 2, btn_size / 2), settings_img, QColor(0, 0, 0, 166), isDown() ? 0.6 : 1.0);
-  //ボタンの形を変えたので公式のdrawIconが使えない。
-  p.setRenderHint(QPainter::Antialiasing);
-
-  //QPoint center(btn_size / 2, btn_size / 2);
-
-  p.setOpacity(1.0);
-  p.setPen(Qt::NoPen);
-  p.setBrush(QColor(0, 0, 0, 133));
-  //p.drawEllipse(center, btn_size / 2, btn_size / 2);
-  QRect temp_rc(0,0,152,152);
-  p.drawRoundedRect(temp_rc, 20, 20);
-  p.setOpacity(isDown() ? 0.6 : 0.9);
-  p.drawPixmap((152 - (img_size-20)) / 2, (152 - (img_size-20)) / 2, settings_img);
 }
