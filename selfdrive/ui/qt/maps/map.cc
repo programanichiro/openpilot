@@ -659,7 +659,8 @@ void MapWindow::updateState(const UIState &s) {
       }
       if(now_navigation == false && night_mode >= 0){
         night_mode = -1; //ナビ中の昼夜切り替えを無効にする。昼夜切り替えでルートが消えるから、この処理は必須。
-        m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj"); //ナビ中はスタイルを公式に戻す。
+        //m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj"); //ナビ中はスタイルを公式に戻す。
+        m_map->setStyleUrl("mapboxmapbox://styles/kawombop0/clxpnfmk000ke01pu7kk4ehrt"); //ナビ中はスタイルを公式に戻す。公式＋渋滞情報
         style_reload = 10;
       }
       now_navigation = true;
@@ -785,7 +786,8 @@ void MapWindow::initializeGL() {
     m_map->setStyleUrl(my_mapbox_style.c_str());
   } else {
     // m_map->setStyleUrl("mapbox://styles/commaai/clj7g5vrp007b01qzb5ro0i4j"); 公式旧スタイル
-    m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj");
+    //m_map->setStyleUrl("mapbox://styles/commaai/clkqztk0f00ou01qyhsa5bzpj");
+    m_map->setStyleUrl("mapbox://styles/kawombop0/clxpnfmk000ke01pu7kk4ehrt"); //公式＋渋滞情報
   }
 
   QObject::connect(m_map.data(), &QMapLibre::Map::mapChanged, [=](QMapLibre::Map::MapChange change) {
