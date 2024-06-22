@@ -332,7 +332,7 @@ class LongitudinalPlanner:
         #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
         if (path_x_old_signal < 2) and path_x[TRAJECTORY_SIZE -1] > 40:
           path_x_old_signal_check = path_x[TRAJECTORY_SIZE -1] #ゆっくり立ち上がったらこれはTrueにならない。
-        path_x_base_limit = 64.0 #70.0 , この座標値超で青信号スタート発火。
+        path_x_base_limit = 52.0 #64.0 #70.0 , この座標値超で青信号スタート発火。
         if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or path_x_old_signal_check > 40: #青信号判定の瞬間
           path_x_old_signal_check += path_x[TRAJECTORY_SIZE -1] #最初の立ち上がりは2倍される
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
