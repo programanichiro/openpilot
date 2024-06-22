@@ -320,19 +320,20 @@ class LongitudinalPlanner:
     hasLead = sm['radarState'].leadOne.status
     distLead_near = sm['radarState'].leadOne.dRel < interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
     global signal_scan_ct,path_x_old_signal,path_x_old_signal_check , red_signal_scan_flag
-    if v_ego <= 0.01/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
+    if v_ego <= 0.1/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
       # 停止時の青信号発進抑制、一時的に緩和、15->50度
       if (abs(steer_ang) < 50 or one_pedal == False) and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
         #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
         path_x = md.position.x #path_xyz[:,0]
-        # with open('/tmp/debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
+        with open('/tmp/debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
+          fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[TRAJECTORY_SIZE -1],signal_scan_ct,path_x_old_signal_check,v_ego))
         #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
         #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
         if (path_x_old_signal < 2) and path_x[TRAJECTORY_SIZE -1] > 40:
           path_x_old_signal_check = path_x[TRAJECTORY_SIZE -1] #ゆっくり立ち上がったらこれはTrueにならない。
-        path_x_base_limit = 52.0 #64.0 #70.0 , この座標値超で青信号スタート発火。
+        path_x_base_limit = 64.0 #70.0 , この座標値超で青信号スタート発火。
         if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or path_x_old_signal_check > 40: #青信号判定の瞬間
           path_x_old_signal_check += path_x[TRAJECTORY_SIZE -1] #最初の立ち上がりは2倍される
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
