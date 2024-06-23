@@ -35,9 +35,13 @@ MapPanel::MapPanel(const QMapLibre::Settings &mapboxSettings, QWidget *parent) :
 }
 
 void MapPanel::toggleMapSettings() {
+#if 0
   // show settings if not visible, then toggle between map and settings
   int new_index = isVisible() ? (1 - content_stack->currentIndex()) : 1;
   content_stack->setCurrentIndex(new_index);
   emit mapPanelRequested();
   show();
+#else
+    Params().remove("NavDestination"); //ナビ中止？
+#endif
 }
