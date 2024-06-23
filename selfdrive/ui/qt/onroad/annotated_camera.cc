@@ -1872,6 +1872,16 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
+  if(fabs(vc_speed) < 0.1/3.6){
+    std::string blue_signal_chk_txt = util::read_file("/tmp/blue_signal_chk.txt");
+    if(blue_signal_chk_txt.empty() == false){
+      p.setPen(Qt::NoPen);
+      debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("⚫︎") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 13 , 0 , -5) + 11;
+      int blue_signal_chk = std::stoi(blue_signal_chk_txt);
+      QString debug_disp = QString::number(blue_signal_chk);
+      debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
+    }
+  }
   if(0){
     p.setPen(Qt::NoPen);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("RPM") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 10 , -5 , -5) + 5;
