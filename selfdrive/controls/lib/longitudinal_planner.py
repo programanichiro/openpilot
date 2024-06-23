@@ -331,14 +331,15 @@ class LongitudinalPlanner:
           fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[TRAJECTORY_SIZE -1],signal_scan_ct,path_x_old_signal_check,v_ego))
         #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
         #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
-        if (path_x_old_signal < 2) and path_x[TRAJECTORY_SIZE -1] > 40:
+        half_limit = 25 #40
+        if (path_x_old_signal < 2) and path_x[TRAJECTORY_SIZE -1] > half_limit:
           path_x_old_signal_check = path_x[TRAJECTORY_SIZE -1] #ゆっくり立ち上がったらこれはTrueにならない。
-        path_x_base_limit = 64.0 #70.0 , この座標値超で青信号スタート発火。
-        if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or path_x_old_signal_check > 40: #青信号判定の瞬間
+        path_x_base_limit = 30 #64.0 #70.0 , この座標値超で青信号スタート発火。
+        if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or path_x_old_signal_check > half_limit: #青信号判定の瞬間
           path_x_old_signal_check += path_x[TRAJECTORY_SIZE -1] #最初の立ち上がりは2倍される
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
           limit_8 = 8 if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit else 16
-          if signal_scan_ct > limit_8 and signal_scan_ct < 100 and (path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or (path_x_old_signal_check-40) > 50*limit_8):
+          if signal_scan_ct > limit_8 and signal_scan_ct < 100 and (path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or (path_x_old_signal_check-half_limit) > 1.25*limit_8 * half_limit): #path_x_old_signal_check-half_limitの20倍程度
             with open('/tmp/signal_start_prompt_info.txt','w') as fp:
               if sm['driverMonitoringState'].isActiveMode == True: #よそ見をしていたら発進しない。
                 if OP_ENABLE_v_cruise_kph > 0: #MAX==1の状態。
@@ -362,7 +363,7 @@ class LongitudinalPlanner:
         path_x_old_signal = path_x[TRAJECTORY_SIZE -1]
     else:
       signal_scan_ct = 0 if signal_scan_ct < 4 else signal_scan_ct - 4
-    if path_x_old_signal < 30:
+    if path_x_old_signal < 20:
       path_x_old_signal_check = 0
 
     if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ
