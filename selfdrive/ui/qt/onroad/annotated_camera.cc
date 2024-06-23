@@ -1724,6 +1724,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   }
 
 #if 1 //加速減速表示テスト
+  //float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   float vc_accel0 = (*s->sm)["carState"].getCarState().getAEgo();
   static float vc_accel;
   extern float _1_vc_accel;
@@ -1883,7 +1884,6 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
-  float vc_speed = (*s->sm)["carState"].getCarState().getVEgo();
   if(fabs(vc_speed) < 0.1/3.6){
     std::string blue_signal_chk_txt = util::read_file("/tmp/blue_signal_chk.txt");
     if(blue_signal_chk_txt.empty() == false){
