@@ -55,6 +55,8 @@ void MapPanel::toggleMapSettings() {
     emit mapPanelRequested();
   }
   if (Params().get("NavDestination").empty()) {
+    extern float g_latitude,g_longitude;
+    extern bool chg_coordinate;
 
     std::string my_google_key = util::read_file("/data/google_key.txt");
     my_google_key.erase(std::remove(my_google_key.begin(), my_google_key.end(), '\n'), my_google_key.end());
@@ -148,8 +150,6 @@ void MapPanel::toggleMapSettings() {
                       QJsonObject jsonObj = value.toObject();
                       if (jsonObj.contains("location")) {
                         QJsonObject location = jsonObj["location"].toObject();
-                        extern float g_latitude,g_longitude;
-                        extern bool chg_coordinate;
                         g_latitude = location["latitude"].toDouble();
                         g_longitude = location["longitude"].toDouble();
                         chg_coordinate = true;
