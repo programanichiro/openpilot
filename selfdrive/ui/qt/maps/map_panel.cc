@@ -52,7 +52,8 @@ void MapPanel::toggleMapSettings() {
   if(isVisible() == false){
     //地図を出す
     content_stack->setCurrentIndex(0);
-    emit mapPanelRequested();
+    setVisible(true);
+    emit mapPanelRequested(); //これでサイドバーを隠す
   }
   if (Params().get("NavDestination").empty()) {
     extern float g_latitude,g_longitude;
