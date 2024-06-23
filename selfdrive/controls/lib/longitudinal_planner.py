@@ -331,6 +331,8 @@ class LongitudinalPlanner:
           fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[TRAJECTORY_SIZE -1],signal_scan_ct,path_x_old_signal_check,v_ego))
         #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
         #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
+        with open('/tmp/blue_signal_chk.txt','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
+          fp.write('%d' % (int(path_x[TRAJECTORY_SIZE -1])))
         half_limit = 25 #40
         if (path_x_old_signal < 2) and path_x[TRAJECTORY_SIZE -1] > half_limit:
           path_x_old_signal_check = path_x[TRAJECTORY_SIZE -1] #ゆっくり立ち上がったらこれはTrueにならない。
