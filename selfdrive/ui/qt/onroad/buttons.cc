@@ -804,6 +804,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
   setFixedSize(152, 152);
   settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size-20, img_size-20});
+  settings_img.fill(QColor(255, 0, 0, 255))
 
   // hidden by default, made visible if map is created (has prime or mapbox token)
   setVisible(false);
@@ -821,10 +822,11 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
   p.setOpacity(1.0);
   p.setPen(Qt::NoPen);
   if (Params().get("NavDestination").empty()) {
-    p.setBrush(QColor(0, 0, 0, 77));
+    p.setBrush(QColor(35, 35, 35, 0.5)); //他のボタンの色と同じ。
   } else {
     //ナビ中
-    p.setBrush(QColor(0, 0, 0, 133));
+    //p.setBrush(QColor(0, 0, 0, 133));
+    p.setBrush(QColor(0, 0, 0, 200));
   }
   //p.drawEllipse(center, btn_size / 2, btn_size / 2);
   QRect temp_rc(0,0,152,152);
