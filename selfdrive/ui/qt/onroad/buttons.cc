@@ -822,7 +822,7 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
   p.setOpacity(1.0);
   p.setPen(Qt::NoPen);
   if (Params().get("NavDestination").empty()) {
-    p.setBrush(QColor(35, 35, 35, 128); //他のボタンの色と同じ。
+    p.setBrush(QColor(35, 35, 35, 128)); //他のボタンの色と同じ。
   } else {
     //ナビ中
     //p.setBrush(QColor(0, 0, 0, 133));
