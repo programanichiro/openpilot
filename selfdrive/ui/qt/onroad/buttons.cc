@@ -820,7 +820,12 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
 
   p.setOpacity(1.0);
   p.setPen(Qt::NoPen);
-  p.setBrush(QColor(0, 0, 0, 133));
+  if (Params().get("NavDestination").empty()) {
+    p.setBrush(QColor(0, 0, 0, 77));
+  } else {
+    //ナビ中
+    p.setBrush(QColor(0, 0, 0, 133));
+  }
   //p.drawEllipse(center, btn_size / 2, btn_size / 2);
   QRect temp_rc(0,0,152,152);
   p.drawRoundedRect(temp_rc, 20, 20);
