@@ -805,8 +805,11 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
   setFixedSize(152, 152);
   settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size-20, img_size-20});
-  settings_img.setMask(settings_img.mask());
-  settings_img.fill(QColor(255, 0, 0, 255));
+
+  QPainter painter(&settings_img);
+  painter.setClipRegion(QRegion(settings_img.createMaskFromColor(Qt::transparent, Qt::MaskOutColor)));
+  painter.fillRect(settings_img.rect(), QColor(255, 0, 0));
+  painter.end();
 
   // hidden by default, made visible if map is created (has prime or mapbox token)
   setVisible(false);
