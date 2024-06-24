@@ -804,7 +804,7 @@ void ExperimentalButton::paintEvent(QPaintEvent *event) {
 MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
   setFixedSize(152, 152);
   settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size-20, img_size-20});
-  QBitmap	settings_img_mask = settings_img.mask()
+  QBitmap settings_img_mask = settings_img.mask()
   settings_img.setMask(settings_img_mask);
   settings_img.fill(QColor(255, 0, 0, 255));
 
