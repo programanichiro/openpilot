@@ -178,5 +178,4 @@ void MapPanel::toggleMapSettings() {
   } else {
     Params().remove("NavDestination"); //ナビ中止
   }
-#endif
 }
