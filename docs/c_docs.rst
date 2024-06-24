@@ -50,6 +50,8 @@ qt
 ""
 .. autodoxygenindex::
    :project: selfdrive_ui_qt_offroad
+.. autodoxygenindex::
+   :project: selfdrive_ui_qt_maps
 
 proclogd
 ^^^^^^^^

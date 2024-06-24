@@ -20,11 +20,13 @@ private:
   void mousePressEvent(QMouseEvent* e) override;
   OnroadAlerts *alerts;
   AnnotatedCameraWidget *nvg;
+  float mb_width_rate = 0;
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QWidget *map = nullptr;
   QHBoxLayout* split;
 
 private slots:
   void offroadTransition(bool offroad);
+  void primeChanged(bool prime);
   void updateState(const UIState &s);
 };

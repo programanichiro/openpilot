@@ -1,4 +1,5 @@
 from cereal import car
+import os
 from openpilot.common.numpy_fast import clip
 from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, make_can_msg
 from openpilot.selfdrive.car.interfaces import CarControllerBase
@@ -15,6 +16,8 @@ VisualAlert = car.CarControl.HUDControl.VisualAlert
 # EPS faults if you apply torque while the steering rate is above 100 deg/s for too long
 MAX_STEER_RATE = 100  # deg/s
 MAX_STEER_RATE_FRAMES = 18  # tx control frames needed before torque can be cut
+# MAX_STEER_RATE = 105  # これを現車で耐えられる可能な限り上げる
+# MAX_STEER_RATE_FRAMES = 25 # こちらも耐えられる可能な限り上げる？
 
 # EPS allows user torque above threshold for 50 frames before permanently faulting
 MAX_USER_TORQUE = 500
@@ -42,6 +45,20 @@ class CarController(CarControllerBase):
     self.gas = 0
     self.accel = 0
 
+    self.now_gear = car.CarState.GearShifter.park
+    self.lock_flag = False
+    self.lock_speed = 0
+    try:
+      with open('../../../run_auto_lock.txt','r') as fp:
+        lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        if lock_speed_str:
+          self.lock_speed = int(lock_speed_str)
+    except Exception as e:
+      pass
+    self.before_ang = 0
+    self.before_ang_ct = 0
+    self.new_steers = []
+
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
     hud_control = CC.hudControl
@@ -53,6 +70,40 @@ class CarController(CarControllerBase):
 
     # *** steer torque ***
     new_steer = int(round(actuators.steer * self.params.STEER_MAX))
+    if (self.CP.carFingerprint not in TSS2_CAR) and (CS.knight_scanner_bit3 & 0x02): # knight_scanner_bit3.txt ⚪︎⚫︎⚪︎
+      if abs(self.before_ang - CS.out.steeringAngleDeg) > 3.0/100: #1秒で3度以上
+        # ハンドルが大きく動いたら
+        self.before_ang_ct *= 0.9
+      else:
+        if self.before_ang_ct < 100:
+          self.before_ang_ct += 1
+      self.before_ang = CS.out.steeringAngleDeg
+
+      new_steer0 = new_steer
+      self.new_steers.append(float(new_steer0))
+      if len(self.new_steers) > 10:
+        self.new_steers.pop(0)
+        #5〜ct〜55 -> 1〜10回の平均
+        l = int(self.before_ang_ct) / 5
+        l = int(1 if l < 1 else (l if l < 10 else 10))
+        sum_steer = 0
+        for i in range(l): #i=0..9
+          sum_steer += self.new_steers[9-i]
+        new_steer = sum_steer / l
+        # with open('/tmp/debug_out_v','w') as fp:
+        #   fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),new_steer,new_steer0,new_steer-new_steer0))
+    try:
+      with open('/tmp/lane_d_info.txt','r') as fp:
+        lane_d_info_str = fp.read()
+        if lane_d_info_str:
+          lane_d_info = float(lane_d_info_str)
+          # nn_lane_d_info = 0 if new_steer == 0 else lane_d_info / new_steer
+          # with open('/tmp/debug_out_v','w') as fp:
+          #   fp.write('ns:%.7f/%.5f(%.1f%%)' % (new_steer,lane_d_info,nn_lane_d_info*100))
+          #new_steerはマイナスで右に曲がる。
+          new_steer -= lane_d_info * 100 * 30 #引くとセンターへ車体を戻す。
+    except Exception as e:
+      pass
     apply_steer = apply_meas_steer_torque_limits(new_steer, self.last_steer, CS.out.steeringTorqueEps, self.params)
 
     # >100 degree/sec steering fault prevention
@@ -102,8 +153,27 @@ class CarController(CarControllerBase):
     # *** gas and brake ***
     pcm_accel_cmd = clip(actuators.accel, self.params.ACCEL_MIN, self.params.ACCEL_MAX)
 
+    try:
+      with open('/tmp/cruise_info.txt','r') as fp:
+        cruise_info_str = fp.read()
+        if cruise_info_str:
+          if cruise_info_str == "1" or cruise_info_str == ",1": #クリープしたければ以下を通さない。
+            with open('/tmp/accel_engaged.txt','r') as fp:
+              accel_engaged_str = fp.read()
+              eP_iP = False
+              if int(accel_engaged_str) == 4 and os.path.exists('/tmp/red_signal_eP_iP_set.txt'):
+                with open('/tmp/red_signal_eP_iP_set.txt','r') as fp:
+                  red_signal_eP_iP_set_str = fp.read()
+                  if red_signal_eP_iP_set_str and int(red_signal_eP_iP_set_str) == 1:
+                    eP_iP = True
+              if int(accel_engaged_str) == 3 or eP_iP == True: #ワンペダルモードでもeP(一時的な赤信号手前を除く)では通さない
+                if pcm_accel_cmd > 0:
+                  pcm_accel_cmd = 0
+    except Exception as e:
+      pass
+
     # on entering standstill, send standstill request
-    if CS.out.standstill and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR):
+    if CS.out.standstill and not self.CP.openpilotLongitudinalControl and not self.last_standstill and (self.CP.carFingerprint not in NO_STOP_TIMER_CAR):
       self.standstill_req = True
     if CS.pcm_acc_status != 8:
       # pcm entered standstill or it's disabled
@@ -114,6 +184,17 @@ class CarController(CarControllerBase):
     # handle UI messages
     fcw_alert = hud_control.visualAlert == VisualAlert.fcw
     steer_alert = hud_control.visualAlert in (VisualAlert.steerRequired, VisualAlert.ldw)
+
+    if self.lock_speed > 0: #auto door lock , unlock
+      gear = CS.out.gearShifter
+      if self.now_gear != gear or (CS.out.doorOpen and self.lock_flag == True): #ギアが変わるか、ドアが開くか。
+        if gear == car.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
+          can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+        self.lock_flag = False #ドアが空いてもフラグはおろす。
+      elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
+        can_sends.append(make_can_msg(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+        self.lock_flag = True
+      self.now_gear = gear
 
     # we can spam can to cancel the system even if we are using lat only control
     if (self.frame % 3 == 0 and self.CP.openpilotLongitudinalControl) or pcm_cancel_cmd:
