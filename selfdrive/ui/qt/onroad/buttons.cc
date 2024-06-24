@@ -1,7 +1,6 @@
 #include "selfdrive/ui/qt/onroad/buttons.h"
 
 #include <QPainter>
-#include <QBitmap>
 #include <QVBoxLayout>
 
 #include "selfdrive/ui/qt/util.h"
@@ -806,10 +805,19 @@ MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
   setFixedSize(152, 152);
   settings_img = loadPixmap("../assets/navigation/icon_directions_outlined.svg", {img_size-20, img_size-20});
 
-  QPainter painter(&settings_img);
-  painter.setClipRegion(QRegion(settings_img.createMaskFromColor(Qt::transparent, Qt::MaskOutColor)));
-  painter.fillRect(settings_img.rect(), QColor(255, 0, 0));
-  painter.end();
+  // QPixmapをQImageに変換
+  QImage image = settings_img.toImage();
+
+  for (int y = 0; y < image.height(); ++y) {
+    for (int x = 0; x < image.width(); ++x) {
+      QColor pixelColor = image.pixelColor(x, y);
+      pixelColor.setRgb(255, 0, 0, pixelColor.alpha());
+      image.setPixelColor(x, y, pixelColor);
+    }
+  }
+
+  // 結果をQPixmapに戻す
+  settings_img = QPixmap::fromImage(image);
 
   // hidden by default, made visible if map is created (has prime or mapbox token)
   setVisible(false);
