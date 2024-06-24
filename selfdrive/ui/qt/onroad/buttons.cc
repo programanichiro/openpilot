@@ -808,10 +808,23 @@ MapSettingsButton::MapSettingsButton(QWidget *parent) : QPushButton(parent) {
   // QPixmapをQImageに変換
   QImage image = settings_img.toImage();
 
+  //const QStringList mButtonColors = {"#d0909090", "#e037b868"};
+
   for (int y = 0; y < image.height(); ++y) {
     for (int x = 0; x < image.width(); ++x) {
       QColor pixelColor = image.pixelColor(x, y);
-      pixelColor.setRgb(255, 0, 0, pixelColor.alpha());
+      pixelColor.setRgb(0x37, 0xb8, 0x68, pixelColor.alpha());
+      image.setPixelColor(x, y, pixelColor);
+    }
+  }
+
+  // 結果をQPixmapに戻す
+  settings_img_on = QPixmap::fromImage(image);
+
+  for (int y = 0; y < image.height(); ++y) {
+    for (int x = 0; x < image.width(); ++x) {
+      QColor pixelColor = image.pixelColor(x, y);
+      pixelColor.setRgb(0x90, 0x90, 0x90, pixelColor.alpha());
       image.setPixelColor(x, y, pixelColor);
     }
   }
@@ -836,14 +849,20 @@ void MapSettingsButton::paintEvent(QPaintEvent *event) {
   p.setPen(Qt::NoPen);
   if (Params().get("NavDestination").empty()) {
     p.setBrush(QColor(35, 35, 35, 128)); //他のボタンの色と同じ。
+    //p.drawEllipse(center, btn_size / 2, btn_size / 2);
+    QRect temp_rc(0,0,152,152);
+    p.drawRoundedRect(temp_rc, 20, 20);
+    p.setOpacity(isDown() ? 0.6 : 1.0*0xd0/255);
+    p.drawPixmap((152 - (img_size-20)) / 2, (152 - (img_size-20)) / 2, settings_img);
   } else {
     //ナビ中
     //p.setBrush(QColor(0, 0, 0, 133));
-    p.setBrush(QColor(0, 0, 0, 200));
+    //p.setBrush(QColor(0, 0, 0, 200));
+    p.setBrush(QColor(35, 35, 35, 128)); //他のボタンの色と同じ。
+    //p.drawEllipse(center, btn_size / 2, btn_size / 2);
+    QRect temp_rc(0,0,152,152);
+    p.drawRoundedRect(temp_rc, 20, 20);
+    p.setOpacity(isDown() ? 0.6 : 1.0*0xe0/255);
+    p.drawPixmap((152 - (img_size-20)) / 2, (152 - (img_size-20)) / 2, settings_img_on);
   }
-  //p.drawEllipse(center, btn_size / 2, btn_size / 2);
-  QRect temp_rc(0,0,152,152);
-  p.drawRoundedRect(temp_rc, 20, 20);
-  p.setOpacity(isDown() ? 0.6 : 0.9);
-  p.drawPixmap((152 - (img_size-20)) / 2, (152 - (img_size-20)) / 2, settings_img);
 }
