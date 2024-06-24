@@ -571,6 +571,10 @@
         <source>Turn-by-turn navigation</source>
         <translation>التنقل خطوة بخطوة</translation>
     </message>
+    <message>
+        <source>Remote snapshots</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PrimeUserWidget</name>

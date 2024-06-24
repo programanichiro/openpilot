@@ -567,6 +567,10 @@
         <source>1 year of drive storage</source>
         <translation>1 ano de dados em nuvem</translation>
     </message>
+    <message>
+        <source>Remote snapshots</source>
+        <translation>Captura remota</translation>
+    </message>
 </context>
 <context>
     <name>PrimeUserWidget</name>

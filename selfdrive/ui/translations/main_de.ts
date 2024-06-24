@@ -566,6 +566,10 @@
         <source>1 year of drive storage</source>
         <translation type="unfinished"></translation>
     </message>
+    <message>
+        <source>Remote snapshots</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PrimeUserWidget</name>

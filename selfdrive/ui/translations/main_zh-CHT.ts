@@ -566,6 +566,10 @@
         <source>1 year of drive storage</source>
         <translation>一年的行駛記錄儲存空間</translation>
     </message>
+    <message>
+        <source>Remote snapshots</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PrimeUserWidget</name>

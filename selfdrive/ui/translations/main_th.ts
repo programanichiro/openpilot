@@ -566,6 +566,10 @@
         <source>Turn-by-turn navigation</source>
         <translation>การนำทางแบบเลี้ยวต่อเลี้ยว</translation>
     </message>
+    <message>
+        <source>Remote snapshots</source>
+        <translation type="unfinished"></translation>
+    </message>
 </context>
 <context>
     <name>PrimeUserWidget</name>
