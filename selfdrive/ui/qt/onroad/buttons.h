@@ -77,7 +77,6 @@ private:
   void paintEvent(QPaintEvent *event) override;
 
   QPixmap settings_img;
-  QBitmap settings_img_mask;
 };
 
 void drawIcon(QPainter &p, const QPoint &center, const QPixmap &img, const QBrush &bg, float opacity);
