@@ -42,18 +42,20 @@ MapPanel::MapPanel(const QMapLibre::Settings &mapboxSettings, QWidget *parent) :
 }
 
 void MapPanel::toggleMapSettings() {
-#if 0
-  // show settings if not visible, then toggle between map and settings
-  int new_index = isVisible() ? (1 - content_stack->currentIndex()) : 1;
-  content_stack->setCurrentIndex(new_index);
-  emit mapPanelRequested();
-  show();
-#else
+  if(uiState()->hasPrime()){
+    // show settings if not visible, then toggle between map and settings
+    int new_index = isVisible() ? (1 - content_stack->currentIndex()) : 1;
+    content_stack->setCurrentIndex(new_index);
+    emit mapPanelRequested();
+    show();
+    return;
+  }
+  //プライム無ければ独自目的地設定処理。
   if(isVisible() == false){
     //地図を出す
     content_stack->setCurrentIndex(0);
-    setVisible(true);
     emit mapPanelRequested(); //これでサイドバーを隠す
+    show();
   }
   if (Params().get("NavDestination").empty()) {
     extern float g_latitude,g_longitude;
