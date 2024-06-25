@@ -162,8 +162,8 @@ class CarInterface(CarInterfaceBase):
       ret.vEgoStopping = 0.25
       ret.vEgoStarting = 0.25
     else:
-      tune.kiBP = [0., 5., 35.]
-      tune.kiV = [1.2, 2.4, 1.5]
+      tune.kiBP = [0.]
+      tune.kiV = [1.2]
 
     return ret
 
