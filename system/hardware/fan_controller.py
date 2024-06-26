@@ -569,17 +569,17 @@ class TiciFanController(BaseFanController):
           get_limitspeed = velo_ave
           self.get_limit_avg = get_limitspeed
 
-    try:
-      with open('/tmp/limitspeed_navi.txt','r') as fp: #navdから取得できる案内中の制限速度があれば、OSMより優先する。
-        limitspeed_navi_str = fp.read()
-        if limitspeed_navi_str:
-          limitspeed_navi = int(limitspeed_navi_str)
-          if limitspeed_navi > 0:
-            self.min_road_v_kph = limitspeed_navi #OSMからの取得値に上書きする。
-            if limitspeed_navi+14 < get_limitspeed:
-              get_limitspeed = limitspeed_navi+14 #40km/hだったら54より上がらないように
-    except Exception as e:
-      pass
+    # try:
+    #   with open('/tmp/limitspeed_navi.txt','r') as fp: #navdから取得できる案内中の制限速度があれば、OSMより優先する。
+    #     limitspeed_navi_str = fp.read()
+    #     if limitspeed_navi_str:
+    #       limitspeed_navi = int(limitspeed_navi_str)
+    #       if limitspeed_navi > 0:
+    #         self.min_road_v_kph = limitspeed_navi #OSMからの取得値に上書きする。
+    #         if limitspeed_navi+14 < get_limitspeed:
+    #           get_limitspeed = limitspeed_navi+14 #40km/hだったら54より上がらないように
+    # except Exception as e:
+    #   pass
 
     # if self.min_road_v_kph > 20: #高速と並走する道があると恐ろしいのでやらない。
     #   if self.min_road_v_kph+14 < get_limitspeed:

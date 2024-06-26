@@ -28,7 +28,6 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   slayout->addWidget(home);
 
   onroad = new OnroadWindow(this);
-  QObject::connect(onroad, &OnroadWindow::mapPanelRequested, this, [=] { sidebar->hide(); });
   slayout->addWidget(onroad);
 
   body = new BodyWindow(this);
@@ -51,10 +50,6 @@ void HomeWindow::showSidebar(bool show) {
   if(show == true){
     ipaddress_update = true;
   }
-}
-
-void HomeWindow::showMapPanel(bool show) {
-  onroad->showMapPanel(show);
 }
 
 bool head_gesture_home;
@@ -168,10 +163,10 @@ void HomeWindow::showDriverView(bool show) {
 void HomeWindow::mousePressEvent(QMouseEvent* e) {
   // Handle sidebar collapsing
   if ((onroad->isVisible() || body->isVisible()) && (!sidebar->isVisible() || e->x() > sidebar->width())) {
-    sidebar->setVisible(!sidebar->isVisible() && !onroad->isMapVisible());
-    if(!sidebar->isVisible() && !onroad->isMapVisible()){
+    if(!sidebar->isVisible()){
       ipaddress_update = true;
     }
+    sidebar->setVisible(!sidebar->isVisible());
   }
 }
 

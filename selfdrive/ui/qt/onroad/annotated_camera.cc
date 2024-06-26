@@ -50,10 +50,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
-  const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
   const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
-  const auto nav_instruction = sm["navInstruction"].getNavInstruction();
 
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
@@ -106,20 +104,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   }
   speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
 
-  auto speed_limit_sign = nav_instruction.getSpeedLimitSign();
-  float old_speedLimit = speedLimit;
-  speedLimit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
-  speedLimit *= (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
-  if(speedLimit != old_speedLimit){ //km/h限定
-    FILE *fp = fopen("/tmp/limitspeed_navi.txt","w");
-    if(fp != NULL){
-      fprintf(fp,"%d",(int)std::nearbyint(speedLimit)); //29とか出るので、その対策？
-      fclose(fp);
-    }
-  }
-  has_us_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::MUTCD);
-  has_eu_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
-  // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
   is_metric = s.scene.is_metric;
   speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
@@ -168,7 +152,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
   p.fillRect(0, 0, width(), UI_HEADER_HEIGHT+y_ofs, bg);
 
-  QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
   QString speedStr = QString::number(std::nearbyint(speed));
   //QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(setSpeed)) : "–";
 
@@ -191,14 +174,10 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   const QSize default_size = {(int)(172 * max_disp_k), (int)(204 * max_disp_k)};
   QSize set_speed_size = default_size;
-  if (is_metric || has_eu_speed_limit) set_speed_size.rwidth() = 200 * max_disp_k;
-  if (has_us_speed_limit && speedLimitStr.size() >= 3) set_speed_size.rwidth() = 223 * max_disp_k;
-
-  if (has_us_speed_limit) set_speed_size.rheight() += us_sign_height + sign_margin;
-  else if (has_eu_speed_limit) set_speed_size.rheight() += eu_sign_size + sign_margin;
+  if (is_metric) set_speed_size.rwidth() = 200 * max_disp_k;
 
   int top_radius = 32 * max_disp_k;
-  int bottom_radius = (has_eu_speed_limit ? 100 : 32) * max_disp_k;
+  int bottom_radius = 32 * max_disp_k;
 
   // QRect set_speed_rect(60 + default_rect_width / 2 - rect_width / 2, 45 +y_ofs, rect_width, rect_height);
   QRect set_speed_rect(QPoint(60 + (default_size.width() - set_speed_size.width()) / 2, 45 +y_ofs), set_speed_size);
@@ -288,12 +267,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
       max_color = whiteColor();
     } else if (status == STATUS_OVERRIDE) {
       max_color = QColor(0x91, 0x9b, 0x95, 0xff);
-    } else if (speedLimit > 0 && Limit_speed_mode != 1) { //ACC自動設定時は警告カラー設定をしない
-      auto interp_color = [=](QColor c1, QColor c2, QColor c3) {
-        return speedLimit > 0 ? interpColor(setSpeed, {speedLimit + 5, speedLimit + 15, speedLimit + 25}, {c1, c2, c3}) : c1;
-      };
-      max_color = interp_color(max_color, QColor(0xff, 0xe4, 0xbf), QColor(0xff, 0xbf, 0xbf));
-      set_speed_color = interp_color(set_speed_color, QColor(0xff, 0x95, 0x00), QColor(0xff, 0x00, 0x00));
     }
   } else {
     max_color = QColor(0xa6, 0xa6, 0xa6, 0xff);
@@ -364,34 +337,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 
   const QRect sign_rect = set_speed_rect.adjusted(sign_margin, default_size.height(), -sign_margin, -sign_margin);
   // US/Canada (MUTCD style) sign
-  if (has_us_speed_limit) {
-    //ケアしていない
-    p.setPen(Qt::NoPen);
-    p.setBrush(whiteColor());
-    p.drawRoundedRect(sign_rect, 24*max_disp_k, 24*max_disp_k);
-    p.setPen(QPen(blackColor(), 6));
-    p.drawRoundedRect(sign_rect.adjusted(9*max_disp_k, 9*max_disp_k, -9*max_disp_k, -9*max_disp_k), 16*max_disp_k, 16*max_disp_k);
-
-    p.setFont(InterFont(28*max_disp_k, QFont::DemiBold));
-    p.drawText(sign_rect.adjusted(0, 22*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("SPEED"));
-    p.drawText(sign_rect.adjusted(0, 51*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, tr("LIMIT"));
-    p.setFont(InterFont(70*max_disp_k, QFont::Bold));
-    p.drawText(sign_rect.adjusted(0, 85*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, speedLimitStr);
-  }
-
-  // EU (Vienna style) sign
-  if (has_eu_speed_limit) {
-    //ケアしていない
-    p.setPen(Qt::NoPen);
-    p.setBrush(whiteColor());
-    p.drawEllipse(sign_rect);
-    p.setPen(QPen(Qt::red, 20*max_disp_k));
-    p.drawEllipse(sign_rect.adjusted(16*max_disp_k, 16*max_disp_k, -16*max_disp_k, -16*max_disp_k));
-
-    p.setFont(InterFont((speedLimitStr.size() >= 3) ? 60*max_disp_k : 70*max_disp_k, QFont::Bold));
-    p.setPen(blackColor());
-    p.drawText(sign_rect, Qt::AlignCenter, speedLimitStr);
-  }
 
   QColor speed_waku;
   if(red_signal_scan_flag >= 1/*== 1*/){

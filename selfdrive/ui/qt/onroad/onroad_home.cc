@@ -48,12 +48,6 @@ void OnroadWindow::updateState(const UIState &s) {
     return;
   }
 
-  if (s.scene.map_on_left) {
-    split->setDirection(QBoxLayout::LeftToRight);
-  } else {
-    split->setDirection(QBoxLayout::RightToLeft);
-  }
-
   alerts->updateState(s);
   nvg->updateState(s);
   mapVisible = isMapVisible();
@@ -89,11 +83,6 @@ void OnroadWindow::updateState(const UIState &s) {
     }
   }
 
-}
-
-void OnroadWindow::mousePressEvent(QMouseEvent* e) {
-  // propagation event to parent(HomeWindow)
-  QWidget::mousePressEvent(e);
 }
 
 void OnroadWindow::offroadTransition(bool offroad) {
