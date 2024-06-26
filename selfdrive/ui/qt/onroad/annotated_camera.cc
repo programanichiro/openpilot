@@ -167,11 +167,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     //max_disp_a = 20;
   }
 
-  // Draw outer box + border to contain set speed and speed limit
-  const int sign_margin = 12 * max_disp_k;
-  const int us_sign_height = 186 * max_disp_k;
-  const int eu_sign_size = 176 * max_disp_k;
-
   const QSize default_size = {(int)(172 * max_disp_k), (int)(204 * max_disp_k)};
   QSize set_speed_size = default_size;
   if (is_metric) set_speed_size.rwidth() = 200 * max_disp_k;
@@ -334,9 +329,6 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   } else {
     p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, setSpeedStr);
   }
-
-  const QRect sign_rect = set_speed_rect.adjusted(sign_margin, default_size.height(), -sign_margin, -sign_margin);
-  // US/Canada (MUTCD style) sign
 
   QColor speed_waku;
   if(red_signal_scan_flag >= 1/*== 1*/){
