@@ -21,7 +21,7 @@ EventName = car.CarEvent.EventName
 
 def get_startup_event(car_recognized, controller_available, fw_seen):
   build_metadata = get_build_metadata()
-  if build_metadata.openpilot.comma_remote and build_metadata.tested_channel:
+  if True: #build_metadata.openpilot.comma_remote and build_metadata.tested_channel:
     event = EventName.startup
   else:
     event = EventName.startupMaster
@@ -118,6 +118,8 @@ def fingerprint(logcan, sendcan, num_pandas):
   params = Params()
 
   start_time = time.monotonic()
+  Params().put_bool('DisengageOnAccelerator',False) #アクセル解除ボタン強制OFF
+
   if not skip_fw_query:
     cached_params = params.get("CarParamsCache")
     if cached_params is not None:
