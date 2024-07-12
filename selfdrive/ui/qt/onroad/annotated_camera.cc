@@ -1485,11 +1485,11 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     map_pitch_down = true;
   }
 
-  FILE *fp = fopen("/tmp/debug_out_rr","w");
-  if(fp != NULL){
-    fprintf(fp,"rr:%d,%d,%d",face_rr_ct,face_left_ct,face_up_ct);
-    fclose(fp);
-  }
+  // FILE *fp = fopen("/tmp/debug_out_rr","w");
+  // if(fp != NULL){
+  //   fprintf(fp,"rr:%d,%d,%d",face_rr_ct,face_left_ct,face_up_ct);
+  //   fclose(fp);
+  // }
   if(face_rr_ct > long_press && face_left_ct < 3 && face_up_ct < 3){ //↘︎ジェスチャー
     face_rr_ct = -long_press; //連続動作しないように工夫。
     rr_face_key_n = 0;
