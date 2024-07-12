@@ -1502,8 +1502,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  if(face_lr_ct > long_press && face_right_ct < 3 && face_up_ct < 3){ //↙︎ジェスチャー
-    face_lr_ct = -long_press; //連続動作しないように工夫。
+  if(face_lr_ct > (int)(long_press*0.7) && face_right_ct < 3 && face_up_ct < 3){ //↙︎ジェスチャー
+    face_lr_ct = -long_press*0.7; //連続動作しないように工夫。
     lr_face_key_n = 0;
     {
       //ノースアップ↔︎ヘディングアップの画面切り替え
