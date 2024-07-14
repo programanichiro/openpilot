@@ -53,6 +53,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
 
+  is_metric = s.scene.is_metric;
+
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
   ACC_speed = std::nearbyint(v_cruise); //45〜
@@ -81,7 +83,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   setSpeed = cs_alive ? v_cruise : SET_SPEED_NA;
   is_cruise_set = setSpeed > 0 && (int)setSpeed != SET_SPEED_NA;
-  if (is_cruise_set && !s.scene.is_metric) {
+  if (is_cruise_set && !is_metric) {
     setSpeed *= KM_TO_MILE;
   }
 
@@ -102,10 +104,9 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     maxspeed_str = qstr;
     stdstr_txt_save.clear(); //過去数字の使用は一度限定。
   }
-  speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
+  speed *= is_metric ? MS_TO_KPH : MS_TO_MPH;
 
-  is_metric = s.scene.is_metric;
-  speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
+  speedUnit = is_metric ? tr("km/h") : tr("mph");
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   status = s.status;
 
