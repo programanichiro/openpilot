@@ -59,6 +59,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const auto car_state = sm["carState"].getCarState();
   const auto nav_instruction = sm["navInstruction"].getNavInstruction();
 
+  is_metric = s.scene.is_metric;
+
   // Handle older routes where vCruiseCluster is not set
   float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
   ACC_speed = std::nearbyint(v_cruise); //45〜
@@ -87,7 +89,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   setSpeed = cs_alive ? v_cruise : SET_SPEED_NA;
   is_cruise_set = setSpeed > 0 && (int)setSpeed != SET_SPEED_NA;
-  if (is_cruise_set && !s.scene.is_metric) {
+  if (is_cruise_set && !is_metric) {
     setSpeed *= KM_TO_MILE;
   }
 
@@ -108,12 +110,12 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     maxspeed_str = qstr;
     stdstr_txt_save.clear(); //過去数字の使用は一度限定。
   }
-  speed *= s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH;
+  speed *= is_metric ? MS_TO_KPH : MS_TO_MPH;
 
   auto speed_limit_sign = nav_instruction.getSpeedLimitSign();
   float old_speedLimit = speedLimit;
   speedLimit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
-  speedLimit *= (s.scene.is_metric ? MS_TO_KPH : MS_TO_MPH);
+  speedLimit *= (is_metric ? MS_TO_KPH : MS_TO_MPH);
   if(speedLimit != old_speedLimit){ //km/h限定
     FILE *fp = fopen("/tmp/limitspeed_navi.txt","w");
     if(fp != NULL){
@@ -124,8 +126,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   has_us_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::MUTCD);
   has_eu_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
   // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
-  is_metric = s.scene.is_metric;
-  speedUnit =  s.scene.is_metric ? tr("km/h") : tr("mph");
+  speedUnit =  is_metric ? tr("km/h") : tr("mph");
   hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
   status = s.status;
 
