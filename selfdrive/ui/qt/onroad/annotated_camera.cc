@@ -1517,7 +1517,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  const long_press_tmp = (int)(long_press*0.75); //ミスカウントする分、少し短く。
+  const int long_press_tmp = (int)(long_press*0.75); //ミスカウントする分、少し短く。
   if(face_lr_ct > long_press_tmp && face_right_ct < 3*face_lr_ct/long_press_tmp && face_up_ct < 3*face_lr_ct/long_press_tmp){ //↙︎ジェスチャー
     face_lr_ct = -long_press_tmp; //連続動作しないように工夫。
     lr_face_key_n = 0;
