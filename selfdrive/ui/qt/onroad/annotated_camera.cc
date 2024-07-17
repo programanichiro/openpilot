@@ -1311,6 +1311,8 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     if(face_center_ct < face_max_ct)
       face_center_ct ++;
   } else {
+    // if(face_center_ct > long_press) //こうするか迷うところ。現状face_center_ctは表示以外に影響しない。中央インジケーターの⚪︎が消えるのが遅れるだけ。
+    //   face_center_ct = long_press;
     if(face_center_ct > 0)
       face_center_ct --;
   }
