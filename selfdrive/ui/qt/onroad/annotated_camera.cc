@@ -1279,6 +1279,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   static unsigned int rr_face_key_n;
 
   const int long_press = 20;
+  const int face_max_ct = 60; //long_pressを超えて（face_center_ctなどが）最大ここまでカウントする。
   const float thr_face = 0.9;
   float left_face_x;
   float right_face_x;
@@ -1307,7 +1308,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     && delta_r > r_face_r*center_eye_rate && delta_r < l_face_r*center_eye_rate);
   if(center_detect){
     set_face_gesture_arc(painter,x,y , 0 , 360 ,QColor(200,face_center_ct < long_press ? 200 : 100,0,250) , 10);
-    if(face_center_ct < 30)
+    if(face_center_ct < face_max_ct)
       face_center_ct ++;
   } else {
     if(face_center_ct > 0)
@@ -1322,7 +1323,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       right_face_key_n = key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , -45 , 90 ,QColor(200,face_right_ct < long_press ? 200 : 100,0,250));
-    if(face_right_ct < 30)
+    if(face_right_ct < face_max_ct)
       face_right_ct ++;
     if(delta_x > right_face_x)
       all_centering = false;
@@ -1336,7 +1337,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       left_face_key_n = key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , 135 , 90 ,QColor(200,face_left_ct < long_press ? 200 : 100,0,250));
-    if(face_left_ct < 30)
+    if(face_left_ct < face_max_ct)
       face_left_ct ++;
     if(delta_x < left_face_x)
       all_centering = false;
@@ -1350,7 +1351,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       up_face_key_n = key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , 45 , 90, QColor(200,face_up_ct < long_press ? 200 : 100,0,250));
-    if(face_up_ct < 30)
+    if(face_up_ct < face_max_ct)
       face_up_ct ++;
     if(delta_y < up_face_y)
       all_centering = false;
@@ -1364,7 +1365,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       down_face_key_n = key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , -45 , -90, QColor(200,face_down_ct < long_press ? 200 : 100,0,250));
-    if(face_down_ct < 30)
+    if(face_down_ct < face_max_ct)
       face_down_ct ++;
     if(delta_y > down_face_y)
       all_centering = false;
@@ -1380,7 +1381,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       rr_face_key_n = key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , -90-20 , 180, QColor(200,face_rr_ct < long_press ? 200 : 100,0,250));
-    if(face_rr_ct < 30)
+    if(face_rr_ct < face_max_ct)
       face_rr_ct ++;
     if(delta_r < r_face_r)
       all_centering = false;
@@ -1394,7 +1395,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
       lr_face_key_n = key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , 90+20 , 180, QColor(200,face_lr_ct < long_press ? 200 : 100,0,250));
-    if(face_lr_ct < 30)
+    if(face_lr_ct < face_max_ct)
       face_lr_ct ++;
     if(delta_r > l_face_r)
       all_centering = false;
@@ -1403,6 +1404,19 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
   }
 
   if(all_centering == true){
+    if(face_right_ct > long_press)
+      face_right_ct = long_press;
+    if(face_left_ct > long_press)
+      face_left_ct = long_press;
+    if(face_up_ct > long_press)
+      face_up_ct = long_press;
+    if(face_down_ct > long_press)
+      face_down_ct = long_press;
+    if(face_rr_ct > long_press)
+      face_rr_ct = long_press;
+    if(face_lr_ct > long_press)
+      face_lr_ct = long_press;
+
     if(face_right_ct > 0)
       face_right_ct --;
     if(face_left_ct > 0)
@@ -1445,7 +1459,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     soundPikiri();
   }
 #endif
-  if(face_down_ct > 0 && face_up_ct > long_press && down_face_key_n < up_face_key_n  //↓↑ジェスチャー
+  if(face_down_ct > 0 && face_up_ct >= long_press && down_face_key_n < up_face_key_n  //↓↑ジェスチャー
       && face_right_ct == 0 && face_left_ct == 0 //検知以外の向き防止
     ){
     //ACC速度制御モード変更
@@ -1460,7 +1474,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  if(mapVisible && face_left_ct > 1 && face_up_ct > long_press && left_face_key_n < up_face_key_n //←↑ジェスチャー
+  if(mapVisible && face_left_ct > 1 && face_up_ct >= long_press && left_face_key_n < up_face_key_n //←↑ジェスチャー
       && face_down_ct == 0 && face_right_ct == 0 //検知以外の向き防止
     ){
     //地図ピッチアップ
@@ -1474,7 +1488,7 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     map_pitch_down = true;
   }
 
-  if(false && mapVisible && face_left_ct > 1 && face_down_ct > long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
+  if(false && mapVisible && face_left_ct > 1 && face_down_ct >= long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
       && face_up_ct == 0 && face_right_ct == 0 //検知以外の向き防止
     ){
     //地図ピッチダウン
@@ -1486,12 +1500,12 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     map_pitch_down = true;
   }
 
-  FILE *fp = fopen("/tmp/debug_out_rr","w");
-  if(fp != NULL){
-    fprintf(fp,"rr:%d,%d,%d",face_rr_ct,face_left_ct,face_up_ct);
-    fclose(fp);
-  }
-  if(face_rr_ct > long_press && face_left_ct < 3 && face_up_ct < 3){ //↘︎ジェスチャー
+  // FILE *fp = fopen("/tmp/debug_out_rr","w");
+  // if(fp != NULL){
+  //   fprintf(fp,"rr:%d,%d,%d",face_rr_ct,face_left_ct,face_up_ct);
+  //   fclose(fp);
+  // }
+  if(face_rr_ct >= long_press && face_left_ct < 3*face_rr_ct/long_press && face_up_ct < 3*face_rr_ct/long_press){ //↘︎ジェスチャー
     face_rr_ct = -long_press; //連続動作しないように工夫。
     rr_face_key_n = 0;
     {
@@ -1503,8 +1517,9 @@ void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s)
     }
   }
 
-  if(face_lr_ct > (int)(long_press*0.75) && face_right_ct < 3 && face_up_ct < 3){ //↙︎ジェスチャー
-    face_lr_ct = -long_press*0.75; //連続動作しないように工夫。
+  const long_press_tmp = (int)(long_press*0.75); //ミスカウントする分、少し短く。
+  if(face_lr_ct > long_press_tmp && face_right_ct < 3*face_lr_ct/long_press_tmp && face_up_ct < 3*face_lr_ct/long_press_tmp){ //↙︎ジェスチャー
+    face_lr_ct = -long_press_tmp; //連続動作しないように工夫。
     lr_face_key_n = 0;
     {
       //ノースアップ↔︎ヘディングアップの画面切り替え
