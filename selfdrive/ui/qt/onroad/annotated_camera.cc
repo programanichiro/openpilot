@@ -1746,7 +1746,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 #endif
 
 
-#if 1 //曲率、k_v表示テスト
+#if 0 //曲率、k_v表示テスト
   static float curvature = 0;
   static float k_v = 1.0;
   std::string curvature_info = util::read_file("/tmp/curvature_info.txt");
