@@ -2,7 +2,7 @@ import math
 
 from cereal import car, log
 from openpilot.common.conversions import Conversions as CV
-from openpilot.common.numpy_fast import clip, interp
+from openpilot.common.numpy_fast import clip
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.car.toyota.values import ToyotaFlags
 
@@ -157,48 +157,7 @@ class VCruiseHelper:
     self.v_cruise_cluster_kph = self.v_cruise_kph
 
 
-def apply_center_deadzone(error, deadzone):
-  if (error > - deadzone) and (error < deadzone):
-    error = 0.
-  return error
-
-
-def rate_limit(new_value, last_value, dw_step, up_step):
-  return clip(new_value, last_value + dw_step, last_value + up_step)
-
-
-def clip_curvature(v_ego, prev_curvature, new_curvature , CP):
-
-  # global CT_get_lag_adjusted_curvature,dc_get_lag_adjusted_curvature
-  # flag_eps_TSS2 = CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value
-  # if flag_eps_TSS2 and CT_get_lag_adjusted_curvature % 100 == 51:
-  #   try:
-  #     with open('/tmp/knight_scanner_bit3.txt','r') as fp: #ナイトスキャナーボタン ⚫︎⚪︎⚪︎ で有効
-  #       knight_scanner_bit3_str = fp.read()
-  #       if knight_scanner_bit3_str:
-  #         knight_scanner_bit3 = int(knight_scanner_bit3_str)
-  #         if (knight_scanner_bit3 & 0x01) != 0: #1ビット（"⚫︎⚪︎⚪︎"）が点灯で舵力抑制発動
-  #           dc_get_lag_adjusted_curvature = True
-  #         else:
-  #           dc_get_lag_adjusted_curvature = False
-  #   except Exception as e:
-  #     dc_get_lag_adjusted_curvature = True #デフォルト
-  # CT_get_lag_adjusted_curvature += 1
-
-  # k_v = 1.0
-  # org_desired_curvature = new_curvature
-  # if flag_eps_TSS2 and dc_get_lag_adjusted_curvature == True:
-  #   #自分だけのスペシャル処理
-  #   k_v = interp(abs(new_curvature) , k_vs_org_47700 , k_vs_47700) #interpがないとエラーなので注意。
-  #   new_curvature *= k_v
-
-  # if CT_get_lag_adjusted_curvature % 10 == 7 and skip_curvature_info == False: #書き出し頻度を1/10に
-  #   try:
-  #     with open('/tmp/curvature_info.txt','w') as fp:
-  #       fp.write('%.9f/%.3f' % (org_desired_curvature if v_ego > 0.1/3.6 else 0 , k_v))
-  #   except Exception as e:
-  #     pass
-
+def clip_curvature(v_ego, prev_curvature, new_curvature):
   v_ego = max(MIN_SPEED, v_ego)
   max_curvature_rate = MAX_LATERAL_JERK / (v_ego**2) # inexact calculation, check https://github.com/commaai/openpilot/pull/24755
   safe_desired_curvature = clip(new_curvature,
@@ -206,17 +165,6 @@ def clip_curvature(v_ego, prev_curvature, new_curvature , CP):
                                 prev_curvature + max_curvature_rate * DT_CTRL)
 
   return safe_desired_curvature
-
-
-def get_friction(lateral_accel_error: float, lateral_accel_deadzone: float, friction_threshold: float,
-                 torque_params: car.CarParams.LateralTorqueTuning, friction_compensation: bool) -> float:
-  friction_interp = interp(
-    apply_center_deadzone(lateral_accel_error, lateral_accel_deadzone),
-    [-friction_threshold, friction_threshold],
-    [-torque_params.friction, torque_params.friction]
-  )
-  friction = float(friction_interp) if friction_compensation else 0.0
-  return friction
 
 
 def get_speed_error(modelV2: log.ModelDataV2, v_ego: float) -> float:
