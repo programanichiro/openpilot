@@ -69,7 +69,7 @@ class CarState(CarStateBase):
             self.knight_scanner_bit3  = int(knight_scanner_bit3_str)
       except Exception as e:
         # self.knight_scanner_bit3  = 7 #ここでデフォ設定はしない、値を継続させるため。
-        # ⚫︎⚪︎⚪︎　47700用カーブ曲率抑制,2024/1/13
+        # ⚫︎⚪︎⚪︎　空き,2024/7/31
         # ⚪︎⚫︎⚪︎　new_steer平滑化,2024/1/14
         # ⚪︎⚪︎⚫︎　ハンドル高精細化未来予想2024/1/19
         pass
