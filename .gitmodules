@@ -2,7 +2,7 @@
   path = panda
   url=https://github.com/programanichiro/panda_back.git
 [submodule "opendbc"]
-  path = opendbc
+  path = opendbc_repo
   url=https://github.com/programanichiro/opendbc_back.git
 [submodule "msgq"]
   path = msgq_repo
