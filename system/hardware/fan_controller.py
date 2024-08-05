@@ -607,7 +607,7 @@ class TiciFanController(BaseFanController):
 
     if self.frame_ct2 >= 200 and self.frame_ct > 0:
       per = float(self.frame_ct2) / self.frame_ct
-      self.frame_ct2 = 50
+      self.frame_ct2 = 100
       self.frame_ct = self.frame_ct2 / per
     self.frame_ct += 1
     per = float(self.frame_ct2) / self.frame_ct
