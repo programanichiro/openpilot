@@ -605,10 +605,6 @@ class TiciFanController(BaseFanController):
     # # 変更を保存
     # self.conn.commit()
 
-    if self.frame_ct2 >= 200 and self.frame_ct > 0:
-      per = float(self.frame_ct2) / self.frame_ct
-      self.frame_ct2 = 100
-      self.frame_ct = self.frame_ct2 / per
     #osmアクセスで制限速度を取得する試み。
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('osm_fetch:%d, %.5f, %.5f' % (self.thread == None,self.latitude,self.longitude))
@@ -627,6 +623,9 @@ class TiciFanController(BaseFanController):
 
     self.frame_ct += 1
     per = float(self.frame_ct2) / self.frame_ct
+    if self.frame_ct2 >= 200:
+      self.frame_ct2 = 100
+      self.frame_ct = self.frame_ct2 / per
     with open('/tmp/debug_out_o','w') as fp:
       fp.write('up:%d(%d/%d) %.5f, %.5f' % (int(per * 100),self.frame_ct2,self.frame_ct,self.latitude,self.longitude))
 
