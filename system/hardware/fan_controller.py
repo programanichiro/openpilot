@@ -100,7 +100,7 @@ class TiciFanController(BaseFanController):
     self.db_del = 0
     self.min_distance_old = 0
     self.tss_type = 0
-    
+
     # # カーソルと接続を閉じる
     # self.cur.close()
     # self.conn.close()
@@ -116,6 +116,8 @@ class TiciFanController(BaseFanController):
     self.before_road_coords_all = []
     self.road_nodes_all_ct = 0
     self.before_road_nodes_all_ct = 0
+    self.frame_ct = 0
+    self.frame_ct2 = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
     overpass_url = "http://overpass-api.de/api/interpreter"
@@ -254,7 +256,7 @@ class TiciFanController(BaseFanController):
       else:
         #停止時は前回のをそのまま使う。
         road_info_list = self.before_road_info_list
-      
+
       if len(road_info_list) > 0:
         road_nodes_all = []
         for road_info in road_info_list:
@@ -361,7 +363,7 @@ class TiciFanController(BaseFanController):
     self.cur.close()
     self.conn.close()
     pass
-  
+
   def update(self, cur_temp: float, ignition: bool) -> int:
     self.controller.neg_limit = -(100 if ignition else 30)
     self.controller.pos_limit = -(30 if ignition else 0)
@@ -546,7 +548,7 @@ class TiciFanController(BaseFanController):
             pass #try節を続行
           else:
             raise Exception("try節を脱出")
-              
+
           del_db_del = False
           for row in rows: #rowsは何度でも使える。
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
@@ -603,6 +605,9 @@ class TiciFanController(BaseFanController):
     # # 変更を保存
     # self.conn.commit()
 
+    self.frame_ct += 1
+    with open('/tmp/debug_out_o','w') as fp:
+      fp.write('up:%d,%d %.5f, %.5f' % (self.frame_ct,self.frame_ct2,self.latitude,self.longitude))
     #osmアクセスで制限速度を取得する試み。
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('osm_fetch:%d, %.5f, %.5f' % (self.thread == None,self.latitude,self.longitude))
@@ -613,6 +618,7 @@ class TiciFanController(BaseFanController):
         self.thread = self_thread
         #self_thread.setDaemon(True)
         self_thread.start()
+        self.frame_ct2 += 1
       except Exception as e:
         self.thread = None
       #同期でテスト。
