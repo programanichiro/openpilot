@@ -10,9 +10,10 @@ from panda import ALTERNATIVE_EXPERIENCE
 
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper
+from openpilot.common.swaglog import cloudlog, ForwardingHandler
 
 from openpilot.selfdrive.pandad import can_list_to_can_capnp
-from openpilot.selfdrive.car import DT_CTRL
+from openpilot.selfdrive.car import DT_CTRL, carlog
 from openpilot.selfdrive.car.car_helpers import get_car, get_one_can
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.controls.lib.events import Events
@@ -23,6 +24,9 @@ EventName = car.CarEvent.EventName
 
 ACCEL_PUSH_COUNT = 0
 accel_engaged_str = '0'
+# forward
+carlog.addHandler(ForwardingHandler(cloudlog))
+
 
 class Car:
   CI: CarInterfaceBase
