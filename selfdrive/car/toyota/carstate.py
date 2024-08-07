@@ -2,7 +2,6 @@ import copy
 import os
 
 from cereal import car
-from openpilot.common.params import Params
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
 from openpilot.selfdrive.car import DT_CTRL
@@ -43,7 +42,7 @@ class CarState(CarStateBase):
     self.angle_offset = FirstOrderFilter(None, 60.0, DT_CTRL, initialized=False)
 
     self.brake_state = False
-    self.params = Params()
+    # self.params = Params()
     # self.flag_eps_TSS2 = True if CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value else False
     self.before_ang = 0
     self.prob_ang = 0
