@@ -118,6 +118,7 @@ class TiciFanController(BaseFanController):
     self.before_road_nodes_all_ct = 0
     self.frame_ct = 0
     self.frame_ct2 = 0
+    self.frame_net_off = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
     overpass_url = "http://overpass-api.de/api/interpreter"
@@ -270,6 +271,7 @@ class TiciFanController(BaseFanController):
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
           self.road_nodes_all_ct += 1
+          self.frame_net_off = 0 #通信成功
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
@@ -352,9 +354,11 @@ class TiciFanController(BaseFanController):
           fp.write('%d,0,--' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
-      self.frame_ct2 += 1
+      if self.frame_net_off == 0: #通信成功なら
+        self.frame_ct2 += 1 #カウントアップ
     except Exception as e:
       self.min_road_v_kph = 0
+      self.frame_net_off = 1 #通信失敗
 
     #self.th_ct -= 1
     self.thread = None
