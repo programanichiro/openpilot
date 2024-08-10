@@ -1792,6 +1792,54 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       p.drawRect(QRect(0 , rect_h - hhy , wp1 , 5));
     }
   }
+#else
+  //open street mapへのアクセス頻度を左端緑メーターで視覚化。通信が滞れば赤になる。
+  // with open('/tmp/osm_access_counter.txt','w') as fp:
+  //   fp.write('%d,%d,%d' % (int(per * 100),self.frame_ct2,self.frame_ct))
+
+  static int osm_frame_ct_ct = -1; //-1 or 100以上でosmへの通信が死んでいる。
+  static int osm_per = 0; //2Hzに対してosmの応答率。走行中ならだいたい50パーセントくらいになる。
+  static std::string osm_access_counter_txt;
+  static unsigned int osm_access_counter_ct = 0;
+  if(osm_access_counter_ct++ % 20 == 0){
+    osm_access_counter_txt = util::read_file("/tmp/osm_access_counter.txt");
+  }
+  if(osm_access_counter_txt.empty() == false){
+    int i = 0; // インデックス
+    std::stringstream ss(osm_access_counter_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    static int before_osm_frame_ct = 0;
+    while (i < 3 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
+      if(i == 0){
+        osm_per = std::stoi(token);
+      }
+      if(i == 1){
+        //無視
+      }
+      if(i == 2){
+        int osm_frame_ct = std::stoi(token);
+        if(osm_frame_ct == before_osm_frame_ct){
+          osm_frame_ct_ct ++; //osm_frame_ctが変化しなければカウントアップし続ける
+        } else {
+          osm_frame_ct_ct = 0; //ゼロに戻らなければ、osmへの通信が死んでいる。
+        }
+        before_osm_frame_ct = osm_frame_ct;
+      }
+      i++; // インデックスを1つ進める
+    }
+  }
+
+  if(osm_per >= 0){
+    float h = rect_h * osm_per / 100;
+    float wp1 = 10;
+    if(0 <= osm_frame_ct_ct && osm_frame_ct_ct < 100){
+      p.setBrush(QColor(0, 245, 0, 200)); //緑
+    } else {
+      p.setBrush(QColor(245, 0, 0, 200)); //赤、通信断絶。
+    }
+    p.drawRect(QRect(0 , rect_h - h , wp1 , h));
+  }
+
 #endif
 
   p.setCompositionMode(QPainter::CompositionMode_SourceOver);

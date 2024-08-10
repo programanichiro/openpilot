@@ -626,8 +626,10 @@ class TiciFanController(BaseFanController):
     if self.frame_ct2 >= 200:
       self.frame_ct2 = 100
       self.frame_ct = self.frame_ct2 / per
-    with open('/tmp/debug_out_o','w') as fp:
-      fp.write('up:%d(%d/%d) %.5f, %.5f' % (int(per * 100),self.frame_ct2,self.frame_ct,self.latitude,self.longitude))
+    # with open('/tmp/debug_out_o','w') as fp:
+    #   fp.write('up:%d(%d/%d) %.5f, %.5f' % (int(per * 100),self.frame_ct2,self.frame_ct,self.latitude,self.longitude))
+    with open('/tmp/osm_access_counter.txt','w') as fp:
+      fp.write('%d,%d,%d' % (int(per * 100),self.frame_ct2,self.frame_ct))
 
     return fan_pwr_out
 
