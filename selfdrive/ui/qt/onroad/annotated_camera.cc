@@ -1813,9 +1813,17 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
       if(i == 0){
         osm_per = std::stoi(token);
       }
+#if 1
       if(i == 1){
-        //無視
+        int osm_frame_ct2 = std::stoi(token);
+        if(osm_frame_ct2 == before_osm_frame_ct){
+          osm_frame_ct_ct ++; //osm_frame_ct2が変化しなければカウントアップし続ける
+        } else {
+          osm_frame_ct_ct = 0; //ゼロに戻らなければ、osmへの通信が死んでいる。
+        }
+        before_osm_frame_ct = osm_frame_ct2;
       }
+#else
       if(i == 2){
         int osm_frame_ct = std::stoi(token);
         if(osm_frame_ct == before_osm_frame_ct){
@@ -1825,6 +1833,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
         }
         before_osm_frame_ct = osm_frame_ct;
       }
+#endif
       i++; // インデックスを1つ進める
     }
   }

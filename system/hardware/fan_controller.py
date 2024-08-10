@@ -352,6 +352,7 @@ class TiciFanController(BaseFanController):
           fp.write('%d,0,--' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
+      self.frame_ct2 += 1
     except Exception as e:
       self.min_road_v_kph = 0
 
@@ -615,7 +616,7 @@ class TiciFanController(BaseFanController):
         self.thread = self_thread
         #self_thread.setDaemon(True)
         self_thread.start()
-        self.frame_ct2 += 1
+        # self.frame_ct2 += 1
       except Exception as e:
         self.thread = None
       #同期でテスト。
@@ -626,6 +627,9 @@ class TiciFanController(BaseFanController):
     if self.frame_ct2 >= 200:
       self.frame_ct2 = 100
       self.frame_ct = self.frame_ct2 / per
+    elif self.frame_ct >= 1000:
+      self.frame_ct = 100
+      self.frame_ct2 = self.frame_ct * per
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('up:%d(%d/%d) %.5f, %.5f' % (int(per * 100),self.frame_ct2,self.frame_ct,self.latitude,self.longitude))
     with open('/tmp/osm_access_counter.txt','w') as fp:
