@@ -247,6 +247,7 @@ void MapWindow::initLayers() {
     m_map->setPaintProperty("navLayer", "line-color-transition", transition);
     m_map->setPaintProperty("navLayer", "line-width", 7.5);
     m_map->setLayoutProperty("navLayer", "line-cap", "round");
+    m_map->setLayoutProperty("navLayer", "line-offset", 0.0); //これで渋滞情報のline-offsetに吊られない？
   }
   if (!m_map->layerExists("pinLayer")) {
     qDebug() << "Initializing pinLayer";
