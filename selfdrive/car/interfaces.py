@@ -87,7 +87,7 @@ def get_torque_params():
 # generic car and radar interfaces
 
 class CarInterfaceBase(ABC):
-  def __init__(self, CP, CarController, CarState):
+  def __init__(self, CP: car.CarParams, CarController, CarState):
     self.CP = CP
 
     self.frame = 0
@@ -97,13 +97,13 @@ class CarInterfaceBase(ABC):
     self.silent_steer_warning = True
     self.v_ego_cluster_seen = False
 
-    self.CS = CarState(CP)
+    self.CS: CarStateBase = CarState(CP)
     self.cp = self.CS.get_can_parser(CP)
     self.cp_cam = self.CS.get_cam_can_parser(CP)
     self.cp_adas = self.CS.get_adas_can_parser(CP)
     self.cp_body = self.CS.get_body_can_parser(CP)
     self.cp_loopback = self.CS.get_loopback_can_parser(CP)
-    self.can_parsers = [self.cp, self.cp_cam, self.cp_adas, self.cp_body, self.cp_loopback]
+    self.can_parsers = (self.cp, self.cp_cam, self.cp_adas, self.cp_body, self.cp_loopback)
 
     dbc_name = "" if self.cp is None else self.cp.dbc_name
     self.CC: CarControllerBase = CarController(dbc_name, CP)
@@ -116,7 +116,7 @@ class CarInterfaceBase(ABC):
     return ACCEL_MIN, ACCEL_MAX
 
   @classmethod
-  def get_non_essential_params(cls, candidate: str):
+  def get_non_essential_params(cls, candidate: str) -> car.CarParams:
     """
     Parameters essential to controlling the car may be incomplete or wrong without FW versions or fingerprints.
     """
@@ -151,7 +151,7 @@ class CarInterfaceBase(ABC):
   @staticmethod
   @abstractmethod
   def _get_params(ret: car.CarParams, candidate, fingerprint: dict[int, dict[int, int]],
-                  car_fw: list[car.CarParams.CarFw], experimental_long: bool, docs: bool):
+                  car_fw: list[car.CarParams.CarFw], experimental_long: bool, docs: bool) -> car.CarParams:
     raise NotImplementedError
 
   @staticmethod
@@ -211,7 +211,7 @@ class CarInterfaceBase(ABC):
     return ret
 
   @staticmethod
-  def configure_torque_tune(candidate, tune, steering_angle_deadzone_deg=0.0, use_steering_angle=True):
+  def configure_torque_tune(candidate: str, tune: car.CarParams.LateralTuning, steering_angle_deadzone_deg: float = 0.0, use_steering_angle: bool = True):
     params = get_torque_params()[candidate]
 
     tune.init('torque')
@@ -246,17 +246,15 @@ class CarInterfaceBase(ABC):
       self.v_ego_cluster_seen = True
 
     # Many cars apply hysteresis to the ego dash speed
-    if self.CS is not None:
-      ret.vEgoCluster = apply_hysteresis(ret.vEgoCluster, self.CS.out.vEgoCluster, self.CS.cluster_speed_hyst_gap)
-      if abs(ret.vEgo) < self.CS.cluster_min_speed:
-        ret.vEgoCluster = 0.0
+    ret.vEgoCluster = apply_hysteresis(ret.vEgoCluster, self.CS.out.vEgoCluster, self.CS.cluster_speed_hyst_gap)
+    if abs(ret.vEgo) < self.CS.cluster_min_speed:
+      ret.vEgoCluster = 0.0
 
     if ret.cruiseState.speedCluster == 0:
       ret.cruiseState.speedCluster = ret.cruiseState.speed
 
     # copy back for next iteration
-    if self.CS is not None:
-      self.CS.out = ret.as_reader()
+    self.CS.out = ret.as_reader()
 
     return ret
 
@@ -312,6 +310,8 @@ class CarInterfaceBase(ABC):
       events.add(EventName.preEnableStandstill)
     if cs_out.gasPressed:
       events.add(EventName.gasPressedOverride)
+    if cs_out.vehicleSensorsInvalid:
+      events.add(EventName.vehicleSensorsInvalid)
 
     # Handle button presses
     for b in cs_out.buttonEvents:
@@ -356,10 +356,10 @@ class CarInterfaceBase(ABC):
 
 
 class RadarInterfaceBase(ABC):
-  def __init__(self, CP):
+  def __init__(self, CP: car.CarParams):
     self.CP = CP
     self.rcp = None
-    self.pts = {}
+    self.pts: dict[int, car.RadarData.RadarPoint] = {}
     self.delay = 0
     self.radar_ts = CP.radarTimeStep
     self.frame = 0
@@ -372,7 +372,7 @@ class RadarInterfaceBase(ABC):
 
 
 class CarStateBase(ABC):
-  def __init__(self, CP):
+  def __init__(self, CP: car.CarParams):
     self.CP = CP
     self.car_fingerprint = CP.carFingerprint
     self.out = car.CarState.new_message()
@@ -396,6 +396,10 @@ class CarStateBase(ABC):
 
     self.knight_scanner_bit3 = 7 # carstate.updateで knight_scanner_bit3.txt が反映される,デフォは7
     self.steeringAngleDegOrg = 0 #回転先予想する前のオリジナル値
+
+  @abstractmethod
+  def update(self, *args) -> car.CarState:
+    pass
 
   def update_speed_kf(self, v_ego_raw):
     if abs(v_ego_raw - self.v_ego_kf.x[0][0]) > 2.0:  # Prevent large accelerations when car starts at non zero speed
@@ -479,12 +483,12 @@ class CarStateBase(ABC):
 
 
 class CarControllerBase(ABC):
-  def __init__(self, dbc_name: str, CP):
+  def __init__(self, dbc_name: str, CP: car.CarParams):
     self.CP = CP
     self.frame = 0
 
   @abstractmethod
-  def update(self, CC: car.CarControl.Actuators, CS: car.CarState, now_nanos: int) -> tuple[car.CarControl.Actuators, list[CanData]]:
+  def update(self, CC: car.CarControl, CS: CarStateBase, now_nanos: int) -> tuple[car.CarControl.Actuators, list[CanData]]:
     pass
 
 
