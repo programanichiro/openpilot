@@ -165,6 +165,10 @@ class CarState(CarStateBase):
       ret.steerFaultTemporary = ret.steerFaultTemporary or cp.vl["EPS_STATUS"]["LTA_STATE"] in TEMP_STEER_FAULTS
       ret.steerFaultPermanent = ret.steerFaultPermanent or cp.vl["EPS_STATUS"]["LTA_STATE"] in PERM_STEER_FAULTS
 
+      # Lane Tracing Assist control is unavailable (EPS_STATUS->LTA_STATE=0) until
+      # the more accurate angle sensor signal is initialized
+      ret.vehicleSensorsInvalid = not self.accurate_steer_angle_seen
+
     new_brake_state = bool(cp.vl["ESP_CONTROL"]['BRAKE_LIGHTS_ACC'] or cp.vl["BRAKE_MODULE"]["BRAKE_PRESSED"] != 0)
     if self.brake_state != new_brake_state:
       self.brake_state = new_brake_state

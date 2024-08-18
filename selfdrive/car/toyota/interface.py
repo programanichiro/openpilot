@@ -9,7 +9,6 @@ from openpilot.selfdrive.car.disable_ecu import disable_ecu
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 
 ButtonType = car.CarState.ButtonEvent.Type
-EventName = car.CarEvent.EventName
 SteerControlType = car.CarParams.SteerControlType
 
 NowStandStill = False
@@ -178,40 +177,7 @@ class CarInterface(CarInterfaceBase):
   def _update(self, c):
     ret = self.CS.update(self.cp, self.cp_cam)
 
-    new_stand_still = False
-
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
       ret.buttonEvents = create_button_events(self.CS.distance_button, self.CS.prev_distance_button, {1: ButtonType.gapAdjustCruise})
-
-    # events
-    events = self.create_common_events(ret)
-
-    # Lane Tracing Assist control is unavailable (EPS_STATUS->LTA_STATE=0) until
-    # the more accurate angle sensor signal is initialized
-    if self.CP.steerControlType == SteerControlType.angle and not self.CS.accurate_steer_angle_seen:
-      events.add(EventName.vehicleSensorsInvalid)
-
-    if self.CP.openpilotLongitudinalControl:
-      if ret.cruiseState.standstill and not ret.brakePressed:
-        new_stand_still = True
-        events.add(EventName.resumeRequired)
-      if self.CS.low_speed_lockout:
-        events.add(EventName.lowSpeedLockout)
-      if ret.vEgo < self.CP.minEnableSpeed:
-        events.add(EventName.belowEngageSpeed)
-        if c.actuators.accel > 0.3:
-          # some margin on the actuator to not false trigger cancellation while stopping
-          events.add(EventName.speedTooLow)
-        if ret.vEgo < 0.001:
-          # while in standstill, send a user alert
-          events.add(EventName.manualRestart)
-
-    ret.events = events.to_msg()
-
-    global NowStandStill
-    if NowStandStill != new_stand_still:
-      NowStandStill = new_stand_still
-      # with open('/tmp/stand_still.txt','w') as fp:
-      #   fp.write('%d' % (new_stand_still))
 
     return ret
