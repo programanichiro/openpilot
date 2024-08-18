@@ -222,7 +222,8 @@ class LongitudinalPlanner:
       tss_type = 1
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
     # v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 3 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph #最大119
-      v_cruise_kph = (107 + ((v_cruise_kph+6) - 107) * 2 - 6) if v_cruise_kph > (107 - 6) else v_cruise_kph #最大119 -> 114 -> 117に。
+    # v_cruise_kph = (107 + ((v_cruise_kph+6) - 107) * 2 - 6) if v_cruise_kph > (107 - 6) else v_cruise_kph #最大119 -> 114 -> 117に。
+      v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
           fp.write('%d' % (1))

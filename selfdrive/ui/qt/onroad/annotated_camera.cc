@@ -46,7 +46,7 @@ int ACC_speed;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
-  int SET_SPEED_NA = 409; //406; //557; //255; ,
+  int SET_SPEED_NA = 410; ///409; //406; //557; //255; ,
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
@@ -76,7 +76,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
     //これまでと互換。tss_type_infoがなければTSSP。ここの計算はcruise_info.txtの内容で上書きされる。できればここでの計算は無しにしたい。
     v_cruise = v_cruise < (55 - 4) ? (55 - (55 - (v_cruise+4)) * 2 - 4) : v_cruise;
   //v_cruise = v_cruise > (110 - 6) ? (110 + ((v_cruise+6) - 110) * 3 - 6) : v_cruise; //最大119
-    v_cruise = v_cruise > (107 - 6) ? (107 + ((v_cruise+6) - 107) * 2 - 6) : v_cruise; //最大119 -> 114 -> 117に。
+  //v_cruise = v_cruise > (107 - 6) ? (107 + ((v_cruise+6) - 107) * 2 - 6) : v_cruise; //最大119 -> 114 -> 117に。
+    v_cruise = v_cruise > (106 - 6) ? (106 + ((v_cruise+6) - 106) * 2 - 6) : v_cruise; //最大118に。
   } else if(PI0_DEBUG == true || tss_type == 2){
     SET_SPEED_NA = 255; //TSS2では戻す。
   }
