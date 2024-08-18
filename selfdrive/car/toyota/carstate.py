@@ -58,7 +58,7 @@ class CarState(CarStateBase):
     self.acc_type = 1
     self.lkas_hud = {}
 
-  def update(self, cp, cp_cam):
+  def update(self, cp, cp_cam, *_):
     ret = car.CarState.new_message()
     if self.knight_scanner_bit3_ct == 0:
       try:
