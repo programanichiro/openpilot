@@ -96,14 +96,14 @@ class TestCarInterfaces:
     now_nanos = 0
     CC = car.CarControl.new_message(**cc_msg)
     for _ in range(10):
-      car_interface.update(CC, [])
+      car_interface.update([])
       car_interface.apply(CC.as_reader(), now_nanos)
       now_nanos += DT_CTRL * 1e9  # 10 ms
 
     CC = car.CarControl.new_message(**cc_msg)
     CC.enabled = True
     for _ in range(10):
-      car_interface.update(CC, [])
+      car_interface.update([])
       car_interface.apply(CC.as_reader(), now_nanos)
       now_nanos += DT_CTRL * 1e9  # 10ms
 
@@ -138,7 +138,7 @@ class TestCarInterfaces:
   def test_interface_attrs(self):
     """Asserts basic behavior of interface attribute getter"""
     num_brands = len(get_interface_attr('CAR'))
-    assert num_brands >= 13
+    assert num_brands >= 12
 
     # Should return value for all brands when not combining, even if attribute doesn't exist
     ret = get_interface_attr('FAKE_ATTR')

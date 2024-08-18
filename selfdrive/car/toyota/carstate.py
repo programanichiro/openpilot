@@ -4,7 +4,7 @@ import os
 from cereal import car
 from opendbc.can.can_define import CANDefine
 from opendbc.can.parser import CANParser
-from openpilot.selfdrive.car import DT_CTRL
+from openpilot.selfdrive.car import DT_CTRL, create_button_events
 from openpilot.selfdrive.car.conversions import Conversions as CV
 from openpilot.selfdrive.car.filter_simple import FirstOrderFilter
 from openpilot.selfdrive.car.helpers import mean
@@ -12,6 +12,7 @@ from openpilot.selfdrive.car.interfaces import CarStateBase
 from openpilot.selfdrive.car.toyota.values import ToyotaFlags, CAR, DBC, STEER_THRESHOLD, NO_STOP_TIMER_CAR, \
                                                   TSS2_CAR, RADAR_ACC_CAR, EPS_SCALE, UNSUPPORTED_DSU_CAR
 
+ButtonType = car.CarState.ButtonEvent.Type
 SteerControlType = car.CarParams.SteerControlType
 
 # These steering fault definitions seem to be common across LKA (torque) and LTA (angle):
@@ -49,7 +50,6 @@ class CarState(CarStateBase):
     self.steeringAngleDegs = []
     self.knight_scanner_bit3_ct = 0
 
-    self.prev_distance_button = 0
     self.distance_button = 0
 
     self.pcm_follow_distance = 0
@@ -58,7 +58,7 @@ class CarState(CarStateBase):
     self.acc_type = 1
     self.lkas_hud = {}
 
-  def update(self, cp, cp_cam):
+  def update(self, cp, cp_cam, *_):
     ret = car.CarState.new_message()
     if self.knight_scanner_bit3_ct == 0:
       try:
@@ -241,11 +241,13 @@ class CarState(CarStateBase):
 
     if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR) or (self.CP.flags & ToyotaFlags.SMART_DSU and not self.CP.flags & ToyotaFlags.RADAR_CAN_FILTER):
       # distance button is wired to the ACC module (camera or radar)
-      self.prev_distance_button = self.distance_button
+      prev_distance_button = self.distance_button
       if self.CP.carFingerprint in (TSS2_CAR - RADAR_ACC_CAR):
         self.distance_button = cp_acc.vl["ACC_CONTROL"]["DISTANCE"]
       else:
         self.distance_button = cp.vl["SDSU"]["FD_BUTTON"]
+
+      ret.buttonEvents = create_button_events(self.distance_button, prev_distance_button, {1: ButtonType.gapAdjustCruise})
 
     return ret
 
