@@ -4,6 +4,7 @@ from openpilot.selfdrive.car import get_safety_config
 from openpilot.selfdrive.car.interfaces import CarInterfaceBase
 from openpilot.selfdrive.car.body.values import SPEED_FROM_RPM
 
+
 class CarInterface(CarInterfaceBase):
   @staticmethod
   def _get_params(ret, candidate, fingerprint, car_fw, experimental_long, docs):
@@ -24,7 +25,7 @@ class CarInterface(CarInterfaceBase):
 
     return ret
 
-  def _update(self, c):
+  def _update(self):
     ret = self.CS.update(self.cp)
 
     return ret
