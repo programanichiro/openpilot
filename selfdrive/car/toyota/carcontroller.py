@@ -49,7 +49,7 @@ class CarController(CarControllerBase):
     self.gas = 0
     self.accel = 0
 
-    self.now_gear = car.CarState.GearShifter.park
+    self.now_gear = structs.CarState.GearShifter.park
     self.lock_flag = False
     self.lock_speed = 0
     try:
@@ -211,10 +211,10 @@ class CarController(CarControllerBase):
     if self.lock_speed > 0: #auto door lock , unlock
       gear = CS.out.gearShifter
       if self.now_gear != gear or (CS.out.doorOpen and self.lock_flag == True): #ギアが変わるか、ドアが開くか。
-        if gear == car.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
+        if gear == structs.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
           can_sends.append(CanData(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
         self.lock_flag = False #ドアが空いてもフラグはおろす。
-      elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
+      elif gear == structs.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
         can_sends.append(CanData(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
         self.lock_flag = True
       self.now_gear = gear
