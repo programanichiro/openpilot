@@ -7,18 +7,18 @@ from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.params import Params
 
 import cereal.messaging as messaging
+from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
-from openpilot.selfdrive.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
 from openpilot.common.swaglog import cloudlog
 
-from openpilot.selfdrive.car.toyota.values import TSS2_CAR,ToyotaFlags
+from opendbc.car.toyota.values import TSS2_CAR,ToyotaFlags
 TRAJECTORY_SIZE = 33
 params = Params()
 g_tss_type = 0
