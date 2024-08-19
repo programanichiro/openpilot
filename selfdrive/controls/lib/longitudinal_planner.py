@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import os
-import random
 import math
 import numpy as np
 from openpilot.common.numpy_fast import clip, interp
