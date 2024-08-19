@@ -100,6 +100,26 @@ void MapPanel::toggleMapSettings() {
           g_latitude = match.captured(1).toDouble(); // 1つ目の浮動小数を取得
           g_longitude = match.captured(2).toDouble(); // 2つ目の浮動小数を取得
           chg_coordinate = true;
+
+          //カメラのナビボタンから検索したら即ナビ開始。
+          FILE *latlon = fopen("/data/last_navi_dest.json","w");
+          if(latlon){
+            fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",g_latitude,g_longitude);
+            const SubMaster &sm = *(uiState()->sm);
+            fclose(latlon);
+
+            if (sm.valid("navInstruction")) {
+              FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+              if(fp != NULL){
+                fprintf(fp,"%d",1);
+                fclose(fp);
+              }
+            }
+            std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
+            if(last_navi_dest.empty() == false){
+              Params().put("NavDestination", last_navi_dest);
+            }
+          }
           return;
         }
         //APIキーなし(x)で緯度経度のダイレクト数値以外の場合は、Places APIを呼び出さない（latlon_mode == true）
@@ -156,6 +176,26 @@ void MapPanel::toggleMapSettings() {
                         g_latitude = location["latitude"].toDouble();
                         g_longitude = location["longitude"].toDouble();
                         chg_coordinate = true;
+
+                        //カメラのナビボタンから検索したら即ナビ開始。
+                        FILE *latlon = fopen("/data/last_navi_dest.json","w");
+                        if(latlon){
+                          fprintf(latlon,R"({"latitude": %.6f, "longitude": %.6f})",g_latitude,g_longitude);
+                          const SubMaster &sm = *(uiState()->sm);
+                          fclose(latlon);
+
+                          if (sm.valid("navInstruction")) {
+                            FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+                            if(fp != NULL){
+                              fprintf(fp,"%d",1);
+                              fclose(fp);
+                            }
+                          }
+                          std::string last_navi_dest = util::read_file("/data/last_navi_dest.json");
+                          if(last_navi_dest.empty() == false){
+                            Params().put("NavDestination", last_navi_dest);
+                          }
+                        }
                       }
                     }
                     break; //最初の一個だけで良い。
