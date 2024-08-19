@@ -3,13 +3,13 @@ from collections import defaultdict
 from dataclasses import dataclass, field
 from enum import Enum, IntFlag
 
-from cereal import car
 from openpilot.selfdrive.car import CarSpecs, PlatformConfig, Platforms, AngleRateLimit, dbc_dict
-from openpilot.selfdrive.car.conversions import Conversions as CV
+from openpilot.selfdrive.car.common.conversions import Conversions as CV
+from openpilot.selfdrive.car.structs import CarParams
 from openpilot.selfdrive.car.docs_definitions import CarFootnote, CarDocs, Column, CarParts, CarHarness
 from openpilot.selfdrive.car.fw_query_definitions import FwQueryConfig, Request, StdQueries
 
-Ecu = car.CarParams.Ecu
+Ecu = CarParams.Ecu
 MIN_ACC_SPEED = 19. * CV.MPH_TO_MS
 PEDAL_TRANSITION = 10. * CV.MPH_TO_MS
 
@@ -32,7 +32,7 @@ class CarControllerParams:
   ANGLE_RATE_LIMIT_DOWN = AngleRateLimit(speed_bp=[5, 25], angle_v=[0.36, 0.26])
 
   def __init__(self, CP):
-    if CP.lateralTuning.which == 'torque':
+    if CP.lateralTuning.which() == 'torque':
       self.STEER_DELTA_UP = 15       # 1.0s time to peak torque
       self.STEER_DELTA_DOWN = 25     # カスタム50を戻す always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
     else:

@@ -1,8 +1,8 @@
-from cereal import car
 import os
-from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, make_tester_present_msg
+import copy
+from openpilot.selfdrive.car import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance, make_tester_present_msg, structs
 from openpilot.selfdrive.car.can_definitions import CanData
-from openpilot.selfdrive.car.helpers import clip, interp
+from openpilot.selfdrive.car.common.numpy_fast import clip, interp
 from openpilot.selfdrive.car.interfaces import CarControllerBase
 from openpilot.selfdrive.car.toyota import toyotacan
 from openpilot.selfdrive.car.toyota.values import CAR, STATIC_DSU_MSGS, NO_STOP_TIMER_CAR, TSS2_CAR, \
@@ -10,8 +10,8 @@ from openpilot.selfdrive.car.toyota.values import CAR, STATIC_DSU_MSGS, NO_STOP_
                                         UNSUPPORTED_DSU_CAR
 from opendbc.can.packer import CANPacker
 
-SteerControlType = car.CarParams.SteerControlType
-VisualAlert = car.CarControl.HUDControl.VisualAlert
+SteerControlType = structs.CarParams.SteerControlType
+VisualAlert = structs.CarControl.HUDControl.VisualAlert
 
 # LKA limits
 # EPS faults if you apply torque while the steering rate is above 100 deg/s for too long
@@ -49,7 +49,7 @@ class CarController(CarControllerBase):
     self.gas = 0
     self.accel = 0
 
-    self.now_gear = car.CarState.GearShifter.park
+    self.now_gear = structs.CarState.GearShifter.park
     self.lock_flag = False
     self.lock_speed = 0
     try:
@@ -211,10 +211,10 @@ class CarController(CarControllerBase):
     if self.lock_speed > 0: #auto door lock , unlock
       gear = CS.out.gearShifter
       if self.now_gear != gear or (CS.out.doorOpen and self.lock_flag == True): #ギアが変わるか、ドアが開くか。
-        if gear == car.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
+        if gear == structs.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
           can_sends.append(CanData(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
         self.lock_flag = False #ドアが空いてもフラグはおろす。
-      elif gear == car.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
+      elif gear == structs.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
         can_sends.append(CanData(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
         self.lock_flag = True
       self.now_gear = gear
@@ -275,7 +275,7 @@ class CarController(CarControllerBase):
     if self.frame % 20 == 0 and self.CP.flags & ToyotaFlags.DISABLE_RADAR.value:
       can_sends.append(make_tester_present_msg(0x750, 0, 0xF))
 
-    new_actuators = actuators.as_builder()
+    new_actuators = copy.copy(actuators)
     new_actuators.steer = apply_steer / self.params.STEER_MAX
     new_actuators.steerOutputCan = apply_steer
     new_actuators.steeringAngleDeg = self.last_angle
