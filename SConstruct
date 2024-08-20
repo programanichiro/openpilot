@@ -209,7 +209,6 @@ env = Environment(
     "#third_party",
     "#cereal",
     "#msgq",
-    "#opendbc/can",
     "#third_party/maplibre-native-qt/include",
     f"#third_party/maplibre-native-qt/{arch}/include"
   ],
@@ -351,7 +350,7 @@ Export('env', 'qt_env', 'arch', 'real_arch')
 SConscript(['common/SConscript'])
 Import('_common', '_gpucommon')
 
-common = [_common, 'json11']
+common = [_common, 'json11', 'zmq']
 gpucommon = [_gpucommon]
 
 Export('common', 'gpucommon')
