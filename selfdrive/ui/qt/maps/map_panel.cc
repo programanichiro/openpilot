@@ -83,7 +83,8 @@ void MapPanel::toggleMapSettings() {
     if (gg_key.isEmpty() == false) {
       //gg_keyがある場合は、poi検索を行う。
       static QString poi_name;
-      QString poi_name_ = InputDialog::getText(tr("POI name or keyword, and navigation starts immediately."), this, tr("Enter a POI name or keyword or Lat,Lon"), false, -1, poi_name).trimmed(); //起動中は最後に入れた文字を覚えておくのもいいか？
+    //QString poi_name_ = InputDialog::getText(tr("POI name or keyword, and navigation starts immediately."), this, tr("Enter a POI name or keyword or Lat,Lon"), false, -1, poi_name).trimmed(); //起動中は最後に入れた文字を覚えておくのもいいか？
+      QString poi_name_ = InputDialog::getText(tr("Find a place and start navigation"), this, tr("Enter a POI name or keyword or Lat,Lon"), false, -1, poi_name).trimmed(); //起動中は最後に入れた文字を覚えておくのもいいか？
       if(poi_name_.isEmpty() == false) {
         poi_name = poi_name_;
       }
