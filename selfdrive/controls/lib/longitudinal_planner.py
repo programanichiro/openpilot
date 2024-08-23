@@ -189,7 +189,7 @@ class LongitudinalPlanner:
     return x, v, a, j
 
   def update(self, sm):
-    self.mpc.mode = 'blended' if sm['controlsState'].experimentalMode else 'acc'
+    self.mpc.mode = 'acc'
 
     v_ego = sm['carState'].vEgo
     # v_cruise_kph = min(sm['controlsState'].vCruise, V_CRUISE_MAX)
@@ -1015,8 +1015,21 @@ class LongitudinalPlanner:
     longitudinalPlan.fcw = self.fcw
 
     a_target, should_stop = get_accel_from_plan(self.CP, longitudinalPlan.speeds, longitudinalPlan.accels)
-    longitudinalPlan.aTarget = a_target
-    longitudinalPlan.shouldStop = should_stop
+    a_target_mpc, should_stop_mpc = get_accel_from_plan(self.CP, longitudinalPlan.speeds, longitudinalPlan.accels)
+
+    if sm['controlsState'].experimentalMode:
+      model_speeds = np.interp(CONTROL_N_T_IDX, ModelConstants.T_IDXS, sm['modelV2'].velocity.x)
+      model_accels = np.interp(CONTROL_N_T_IDX, ModelConstants.T_IDXS, sm['modelV2'].acceleration.x)
+      a_target_model, should_stop_model = get_accel_from_plan(self.CP, model_speeds, model_accels)
+      a_target = min(a_target_mpc, a_target_model)
+      should_stop = should_stop_mpc or should_stop_model
+    else:
+      a_target = a_target_mpc
+      should_stop = should_stop_mpc
+
+    longitudinalPlan.aTarget = float(a_target)
+    longitudinalPlan.shouldStop = bool(should_stop)
+
     longitudinalPlan.allowBrake = True
     longitudinalPlan.allowThrottle = True
 

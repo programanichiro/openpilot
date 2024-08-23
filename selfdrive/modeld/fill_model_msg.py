@@ -25,6 +25,7 @@ SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
 ConfidenceClass = log.ModelDataV2.ConfidenceClass
 
+
 class PublishState:
   def __init__(self):
     self.disengage_buffer = np.zeros(ModelConstants.CONFIDENCE_BUFFER_LEN*ModelConstants.DISENGAGE_WIDTH, dtype=np.float32)
@@ -73,6 +74,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   frame_drop_perc = frame_drop * 100
   extended_msg.valid = valid
   base_msg.valid = valid
+
 
   driving_model_data = base_msg.drivingModelData
 
@@ -227,13 +229,6 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   hard_brake_predicted = (publish_state.prev_brake_5ms2_probs > ModelConstants.FCW_THRESHOLDS_5MS2).all() and \
     (publish_state.prev_brake_3ms2_probs > ModelConstants.FCW_THRESHOLDS_3MS2).all()
   meta.hardBrakePredicted = hard_brake_predicted.item()
-
-  # temporal pose
-  temporal_pose = modelV2.temporalPose
-  temporal_pose.trans = net_output_data['sim_pose'][0,:3].tolist()
-  temporal_pose.transStd = net_output_data['sim_pose_stds'][0,:3].tolist()
-  temporal_pose.rot = net_output_data['sim_pose'][0,3:].tolist()
-  temporal_pose.rotStd = net_output_data['sim_pose_stds'][0,3:].tolist()
 
   # confidence
   if vipc_frame_id % (2*ModelConstants.MODEL_FREQ) == 0:
