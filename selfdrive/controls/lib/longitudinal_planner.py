@@ -204,7 +204,7 @@ class LongitudinalPlanner:
     except Exception as e:
       pass
     if dexp_mode:
-      if self.mpc.mode == 'acc':
+      if not sm['controlsState'].experimentalMode:
         if (v_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (sm['carState'].leftBlinker or sm['carState'].rightBlinker):
           params.put_bool("ExperimentalMode", True) # blended
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
@@ -463,7 +463,7 @@ class LongitudinalPlanner:
         except Exception as e:
           pass
       red_stop_immediately = False
-      if long_speeddown_flag == False and self.mpc.mode == 'acc': #公式ロングではelseへ強制遷移する追加条件
+      if long_speeddown_flag == False and not sm['controlsState'].experimentalMode: #公式ロングではelseへ強制遷移する追加条件
         if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
           stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
         else: #夜
