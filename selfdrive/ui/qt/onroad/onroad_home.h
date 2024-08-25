@@ -13,6 +13,7 @@ private:
   void paintEvent(QPaintEvent *event);
   OnroadAlerts *alerts;
   AnnotatedCameraWidget *nvg;
+  float mb_width_rate = 0;
   QColor bg = bg_colors[STATUS_DISENGAGED];
   QHBoxLayout* split;
 

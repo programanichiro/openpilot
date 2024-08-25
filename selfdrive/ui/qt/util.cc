@@ -26,7 +26,7 @@ QString getVersion() {
 }
 
 QString getBrand() {
-  return QObject::tr("openpilot");
+  return QObject::tr("ichiropilot");
 }
 
 QString getUserAgent() {
@@ -154,6 +154,38 @@ QPixmap loadPixmap(const QString &fileName, const QSize &size, Qt::AspectRatioMo
   } else {
     return QPixmap(fileName).scaled(size, aspectRatioMode, Qt::SmoothTransformation);
   }
+}
+
+void drawRoundedRect(QPainter &painter, const QRectF &rect, qreal xRadiusTop, qreal yRadiusTop, qreal xRadiusBottom, qreal yRadiusBottom){
+  qreal w_2 = rect.width() / 2;
+  qreal h_2 = rect.height() / 2;
+
+  xRadiusTop = 100 * qMin(xRadiusTop, w_2) / w_2;
+  yRadiusTop = 100 * qMin(yRadiusTop, h_2) / h_2;
+
+  xRadiusBottom = 100 * qMin(xRadiusBottom, w_2) / w_2;
+  yRadiusBottom = 100 * qMin(yRadiusBottom, h_2) / h_2;
+
+  qreal x = rect.x();
+  qreal y = rect.y();
+  qreal w = rect.width();
+  qreal h = rect.height();
+
+  qreal rxx2Top = w*xRadiusTop/100;
+  qreal ryy2Top = h*yRadiusTop/100;
+
+  qreal rxx2Bottom = w*xRadiusBottom/100;
+  qreal ryy2Bottom = h*yRadiusBottom/100;
+
+  QPainterPath path;
+  path.arcMoveTo(x, y, rxx2Top, ryy2Top, 180);
+  path.arcTo(x, y, rxx2Top, ryy2Top, 180, -90);
+  path.arcTo(x+w-rxx2Top, y, rxx2Top, ryy2Top, 90, -90);
+  path.arcTo(x+w-rxx2Bottom, y+h-ryy2Bottom, rxx2Bottom, ryy2Bottom, 0, -90);
+  path.arcTo(x, y+h-ryy2Bottom, rxx2Bottom, ryy2Bottom, 270, -90);
+  path.closeSubpath();
+
+  painter.drawPath(path);
 }
 
 static QHash<QString, QByteArray> load_bootstrap_icons() {

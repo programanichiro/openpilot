@@ -39,6 +39,10 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   QObject::connect(uiState(), &UIState::offroadTransition, this, &OnroadWindow::offroadTransition);
 }
 
+bool mapVisible;
+bool head_gesture_onroad_home;
+bool head_gesture_onroad_home_map_on;
+bool head_gesture_map_north_heading_toggle;
 void OnroadWindow::updateState(const UIState &s) {
   if (!s.scene.started) {
     return;
@@ -46,6 +50,7 @@ void OnroadWindow::updateState(const UIState &s) {
 
   alerts->updateState(s);
   nvg->updateState(s);
+  // mapVisible = isMapVisible();
 
   QColor bgColor = bg_colors[s.status];
   if (bg != bgColor) {
@@ -53,6 +58,31 @@ void OnroadWindow::updateState(const UIState &s) {
     bg = bgColor;
     update();
   }
+
+  if(head_gesture_onroad_home){
+    head_gesture_onroad_home = false;
+    // if (map != nullptr) {
+    //   void soundButton(int onOff);
+    //   soundButton(!this->isMapVisible());
+    //   map->setVisible(!this->isMapVisible());
+    // }
+  }
+
+  if(head_gesture_onroad_home_map_on){ //ジェスチャーでノースアップ切り替えした時の強制地図出し。
+    head_gesture_onroad_home_map_on = false;
+    // if (map != nullptr) {
+    //   if(this->isMapVisible() == false){
+    //     //地図を強制的に出す。
+    //     map->setVisible(true);
+    //     void soundButton(int onOff);
+    //     soundButton(true);
+    //   } else {
+    //     //地図が出ていたらノース↔︎ヘディング切り替え信号を送る。
+    //     head_gesture_map_north_heading_toggle = true;
+    //   }
+    // }
+  }
+
 }
 
 void OnroadWindow::offroadTransition(bool offroad) {

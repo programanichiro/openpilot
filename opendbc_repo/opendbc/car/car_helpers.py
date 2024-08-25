@@ -1,6 +1,7 @@
 import os
 import time
 
+from openpilot.common.params import Params
 from opendbc.car import carlog, gen_empty_fingerprint
 from opendbc.car.can_definitions import CanRecvCallable, CanSendCallable
 from opendbc.car.structs import CarParams
@@ -34,7 +35,7 @@ def _get_interface_names() -> dict[str, list[str]]:
   return brand_names
 
 
-# imports from directory opendbc/car/<name>/
+# imports from directory selfdrive/car/<name>/
 interface_names = _get_interface_names()
 interfaces = load_interfaces(interface_names)
 
@@ -89,6 +90,8 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
   ecu_rx_addrs = set()
 
   start_time = time.monotonic()
+  Params().put_bool('DisengageOnAccelerator',False) #アクセル解除ボタン強制OFF
+
   if not skip_fw_query:
     if cached_params is not None and cached_params.carName != "mock" and len(cached_params.carFw) > 0 and \
        cached_params.carVin is not VIN_UNKNOWN and not disable_fw_cache:

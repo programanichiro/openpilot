@@ -4,12 +4,14 @@ import math
 import time
 import threading
 from typing import SupportsFloat
+import numpy as np
 
 import cereal.messaging as messaging
 
 from cereal import car, log
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 from openpilot.common.conversions import Conversions as CV
 from openpilot.common.git import get_short_branch
@@ -32,6 +34,9 @@ from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
 
 from openpilot.system.hardware import HARDWARE
+
+handle_center = 0 #STEERING_CENTER # キャリブレーション前の手抜き
+handle_center_ct = 0
 
 SOFT_DISABLE_TIME = 3  # seconds
 LDW_MIN_SPEED = 31 * CV.MPH_TO_MS
@@ -160,6 +165,9 @@ class Controls:
     self.v_cruise_helper = VCruiseHelper(self.CP)
     self.recalibrating_seen = False
 
+    with open('/tmp/red_signal_scan_flag.txt','w') as fp:
+      fp.write('%d' % (0))
+
     self.can_log_mono_time = 0
 
     self.startup_event = get_startup_event(car_recognized, not self.CP.passive, len(self.CP.carFw) > 0)
@@ -230,6 +238,10 @@ class Controls:
     if self.sm['deviceState'].freeSpacePercent < 7 and not SIMULATION:
       # under 7% of space free no enable allowed
       self.events.add(EventName.outOfSpace)
+    # TODO: make tici threshold the same
+    # if self.sm['deviceState'].memoryUsagePercent > 75:
+    #   with open('/tmp/debug_out_m','w') as fp:
+    #     fp.write('MEM:%d' % (self.sm['deviceState'].memoryUsagePercent)) #メモリオーバー監視
     if self.sm['deviceState'].memoryUsagePercent > 90 and not SIMULATION:
       self.events.add(EventName.lowMemory)
 
@@ -382,7 +394,7 @@ class Controls:
     if not SIMULATION or REPLAY:
       # Not show in first 1.5 km to allow for driving out of garage. This event shows after 5 minutes
       gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
-      if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
+      if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID and not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500 and self.distance_traveled < 3000):
         self.events.add(EventName.noGps)
       if gps_ok:
         self.distance_traveled = 0
