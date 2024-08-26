@@ -11,6 +11,9 @@ fi
 # set git identity
 source $DIR/identity.sh
 
+git lfs install
+git lfs pull
+
 echo "[-] Setting up target repo T=$SECONDS"
 
 rm -rf $TARGET_DIR
