@@ -201,7 +201,6 @@ env = Environment(
     "#third_party/linux/include",
     "#third_party/snpe/include",
     "#third_party",
-    "#cereal",
     "#msgq",
     "#third_party/maplibre-native-qt/include",
     f"#third_party/maplibre-native-qt/{arch}/include"
