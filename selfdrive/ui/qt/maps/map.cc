@@ -474,11 +474,7 @@ void MapWindow::updateState(const UIState &s) {
   }
 
   if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
-    static bool once_resizeGL = false;
-    if(once_resizeGL == false){
-      once_resizeGL = true;
-      resizeGL(width(), height());
-    }
+    resizeGL(width(), height()); //毎度呼び出したら重い？ MAP_SCALE指定が途中から無しになる現象が頻発する対策。
     if(north_up == 0){
       if(m_map->margins().top() == 0){
         m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)}); //(1080-350*2-50*2) / 2 = 140 , 700+140=840=yの位置に出ている。
