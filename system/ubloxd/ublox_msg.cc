@@ -140,9 +140,9 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setSpeed(msg->g_speed() * 1e-03);
   gpsLoc.setBearingDeg(msg->head_mot() * 1e-5);
   //ここからGPSのlat,lon,bearingを取る
-  FILE *fp = fopen("/tmp/gps_data.txt","w");
+  FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
   if(fp){
-    fprintf(fp,"%.6f,%.6f,%.2f",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,msg->head_mot() * 1e-5);
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,(double)msg->head_mot() * 1e-5,(double)msg->g_speed() * 1e-03*3.6);
     fclose(fp);
   }
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
@@ -158,9 +158,19 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setUnixTimestampMillis(utc_tt * 1e+03 + msg->nano() * 1e-06);
   float f[] = { msg->vel_n() * 1e-03f, msg->vel_e() * 1e-03f, msg->vel_d() * 1e-03f };
   gpsLoc.setVNED(f);
+  FILE *fp1 = fopen("/tmp/gps_vel_data.txt","w");
+  if(fp1){
+    fprintf(fp1,"%.3f,%.3f,%.3f",(double)f[0],(double)f[1],(double)f[2]);
+    fclose(fp1);
+  }
   gpsLoc.setVerticalAccuracy(msg->v_acc() * 1e-03);
   gpsLoc.setSpeedAccuracy(msg->s_acc() * 1e-03);
   gpsLoc.setBearingAccuracyDeg(msg->head_acc() * 1e-05);
+  FILE *fp2 = fopen("/tmp/gps_acc_data.txt","w");
+  if(fp2){
+    fprintf(fp2,"%.3f,%.3f,%.5f",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,(double)msg->head_acc() * 1e-05);
+    fclose(fp2);
+  }
   return capnp::messageToFlatArray(msg_builder);
 }
 

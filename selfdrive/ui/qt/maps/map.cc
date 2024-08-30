@@ -368,10 +368,10 @@ void MapWindow::updateState(const UIState &s) {
   }
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
-    auto locationd_pos = locationd_location.getPositionGeodetic();
-    auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
-    auto locationd_velocity = locationd_location.getVelocityCalibrated();
-    auto locationd_ecef = locationd_location.getPositionECEF();
+    auto locationd_pos = locationd_location.getPositionGeodetic(); //lat,lon
+    auto locationd_orientation = locationd_location.getCalibratedOrientationNED(); //bearing
+    auto locationd_velocity = locationd_location.getVelocityCalibrated(); //sm_vego
+    auto locationd_ecef = locationd_location.getPositionECEF(); //gps取得精度、これをどうするか・・・？
 
     locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && locationd_ecef.getValid());
     if (locationd_valid) {
