@@ -102,6 +102,12 @@ std::pair<std::string, kj::Array<capnp::word>> UbloxMsgParser::gen_msg() {
   ubx_t ubx_message(&stream);
   auto body = ubx_message.body();
 
+  FILE *fp = fopen("/tmp/gps_msg_type.txt","w");
+  if(fp){
+    fprintf(fp,"msg_type=%d",(int)ubx_message.msg_type());
+    fclose(fp);
+  }
+
   switch (ubx_message.msg_type()) {
   case 0x0107:
     return {"gpsLocationExternal", gen_nav_pvt(static_cast<ubx_t::nav_pvt_t*>(body))};
@@ -133,6 +139,12 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setAltitude(msg->height() * 1e-03);
   gpsLoc.setSpeed(msg->g_speed() * 1e-03);
   gpsLoc.setBearingDeg(msg->head_mot() * 1e-5);
+  //ここからGPSのlat,lon,bearingを取る
+  FILE *fp = fopen("/tmp/gps_data.txt","w");
+  if(fp){
+    fprintf(fp,"%.6f,%.6f,%.2f",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,msg->head_mot() * 1e-5);
+    fclose(fp);
+  }
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
