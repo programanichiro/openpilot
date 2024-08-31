@@ -84,14 +84,14 @@ class TestMapRenderer:
     os.environ['MAPS_HOST'] = f'http://localhost:{self.server.port}'
 
     self.sm = messaging.SubMaster(['mapRenderState'])
-    self.pm = messaging.PubMaster(['liveLocationKalman'])
+    self.pm = messaging.PubMaster(['myLiveLocationKalman'])
     self.vipc = VisionIpcClient("navd", VisionStreamType.VISION_STREAM_MAP, True)
 
     if os.path.exists(CACHE_PATH):
       os.remove(CACHE_PATH)
 
   def _setup_test(self):
-    assert self.pm.wait_for_readers_to_update("liveLocationKalman", 10)
+    assert self.pm.wait_for_readers_to_update("myLiveLocationKalman", 10)
 
     time.sleep(0.5)
 
@@ -120,8 +120,8 @@ class TestMapRenderer:
         starting_frame_id = prev_frame_id
 
       llk = generate_liveLocationKalman(location)
-      self.pm.send("liveLocationKalman", llk)
-      self.pm.wait_for_readers_to_update("liveLocationKalman", 10)
+      self.pm.send("myLiveLocationKalman", llk)
+      self.pm.wait_for_readers_to_update("myLiveLocationKalman", 10)
       self.sm.update(1000 if frame_expected else 0)
       assert self.sm.updated['mapRenderState'] == frame_expected, "renderer running at wrong frequency"
 
