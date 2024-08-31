@@ -531,7 +531,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
 
     bool locationd_valid = false;
-    if(i == 6 && gps_ok){
+    if(gps_idx_i == 6 && gps_ok){
       locationd_valid = true;
     }
 

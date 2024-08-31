@@ -495,7 +495,7 @@ void MapWindow::updateState(const UIState &s) {
     gps_idx_i = i;
     gps_ok = true;
   }
-  if(i == 6 || gps_ok){ //if (sm.updated("liveLocationKalman")) {
+  if(gps_idx_i == 6 || gps_ok){ //if (sm.updated("liveLocationKalman")) {
     //auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     //auto locationd_pos = locationd_location.getPositionGeodetic(); //lat,lon
     double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
