@@ -2331,7 +2331,7 @@ struct Event {
     onroadEvents @68: List(Car.CarEvent);
     carParams @69: Car.CarParams;
     driverMonitoringState @71: DriverMonitoringState;
-    liveLocationKalman @72 :LiveLocationKalman;
+    myLiveLocationKalman @72 :LiveLocationKalman;
     livePose @129 :LivePose;
     modelV2 @75 :ModelDataV2;
     drivingModelData @128 :DrivingModelData;
