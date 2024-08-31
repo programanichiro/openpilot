@@ -370,13 +370,18 @@ void MapWindow::updateState(const UIState &s) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic(); //lat,lon
     auto locationd_orientation = locationd_location.getCalibratedOrientationNED(); //bearing
-    auto locationd_velocity = locationd_location.getVelocityCalibrated(); //sm_vego
+    auto locationd_velocity = locationd_location.getVelocityCalibrated(); //sm_vego？一応gen_nav_pvtの中にはある。
     auto locationd_ecef = locationd_location.getPositionECEF(); //gps取得精度、これをどうするか・・・？
 
     locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && locationd_ecef.getValid());
     if (locationd_valid) {
       // Check std norm
       auto pos_ecef_std = locationd_ecef.getStd();
+      FILE *fp10 = fopen("/tmp/gps_vel2_data.txt","w");
+      if(fp10){
+        fprintf(fp10,"%.3f,%.3f,%.3f",(double)pos_ecef_std[0],(double)pos_ecef_std[1],(double)pos_ecef_std[2]);
+        fclose(fp10);
+      }
       bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
       locationd_valid = pos_accurate_enough;
     }
