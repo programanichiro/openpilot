@@ -366,8 +366,8 @@ void MapWindow::updateState(const UIState &s) {
   if(already_vego_over_8 == false && sm_vego > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
-  if (sm.updated("liveLocationKalman")) {
-    auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
+  if (sm.updated("myLiveLocationKalman")) {
+    auto locationd_location = sm["myLiveLocationKalman"].getMyLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
     auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
     auto locationd_velocity = locationd_location.getVelocityCalibrated();
