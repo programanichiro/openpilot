@@ -151,8 +151,14 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   } else if(bear_d < -180){
     bear_d = bear_d + 360;
   }
+  //バックに対応する処理
+  if(bear_d > 100){
+    bear_d -= 180;
+  } else if(bear_d < -100){
+    bear_d += 180;
+  }
   bear_add += bear_d;
-  const int BEAR_BUF_MAX = 10;
+  const int BEAR_BUF_MAX = 20;
   static double bear_buf[BEAR_BUF_MAX];
   static int bear_buf_ct;
   bear_buf[bear_buf_ct++] = bear_add;
