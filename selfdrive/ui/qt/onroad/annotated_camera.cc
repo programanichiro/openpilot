@@ -415,7 +415,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
 #if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
 #else
-  bool okGps = (*s->sm)["liveLocationKalman"].getLiveLocationKalman().getGpsOK();
+  bool okGps = (*s->sm)["myLiveLocationKalman"].getMyLiveLocationKalman().getGpsOK();
   bool okConnect = false;
   auto last_ping = deviceState.getLastAthenaPingTime();
   if (last_ping != 0) {
@@ -432,8 +432,8 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   //制限速度情報をmap.ccからonroadへ移動
   static unsigned int limitspeed_update_ct;
   static double car_bearing;
-  if ((limitspeed_update_ct ++) % 10 == 0 && (*s->sm).updated("liveLocationKalman")) {
-    auto locationd_location = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
+  if ((limitspeed_update_ct ++) % 10 == 0 && (*s->sm).updated("myLiveLocationKalman")) {
+    auto locationd_location = (*s->sm)["myLiveLocationKalman"].getMyLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic();
     auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
     auto locationd_velocity = locationd_location.getVelocityCalibrated();

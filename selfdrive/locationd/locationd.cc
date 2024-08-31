@@ -668,7 +668,7 @@ void Localizer::build_pose_message(
   evt.setValid(msgValid);
   cereal::LivePose::Builder livePose = evt.initLivePose();
 
-  cereal::LiveLocationKalman::Reader location_msg = location_msg_builder.getRoot<cereal::Event>().getLiveLocationKalman().asReader();
+  cereal::LiveLocationKalman::Reader location_msg = location_msg_builder.getRoot<cereal::Event>().getMyLiveLocationKalman().asReader();
   this->build_live_pose(livePose, location_msg);
 
   livePose.setSensorsOK(sensorsOK);
@@ -744,7 +744,7 @@ int Localizer::locationd_thread() {
                                                           "carState", "accelerometer", "gyroscope"};
 
   SubMaster sm(service_list, {}, nullptr, {gps_location_socket});
-  PubMaster pm({"liveLocationKalman", "livePose"});
+  PubMaster pm({"myLiveLocationKalman", "livePose"});
 
   uint64_t cnt = 0;
   bool filterInitialized = false;
@@ -783,7 +783,7 @@ int Localizer::locationd_thread() {
       this->build_pose_message(pose_msg_builder, location_msg_builder, inputsOK, sensorsOK, filterInitialized);
 
       kj::ArrayPtr<capnp::byte> location_bytes = location_msg_builder.toBytes();
-      pm.send("liveLocationKalman", location_bytes.begin(), location_bytes.size());
+      pm.send("myLiveLocationKalman", location_bytes.begin(), location_bytes.size());
 
       kj::ArrayPtr<capnp::byte> pose_bytes = pose_msg_builder.toBytes();
       pm.send("livePose", pose_bytes.begin(), pose_bytes.size());
