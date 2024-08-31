@@ -154,9 +154,9 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   }
   if(not_first_gps == true){ //初回を弾く。
     //バックに対応する処理
-    if(bear_d > 100){
+    if(bear_d > 120){
       bear_d -= 180;
-    } else if(bear_d < -100){
+    } else if(bear_d < -120){
       bear_d += 180;
     }
   }
