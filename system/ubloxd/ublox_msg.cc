@@ -143,7 +143,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   static uint64_t monoTime;
   FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
   if(fp){
-    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,(double)msg->head_mot() * 1e-5,(double)msg->g_speed() * 1e-03*3.6,monoTime++,1); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,(double)msg->head_mot() * 1e-5,(double)msg->g_speed() * 1e-03,monoTime++,1); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
     fclose(fp);
   }
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
