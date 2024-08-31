@@ -152,7 +152,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
     bear_d = bear_d + 360;
   }
   bear_add += bear_d;
-  const int BEAR_BUF_MAX 10
+  const int BEAR_BUF_MAX = 10;
   static double bear_buf[BEAR_BUF_MAX];
   static int bear_buf_ct;
   bear_buf[bear_buf_ct++] = bear_add;
