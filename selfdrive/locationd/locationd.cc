@@ -655,7 +655,7 @@ void Localizer::build_location_message(
   MessageBuilder& msg_builder, bool inputsOK, bool sensorsOK, bool gpsOK, bool msgValid) {
   cereal::Event::Builder evt = msg_builder.initEvent();
   evt.setValid(msgValid);
-  cereal::LiveLocationKalman::Builder liveLoc = evt.initLiveLocationKalman();
+  cereal::LiveLocationKalman::Builder liveLoc = evt.initMyLiveLocationKalman();
   this->build_live_location(liveLoc);
   liveLoc.setSensorsOK(sensorsOK);
   liveLoc.setGpsOK(gpsOK);
