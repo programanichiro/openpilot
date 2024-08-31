@@ -141,6 +141,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setBearingDeg(msg->head_mot() * 1e-5);
   //ここからGPSのlat,lon,bearingを取る。更新されるので呼ばれているのは間違いない。
   //bearingの平滑化
+  static bool not_first_gps = false;
   static double bear_add; //蓄積値
   static double bear_before; //素の前回値
   static double bear_add_before; //蓄積値の前回値
@@ -151,12 +152,15 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   } else if(bear_d < -180){
     bear_d = bear_d + 360;
   }
-  //バックに対応する処理
-  if(bear_d > 100){
-    bear_d -= 180;
-  } else if(bear_d < -100){
-    bear_d += 180;
+  if(not_first_gps == true){ //初回を弾く。
+    //バックに対応する処理
+    if(bear_d > 100){
+      bear_d -= 180;
+    } else if(bear_d < -100){
+      bear_d += 180;
+    }
   }
+  not_first_gps = true;
   bear_add += bear_d;
   const int BEAR_BUF_MAX = 20;
   static double bear_buf[BEAR_BUF_MAX];
