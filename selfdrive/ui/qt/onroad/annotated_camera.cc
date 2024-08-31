@@ -506,22 +506,49 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   //制限速度情報をmap.ccからonroadへ移動
   static unsigned int limitspeed_update_ct;
   static double car_bearing;
-  if ((limitspeed_update_ct ++) % 10 == 0 && (*s->sm).updated("liveLocationKalman")) {
-    auto locationd_location = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
-    auto locationd_pos = locationd_location.getPositionGeodetic();
-    auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
-    auto locationd_velocity = locationd_location.getVelocityCalibrated();
+  if ((limitspeed_update_ct ++) % 10 == 0 /*&& (*s->sm).updated("liveLocationKalman")*/) {
+    // auto locationd_location = (*s->sm)["liveLocationKalman"].getLiveLocationKalman();
+    // auto locationd_pos = locationd_location.getPositionGeodetic();
+    // auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
+    // auto locationd_velocity = locationd_location.getVelocityCalibrated();
+    std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+    int gps_idx_i;
+    static bool gps_ok;
+    static double gps_output[6]; // double型の配列
+    if(gps_axs_data_txt.empty() == false){
+      int i = 0; // インデックス
 
-    bool locationd_valid = (locationd_location.getStatus() == cereal::LiveLocationKalman::Status::VALID) &&
-      locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid();
+      std::stringstream ss(gps_axs_data_txt); // 入力文字列をstringstreamに変換
+      std::string token; // 一時的にトークンを格納する変数
+      while (std::getline(ss, token, ',') && i < 6) { // カンマで分割し、一つずつ処理する
+        gps_output[i] = std::stod(token); // 分割された文字列をdouble型に変換して配列に格納
+        i++; // インデックスを1つ進める
+      }
+      gps_idx_i = i;
+      gps_ok = true;
+    } else {
+      gps_ok = false;
+    }
+
+    bool locationd_valid = false;
+    if(i == 6 && gps_ok){
+      locationd_valid = true;
+    }
+
+    // bool locationd_valid = (locationd_location.getStatus() == cereal::LiveLocationKalman::Status::VALID) &&
+    //   locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid();
 
     if (locationd_valid) {
+      double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
+      double locationd_orientation = gps_output[2]; //bearing
+      //double locationd_velocity = gps_output[3]; //VEgo
+
       FILE *fp = fopen("/tmp/limitspeed_info.txt","w");
       if(fp != NULL){
         //この辺で30mか1秒？ごとに、以下を/tmp/limitspeed_info.txtに書き込む。
-        double latitude = locationd_pos.getValue()[0]; // 緯度を取得
-        double longitude = locationd_pos.getValue()[1]; // 経度を取得
-        double bearing = RAD2DEG(locationd_orientation.getValue()[2]);  //-180〜180
+        double latitude = locationd_pos[0]; // 緯度を取得
+        double longitude = locationd_pos[1]; // 経度を取得
+        double bearing = locationd_orientation;  //-180〜180
         if(bearing < 0){
           bearing += 360;
           if(bearing >= 360){

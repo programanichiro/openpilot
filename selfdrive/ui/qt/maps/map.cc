@@ -366,6 +366,7 @@ void MapWindow::updateState(const UIState &s) {
   if(already_vego_over_8 == false && sm_vego > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
+#if 0
   if (sm.updated("liveLocationKalman")) {
     auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
     auto locationd_pos = locationd_location.getPositionGeodetic(); //lat,lon
@@ -377,11 +378,11 @@ void MapWindow::updateState(const UIState &s) {
     if (locationd_valid) {
       // Check std norm
       auto pos_ecef_std = locationd_ecef.getStd();
-      FILE *fp10 = fopen("/tmp/gps_vel2_data.txt","w");
-      if(fp10){
-        fprintf(fp10,"%.3f,%.3f,%.3f",(double)pos_ecef_std[0],(double)pos_ecef_std[1],(double)pos_ecef_std[2]);
-        fclose(fp10);
-      }
+      // FILE *fp10 = fopen("/tmp/gps_vel2_data.txt","w");
+      // if(fp10){
+      //   fprintf(fp10,"%.3f,%.3f,%.3f",(double)pos_ecef_std[0],(double)pos_ecef_std[1],(double)pos_ecef_std[2]);
+      //   fclose(fp10);
+      // }
       bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
       locationd_valid = pos_accurate_enough;
     }
@@ -477,7 +478,139 @@ void MapWindow::updateState(const UIState &s) {
       }
     }
   }
+#else
+  std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+  int gps_idx_i;
+  static bool gps_ok;
+  static double gps_output[6]; // double型の配列
+  if(gps_axs_data_txt.empty() == false){
+    int i = 0; // インデックス
 
+    std::stringstream ss(gps_axs_data_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    while (std::getline(ss, token, ',') && i < 6) { // カンマで分割し、一つずつ処理する
+      gps_output[i] = std::stod(token); // 分割された文字列をdouble型に変換して配列に格納
+      i++; // インデックスを1つ進める
+    }
+    gps_idx_i = i;
+    gps_ok = true;
+  }
+  if(i == 6 || gps_ok){ //if (sm.updated("liveLocationKalman")) {
+    //auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
+    //auto locationd_pos = locationd_location.getPositionGeodetic(); //lat,lon
+    double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
+    //auto locationd_orientation = locationd_location.getCalibratedOrientationNED(); //bearing
+    double locationd_orientation = gps_output[2]; //bearing
+    //auto locationd_velocity = locationd_location.getVelocityCalibrated(); //sm_vego？一応gen_nav_pvtの中にはある。
+    double locationd_velocity = gps_output[3]; //VEgo
+    //auto locationd_ecef = locationd_location.getPositionECEF(); //gps取得精度、これをどうするか・・・？
+
+    locationd_valid = true; //強制。トンネルに入ったとか、多分だめ。(locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && locationd_ecef.getValid());
+    // if (false && locationd_valid) {
+    //   // Check std norm
+    //   auto pos_ecef_std = locationd_ecef.getStd();
+    //   FILE *fp10 = fopen("/tmp/gps_vel2_data.txt","w");
+    //   if(fp10){
+    //     fprintf(fp10,"%.3f,%.3f,%.3f",(double)pos_ecef_std[0],(double)pos_ecef_std[1],(double)pos_ecef_std[2]);
+    //     fclose(fp10);
+    //   }
+    //   bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
+    //   locationd_valid = pos_accurate_enough;
+    // }
+
+    if (locationd_valid) {
+      if (already_vego_over_8 == true) {
+        last_position = QMapLibre::Coordinate(locationd_pos[0], locationd_pos[1]);
+        last_bearing = locationd_orientation;
+      }
+      velocity_filter.update(std::max(10/3.6, locationd_velocity));
+
+      if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
+        if(false && map_pitch_up){
+          map_pitch_up = false;
+          void soundButton(int onOff);
+          soundButton(true);
+          if(MIN_PITCH_ < 0){
+            MIN_PITCH_ = -10; //ジェスチャー切り替えでノースアップが-10以外になっている可能性を考慮。
+          }
+
+          MIN_PITCH_ /= 10;
+          MIN_PITCH_ += 1;
+          if(MIN_PITCH_ > 4){
+            MIN_PITCH_ = -1;
+          }
+          if(MIN_PITCH_ == -1){
+            //head->north
+            head_north = true; //地図の角度をリセットする。
+          } else if(MIN_PITCH_ == 0){
+            //north->head
+            north_head = true; //地図の角度をリセットする。
+          }
+          MIN_PITCH_ *= 10;
+          max_zoom_pitch_effect();
+          setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
+          chg_pitch = true;
+        }
+
+        if(map_pitch_down){
+          map_pitch_down = false;
+          if(MIN_PITCH_ < 0){
+            MIN_PITCH_ = -10; //ジェスチャー切り替えでノースアップが-10以外になっている可能性を考慮。
+          }
+
+          MIN_PITCH_ /= 10;
+          MIN_PITCH_ -= 1;
+          if(MIN_PITCH_ < -1){
+            MIN_PITCH_ = 4;
+          }
+          if(MIN_PITCH_ == -1){
+            //head->north
+            head_north = true; //地図の角度をリセットする。
+          } else if(MIN_PITCH_ == 4){
+            //north->head
+            north_head = true; //地図の角度をリセットする。
+          }
+          MIN_PITCH_ *= 10;
+          max_zoom_pitch_effect();
+          setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
+          chg_pitch = true;
+
+          if(MIN_PITCH_ == 0){
+            void soundPikiri();
+            soundPikiri();
+          } else {
+            extern void soundPipo();
+            soundPipo();
+          }
+        }
+
+        if(head_gesture_map_north_heading_toggle){
+          head_gesture_map_north_heading_toggle = false;
+          void soundButton(int onOff);
+          soundButton(true);
+          if(MIN_PITCH_ == 0){ // 0<->-1
+            MIN_PITCH_ = -1;
+            head_north = true; //地図の角度をリセットする。
+          } else if(MIN_PITCH_ == -1){
+            MIN_PITCH_ = 0;
+            north_head = true; //地図の角度をリセットする。
+          } else {
+            MIN_PITCH_ = -MIN_PITCH_;
+            if(MIN_PITCH_ >= 0){
+              north_head = true; //地図の角度をリセットする。
+            } else {
+              head_north = true; //地図の角度をリセットする。
+            }
+          }
+          max_zoom_pitch_effect();
+          setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
+          chg_pitch = true;
+        }
+      }
+    }
+
+  }
+#endif
   if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
     resizeGL(width(), height()); //毎度呼び出したら重い？ MAP_SCALE指定が途中から無しになる現象が頻発する対策。
     if(north_up == 0){
