@@ -464,7 +464,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
           useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0 && fp_error==false)));
 
           UIState *s = uiState();
-          if((*s->sm)["controlsState"].getControlsState().getExperimentalMode()){
+          if((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()){
             setButtonEnabled("/data/long_speeddown_disable.txt",false);
           } else {
             setButtonEnabled("/data/long_speeddown_disable.txt",true);
@@ -479,7 +479,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
           soundPo();
 
           UIState *s = uiState();
-          if((*s->sm)["controlsState"].getControlsState().getExperimentalMode()){
+          if((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()){
             Params().putBool("ExperimentalMode", false);
           } else {
             Params().putBool("ExperimentalMode", true);
