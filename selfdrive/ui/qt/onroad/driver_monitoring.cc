@@ -329,7 +329,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     face_down_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     up_face_key_n = 0;
     down_face_key_n = 0;
-    if(F == 0){
+    if(Limit_speed_mode == 0){
       Limit_speed_mode = 1;
     } else {
       Limit_speed_mode = 0; //2にはならない。
