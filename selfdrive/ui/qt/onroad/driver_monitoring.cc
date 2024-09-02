@@ -74,6 +74,16 @@ static void set_face_gesture_arc(QPainter &painter,float x, float y, int start_a
   painter.drawArc(QRectF(x - btn_size / 2 +ww/2, y - btn_size / 2 +ww/2 , btn_size-ww, btn_size-ww) , start_ang * 16, ang_width * 16);
 }
 
+void drawText(QPainter &p, int x, int y, const QString &text, int alpha) {
+  QRect real_rect = p.fontMetrics().boundingRect(text);
+  real_rect.moveCenter({x, y - real_rect.height() / 2});
+  p.setPen(QColor(0xff, 0xff, 0xff, alpha));
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+}
+
+
+extern int Limit_speed_mode; //標識
+extern bool mapVisible;
 void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   if (!is_visible) return;
 
@@ -135,7 +145,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   float right_face_x;
   float r_face_r;
   float l_face_r;
-  if(rightHandDM == false){
+  if(is_rhd == false){
     //左ハンドル？未検証
     left_face_x = -17*thr_face;
     right_face_x = 14*thr_face;
@@ -153,7 +163,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   //中央視線検出
   static int face_center_ct = 0;
   const float center_eye_rate = 0.3;
-  bool center_detect = (dmActive && delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
+  bool center_detect = (is_active && delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
     && delta_y > up_face_y*center_eye_rate && delta_y < down_face_y*center_eye_rate
     && delta_r > r_face_r*center_eye_rate && delta_r < l_face_r*center_eye_rate);
   if(center_detect){
@@ -319,7 +329,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     face_down_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     up_face_key_n = 0;
     down_face_key_n = 0;
-    if(Limit_speed_mode == 0){
+    if(F == 0){
       Limit_speed_mode = 1;
     } else {
       Limit_speed_mode = 0; //2にはならない。
