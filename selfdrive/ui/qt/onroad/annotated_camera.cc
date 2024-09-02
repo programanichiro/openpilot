@@ -127,8 +127,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   has_us_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::MUTCD);
   has_eu_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
   // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
-  speedUnit =  is_metric ? tr("km/h") : tr("mph");
-  hideBottomIcons = (cs.getAlertSize() != cereal::ControlsState::AlertSize::NONE);
+  speedUnit = is_metric ? tr("km/h") : tr("mph");
+  hideBottomIcons = (sm["selfdriveState"].getSelfdriveState().getAlertSize() != cereal::SelfdriveState::AlertSize::NONE);
   status = s.status;
 
   maxSpeed = maxspeed_str; //ichiro pilot
@@ -769,7 +769,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
     my_drawIcon(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
-             sm["controlsState"].getControlsState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
+             sm["selfdriveState"].getSelfdriveState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
   }
   const float x_Long_enable = rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2;
   const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
@@ -781,9 +781,9 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     }
   }
   int long_base_angle0 = 45; //下中央から左右に何度か指定する。
-  if((Long_enable || (*s->sm)["controlsState"].getControlsState().getExperimentalMode()) && global_engageable){
+  if((Long_enable || (*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) && global_engageable){
     const int arc_w = -8; //内側に描画
-    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w));
+    QPen pen = QPen(QColor(255, 255, ((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     const float x = x_Long_enable;
@@ -823,7 +823,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     const int long_base_angle = long_base_angle0-3; //下中央から左右に何度か指定する。
     //ONOFFの状態をこれで視認できる。
     const int arc_w_base = -14; //内側に描画
-    QPen pen = QPen(QColor(255, 255, ((*s->sm)["controlsState"].getControlsState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w_base));
+    QPen pen = QPen(QColor(255, 255, ((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w_base));
     pen.setCapStyle(Qt::FlatCap); //端をフラットに
     p.setPen(pen);
     p.drawArc(x - btn_size / 2 -arc_w_base/2, y - btn_size / 2 -arc_w_base/2, btn_size+arc_w_base, btn_size+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
@@ -1122,7 +1122,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   SubMaster &sm = *(s->sm);
 
   // lanelines
-  const bool chill_mode = false; //!sm["controlsState"].getControlsState().getExperimentalMode();
+  const bool chill_mode = false; //!sm["selfdriveState"].getSelfdriveState().getExperimentalMode();
   const float v_ego_car = sm["carState"].getCarState().getVEgo();
   const bool lta_mode = (v_ego_car > 16/3.6 || chill_mode) && scene.mLTA_EnableButton;
   int lane_collision = -1;
@@ -1179,7 +1179,7 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 
   // paint path
   QLinearGradient bg(0, height(), 0, 0);
-  if (sm["controlsState"].getControlsState().getExperimentalMode()) {
+  if (sm["selfdriveState"].getSelfdriveState().getExperimentalMode()) {
     // The first half of track_vertices are the points for the right side of the path
     const auto &acceleration = sm["modelV2"].getModelV2().getAcceleration().getX();
     const int max_len = std::min<int>(scene.track_vertices.length() / 2, acceleration.size());
@@ -2348,7 +2348,7 @@ void AnnotatedCameraWidget::paintGL() {
       } else if (v_ego > 15) {
         wide_cam_requested = false;
       }
-      wide_cam_requested = wide_cam_requested && sm["controlsState"].getControlsState().getExperimentalMode();
+      wide_cam_requested = wide_cam_requested && sm["selfdriveState"].getSelfdriveState().getExperimentalMode();
       // for replay of old routes, never go to widecam
       wide_cam_requested = wide_cam_requested && s->scene.calibration_wide_valid;
     }

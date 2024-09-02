@@ -464,7 +464,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
           useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0 && fp_error==false)));
 
           UIState *s = uiState();
-          if((*s->sm)["controlsState"].getControlsState().getExperimentalMode()){
+          if((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()){
             setButtonEnabled("/data/long_speeddown_disable.txt",false);
           } else {
             setButtonEnabled("/data/long_speeddown_disable.txt",true);
@@ -479,7 +479,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
           soundPo();
 
           UIState *s = uiState();
-          if((*s->sm)["controlsState"].getControlsState().getExperimentalMode()){
+          if((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()){
             Params().putBool("ExperimentalMode", false);
           } else {
             Params().putBool("ExperimentalMode", true);
@@ -785,7 +785,7 @@ void ExperimentalButton::changeMode() {
 }
 
 void ExperimentalButton::updateState(const UIState &s) {
-  const auto cs = (*s.sm)["controlsState"].getControlsState();
+  const auto cs = (*s.sm)["selfdriveState"].getSelfdriveState();
   bool eng = cs.getEngageable() || cs.getEnabled();
   if ((cs.getExperimentalMode() != experimental_mode) || (eng != engageable)) {
     engageable = eng;
