@@ -346,8 +346,8 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     left_face_key_n = 0;
     // extern bool map_pitch_up;
     // map_pitch_up = true;
-    extern bool map_pitch_down;
-    map_pitch_down = true;
+    // extern bool map_pitch_down;
+    // map_pitch_down = true;
   }
 
   if(false && mapVisible && face_left_ct > 1 && face_down_ct >= long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
@@ -358,8 +358,8 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     face_left_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
     down_face_key_n = 0;
     left_face_key_n = 0;
-    extern bool map_pitch_down;
-    map_pitch_down = true;
+    // extern bool map_pitch_down;
+    // map_pitch_down = true;
   }
 
   // FILE *fp = fopen("/tmp/debug_out_rr","w");
