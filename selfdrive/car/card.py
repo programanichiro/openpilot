@@ -24,7 +24,7 @@ from openpilot.selfdrive.controls.lib.events import Events
 
 REPLAY = "REPLAY" in os.environ
 
-EventName = car.CarEvent.EventName
+EventName = car.OnroadEvent.EventName
 
 ACCEL_PUSH_COUNT = 0
 accel_engaged_str = '0'
