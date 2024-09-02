@@ -36,8 +36,6 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget* par
 
   engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
   experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size - 5, img_size - 5});
-
-  dm_img = loadPixmap("../assets/img_driver_face.png", {img_size + 5, img_size + 5});
 }
 
 bool global_engageable;
@@ -128,7 +126,6 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   has_eu_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
   // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
   speedUnit = is_metric ? tr("km/h") : tr("mph");
-  hideBottomIcons = (sm["selfdriveState"].getSelfdriveState().getAlertSize() != cereal::SelfdriveState::AlertSize::NONE);
   status = s.status;
 
   maxSpeed = maxspeed_str; //ichiro pilot
@@ -139,12 +136,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   global_engageable = (cs.getEngageable() || cs.getEnabled());
 
   // update DM icon
-  auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
-  dmActive = dm_state.getIsActiveMode();
-  rightHandDM = dm_state.getIsRHD();
-  g_rightHandDM = rightHandDM;
-  // DM icon transition
-  dm_fade_state = std::clamp(dm_fade_state+0.2*(0.5-dmActive), 0.0, 1.0);
+  dmon.updateState(s);
 
   // hide map settings button for alerts and flip for right hand DM
   // if (map_settings_btn->isEnabled()) {
@@ -1219,324 +1211,6 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.restore();
 }
 
-static void set_face_gesture_arc(QPainter &painter,float x, float y, int start_ang , int ang_width ,const QColor &col , int ww=20){
-  //顔が向いてる方を上下左右で表示する。
-  QPen pen = QPen(col, ww);
-  pen.setCapStyle(Qt::FlatCap); //端をフラットに
-  painter.setPen(pen);
-
-  painter.drawArc(QRectF(x - btn_size / 2 +ww/2, y - btn_size / 2 +ww/2 , btn_size-ww, btn_size-ww) , start_ang * 16, ang_width * 16);
-}
-
-void AnnotatedCameraWidget::drawDriverState(QPainter &painter, const UIState *s) {
-  const UIScene &scene = s->scene;
-
-  painter.save();
-
-  // base icon
-  int offset = UI_BORDER_SIZE + (30-UI_BORDER_SIZE) + btn_size / 2;
-  int x = false /*rightHandDM*/ ? width() - offset : offset;
-  int y = height() - offset;
-  float opacity = dmActive ? 0.65 : 0.2; y -= 18 + (30-UI_BORDER_SIZE)*2;
-  drawIcon(painter, QPoint(x, y), dm_img, blackColor(70), opacity); //公式drawIconを使う。
-  if(rightHandDM){ //ボタンを移動できないので、アイコンはそのまま、左肩に"R"を表示。
-    painter.setFont(InterFont(70, QFont::Bold));
-    drawText(painter, x - btn_size / 2, y - btn_size / 4, "R" , dmActive ? 200 : 100);
-  }
-
-  // face
-  QPointF face_kpts_draw[std::size(default_face_kpts_3d)];
-  float kp;
-  for (int i = 0; i < std::size(default_face_kpts_3d); ++i) {
-    kp = (scene.face_kpts_draw[i].v[2] - 8) / 120 + 1.0;
-    face_kpts_draw[i] = QPointF(scene.face_kpts_draw[i].v[0] * kp + x, scene.face_kpts_draw[i].v[1] * kp + y);
-  }
-
-  painter.setPen(QPen(QColor::fromRgbF(1.0, 1.0, 1.0, opacity), 5.2, Qt::SolidLine, Qt::RoundCap));
-  painter.drawPolyline(face_kpts_draw, std::size(default_face_kpts_3d));
-
-  // tracking arcs
-  const int arc_l = 133;
-  const float arc_t_default = 6.7;
-  const float arc_t_extend = 12.0;
-  QColor arc_color = QColor::fromRgbF(0.545 - 0.445 * s->engaged(),
-                                      0.545 + 0.4 * s->engaged(),
-                                      0.545 - 0.285 * s->engaged(),
-                                      0.4 * (1.0 - dm_fade_state));
-  float delta_x = -scene.driver_pose_sins[1] * arc_l / 2;
-  float delta_y = -scene.driver_pose_sins[0] * arc_l / 2;
-  painter.setPen(QPen(arc_color, arc_t_default+arc_t_extend*fmin(1.0, scene.driver_pose_diff[1] * 5.0), Qt::SolidLine, Qt::RoundCap));
-  painter.drawArc(QRectF(std::fmin(x + delta_x, x), y - arc_l / 2, fabs(delta_x), arc_l), (scene.driver_pose_sins[1]>0 ? 90 : -90) * 16, 180 * 16);
-  painter.setPen(QPen(arc_color, arc_t_default+arc_t_extend*fmin(1.0, scene.driver_pose_diff[0] * 5.0), Qt::SolidLine, Qt::RoundCap));
-  painter.drawArc(QRectF(x - arc_l / 2, std::fmin(y + delta_y, y), arc_l, fabs(delta_y)), (scene.driver_pose_sins[0]>0 ? 0 : 180) * 16, 180 * 16);
-
-  //顔が向いてる方を上下左右かしげで表示する。
-  float delta_r = scene.driver_pose_sins[2]; //首のかしげ角度のsin
-  static unsigned int key_n_ct = 0; //キーが入った順番
-  static unsigned int left_face_key_n;
-  static unsigned int right_face_key_n;
-  static unsigned int up_face_key_n;
-  static unsigned int down_face_key_n;
-  static unsigned int lr_face_key_n;
-  static unsigned int rr_face_key_n;
-
-  const int long_press = 20;
-  const int face_max_ct = 60; //long_pressを超えて（face_center_ctなどが）最大ここまでカウントする。
-  const float thr_face = 0.9;
-  float left_face_x;
-  float right_face_x;
-  float r_face_r;
-  float l_face_r;
-  if(rightHandDM == false){
-    //左ハンドル？未検証
-    left_face_x = -17*thr_face;
-    right_face_x = 14*thr_face;
-    // r_face_r = -0.19*thr_face; //同じならいらない
-    // l_face_r = 0.19*thr_face;
-  } else {
-    left_face_x = -14*thr_face;
-    right_face_x = 18*thr_face;
-    r_face_r = -0.19*thr_face;
-    l_face_r = 0.19*thr_face;
-  }
-  float up_face_y = -25*thr_face;
-  float down_face_y = 22*thr_face;
-
-  //中央視線検出
-  static int face_center_ct = 0;
-  const float center_eye_rate = 0.3;
-  bool center_detect = (dmActive && delta_x > left_face_x*center_eye_rate && delta_x < right_face_x*center_eye_rate
-    && delta_y > up_face_y*center_eye_rate && delta_y < down_face_y*center_eye_rate
-    && delta_r > r_face_r*center_eye_rate && delta_r < l_face_r*center_eye_rate);
-  if(center_detect){
-    set_face_gesture_arc(painter,x,y , 0 , 360 ,QColor(200,face_center_ct < long_press ? 200 : 100,0,250) , 10);
-    if(face_center_ct < face_max_ct)
-      face_center_ct ++;
-  } else {
-    // if(face_center_ct > long_press) //こうするか迷うところ。現状face_center_ctは表示以外に影響しない。中央インジケーターの⚪︎が消えるのが遅れるだけ。
-    //   face_center_ct = long_press;
-    if(face_center_ct > 0)
-      face_center_ct --;
-  }
-
-  bool all_centering = true;
-  //右向き検出
-  static int face_right_ct = 0;
-  if(delta_x > right_face_x){
-    if(delta_x > right_face_x && face_right_ct >= 0){
-      right_face_key_n = key_n_ct ++;
-    }
-    set_face_gesture_arc(painter,x,y , -45 , 90 ,QColor(200,face_right_ct < long_press ? 200 : 100,0,250));
-    if(face_right_ct < face_max_ct)
-      face_right_ct ++;
-    if(delta_x > right_face_x)
-      all_centering = false;
-  } else {
-    //face_right_ct = 0;
-  }
-  //左向き検出
-  static int face_left_ct = 0;
-  if(delta_x < left_face_x){
-    if(delta_x < left_face_x && face_left_ct >= 0){
-      left_face_key_n = key_n_ct ++;
-    }
-    set_face_gesture_arc(painter,x,y , 135 , 90 ,QColor(200,face_left_ct < long_press ? 200 : 100,0,250));
-    if(face_left_ct < face_max_ct)
-      face_left_ct ++;
-    if(delta_x < left_face_x)
-      all_centering = false;
-  } else {
-    //face_left_ct = 0;
-  }
-  //上向き検出
-  static int face_up_ct = 0;
-  if(delta_y < up_face_y){
-    if(delta_y < up_face_y && face_up_ct >= 0){
-      up_face_key_n = key_n_ct ++;
-    }
-    set_face_gesture_arc(painter,x,y , 45 , 90, QColor(200,face_up_ct < long_press ? 200 : 100,0,250));
-    if(face_up_ct < face_max_ct)
-      face_up_ct ++;
-    if(delta_y < up_face_y)
-      all_centering = false;
-  } else {
-    //face_up_ct = 0;
-  }
-  //下向き検出
-  static int face_down_ct = 0;
-  if(delta_y > down_face_y){
-    if(delta_y > down_face_y && face_down_ct >= 0){
-      down_face_key_n = key_n_ct ++;
-    }
-    set_face_gesture_arc(painter,x,y , -45 , -90, QColor(200,face_down_ct < long_press ? 200 : 100,0,250));
-    if(face_down_ct < face_max_ct)
-      face_down_ct ++;
-    if(delta_y > down_face_y)
-      all_centering = false;
-  } else {
-    //face_down_ct = 0;
-  }
-
-  //首を傾けるジェスチャー
-  //右に傾げる
-  static int face_rr_ct = 0;
-  if(delta_r < r_face_r){
-    if(delta_r < r_face_r && face_rr_ct >= 0){
-      rr_face_key_n = key_n_ct ++;
-    }
-    set_face_gesture_arc(painter,x,y , -90-20 , 180, QColor(200,face_rr_ct < long_press ? 200 : 100,0,250));
-    if(face_rr_ct < face_max_ct)
-      face_rr_ct ++;
-    if(delta_r < r_face_r)
-      all_centering = false;
-  } else {
-    //face_rr_ct = 0;
-  }
-  //左に傾げる
-  static int face_lr_ct = 0;
-  if(delta_r > l_face_r){
-    if(delta_r > l_face_r && face_lr_ct >= 0){
-      lr_face_key_n = key_n_ct ++;
-    }
-    set_face_gesture_arc(painter,x,y , 90+20 , 180, QColor(200,face_lr_ct < long_press ? 200 : 100,0,250));
-    if(face_lr_ct < face_max_ct)
-      face_lr_ct ++;
-    if(delta_r > l_face_r)
-      all_centering = false;
-  } else {
-    //face_lr_ct = 0;
-  }
-
-  if(all_centering == true){
-    if(face_right_ct > long_press)
-      face_right_ct = long_press;
-    if(face_left_ct > long_press)
-      face_left_ct = long_press;
-    if(face_up_ct > long_press)
-      face_up_ct = long_press;
-    if(face_down_ct > long_press)
-      face_down_ct = long_press;
-    if(face_rr_ct > long_press)
-      face_rr_ct = long_press;
-    if(face_lr_ct > long_press)
-      face_lr_ct = long_press;
-
-    if(face_right_ct > 0)
-      face_right_ct --;
-    if(face_left_ct > 0)
-      face_left_ct --;
-    if(face_up_ct > 0)
-      face_up_ct --;
-    if(face_down_ct > 0)
-      face_down_ct --;
-    if(face_rr_ct > 0)
-      face_rr_ct --;
-    if(face_lr_ct > 0)
-      face_lr_ct --;
-
-    if(face_right_ct == 0
-      && face_left_ct == 0
-      && face_up_ct == 0
-      && face_down_ct == 0
-      && face_rr_ct == 0
-      && face_lr_ct == 0){
-      key_n_ct = 0;
-      left_face_key_n = 0;
-      right_face_key_n = 0;
-      up_face_key_n = 0;
-      down_face_key_n = 0;
-      lr_face_key_n = 0;
-      rr_face_key_n = 0;
-    }
-  }
-#if 0 //顔一回転は流石に無理があるか。
-  if(face_up_ct > 1 && face_down_ct > 1 && face_left_ct > 1 && face_right_ct > 1){
-    face_left_ct = 0;
-    face_right_ct = 0;
-    face_up_ct = 0;
-    face_down_ct = 0;
-    left_face_key_n = 0;
-    right_face_key_n = 0;
-    up_face_key_n = 0;
-    down_face_key_n = 0;
-    void soundPikiri();
-    soundPikiri();
-  }
-#endif
-  if(face_down_ct > 0 && face_up_ct >= long_press && down_face_key_n < up_face_key_n  //↓↑ジェスチャー
-      && face_right_ct == 0 && face_left_ct == 0 //検知以外の向き防止
-    ){
-    //ACC速度制御モード変更
-    face_up_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    face_down_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    up_face_key_n = 0;
-    down_face_key_n = 0;
-    if(Limit_speed_mode == 0){
-      Limit_speed_mode = 1;
-    } else {
-      Limit_speed_mode = 0; //2にはならない。
-    }
-  }
-
-  if(mapVisible && face_left_ct > 1 && face_up_ct >= long_press && left_face_key_n < up_face_key_n //←↑ジェスチャー
-      && face_down_ct == 0 && face_right_ct == 0 //検知以外の向き防止
-    ){
-    //地図ピッチアップ
-    face_up_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    face_left_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    up_face_key_n = 0;
-    left_face_key_n = 0;
-    // extern bool map_pitch_up;
-    // map_pitch_up = true;
-    extern bool map_pitch_down;
-    map_pitch_down = true;
-  }
-
-  if(false && mapVisible && face_left_ct > 1 && face_down_ct >= long_press && left_face_key_n < down_face_key_n //←↓ジェスチャー
-      && face_up_ct == 0 && face_right_ct == 0 //検知以外の向き防止
-    ){
-    //地図ピッチダウン
-    face_down_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    face_left_ct = 0; //多キーコマンドは-20にしなくても連続動作しない。
-    down_face_key_n = 0;
-    left_face_key_n = 0;
-    extern bool map_pitch_down;
-    map_pitch_down = true;
-  }
-
-  // FILE *fp = fopen("/tmp/debug_out_rr","w");
-  // if(fp != NULL){
-  //   fprintf(fp,"rr:%d,%d,%d",face_rr_ct,face_left_ct,face_up_ct);
-  //   fclose(fp);
-  // }
-  if(face_rr_ct >= long_press && face_left_ct < 3*face_rr_ct/long_press && face_up_ct < 3*face_rr_ct/long_press){ //↘︎ジェスチャー
-    face_rr_ct = -long_press; //連続動作しないように工夫。
-    rr_face_key_n = 0;
-    {
-      //カメラ↔︎地図の画面切り替え
-      extern bool head_gesture_home; //サイドバーを消す
-      extern bool head_gesture_onroad_home;
-      head_gesture_home = true;
-      head_gesture_onroad_home = true;
-    }
-  }
-
-  const int long_press_tmp = (int)(long_press*0.75); //ミスカウントする分、少し短く。
-  if(face_lr_ct > long_press_tmp && face_right_ct < 3*face_lr_ct/long_press_tmp && face_up_ct < 3*face_lr_ct/long_press_tmp){ //↙︎ジェスチャー
-    face_lr_ct = -long_press_tmp; //連続動作しないように工夫。
-    lr_face_key_n = 0;
-    {
-      //ノースアップ↔︎ヘディングアップの画面切り替え
-      extern bool head_gesture_home; //サイドバーを消す
-      extern bool head_gesture_onroad_home_map_on;
-      head_gesture_home = true;
-      head_gesture_onroad_home_map_on = true; //地図を強制的に出す。
-    }
-  }
-
-  painter.restore();
-}
-
 void AnnotatedCameraWidget::knightScanner(QPainter &p) {
   extern int Knight_scanner;
 
@@ -2396,11 +2070,7 @@ void AnnotatedCameraWidget::paintGL() {
     }
   }
 
-  // DMoji
-  if (/*!hideBottomIcons &&*/ (sm.rcv_frame("driverStateV2") > s->scene.started_frame)) {
-    update_dmonitoring(s, sm["driverStateV2"].getDriverStateV2(), dm_fade_state, rightHandDM);
-    drawDriverState(painter, s);
-  }
+  dmon.draw(painter, rect());
 
   drawHud(painter);
 
