@@ -19,7 +19,7 @@ from openpilot.common.prefix import OpenpilotPrefix
 from openpilot.common.transformations.camera import CameraConfig, DEVICE_CAMERAS
 from openpilot.selfdrive.controls.lib.alertmanager import set_offroad_alert
 from openpilot.selfdrive.test.helpers import with_processes
-from openpilot.selfdrive.test.process_replay.migration import migrate_selfdriveState
+from openpilot.selfdrive.test.process_replay.migration import migrate_controlsState
 from openpilot.tools.lib.logreader import LogReader
 from openpilot.tools.lib.framereader import FrameReader
 from openpilot.tools.lib.route import Route
@@ -115,7 +115,7 @@ def setup_onroad_alert_mid(click, pm: PubMaster):
 def setup_onroad_alert_full(click, pm: PubMaster):
   setup_onroad_alert(click, pm, 'Full Alert', 'This is a full alert message', log.SelfdriveState.AlertSize.full)
 
-def setup_offorad_alert(click, pm: PubMaster):
+def setup_offroad_alert(click, pm: PubMaster):
   setup_common(click, pm)
   for alert in OFFROAD_ALERTS:
     set_offroad_alert(alert, True)
@@ -148,7 +148,7 @@ CASES = {
   "onroad_wide_sidebar": setup_onroad_wide_sidebar,
   "driver_camera": setup_driver_camera,
   "body": setup_body,
-  "offroad_alert": setup_offorad_alert,
+  "offroad_alert": setup_offroad_alert,
   "update_available": setup_update_available
 }
 
@@ -224,7 +224,7 @@ def create_screenshots():
   segnum = 2
   lr = LogReader(route.qlog_paths()[segnum])
   DATA['carParams'] = next((event.as_builder() for event in lr if event.which() == 'carParams'), None)
-  for event in migrate_selfdriveState(lr):
+  for event in migrate_controlsState(lr):
     if event.which() in DATA:
       DATA[event.which()] = event.as_builder()
 

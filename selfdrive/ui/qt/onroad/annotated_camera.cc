@@ -54,10 +54,10 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   is_metric = s.scene.is_metric;
 
   // Handle older routes where vCruiseCluster is not set
-  float v_cruise = cs.getVCruiseCluster() == 0.0 ? cs.getVCruise() : cs.getVCruiseCluster();
+  float v_cruise = car_state.getVCruiseCluster() == 0.0 ? car_state.getVCruise() : car_state.getVCruiseCluster();
   ACC_speed = std::nearbyint(v_cruise); //45〜
-  v_cruise = cs.getVCruise(); //41〜,間違いない、表示して確認した。改めてこちらを使う。
-  maxspeed_org = cs.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
+  v_cruise = car_state.getVCruise(); //41〜,間違いない、表示して確認した。改めてこちらを使う。
+  maxspeed_org = car_state.getVCruise(); //これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
   //maxspeed_org = v_cruise; //getVCruiseを使うと点滅しすぎる？
   if(tss_type == 0){
     std::string tss_type_txt = util::read_file("/data/tss_type_info.txt");
