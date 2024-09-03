@@ -14,7 +14,8 @@ from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
-from openpilot.selfdrive.controls.lib.drive_helpers import V_CRUISE_MAX, CONTROL_N, get_speed_error
+from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_speed_error
+from openpilot.selfdrive.car.cruise import V_CRUISE_MAX
 from openpilot.common.swaglog import cloudlog
 
 from opendbc.car.toyota.values import TSS2_CAR,ToyotaFlags
@@ -192,7 +193,7 @@ class LongitudinalPlanner:
     self.mpc.mode = 'acc'
 
     v_ego = sm['carState'].vEgo
-    # v_cruise_kph = min(sm['controlsState'].vCruise, V_CRUISE_MAX)
+    # v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
     a_ego = sm['carState'].aEgo
     dexp_mode = False
     try:
@@ -216,7 +217,7 @@ class LongitudinalPlanner:
             fp.write('%d' % (0)) #イチロウロング有効
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
     min_acc_speed = 31
-    v_cruise_kph = sm['controlsState'].vCruise
+    v_cruise_kph = sm['carState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
       tss_type = 1
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
