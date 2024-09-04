@@ -205,7 +205,7 @@ class LongitudinalPlanner:
     except Exception as e:
       pass
     if dexp_mode:
-      if not sm['controlsState'].experimentalMode:
+      if not sm['selfdriveState'].experimentalMode:
         if (v_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (sm['carState'].leftBlinker or sm['carState'].rightBlinker):
           params.put_bool("ExperimentalMode", True) # blended
           with open('/tmp/long_speeddown_disable.txt','w') as fp:
@@ -259,7 +259,7 @@ class LongitudinalPlanner:
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
-      if sm['controlsState'].enabled and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6):
+      if sm['selfdriveState'].enabled and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6):
         with open('/tmp/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
           #しばらくやってもなかなか出ない？fp.write('%d' % (3)) #デバッグでpo.wav音を鳴らす。
@@ -268,7 +268,7 @@ class LongitudinalPlanner:
       one_pedal_chenge_restrict_time = 20
     if one_pedal_chenge_restrict_time > 0:
       one_pedal_chenge_restrict_time -= 1
-    if one_pedal == True and v_ego < 0.1/3.6 and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6) and sm['controlsState'].enabled and sm['carState'].gasPressed == False:
+    if one_pedal == True and v_ego < 0.1/3.6 and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False:
       force_one_pedal_set = False
       try:
         with open('/tmp/force_one_pedal.txt','r') as fp:
@@ -288,11 +288,11 @@ class LongitudinalPlanner:
 
     sm_longControlState = sm['controlsState'].longControlState
     if sm_longControlState == LongCtrlState.off:
-      # if sm['carState'].gasPressed and sm['controlsState'].enabled: #アクセル踏んでエンゲージ中なら
-      if sm['controlsState'].enabled: #アクセル踏む条件を無視してみる。
+      # if sm['carState'].gasPressed and sm['selfdriveState'].enabled: #アクセル踏んでエンゲージ中なら
+      if sm['selfdriveState'].enabled: #アクセル踏む条件を無視してみる。
         sm_longControlState = LongCtrlState.pid #0.8.14からアクセルONでLongCtrlState.offとなるため、従来動作をシミュレート
     if OP_ENABLE_PREV == False and sm_longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
-       #速度が時速３km以上かつ31km未満かつsm['controlsState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
+       #速度が時速３km以上かつ31km未満かつsm['carState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
@@ -320,7 +320,7 @@ class LongitudinalPlanner:
     hasLead = sm['radarState'].leadOne.status
     distLead_near = sm['radarState'].leadOne.dRel < interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
     global signal_scan_ct,path_x_old_signal,path_x_old_signal_check , red_signal_scan_flag
-    if v_ego <= 0.1/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['controlsState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
+    if v_ego <= 0.1/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
       # 停止時の青信号発進抑制、一時的に緩和、15->50度
@@ -368,13 +368,13 @@ class LongitudinalPlanner:
     if path_x_old_signal < 20:
       path_x_old_signal_check = 0
 
-    if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ
+    if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       signal_scan_ct = 200 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
       with open('/tmp/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
-    # if CVS_FRAME % 10 == 0 and v_ego >= 1/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['controlsState'].enabled:
+    # if CVS_FRAME % 10 == 0 and v_ego >= 1/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled:
     #   try: #首ジェスチャーでエクストラエンゲージ解除をやろうと思ったが、誤作動懸念で保留。アクセル踏み込みとレバーアップがあるし
     #     with open('/tmp/gesture_onpe2AP.txt','r') as fp:
     #       gesture_onpe2AP_str = fp.read()
@@ -464,7 +464,7 @@ class LongitudinalPlanner:
         except Exception as e:
           pass
       red_stop_immediately = False
-      if long_speeddown_flag == False and not sm['controlsState'].experimentalMode: #公式ロングではelseへ強制遷移する追加条件
+      if long_speeddown_flag == False and not sm['selfdriveState'].experimentalMode: #公式ロングではelseへ強制遷移する追加条件
         if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
           stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
         else: #夜
@@ -482,7 +482,7 @@ class LongitudinalPlanner:
         #                                     , [0.25,0.30,0.33,0.35,0.38,0.41,0.43]) #さらに減速度の強さa_egoを加味。弱ければより小さくできる？
         # if desired_path_x_rate < stop_threshold_r: #0.4:
         #   red_stop_immediately = True #停止せよ。
-      if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['controlsState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
+      if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
         #赤信号検出でワンペダル発動
         if red_signal_scan_ct < 10000:
           red_signal_scan_ct = 10000
@@ -527,14 +527,14 @@ class LongitudinalPlanner:
         elif v_cruise_kph > before_v_cruise_kph_max_1:
           lever_up_down = 1
 
-    if (hasLead == True and sm['radarState'].leadOne.dRel < 10) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+    if (hasLead == True and sm['radarState'].leadOne.dRel < 10) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         if self.red_signal_eP_iP_flag != 0:
           self.red_signal_eP_iP_flag = 0
           with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
             fp.write('%d' % (0))
 
-    if (hasLead == True and distLead_near == True) or sm['controlsState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+    if (hasLead == True and distLead_near == True) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         red_signal_scan_flag_1 = 0
 
@@ -575,7 +575,7 @@ class LongitudinalPlanner:
           fp.write('%d' % (0))
         with open('/tmp/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
-    if v_ego > 3/3.6 and v_ego <= 30/3.6 and sm['carState'].gasPressed and sm['controlsState'].enabled: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
+    if v_ego > 3/3.6 and v_ego <= 30/3.6 and sm['carState'].gasPressed and sm['selfdriveState'].enabled: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
       if before_v_cruise_kph_max_1 <= 37 and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = v_ego
@@ -638,7 +638,7 @@ class LongitudinalPlanner:
           with open('/tmp/limitspeed_sw.txt','r') as fp:
             limitspeed_sw_str = fp.read()
             if limitspeed_sw_str and limitspeed_data_str:
-              if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['controlsState'].enabled: #自動設定モード
+              if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['selfdriveState'].enabled: #自動設定モード
                 if limitspeed_flag == 999:
                   v_cruise_kph = self.limitspeed_point_avg
                   # v_cruise_kph = self.limitspeed_point
@@ -866,7 +866,7 @@ class LongitudinalPlanner:
     force_slow_decel = sm['controlsState'].forceDecel
 
     # Reset current state when not engaged, or user is controlling the speed
-    reset_state = long_control_off if self.CP.openpilotLongitudinalControl else not sm['controlsState'].enabled
+    reset_state = long_control_off if self.CP.openpilotLongitudinalControl else not sm['selfdriveState'].enabled
 
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
@@ -963,12 +963,12 @@ class LongitudinalPlanner:
     accel_limits_turns[0] = min(accel_limits_turns[0], self.a_desired + 0.05)
     accel_limits_turns[1] = max(accel_limits_turns[1], self.a_desired - 0.05)
 
-    self.mpc.set_weights(prev_accel_constraint, personality=sm['controlsState'].personality)
+    self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
     self.mpc.set_accel_limits(accel_limits_turns[0], accel_limits_turns[1])
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     x, v, a, j = self.parse_model(sm['modelV2'], self.v_model_error)
     v_cruise = v_cruise if (v_cruise < 118/3.6 or tss_type >= 2) else 118/3.6 #TSSPではACC118を超えないようにする。
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['controlsState'].personality)
+    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
     #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,force_slow_decel))
 
@@ -989,7 +989,7 @@ class LongitudinalPlanner:
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
 
-    plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState'])
+    plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'selfdriveState'])
 
     longitudinalPlan = plan_send.longitudinalPlan
     longitudinalPlan.modelMonoTime = sm.logMonoTime['modelV2']
@@ -1019,7 +1019,7 @@ class LongitudinalPlanner:
     a_target, should_stop = get_accel_from_plan(self.CP, longitudinalPlan.speeds, longitudinalPlan.accels)
     a_target_mpc, should_stop_mpc = get_accel_from_plan(self.CP, longitudinalPlan.speeds, longitudinalPlan.accels)
 
-    if sm['controlsState'].experimentalMode:
+    if sm['selfdriveState'].experimentalMode:
       model_speeds = np.interp(CONTROL_N_T_IDX, ModelConstants.T_IDXS, sm['modelV2'].velocity.x)
       model_accels = np.interp(CONTROL_N_T_IDX, ModelConstants.T_IDXS, sm['modelV2'].acceleration.x)
       a_target_model, should_stop_model = get_accel_from_plan(self.CP, model_speeds, model_accels)
