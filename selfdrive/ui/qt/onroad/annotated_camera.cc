@@ -53,7 +53,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   const bool cs_alive = sm.alive("controlsState");
   const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
-  const auto cs = sm["controlsState"].getControlsState();
+  //const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
   const auto nav_instruction = sm["navInstruction"].getNavInstruction();
 
