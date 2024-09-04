@@ -101,6 +101,14 @@
         <source>MAX</source>
         <translation>สูงสุด</translation>
     </message>
+    <message>
+        <source>SPEED</source>
+        <translation>ความเร็ว</translation>
+    </message>
+    <message>
+        <source>LIMIT</source>
+        <translation>จำกัด</translation>
+    </message>
 </context>
 <context>
     <name>ConfirmationDialog</name>
@@ -126,6 +134,33 @@
     <message>
         <source>Decline, uninstall %1</source>
         <translation>ปฏิเสธ และถอนการติดตั้ง %1</translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>บ้าน</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>ที่ทำงาน</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>ยังไม่ได้เลือกจุดหมาย</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>บ้าน</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>ที่ทำงาน</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>ยังไม่ได้เลือกตำแหน่ง%1</translation>
     </message>
 </context>
 <context>
@@ -310,6 +345,47 @@
     </message>
 </context>
 <context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>eta</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>นาที</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>ชม.</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>การนำทาง</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>จัดการได้ที่ connect.comma.ai</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>กำลังโหลดแผนที่</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>กำลังรอสัญญาณ GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>กำลังรอเส้นทาง</translation>
+    </message>
+</context>
+<context>
     <name>MultiOptionDialog</name>
     <message>
         <source>Select</source>
@@ -487,6 +563,10 @@
         <translation>จัดเก็บข้อมูลการขับขี่นาน 1 ปี</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>การนำทางแบบเลี้ยวต่อเลี้ยว</translation>
+    </message>
+    <message>
         <source>Remote snapshots</source>
         <translation type="unfinished"></translation>
     </message>
@@ -533,6 +613,22 @@
         <translation>
             <numerusform>%n วันที่แล้ว</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>กม.</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>ม.</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>ไมล์</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ฟุต</translation>
     </message>
     <message>
         <source>now</source>
@@ -969,6 +1065,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>เมื่อเปิดใช้งาน การกดแป้นคันเร่งจะเป็นการยกเลิกระบบช่วยขับโดย openpilot</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>แสดงเวลา ETA ในรูปแบบ 24 ชั่วโมง</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>ใช้รูปแบบเวลา 24 ชั่วโมง แทน am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>แสดงแผนที่ที่ด้านซ้ายของหน้าจอ</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>แสดงแผนที่ด้านซ้ายของหน้าจอเมื่ออยู่ในโหมดแบ่งหน้าจอ</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
