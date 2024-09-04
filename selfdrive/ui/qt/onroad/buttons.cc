@@ -365,7 +365,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     //強制的にワンペダルモードとなる。
     QPushButton *forceOnePedalButton = new QPushButton(""); //表示文字も無し。
     QObject::connect(forceOnePedalButton, &QPushButton::pressed, [=]() {
-      const auto cs = (*(uiState()->sm))["controlsState"].getControlsState();
+      const auto cs = (*(uiState()->sm))["selfdriveState"].getSelfdriveState();
       if(getButtonInt("/tmp/accel_engaged.txt" , 0) >= 3 && cs.getEnabled()){ //ワンペダルのみ
         std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
         if(stdstr_txt.empty() == false){

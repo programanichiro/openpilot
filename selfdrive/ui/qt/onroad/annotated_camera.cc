@@ -48,7 +48,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("controlsState");
-  const auto cs = sm["controlsState"].getControlsState();
+  //const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
 
   is_metric = s.scene.is_metric;
@@ -113,7 +113,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   // update engageability/experimental mode button
 //  experimental_btn->updateState(s);
   buttons->psn_update();
-  global_engageable = (cs.getEngageable() || cs.getEnabled());
+  const auto ss = (*s.sm)["selfdriveState"].getSelfdriveState();
+  global_engageable = (ss.getEngageable() || ss.getEnabled());
 
   // update DM icon
   dmon.updateState(s);
