@@ -26,6 +26,8 @@ void initApp(int argc, char *argv[], bool disable_hidpi = true);
 QWidget* topWidget(QWidget* widget);
 QPixmap loadPixmap(const QString &fileName, const QSize &size = {}, Qt::AspectRatioMode aspectRatioMode = Qt::KeepAspectRatio);
 QPixmap bootstrapPixmap(const QString &id);
+
+void drawRoundedRect(QPainter &painter, const QRectF &rect, qreal xRadiusTop, qreal yRadiusTop, qreal xRadiusBottom, qreal yRadiusBottom);
 bool hasLongitudinalControl(const cereal::CarParams::Reader &car_params);
 
 struct InterFont : public QFont {
