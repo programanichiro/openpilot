@@ -133,7 +133,8 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   // update engageability/experimental mode button
 //  experimental_btn->updateState(s);
   buttons->psn_update();
-  global_engageable = (cs.getEngageable() || sm["selfdriveState"].getSelfdriveState().getEnabled());
+  const auto ss = (*s.sm)["selfdriveState"].getSelfdriveState();
+  global_engageable = (ss.getEngageable() || ss.getEnabled());
 
   // update DM icon
   dmon.updateState(s);
