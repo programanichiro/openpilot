@@ -366,27 +366,51 @@ void MapWindow::updateState(const UIState &s) {
   if(already_vego_over_8 == false && sm_vego > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
-  if (sm.updated("myLiveLocationKalman")) {
-    auto locationd_location = sm["myLiveLocationKalman"].getMyLiveLocationKalman();
-    auto locationd_pos = locationd_location.getPositionGeodetic();
-    auto locationd_orientation = locationd_location.getCalibratedOrientationNED();
-    auto locationd_velocity = locationd_location.getVelocityCalibrated();
-    auto locationd_ecef = locationd_location.getPositionECEF();
+  std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+  int gps_idx_i = 0;
+  static bool gps_ok;
+  static double gps_output[6]; // double型の配列
+  if(gps_axs_data_txt.empty() == false){
+    int i = 0; // インデックス
 
-    locationd_valid = (locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && locationd_ecef.getValid());
-    if (locationd_valid) {
-      // Check std norm
-      auto pos_ecef_std = locationd_ecef.getStd();
-      bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
-      locationd_valid = pos_accurate_enough;
+    std::stringstream ss(gps_axs_data_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    while (std::getline(ss, token, ',') && i < 6) { // カンマで分割し、一つずつ処理する
+      gps_output[i] = std::stod(token); // 分割された文字列をdouble型に変換して配列に格納
+      i++; // インデックスを1つ進める
     }
+    gps_idx_i = i;
+    gps_ok = true;
+  }
+  if(gps_idx_i == 6 || gps_ok){ //if (sm.updated("liveLocationKalman")) {
+     //auto locationd_location = sm["liveLocationKalman"].getLiveLocationKalman();
+    //auto locationd_pos = locationd_location.getPositionGeodetic(); //lat,lon
+    double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
+    //auto locationd_orientation = locationd_location.getCalibratedOrientationNED(); //bearing
+    double locationd_orientation = gps_output[2]; //bearing
+    //auto locationd_velocity = locationd_location.getVelocityCalibrated(); //sm_vego？一応gen_nav_pvtの中にはある。
+    double locationd_velocity = sm_vego; //gps_output[3]; //VEgo, //速度は車載のを使う。
+    //auto locationd_ecef = locationd_location.getPositionECEF(); //gps取得精度、これをどうするか・・・？
+
+    locationd_valid = ((int)gps_output[5] == 1);
+    // if (false && locationd_valid) {
+    //   // Check std norm
+    //   auto pos_ecef_std = locationd_ecef.getStd();
+    //   FILE *fp10 = fopen("/tmp/gps_vel2_data.txt","w");
+    //   if(fp10){
+    //     fprintf(fp10,"%.3f,%.3f,%.3f",(double)pos_ecef_std[0],(double)pos_ecef_std[1],(double)pos_ecef_std[2]);
+    //     fclose(fp10);
+    //   }
+    //   bool pos_accurate_enough = sqrt(pow(pos_ecef_std[0], 2) + pow(pos_ecef_std[1], 2) + pow(pos_ecef_std[2], 2)) < 100;
+    //   locationd_valid = pos_accurate_enough;
+    // }
 
     if (locationd_valid) {
       if (already_vego_over_8 == true) {
-        last_position = QMapLibre::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
-        last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
+        last_position = QMapLibre::Coordinate(locationd_pos[0], locationd_pos[1]);
+        last_bearing = locationd_orientation;;
       }
-      velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
+      velocity_filter.update(std::max(10/3.6, locationd_velocity));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
         if(false && map_pitch_up){

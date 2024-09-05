@@ -20,7 +20,7 @@ const int PIXELS_PER_TILE = 256;
 const int MAP_OFFSET = 128;
 
 const bool TEST_MODE = getenv("MAP_RENDER_TEST_MODE");
-const int LLK_DECIMATION = TEST_MODE ? 1 : 10;
+//const int LLK_DECIMATION = TEST_MODE ? 1 : 10;
 
 float get_zoom_level_for_scale(float lat, float meters_per_pixel) {
   float meters_per_tile = meters_per_pixel * PIXELS_PER_TILE;
@@ -97,7 +97,7 @@ MapRenderer::MapRenderer(const QMapLibre::Settings &settings, bool online) : m_s
     } else if (vipc_server != nullptr) {
       double end_render_t = millis_since_boot();
       publish((end_render_t - start_render_t) / 1000.0, true);
-      last_llk_rendered = (*sm)["myLiveLocationKalman"].getLogMonoTime();
+      last_llk_rendered = (*sm)["livePose"].getLogMonoTime();
     }
   });
 
@@ -107,7 +107,7 @@ MapRenderer::MapRenderer(const QMapLibre::Settings &settings, bool online) : m_s
     vipc_server->start_listener();
 
     pm.reset(new PubMaster({"navThumbnail", "mapRenderState"}));
-    sm.reset(new SubMaster({"myLiveLocationKalman", "navRoute"}, {"myLiveLocationKalman"}));
+    sm.reset(new SubMaster({"navRoute"}));
 
     timer = new QTimer(this);
     timer->setSingleShot(true);
@@ -116,17 +116,35 @@ MapRenderer::MapRenderer(const QMapLibre::Settings &settings, bool online) : m_s
   }
 }
 
+static bool gps_ok;
 void MapRenderer::msgUpdate() {
   sm->update(1000);
 
-  if (sm->updated("myLiveLocationKalman")) {
-    auto location = (*sm)["myLiveLocationKalman"].getMyLiveLocationKalman();
-    auto pos = location.getPositionGeodetic();
-    auto orientation = location.getCalibratedOrientationNED();
+  std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+  int gps_idx_i = 0;
+  static double gps_output[6]; // double型の配列
+  if(gps_axs_data_txt.empty() == false){
+    int i = 0; // インデックス
 
-    if ((sm->rcv_frame("myLiveLocationKalman") % LLK_DECIMATION) == 0) {
-      float bearing = RAD2DEG(orientation.getValue()[2]);
-      updatePosition(get_point_along_line(pos.getValue()[0], pos.getValue()[1], bearing, MAP_OFFSET), bearing);
+    std::stringstream ss(gps_axs_data_txt); // 入力文字列をstringstreamに変換
+    std::string token; // 一時的にトークンを格納する変数
+    while (std::getline(ss, token, ',') && i < 6) { // カンマで分割し、一つずつ処理する
+      gps_output[i] = std::stod(token); // 分割された文字列をdouble型に変換して配列に格納
+      i++; // インデックスを1つ進める
+    }
+    gps_idx_i = i;
+    gps_ok = true;
+  } else {
+    gps_ok = false;
+  }
+  if(gps_idx_i == 6 || gps_ok){
+    double pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
+    double orientation = gps_output[2]; //bearing
+
+    static unsigned int llk_ct = 0;
+    if ((llk_ct++ % 10) == 0) {
+      float bearing = orientation; //degree
+      updatePosition(get_point_along_line(pos[0], pos[1], bearing, MAP_OFFSET), bearing);
 
       if (!rendering) {
         update();
@@ -193,14 +211,13 @@ void MapRenderer::sendThumbnail(const uint64_t ts, const kj::Array<capnp::byte> 
 void MapRenderer::publish(const double render_time, const bool loaded) {
   QImage cap = fbo->toImage().convertToFormat(QImage::Format_RGB888, Qt::AutoColor);
 
-  auto location = (*sm)["myLiveLocationKalman"].getMyLiveLocationKalman();
-  bool valid = loaded && (location.getStatus() == cereal::LiveLocationKalman::Status::VALID) && location.getPositionGeodetic().getValid();
+  bool valid = loaded && gps_ok;
   ever_loaded = ever_loaded || loaded;
   uint64_t ts = nanos_since_boot();
   VisionBuf* buf = vipc_server->get_buffer(VisionStreamType::VISION_STREAM_MAP);
   VisionIpcBufExtra extra = {
     .frame_id = frame_id,
-    .timestamp_sof = (*sm)["myLiveLocationKalman"].getLogMonoTime(),
+    .timestamp_sof = (*sm)["livePose"].getLogMonoTime(),
     .timestamp_eof = ts,
     .valid = valid,
   };
@@ -238,7 +255,7 @@ void MapRenderer::publish(const double render_time, const bool loaded) {
   auto evt = msg.initEvent();
   auto state = evt.initMapRenderState();
   evt.setValid(valid);
-  state.setLocationMonoTime((*sm)["myLiveLocationKalman"].getLogMonoTime());
+  state.setLocationMonoTime((*sm)["livePose"].getLogMonoTime());
   state.setRenderTime(render_time);
   state.setFrameId(frame_id);
   pm->send("mapRenderState", msg);
