@@ -2347,7 +2347,10 @@ struct Event {
     onroadEvents @68: List(Car.OnroadEvent);
     carParams @69: Car.CarParams;
     driverMonitoringState @71: DriverMonitoringState;
+<<<<<<< HEAD
     myLiveLocationKalman @72 :LiveLocationKalman;
+=======
+>>>>>>> 282eae3c30 (Deprecate liveLocationKalman (#33405))
     livePose @129 :LivePose;
     modelV2 @75 :ModelDataV2;
     drivingModelData @128 :DrivingModelData;
@@ -2420,7 +2423,7 @@ struct Event {
     model @9 :Legacy.ModelData; # TODO: rename modelV2 and mark this as deprecated
     liveMpcDEPRECATED @36 :LiveMpcData;
     liveLongitudinalMpcDEPRECATED @37 :LiveLongitudinalMpcData;
-    liveLocationKalmanDEPRECATED @51 :Legacy.LiveLocationData;
+    liveLocationKalmanLegacyDEPRECATED @51 :Legacy.LiveLocationData;
     orbslamCorrectionDEPRECATED @45 :Legacy.OrbslamCorrection;
     liveUIDEPRECATED @14 :Legacy.LiveUI;
     sensorEventDEPRECATED @4 :SensorEventData;
@@ -2457,5 +2460,6 @@ struct Event {
     lateralPlanDEPRECATED @64 :LateralPlan;
     navModelDEPRECATED @104 :NavModelData;
     uiPlanDEPRECATED @106 :UiPlan;
+    liveLocationKalmanDEPRECATED @72 :LiveLocationKalman;
   }
 }

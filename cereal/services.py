@@ -49,7 +49,10 @@ _services: dict[str, tuple] = {
   "clocks": (True, 0.1, 1),
   "ubloxRaw": (True, 20.),
   "livePose": (True, 20., 4),
+<<<<<<< HEAD
   "myLiveLocationKalman": (True, 20.),
+=======
+>>>>>>> 282eae3c30 (Deprecate liveLocationKalman (#33405))
   "liveParameters": (True, 20., 5),
   "cameraOdometry": (True, 20., 10),
   "thumbnail": (True, 0.2, 1),
