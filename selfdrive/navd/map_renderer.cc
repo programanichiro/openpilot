@@ -20,7 +20,7 @@ const int PIXELS_PER_TILE = 256;
 const int MAP_OFFSET = 128;
 
 const bool TEST_MODE = getenv("MAP_RENDER_TEST_MODE");
-const int LLK_DECIMATION = TEST_MODE ? 1 : 10;
+//const int LLK_DECIMATION = TEST_MODE ? 1 : 10;
 
 float get_zoom_level_for_scale(float lat, float meters_per_pixel) {
   float meters_per_tile = meters_per_pixel * PIXELS_PER_TILE;
