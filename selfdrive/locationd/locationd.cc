@@ -577,33 +577,12 @@ void Localizer::handle_msg(const cereal::Event::Reader& log) {
   this->update_reset_tracker();
 }
 
-<<<<<<< HEAD
-void Localizer::build_location_message(
-  MessageBuilder& msg_builder, bool inputsOK, bool sensorsOK, bool gpsOK, bool msgValid) {
-  cereal::Event::Builder evt = msg_builder.initEvent();
-  evt.setValid(msgValid);
-  cereal::LiveLocationKalman::Builder liveLoc = evt.initMyLiveLocationKalman();
-  this->build_live_location(liveLoc);
-  liveLoc.setSensorsOK(sensorsOK);
-  liveLoc.setGpsOK(gpsOK);
-  liveLoc.setInputsOK(inputsOK);
-}
-
-=======
->>>>>>> 282eae3c30 (Deprecate liveLocationKalman (#33405))
 void Localizer::build_pose_message(
   MessageBuilder& msg_builder, bool inputsOK, bool sensorsOK, bool msgValid) {
   cereal::Event::Builder evt = msg_builder.initEvent();
   evt.setValid(msgValid);
   cereal::LivePose::Builder livePose = evt.initLivePose();
-<<<<<<< HEAD
-
-  cereal::LiveLocationKalman::Reader location_msg = location_msg_builder.getRoot<cereal::Event>().getMyLiveLocationKalman().asReader();
-  this->build_live_pose(livePose, location_msg);
-
-=======
   this->build_live_pose(livePose);
->>>>>>> 282eae3c30 (Deprecate liveLocationKalman (#33405))
   livePose.setSensorsOK(sensorsOK);
   livePose.setInputsOK(inputsOK);
 }
@@ -677,11 +656,7 @@ int Localizer::locationd_thread() {
                                                           "carState", "accelerometer", "gyroscope"};
 
   SubMaster sm(service_list, {}, nullptr, {gps_location_socket});
-<<<<<<< HEAD
-  PubMaster pm({"myLiveLocationKalman", "livePose"});
-=======
   PubMaster pm({"livePose"});
->>>>>>> 282eae3c30 (Deprecate liveLocationKalman (#33405))
 
   uint64_t cnt = 0;
   bool filterInitialized = false;
@@ -715,17 +690,8 @@ int Localizer::locationd_thread() {
         this->ttff = std::max(1e-3, (sm[trigger_msg].getLogMonoTime() * 1e-9) - this->first_valid_log_time);
       }
 
-<<<<<<< HEAD
-      MessageBuilder location_msg_builder, pose_msg_builder;
-      this->build_location_message(location_msg_builder, inputsOK, sensorsOK, gpsOK, filterInitialized);
-      this->build_pose_message(pose_msg_builder, location_msg_builder, inputsOK, sensorsOK, filterInitialized);
-
-      kj::ArrayPtr<capnp::byte> location_bytes = location_msg_builder.toBytes();
-      pm.send("myLiveLocationKalman", location_bytes.begin(), location_bytes.size());
-=======
       MessageBuilder pose_msg_builder;
       this->build_pose_message(pose_msg_builder, inputsOK, sensorsOK, filterInitialized);
->>>>>>> 282eae3c30 (Deprecate liveLocationKalman (#33405))
 
       kj::ArrayPtr<capnp::byte> pose_bytes = pose_msg_builder.toBytes();
       pm.send("livePose", pose_bytes.begin(), pose_bytes.size());

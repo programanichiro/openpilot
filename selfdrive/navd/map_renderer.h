@@ -48,7 +48,7 @@ private:
   uint64_t last_llk_rendered = 0;
   bool rendering = false;
   bool rendered() {
-    return last_llk_rendered == (*sm)["myLiveLocationKalman"].getLogMonoTime();
+    return last_llk_rendered == (*sm)["livePose"].getLogMonoTime();
   }
 
   QTimer* timer;

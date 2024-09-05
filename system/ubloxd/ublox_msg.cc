@@ -133,6 +133,62 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setAltitude(msg->height() * 1e-03);
   gpsLoc.setSpeed(msg->g_speed() * 1e-03);
   gpsLoc.setBearingDeg(msg->head_mot() * 1e-5);
+  //ここからGPSのlat,lon,bearingを取る。更新されるので呼ばれているのは間違いない。
+  //bearingの平滑化
+  static bool not_first_gps = false;
+  static double bear_add; //蓄積値
+  static double bear_before; //素の前回値
+  static double bear_add_before; //蓄積値の前回値
+  double bear_now = msg->head_mot() * 1e-5; //素の角度(degree)
+  double bear_d = bear_now - bear_before;
+  if(bear_d > 180){
+    bear_d = bear_d - 360;
+  } else if(bear_d < -180){
+    bear_d = bear_d + 360;
+  }
+  if(not_first_gps == true){ //初回を弾く。
+    //バックに対応する処理
+    if(bear_d > 120){
+      bear_d -= 180;
+    } else if(bear_d < -120){
+      bear_d += 180;
+    }
+  }
+  not_first_gps = true;
+  bear_add += bear_d;
+  const int BEAR_BUF_MAX = 20;
+  static double bear_buf[BEAR_BUF_MAX];
+  static int bear_buf_ct;
+  bear_buf[bear_buf_ct++] = bear_add;
+  if(bear_buf_ct >= BEAR_BUF_MAX){
+    bear_buf_ct = 0;
+  }
+  double sum_bear = 0;
+  for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+    sum_bear += bear_buf[ii];
+  }
+  bear_before = bear_now;
+  bear_add_before = bear_add; //単なる平均値ならbear_add_beforeは要らない。
+  if(bear_add > 360){
+    bear_add -= 360;
+    bear_add_before -= 360;
+    for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+      bear_buf[ii] -= 360;
+    }
+  } else if(bear_add < -360){
+    bear_add += 360;
+    bear_add_before += 360;
+    for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+      bear_buf[ii] += 360;
+    }
+  }
+  static uint64_t monoTime;
+  FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
+  if(fp){
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,(double)sum_bear/BEAR_BUF_MAX,(double)msg->g_speed() * 1e-03,monoTime++,1); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+    fclose(fp);
+  }
+
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
