@@ -153,6 +153,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
     head_acc_k = 0;
   }
   bear_d *= head_acc_k;
+  bear_now = bear_before + bear_d; //再設定しないと誤差が残り続ける。
   if(bear_d > 180){
     bear_d = bear_d - 360;
   } else if(bear_d < -180){
@@ -194,13 +195,6 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
       bear_buf[ii] += 360;
     }
   }
-  static uint64_t monoTime;
-  FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
-  if(fp){
-    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,(double)sum_bear/BEAR_BUF_MAX,(double)msg->g_speed() * 1e-03,monoTime++,1); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
-    fclose(fp);
-  }
-
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
@@ -227,6 +221,21 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
     fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k);
     fclose(fp2);
   }
+
+  int locationd_valid = 1;
+  if(f[0] == 0 && f[1] == 0 && f[2] == 0){
+    locationd_valid = 0;
+  }
+  if(head_acc > 60){
+    locationd_valid = 0;
+  }
+  static uint64_t monoTime; //とりあえずlivePoseを使うので不要。
+  FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
+  if(fp){
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,(double)sum_bear/BEAR_BUF_MAX,(double)msg->g_speed() * 1e-03,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+    fclose(fp);
+  }
+
   return capnp::messageToFlatArray(msg_builder);
 }
 
