@@ -133,6 +133,68 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setAltitude(msg->height() * 1e-03);
   gpsLoc.setSpeed(msg->g_speed() * 1e-03);
   gpsLoc.setBearingDeg(msg->head_mot() * 1e-5);
+  //ここからGPSのlat,lon,bearingを取る。更新されるので呼ばれているのは間違いない。
+  //bearingの平滑化
+  //static bool not_first_gps = false;
+  static double bear_add; //蓄積値
+  static double bear_before; //素の前回値
+  static double bear_add_before; //蓄積値の前回値
+  double bear_now = msg->head_mot() * 1e-5; //素の角度(degree)
+  double bear_d = bear_now - bear_before;
+  double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
+  //10->20:1->0
+  const double cx1 = 7.0;
+  const double cx2 = 17.0;
+  double head_acc_k = 1.0;
+  if(head_acc > cx1){
+    head_acc_k -= (head_acc - cx1) / (cx2-cx1);
+  }
+  if(head_acc_k < 0){
+    head_acc_k = 0;
+  }
+  bear_d *= head_acc_k;
+  bear_now = bear_before + bear_d; //再設定しないと誤差が残り続ける。
+  if(bear_d > 180){
+    bear_d = bear_d - 360;
+  } else if(bear_d < -180){
+    bear_d = bear_d + 360;
+  }
+  // if(not_first_gps == true){ //初回を弾く。
+  //   //バックに対応する処理
+  //   if(bear_d > 120){
+  //     bear_d -= 180;
+  //   } else if(bear_d < -120){
+  //     bear_d += 180;
+  //   }
+  // }
+  //not_first_gps = true;
+  bear_add += bear_d;
+  const int BEAR_BUF_MAX = 20;
+  static double bear_buf[BEAR_BUF_MAX];
+  static int bear_buf_ct;
+  bear_buf[bear_buf_ct++] = bear_add;
+  if(bear_buf_ct >= BEAR_BUF_MAX){
+    bear_buf_ct = 0;
+  }
+  double sum_bear = 0;
+  for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+    sum_bear += bear_buf[ii];
+  }
+  bear_before = bear_now;
+  bear_add_before = bear_add; //単なる平均値ならbear_add_beforeは要らない。
+  if(bear_add > 360){
+    bear_add -= 360;
+    bear_add_before -= 360;
+    for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+      bear_buf[ii] -= 360;
+    }
+  } else if(bear_add < -360){
+    bear_add += 360;
+    bear_add_before += 360;
+    for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+      bear_buf[ii] += 360;
+    }
+  }
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
@@ -146,9 +208,34 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setUnixTimestampMillis(utc_tt * 1e+03 + msg->nano() * 1e-06);
   float f[] = { msg->vel_n() * 1e-03f, msg->vel_e() * 1e-03f, msg->vel_d() * 1e-03f };
   gpsLoc.setVNED(f);
+  FILE *fp1 = fopen("/tmp/gps_vel_data.txt","w");
+  if(fp1){
+    fprintf(fp1,"%.3f,%.3f,%.3f",(double)f[0],(double)f[1],(double)f[2]);
+    fclose(fp1);
+  }
   gpsLoc.setVerticalAccuracy(msg->v_acc() * 1e-03);
   gpsLoc.setSpeedAccuracy(msg->s_acc() * 1e-03);
   gpsLoc.setBearingAccuracyDeg(msg->head_acc() * 1e-05);
+  FILE *fp2 = fopen("/tmp/gps_acc_data.txt","w");
+  if(fp2){
+    fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k);
+    fclose(fp2);
+  }
+
+  int locationd_valid = 1;
+  if(f[0] == 0 && f[1] == 0 && f[2] == 0){
+    locationd_valid = 0;
+  }
+  if(head_acc > 60){
+    locationd_valid = 0;
+  }
+  static uint64_t monoTime; //とりあえずlivePoseを使うので不要。
+  FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
+  if(fp){
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)msg->lat() * 1e-07,(double)msg->lon() * 1e-07,(double)sum_bear/BEAR_BUF_MAX,(double)msg->g_speed() * 1e-03,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+    fclose(fp);
+  }
+
   return capnp::messageToFlatArray(msg_builder);
 }
 

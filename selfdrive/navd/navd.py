@@ -84,14 +84,31 @@ class RouteEngine:
       cloudlog.exception("navd.failed_to_compute")
 
   def update_location(self):
-    location = self.sm['myLiveLocationKalman']
-    self.gps_ok = location.gpsOK
+    # location = self.sm['myLiveLocationKalman']
+    # self.gps_ok = location.gpsOK
 
-    self.localizer_valid = (location.status == log.LiveLocationKalman.Status.valid) and location.positionGeodetic.valid
+    # self.localizer_valid = (location.status == log.LiveLocationKalman.Status.valid) and location.positionGeodetic.valid
 
-    if self.localizer_valid:
-      self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
-      self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
+    # if self.localizer_valid:
+    #   self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
+    #   self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
+    try:
+      with open('/tmp/gps_axs_data.txt','r') as fp2:
+        gps_axs_data_str = fp2.read()
+        if gps_axs_data_str:
+          gps_axs_data = gps_axs_data_str.split(",")
+          lat = float(gps_axs_data[0])
+          lon = float(gps_axs_data[1])
+          learing = float(gps_axs_data[2])
+          self.gps_ok = True
+          self.localizer_valid = (int(gps_axs_data[5]) == 1)
+          if self.localizer_valid:
+            self.last_bearing = learing
+            self.last_position = Coordinate(lat, lon)
+    except Exception as e:
+      self.gps_ok = False
+      self.localizer_valid = False
+      pass
 
   def recompute_route(self):
     if self.last_position is None:
@@ -396,7 +413,7 @@ class RouteEngine:
 
 def main():
   pm = messaging.PubMaster(['navInstruction', 'navRoute'])
-  sm = messaging.SubMaster(['myLiveLocationKalman', 'managerState'])
+  sm = messaging.SubMaster(['managerState'])
 
   rk = Ratekeeper(1.0)
   route_engine = RouteEngine(sm, pm)

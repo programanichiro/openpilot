@@ -4,6 +4,7 @@
 
 #include "selfdrive/ui/qt/util.h"
 #include <string.h>
+#include <sstream>
 
 void Sidebar::drawMetric(QPainter &p, const QPair<QString, QString> &label, QColor c, int y) {
   const QRect rect = {30, y, 240, 126};
@@ -150,10 +151,31 @@ void Sidebar::updateState(const UIState &s) {
   setProperty("tempStatus", QVariant::fromValue(tempStatus));
 
   ItemStatus pandaStatus = {{tr("VEHICLE"), tr("ONLINE")}, good_color};
+
   if (s.scene.pandaType == cereal::PandaState::PandaType::UNKNOWN) {
     pandaStatus = {{tr("NO"), tr("PANDA")}, danger_color};
-  } else if (s.scene.started && !sm["myLiveLocationKalman"].getMyLiveLocationKalman().getGpsOK()) {
-    pandaStatus = {{tr("GNSS"), tr("EXPLORE")}, warning_color};
+  } else if (s.scene.started){
+    std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+    int gps_idx_i = 0;
+    bool gps_ok = false;
+    double gps_output[6]; // double型の配列
+    if(gps_axs_data_txt.empty() == false){
+      int i = 0; // インデックス
+
+      std::stringstream ss(gps_axs_data_txt); // 入力文字列をstringstreamに変換
+      std::string token; // 一時的にトークンを格納する変数
+      while (std::getline(ss, token, ',') && i < 6) { // カンマで分割し、一つずつ処理する
+        gps_output[i] = std::stod(token); // 分割された文字列をdouble型に変換して配列に格納
+        i++; // インデックスを1つ進める
+      }
+      gps_idx_i = i;
+      gps_ok = true;
+    }
+    bool okGps = (gps_idx_i == 6 && gps_ok && (int)gps_output[5]);
+    // } else if (s.scene.started && !sm["myLiveLocationKalman"].getMyLiveLocationKalman().getGpsOK()) {
+    if(!okGps){
+      pandaStatus = {{tr("GNSS"), tr("EXPLORE")}, warning_color};
+    }
   }
   setProperty("pandaStatus", QVariant::fromValue(pandaStatus));
 }

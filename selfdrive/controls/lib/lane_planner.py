@@ -54,7 +54,7 @@ class LanePlanner:
   def parse_model(self, md, v_ego_car):
     #ここでlta_mode判定を行う。
     if self.frame_ct % 20 == 0:
-      chill_enable = False #(sm['controlsState'].experimentalMode == False) #ここにsmはないので、experimentalMode判定を復活するなら一手間かかる。
+      chill_enable = False #(sm['selfdriveState'].experimentalMode == False) #ここにsmはないので、experimentalMode判定を復活するなら一手間かかる。
       lta_enable_sw = False
       try:
         with open('/tmp/lta_enable_sw.txt','r') as fp:
