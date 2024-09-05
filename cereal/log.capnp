@@ -2347,10 +2347,6 @@ struct Event {
     onroadEvents @68: List(Car.OnroadEvent);
     carParams @69: Car.CarParams;
     driverMonitoringState @71: DriverMonitoringState;
-<<<<<<< HEAD
-    myLiveLocationKalman @72 :LiveLocationKalman;
-=======
->>>>>>> 282eae3c30 (Deprecate liveLocationKalman (#33405))
     livePose @129 :LivePose;
     modelV2 @75 :ModelDataV2;
     drivingModelData @128 :DrivingModelData;
