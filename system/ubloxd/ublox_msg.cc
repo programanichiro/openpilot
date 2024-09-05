@@ -141,6 +141,18 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   static double bear_add_before; //蓄積値の前回値
   double bear_now = msg->head_mot() * 1e-5; //素の角度(degree)
   double bear_d = bear_now - bear_before;
+  double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
+  //10->20:1->0
+  const double cx1 = 10.0;
+  const double cx2 = 20.0;
+  double head_acc_k = 1.0;
+  if(head_acc > cx1){
+    head_acc_k -= (head_acc - cx1) / (cx2-cx1);
+  }
+  if(head_acc_k < 0){
+    head_acc_k = 0;
+  }
+  bear_d *= head_acc_k;
   if(bear_d > 180){
     bear_d = bear_d - 360;
   } else if(bear_d < -180){
@@ -212,7 +224,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setBearingAccuracyDeg(msg->head_acc() * 1e-05);
   FILE *fp2 = fopen("/tmp/gps_acc_data.txt","w");
   if(fp2){
-    fprintf(fp2,"%.3f,%.3f,%.5f",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,(double)msg->head_acc() * 1e-05);
+    fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k);
     fclose(fp2);
   }
   return capnp::messageToFlatArray(msg_builder);
