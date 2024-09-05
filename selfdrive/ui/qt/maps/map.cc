@@ -392,7 +392,7 @@ void MapWindow::updateState(const UIState &s) {
     double locationd_velocity = gps_output[3]; //VEgo
     //auto locationd_ecef = locationd_location.getPositionECEF(); //gps取得精度、これをどうするか・・・？
 
-    locationd_valid = true; //強制。トンネルに入ったとか、多分だめ。(locationd_pos.getValid() && locationd_orientation.getValid() && locationd_velocity.getValid() && locationd_ecef.getValid());
+    locationd_valid = ((int)gps_output[5] == 1);
     // if (false && locationd_valid) {
     //   // Check std norm
     //   auto pos_ecef_std = locationd_ecef.getStd();

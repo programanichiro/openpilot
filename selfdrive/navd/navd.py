@@ -101,7 +101,7 @@ class RouteEngine:
           lon = float(gps_axs_data[1])
           learing = float(gps_axs_data[2])
           self.gps_ok = True
-          self.localizer_valid = True
+          self.localizer_valid = (int(gps_axs_data[5]) == 1)
           if self.localizer_valid:
             self.last_bearing = learing
             self.last_position = Coordinate(lat, lon)

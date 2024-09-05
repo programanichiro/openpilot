@@ -522,10 +522,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
     double locationd_orientation = gps_output[2]; //bearing
     //double locationd_velocity = gps_output[3]; //VEgo
 
-    bool locationd_valid = false;
-    if(gps_idx_i == 6 && gps_ok){
-      locationd_valid = true;
-    }
+    bool locationd_valid = ((int)gps_output[5] == 1);
 
     if (locationd_valid) {
       FILE *fp = fopen("/tmp/limitspeed_info.txt","w");
