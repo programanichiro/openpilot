@@ -92,7 +92,6 @@ class RouteEngine:
     # if self.localizer_valid:
     #   self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
     #   self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
-    # pass #あとで/tmp/gps_axs_data.txtから引っ張れる？
     try:
       with open('/tmp/gps_axs_data.txt','r') as fp2:
         gps_axs_data_str = fp2.read()
