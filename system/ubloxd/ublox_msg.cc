@@ -154,7 +154,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   //     bear_d += 180;
   //   }
   // }
-  not_first_gps = true;
+  //not_first_gps = true;
   bear_add += bear_d;
   const int BEAR_BUF_MAX = 20;
   static double bear_buf[BEAR_BUF_MAX];
