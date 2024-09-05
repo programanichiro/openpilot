@@ -407,10 +407,10 @@ void MapWindow::updateState(const UIState &s) {
 
     if (locationd_valid) {
       if (already_vego_over_8 == true) {
-        last_position = QMapLibre::Coordinate(locationd_pos.getValue()[0], locationd_pos.getValue()[1]);
-        last_bearing = RAD2DEG(locationd_orientation.getValue()[2]);
+        last_position = QMapLibre::Coordinate(locationd_pos[0], locationd_pos[1]);
+        last_bearing = locationd_orientation;;
       }
-      velocity_filter.update(std::max(10/3.6, locationd_velocity.getValue()[0]));
+      velocity_filter.update(std::max(10/3.6, locationd_velocity));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
         if(false && map_pitch_up){
