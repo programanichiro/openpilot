@@ -500,7 +500,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   } else {
     gps_ok = false;
   }
-  bool okGps = (gps_idx_i == 6 && gps_ok);
+  bool okGps = (gps_idx_i == 6 && gps_ok && (int)gps_output[5]);
   bool okConnect = false;
   auto last_ping = deviceState.getLastAthenaPingTime();
   if (last_ping != 0) {
