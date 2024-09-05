@@ -520,7 +520,7 @@ void AnnotatedCameraWidget::drawHud(QPainter &p) {
   if ((limitspeed_update_ct ++) % 10 == 0 && okGps) {
     double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
     double locationd_orientation = gps_output[2]; //bearing
-    //double locationd_velocity = gps_output[3]; //VEgo
+    //double locationd_velocity = gps_output[3]; //VEgo、信用できない。
 
     bool locationd_valid = ((int)gps_output[5] == 1);
 

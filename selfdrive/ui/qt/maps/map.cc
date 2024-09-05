@@ -389,7 +389,7 @@ void MapWindow::updateState(const UIState &s) {
     //auto locationd_orientation = locationd_location.getCalibratedOrientationNED(); //bearing
     double locationd_orientation = gps_output[2]; //bearing
     //auto locationd_velocity = locationd_location.getVelocityCalibrated(); //sm_vego？一応gen_nav_pvtの中にはある。
-    double locationd_velocity = gps_output[3]; //VEgo
+    double locationd_velocity = sm_vego; //gps_output[3]; //VEgo, //速度は車載のを使う。
     //auto locationd_ecef = locationd_location.getPositionECEF(); //gps取得精度、これをどうするか・・・？
 
     locationd_valid = ((int)gps_output[5] == 1);

@@ -143,8 +143,8 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   double bear_d = bear_now - bear_before;
   double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
   //10->20:1->0
-  const double cx1 = 10.0;
-  const double cx2 = 20.0;
+  const double cx1 = 5.0;
+  const double cx2 = 13.0;
   double head_acc_k = 1.0;
   if(head_acc > cx1){
     head_acc_k -= (head_acc - cx1) / (cx2-cx1);
@@ -169,7 +169,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   // }
   //not_first_gps = true;
   bear_add += bear_d;
-  const int BEAR_BUF_MAX = 20;
+  const int BEAR_BUF_MAX = 10;
   static double bear_buf[BEAR_BUF_MAX];
   static int bear_buf_ct;
   bear_buf[bear_buf_ct++] = bear_add;
