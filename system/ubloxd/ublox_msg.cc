@@ -121,7 +121,6 @@ std::pair<std::string, kj::Array<capnp::word>> UbloxMsgParser::gen_msg() {
   }
 }
 
-static SubMaster ublox_sm({"carState"});
 kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   MessageBuilder msg_builder;
   auto gpsLoc = msg_builder.initEvent().initGpsLocationExternal();
@@ -143,8 +142,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   double bear_d = bear_now - bear_before;
   double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
 
-  ublox_sm.update(0); //要る？
-  double vego = ublox_sm["carState"].getCarState().getVEgo();
+  double vego = msg->g_speed() * 1e-03;
 
   //10->20:1->0
   const double cx1 = 7.0;
