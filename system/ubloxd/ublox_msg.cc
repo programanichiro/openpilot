@@ -222,7 +222,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setBearingAccuracyDeg(msg->head_acc() * 1e-05);
   FILE *fp2 = fopen("/tmp/gps_acc_data.txt","w");
   if(fp2){
-    fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k);
+    fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)",(double)msg->v_acc() * 1e-03,vego/*(double)msg->s_acc() * 1e-03*/,head_acc,head_acc_k);
     fclose(fp2);
   }
 
