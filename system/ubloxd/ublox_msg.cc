@@ -231,7 +231,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   }
   static double before_lat;
   static double before_lon;
-  if(locationd_valid){ //無効なら前回のを継続
+  if(head_acc > 30){ //信用ならないなら前回のを継続
     before_lat = msg->lat();
     before_lon = msg->lon();
   }
