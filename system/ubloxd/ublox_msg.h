@@ -92,6 +92,7 @@ namespace ublox {
 
 class UbloxMsgParser {
   public:
+    SubMaster sm({"carState"});
     bool add_data(float log_time, const uint8_t *incoming_data, uint32_t incoming_data_len, size_t &bytes_consumed);
     inline void reset() {bytes_in_parse_buf = 0;}
     inline int needed_bytes();

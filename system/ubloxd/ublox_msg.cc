@@ -142,6 +142,10 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   double bear_now = msg->head_mot() * 1e-5; //素の角度(degree)
   double bear_d = bear_now - bear_before;
   double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
+
+  self->sm.update(0); //要る？
+  double vego = self->sm["carState"].getCarState().getVEgo();
+
   //10->20:1->0
   const double cx1 = 7.0;
   const double cx2 = 17.0;
