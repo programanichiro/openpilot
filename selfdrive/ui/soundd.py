@@ -113,7 +113,7 @@ class Soundd:
 
   def update_alert(self, new_alert):
     current_alert_played_once = self.current_alert == AudibleAlert.none or self.current_sound_frame > len(self.loaded_sounds[self.current_alert])
-    if self.current_alert != new_alert and (new_alert != AudibleAlert.none or current_alert_played_once):
+    if False: #self.current_alert != new_alert and (new_alert != AudibleAlert.none or current_alert_played_once):
       self.current_alert = new_alert
       self.current_sound_frame = 0
 
