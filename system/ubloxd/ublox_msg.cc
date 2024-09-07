@@ -266,7 +266,11 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   }
   static double before_lat;
   static double before_lon;
-  if((before_lat == 0 && before_lon == 0) || head_acc < 30 && vego > 0.1/3.6){ //速度ゼロもしくは信用ならないなら前回のを継続
+  static double max_vego; //パワーオン後に発進するまでは、常に更新した方がマシ？
+  if(max_vego < vego){
+    max_vego = vego;
+  }
+  if((before_lat == 0 && before_lon == 0) || (max_vego < 8/3.6) || head_acc < 30 && vego > 0.1/3.6){ //速度ゼロもしくは信用ならないなら前回のを継続
     before_lat = msg->lat();
     before_lon = msg->lon();
   }
