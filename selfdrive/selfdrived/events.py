@@ -240,7 +240,7 @@ def below_steer_speed_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.S
     f"Steer Unavailable Below {get_display_speed(CP.minSteerSpeed, metric)}",
     "",
     AlertStatus.userPrompt, AlertSize.small,
-    Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 0.4)
+    Priority.LOW, VisualAlert.steerRequired, AudibleAlert.prompt, 0.4)
 
 
 def calibration_incomplete_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
@@ -410,7 +410,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       "Lane Departure Detected",
       "",
       AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.ldw, AudibleAlert.none, 3.),
+      Priority.LOW, VisualAlert.ldw, AudibleAlert.prompt, 3.),
   },
 
   # ********** events only containing alerts that display while engaged **********
@@ -420,7 +420,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       "Steering Temporarily Unavailable",
       "",
       AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1.8),
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.prompt, 1.8),
   },
 
   EventName.preDriverDistracted: {
@@ -513,7 +513,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       "Car Detected in Blindspot",
       "",
       AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.none, AudibleAlert.none, .1),
+      Priority.LOW, VisualAlert.none, AudibleAlert.prompt, .1),
   },
 
   EventName.laneChange: {
