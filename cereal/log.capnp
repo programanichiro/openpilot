@@ -2438,7 +2438,7 @@ struct Event {
     model @9 :Legacy.ModelData; # TODO: rename modelV2 and mark this as deprecated
     liveMpcDEPRECATED @36 :LiveMpcData;
     liveLongitudinalMpcDEPRECATED @37 :LiveLongitudinalMpcData;
-    liveLocationKalmanDEPRECATED @51 :Legacy.LiveLocationData;
+    liveLocationKalmanLegacyDEPRECATED @51 :Legacy.LiveLocationData;
     orbslamCorrectionDEPRECATED @45 :Legacy.OrbslamCorrection;
     liveUIDEPRECATED @14 :Legacy.LiveUI;
     sensorEventDEPRECATED @4 :SensorEventData;
