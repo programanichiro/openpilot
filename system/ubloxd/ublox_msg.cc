@@ -164,11 +164,16 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   } else if(bear_d < -180){
     bear_d = bear_d + 360;
   }
+  //回転角速度制限5度
+  if(bear_d > 5){
+    bear_d = 5;
+  } else  if(bear_d < -5){
+    bear_d = -5;
+  }
   bear_d *= head_acc_k;
   if(vego <= 0.1/3.6){ //速度ゼロなら回転しない
     bear_d = 0;
   }
-  bear_now = bear_before + bear_d; //再設定しないと誤差が残り続ける。
 #if 0
   // if(not_first_gps == true){ //初回を弾く。
   //   //バックに対応する処理
@@ -207,6 +212,19 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
     }
   }
 #endif
+  const int BEAR_BUF_MAX = 20;
+  static double bear_buf[BEAR_BUF_MAX];
+  static int bear_buf_ct;
+  bear_buf[bear_buf_ct++] = bear_d;
+  if(bear_buf_ct >= BEAR_BUF_MAX){
+    bear_buf_ct = 0;
+  }
+  double sum_bear_d = 0;
+  for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+    sum_bear += bear_buf[ii];
+  }
+  bear_now = bear_before + (sum_bear_d / BEAR_BUF_MAX); //bear_d; //再設定しないと誤差が残り続ける。
+  bear_before = bear_now;
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
