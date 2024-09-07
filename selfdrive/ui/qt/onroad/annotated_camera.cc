@@ -51,7 +51,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
   int SET_SPEED_NA = 410; ///409; //406; //557; //255; ,
   const SubMaster &sm = *(s.sm);
 
-  const bool cs_alive = sm.alive("controlsState");
+  const bool cs_alive = sm.alive("carState");
   const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
   //const auto cs = sm["controlsState"].getControlsState();
   const auto car_state = sm["carState"].getCarState();
@@ -59,7 +59,7 @@ void AnnotatedCameraWidget::updateState(const UIState &s) {
 
   is_metric = s.scene.is_metric;
 
-  // Handle older routes where vCruiseCluster is not set
+  // Handle older routes where vCruise was in controlsState
   float v_cruise = car_state.getVCruiseCluster() == 0.0 ? car_state.getVCruise() : car_state.getVCruiseCluster();
   ACC_speed = std::nearbyint(v_cruise); //45〜
   v_cruise = car_state.getVCruise(); //41〜,間違いない、表示して確認した。改めてこちらを使う。
