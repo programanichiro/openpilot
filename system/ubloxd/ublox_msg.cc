@@ -160,6 +160,9 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
     head_acc_k = 0;
   }
   bear_d *= head_acc_k;
+  if(vego <= 0.1/3.6){ //速度ゼロなら回転しない
+    bear_d = 0;
+  }
   bear_now = bear_before + bear_d; //再設定しないと誤差が残り続ける。
   if(bear_d > 180){
     bear_d = bear_d - 360;
@@ -238,14 +241,14 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   }
   static double before_lat;
   static double before_lon;
-  if(head_acc < 30){ //信用ならないなら前回のを継続
+  if(head_acc < 30 && vego > 0.1/3.6){ //速度ゼロもしくは信用ならないなら前回のを継続
     before_lat = msg->lat();
     before_lon = msg->lon();
   }
   static uint64_t monoTime; //とりあえずlivePoseを使うので不要。
   FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
   if(fp){
-    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,(double)sum_bear/BEAR_BUF_MAX,(double)msg->g_speed() * 1e-03,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,(double)sum_bear/BEAR_BUF_MAX,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
     fclose(fp);
   }
   return capnp::messageToFlatArray(msg_builder);
