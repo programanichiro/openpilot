@@ -153,8 +153,8 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   }
 
   //10->20:1->0
-  const double cx1 = 7.0;
-  const double cx2 = 17.0;
+  const double cx1 = 10.0;
+  const double cx2 = 20.0;
   double head_acc_k = 1.0;
   if(head_acc > cx1){
     head_acc_k -= (head_acc - cx1) / (cx2-cx1);
@@ -266,7 +266,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   }
   static double before_lat;
   static double before_lon;
-  if(head_acc < 30 && vego > 0.1/3.6){ //速度ゼロもしくは信用ならないなら前回のを継続
+  if((before_lat == 0 && before_lon == 0) || head_acc < 30 && vego > 0.1/3.6){ //速度ゼロもしくは信用ならないなら前回のを継続
     before_lat = msg->lat();
     before_lon = msg->lon();
   }
