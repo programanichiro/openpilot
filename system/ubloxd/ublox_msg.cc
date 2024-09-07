@@ -221,7 +221,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   }
   double sum_bear_d = 0;
   for(int ii=0; ii<BEAR_BUF_MAX; ii++){
-    sum_bear += bear_buf[ii];
+    sum_bear_d += bear_buf[ii];
   }
   bear_now = bear_before + (sum_bear_d / BEAR_BUF_MAX); //bear_d; //再設定しないと誤差が残り続ける。
   bear_before = bear_now;
