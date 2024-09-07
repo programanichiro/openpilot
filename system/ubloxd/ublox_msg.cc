@@ -136,9 +136,9 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   //ここからGPSのlat,lon,bearingを取る。更新されるので呼ばれているのは間違いない。
   //bearingの平滑化
   //static bool not_first_gps = false;
-  static double bear_add; //蓄積値
+  //static double bear_add; //蓄積値
   static double bear_before; //素の前回値
-  static double bear_add_before; //蓄積値の前回値
+  //static double bear_add_before; //蓄積値の前回値
   double bear_now = msg->head_mot() * 1e-5; //素の角度(degree)
   double bear_d = bear_now - bear_before;
   double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
@@ -159,16 +159,17 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   if(head_acc_k < 0){
     head_acc_k = 0;
   }
-  bear_d *= head_acc_k;
-  if(vego <= 0.1/3.6){ //速度ゼロなら回転しない
-    bear_d = 0;
-  }
-  bear_now = bear_before + bear_d; //再設定しないと誤差が残り続ける。
   if(bear_d > 180){
     bear_d = bear_d - 360;
   } else if(bear_d < -180){
     bear_d = bear_d + 360;
   }
+  bear_d *= head_acc_k;
+  if(vego <= 0.1/3.6){ //速度ゼロなら回転しない
+    bear_d = 0;
+  }
+  bear_now = bear_before + bear_d; //再設定しないと誤差が残り続ける。
+#if 0
   // if(not_first_gps == true){ //初回を弾く。
   //   //バックに対応する処理
   //   if(bear_d > 120){
@@ -205,6 +206,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
       bear_buf[ii] += 360;
     }
   }
+#endif
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
@@ -248,7 +250,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   static uint64_t monoTime; //とりあえずlivePoseを使うので不要。
   FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
   if(fp){
-    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,(double)sum_bear/BEAR_BUF_MAX,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,bear_now/*(double)sum_bear/BEAR_BUF_MAX*/,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
     fclose(fp);
   }
   return capnp::messageToFlatArray(msg_builder);
