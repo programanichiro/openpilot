@@ -50,7 +50,6 @@ _services: dict[str, tuple] = {
   "clocks": (True, 0.1, 1),
   "ubloxRaw": (True, 20.),
   "livePose": (True, 20., 4),
-  "myLiveLocationKalman": (True, 20.),
   "liveParameters": (True, 20., 5),
   "cameraOdometry": (True, 20., 10),
   "thumbnail": (True, 0.2, 1),
