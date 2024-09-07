@@ -32,8 +32,7 @@ sound_list: dict[int, tuple[str, int | None, float]] = {
   AudibleAlert.disengage: ("disengage.wav", 1, MAX_VOLUME),
   AudibleAlert.refuse: ("refuse.wav", 1, MAX_VOLUME),
 
-  #AudibleAlert.prompt: ("prompt.wav", 1, MAX_VOLUME),
-  AudibleAlert.prompt: ("pikiri.wave", 1, MAX_VOLUME),
+  AudibleAlert.prompt: ("prompt.wav", 1, MAX_VOLUME),
   AudibleAlert.promptRepeat: ("prompt.wav", None, MAX_VOLUME),
   AudibleAlert.promptDistracted: ("prompt_distracted.wav", None, MAX_VOLUME),
 
