@@ -35,7 +35,8 @@ class AlertEntry:
 class AlertManager:
   def __init__(self):
     self.alerts: dict[str, AlertEntry] = defaultdict(AlertEntry)
-    self.current_alert = EmptyAlert
+    self.current_alert: Alert | None = None
+    # self.current_alert = EmptyAlert
 
   def add_many(self, frame: int, alerts: list[Alert]) -> None:
     for alert in alerts:
