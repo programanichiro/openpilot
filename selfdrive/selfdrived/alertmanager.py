@@ -60,5 +60,4 @@ class AlertManager:
       if v.active(frame) and greater:
         ae = v
 
-    self.current_alert = ae.alert
-    # self.current_alert = ae.alert if ae.alert is not None else EmptyAlert
+    self.current_alert = ae.alert if ae.alert is not None else EmptyAlert
