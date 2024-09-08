@@ -426,7 +426,7 @@ class SelfdriveD:
     ss.personality = self.personality
 
     # if self.AM.current_alert:
-    if self.AM.current_alert != EmptyAlert
+    if self.AM.current_alert != EmptyAlert:
       ss.alertText1 = self.AM.current_alert.alert_text_1
       ss.alertText2 = self.AM.current_alert.alert_text_2
       ss.alertSize = self.AM.current_alert.alert_size
