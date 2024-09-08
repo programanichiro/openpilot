@@ -15,7 +15,7 @@ from openpilot.common.realtime import config_realtime_process, Priority, Ratekee
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.gps import get_gps_location_service
 
-from openpilot.selfdrive.selfdrived.events import Events, ET
+from openpilot.selfdrive.selfdrived.events import Events, ET, EmptyAlert
 from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 
@@ -418,19 +418,21 @@ class SelfdriveD:
     ss_msg = messaging.new_message('selfdriveState')
     ss_msg.valid = True
     ss = ss_msg.selfdriveState
-    if self.AM.current_alert:
-      ss.alertText1 = self.AM.current_alert.alert_text_1
-      ss.alertText2 = self.AM.current_alert.alert_text_2
-      ss.alertSize = self.AM.current_alert.alert_size
-      ss.alertStatus = self.AM.current_alert.alert_status
-      ss.alertType = self.AM.current_alert.alert_type
-      ss.alertSound = self.AM.current_alert.audible_alert
     ss.enabled = self.enabled
     ss.active = self.active
     ss.state = self.state_machine.state
     ss.engageable = not self.events.contains(ET.NO_ENTRY)
     ss.experimentalMode = self.experimental_mode
     ss.personality = self.personality
+
+    if self.AM.current_alert != EmptyAlert:
+      ss.alertText1 = self.AM.current_alert.alert_text_1
+      ss.alertText2 = self.AM.current_alert.alert_text_2
+      ss.alertSize = self.AM.current_alert.alert_size
+      ss.alertStatus = self.AM.current_alert.alert_status
+      ss.alertType = self.AM.current_alert.alert_type
+      ss.alertSound = self.AM.current_alert.audible_alert
+
     self.pm.send('selfdriveState', ss_msg)
 
     # onroadEvents - logged every second or on change
