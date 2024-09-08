@@ -15,7 +15,7 @@ from openpilot.common.realtime import config_realtime_process, Priority, Ratekee
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.gps import get_gps_location_service
 
-from openpilot.selfdrive.selfdrived.events import Events, ET
+from openpilot.selfdrive.selfdrived.events import Events, ET, EmptyAlert
 from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 
@@ -425,7 +425,8 @@ class SelfdriveD:
     ss.experimentalMode = self.experimental_mode
     ss.personality = self.personality
 
-    if self.AM.current_alert: #self.AM.current_alert != EmptyAlert？？？
+    # if self.AM.current_alert:
+    if self.AM.current_alert != EmptyAlert
       ss.alertText1 = self.AM.current_alert.alert_text_1
       ss.alertText2 = self.AM.current_alert.alert_text_2
       ss.alertSize = self.AM.current_alert.alert_size

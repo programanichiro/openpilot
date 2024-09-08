@@ -31,11 +31,11 @@ class AlertEntry:
   def active(self, frame: int) -> bool:
     return frame <= self.end_frame
 
+
 class AlertManager:
   def __init__(self):
     self.alerts: dict[str, AlertEntry] = defaultdict(AlertEntry)
-    # self.current_alert = EmptyAlert
-    self.current_alert: Alert | None = None
+    self.current_alert = EmptyAlert
 
   def add_many(self, frame: int, alerts: list[Alert]) -> None:
     for alert in alerts:
@@ -60,5 +60,4 @@ class AlertManager:
       if v.active(frame) and greater:
         ae = v
 
-    # self.current_alert = ae.alert if ae.alert is not None else EmptyAlert
-    self.current_alert = ae.alert
+    self.current_alert = ae.alert if ae.alert is not None else EmptyAlert
