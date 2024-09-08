@@ -425,12 +425,13 @@ class SelfdriveD:
     ss.experimentalMode = self.experimental_mode
     ss.personality = self.personality
 
-    ss.alertText1 = self.AM.current_alert.alert_text_1
-    ss.alertText2 = self.AM.current_alert.alert_text_2
-    ss.alertSize = self.AM.current_alert.alert_size
-    ss.alertStatus = self.AM.current_alert.alert_status
-    ss.alertType = self.AM.current_alert.alert_type
-    ss.alertSound = self.AM.current_alert.audible_alert
+    if self.AM.current_alert: #self.AM.current_alert != EmptyAlert？？？
+      ss.alertText1 = self.AM.current_alert.alert_text_1
+      ss.alertText2 = self.AM.current_alert.alert_text_2
+      ss.alertSize = self.AM.current_alert.alert_size
+      ss.alertStatus = self.AM.current_alert.alert_status
+      ss.alertType = self.AM.current_alert.alert_type
+      ss.alertSound = self.AM.current_alert.audible_alert
 
     self.pm.send('selfdriveState', ss_msg)
 
