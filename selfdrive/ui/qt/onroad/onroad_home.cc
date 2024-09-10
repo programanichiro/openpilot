@@ -144,7 +144,7 @@ void OnroadWindow::offroadTransition(bool offroad) {
     if(my_mapbox_token.empty() == false){
       mapbox_extra = true;
     }
-    if (map == nullptr && (uiState()->hasPrime() || !MAPBOX_TOKEN.isEmpty() || mapbox_extra)) {
+    if (map == nullptr && (false /*uiState()->hasPrime()*/ || !MAPBOX_TOKEN.isEmpty() || mapbox_extra)) {
       createMapWidget();
     }
   }

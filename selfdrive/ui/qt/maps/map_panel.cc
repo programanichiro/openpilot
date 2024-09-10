@@ -42,7 +42,7 @@ MapPanel::MapPanel(const QMapLibre::Settings &mapboxSettings, QWidget *parent) :
 }
 
 void MapPanel::toggleMapSettings() {
-  if(uiState()->hasPrime()){
+  if(false/*uiState()->hasPrime()*/){
     // show settings if not visible, then toggle between map and settings
     int new_index = isVisible() ? (1 - content_stack->currentIndex()) : 1;
     content_stack->setCurrentIndex(new_index);
