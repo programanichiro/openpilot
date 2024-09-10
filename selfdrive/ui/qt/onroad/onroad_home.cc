@@ -47,7 +47,6 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   setAttribute(Qt::WA_OpaquePaintEvent);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &OnroadWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &OnroadWindow::offroadTransition);
-  QObject::connect(uiState(), &UIState::primeChanged, this, &OnroadWindow::primeChanged);
 }
 
 bool mapVisible;
@@ -144,7 +143,7 @@ void OnroadWindow::offroadTransition(bool offroad) {
     if(my_mapbox_token.empty() == false){
       mapbox_extra = true;
     }
-    if (map == nullptr && (uiState()->hasPrime() || !MAPBOX_TOKEN.isEmpty() || mapbox_extra)) {
+    if (map == nullptr && (false /*uiState()->hasPrime()*/ || !MAPBOX_TOKEN.isEmpty() || mapbox_extra)) {
       createMapWidget();
     }
   }
