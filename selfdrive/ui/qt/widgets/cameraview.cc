@@ -7,13 +7,7 @@
 #endif
 
 #include <cmath>
-#include <set>
-#include <string>
-#include <utility>
-
 #include <QApplication>
-#include <QOpenGLBuffer>
-#include <QOffscreenSurface>
 
 namespace {
 
@@ -66,40 +60,10 @@ const char frame_fragment_shader[] =
   "}\n";
 #endif
 
-mat4 get_driver_view_transform(int screen_width, int screen_height, int stream_width, int stream_height) {
-  const float driver_view_ratio = 2.0;
-  const float yscale = stream_height * driver_view_ratio / stream_width;
-  const float xscale = yscale*screen_height/screen_width*stream_width/stream_height;
-  mat4 transform = (mat4){{
-    xscale,  0.0, 0.0, 0.0,
-    0.0,  yscale, 0.0, 0.0,
-    0.0,  0.0, 1.0, 0.0,
-    0.0,  0.0, 0.0, 1.0,
-  }};
-  return transform;
-}
-
-mat4 get_fit_view_transform(float widget_aspect_ratio, float frame_aspect_ratio) {
-  float zx = 1, zy = 1;
-  if (frame_aspect_ratio > widget_aspect_ratio) {
-    zy = widget_aspect_ratio / frame_aspect_ratio;
-  } else {
-    zx = frame_aspect_ratio / widget_aspect_ratio;
-  }
-
-  const mat4 frame_transform = {{
-    zx, 0.0, 0.0, 0.0,
-    0.0, zy, 0.0, 0.0,
-    0.0, 0.0, 1.0, 0.0,
-    0.0, 0.0, 0.0, 1.0,
-  }};
-  return frame_transform;
-}
-
 } // namespace
 
-CameraWidget::CameraWidget(std::string stream_name, VisionStreamType type, bool zoom, QWidget* parent) :
-                          stream_name(stream_name), active_stream_type(type), requested_stream_type(type), zoomed_view(zoom), QOpenGLWidget(parent) {
+CameraWidget::CameraWidget(std::string stream_name, VisionStreamType type, QWidget* parent) :
+                          stream_name(stream_name), active_stream_type(type), requested_stream_type(type), QOpenGLWidget(parent) {
   setAttribute(Qt::WA_OpaquePaintEvent);
   qRegisterMetaType<std::set<VisionStreamType>>("availableStreams");
   QObject::connect(this, &CameraWidget::vipcThreadConnected, this, &CameraWidget::vipcConnected, Qt::BlockingQueuedConnection);
@@ -214,9 +178,14 @@ void CameraWidget::availableStreamsUpdated(std::set<VisionStreamType> streams) {
   available_streams = streams;
 }
 
-void CameraWidget::updateFrameMat() {
-  int w = glWidth(), h = glHeight();
+mat4 CameraWidget::calcFrameMatrix() {
+  // Scale the frame to fit the widget while maintaining the aspect ratio.
+  float widget_aspect_ratio = (float)width() / height();
+  float frame_aspect_ratio = (float)stream_width / stream_height;
+  float zx = std::min(frame_aspect_ratio / widget_aspect_ratio, 1.0f);
+  float zy = std::min(widget_aspect_ratio / frame_aspect_ratio, 1.0f);
 
+<<<<<<< HEAD
   if (zoomed_view) {
     if (active_stream_type != VISION_STREAM_WIDE_ROAD) {
       // Always ready to switch if wide is not active, start at full zoom
@@ -286,6 +255,14 @@ void CameraWidget::updateFrameMat() {
 
 void CameraWidget::updateCalibration(const mat3 &calib) {
   calibration = calib;
+=======
+  return mat4{{
+    zx, 0.0, 0.0, 0.0,
+    0.0, zy, 0.0, 0.0,
+    0.0, 0.0, 1.0, 0.0,
+    0.0, 0.0, 0.0, 1.0,
+  }};
+>>>>>>> 47409ab4d40c18d4a1e3030585646fbab7729e41
 }
 
 void CameraWidget::paintGL() {
@@ -312,7 +289,7 @@ void CameraWidget::paintGL() {
   VisionBuf *frame = frames[frame_idx].second;
   assert(frame != nullptr);
 
-  updateFrameMat();
+  auto frame_mat = calcFrameMatrix();
 
   glViewport(0, 0, glWidth(), glHeight());
   glBindVertexArray(frame_vao);
