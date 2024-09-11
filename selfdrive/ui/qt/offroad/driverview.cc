@@ -8,7 +8,7 @@
 
 const int FACE_IMG_SIZE = 130;
 
-DriverViewWindow::DriverViewWindow(QWidget* parent) : CameraWidget("camerad", VISION_STREAM_DRIVER, true, parent) {
+DriverViewWindow::DriverViewWindow(QWidget* parent) : CameraWidget("camerad", VISION_STREAM_DRIVER, parent) {
   face_img = loadPixmap("../assets/img_driver_face_static.png", {FACE_IMG_SIZE, FACE_IMG_SIZE});
   QObject::connect(this, &CameraWidget::clicked, this, &DriverViewWindow::done);
   QObject::connect(device(), &Device::interactiveTimeout, this, [this]() {
@@ -206,4 +206,16 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
     t[i] *= 0.9;
   }
 
+}
+
+mat4 DriverViewWindow::calcFrameMatrix() {
+  const float driver_view_ratio = 2.0;
+  const float yscale = stream_height * driver_view_ratio / stream_width;
+  const float xscale = yscale * glHeight() / glWidth() * stream_width / stream_height;
+  return mat4{{
+    xscale,  0.0, 0.0, 0.0,
+    0.0,  yscale, 0.0, 0.0,
+    0.0,  0.0, 1.0, 0.0,
+    0.0,  0.0, 0.0, 1.0,
+  }};
 }
