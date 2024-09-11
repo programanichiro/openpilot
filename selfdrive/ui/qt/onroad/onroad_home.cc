@@ -26,12 +26,12 @@ OnroadWindow::OnroadWindow(QWidget *parent) : QWidget(parent) {
   split->addWidget(nvg);
 
   if (getenv("DUAL_CAMERA_VIEW")) {
-    CameraWidget *arCam = new CameraWidget("camerad", VISION_STREAM_ROAD, true, this);
+    CameraWidget *arCam = new CameraWidget("camerad", VISION_STREAM_ROAD, this);
     split->insertWidget(0, arCam);
   }
 
   if (getenv("MAP_RENDER_VIEW")) {
-    CameraWidget *map_render = new CameraWidget("navd", VISION_STREAM_MAP, false, this);
+    CameraWidget *map_render = new CameraWidget("navd", VISION_STREAM_MAP, this);
     split->insertWidget(0, map_render);
   }
 
