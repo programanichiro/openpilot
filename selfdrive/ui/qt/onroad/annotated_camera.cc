@@ -1823,7 +1823,8 @@ void AnnotatedCameraWidget::drawLockon(QPainter &painter, const cereal::ModelDat
   a_rel = leadcar_lockon[num].a;
 
   float dh = 50;
-  if(uiState()->scene.wide_cam == false) { //dhに奥行き値を反映させる。
+  bool wide_cam = active_stream_type == VISION_STREAM_WIDE_ROAD;
+  if(wide_cam == false) { //dhに奥行き値を反映させる。
     float dd = d;
     dd -= 25; //dd=0〜75
     dd /= (75.0/2); //dd=0〜2
