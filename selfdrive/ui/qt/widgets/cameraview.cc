@@ -260,7 +260,6 @@ mat4 CameraWidget::calcFrameMatrix() {
     0.0, 0.0, 1.0, 0.0,
     0.0, 0.0, 0.0, 1.0,
   }};
->>>>>>> 47409ab4d40c18d4a1e3030585646fbab7729e41
 }
 
 void CameraWidget::paintGL() {
