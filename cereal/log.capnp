@@ -2304,6 +2304,11 @@ struct EncodeData {
   height @5 :UInt32;
 }
 
+struct DebugAlert {
+  alertText1 @0 :Text;
+  alertText2 @1 :Text;
+}
+
 struct UserFlag {
 }
 
@@ -2407,11 +2412,11 @@ struct Event {
     uiDebug @102 :UIDebug;
 
     # *********** debug ***********
-    testJoystick @52 :Joystick;
     roadEncodeData @86 :EncodeData;
     driverEncodeData @87 :EncodeData;
     wideRoadEncodeData @88 :EncodeData;
     qRoadEncodeData @89 :EncodeData;
+    alertDebug @133 :DebugAlert;
 
     livestreamRoadEncodeData @120 :EncodeData;
     livestreamWideRoadEncodeData @121 :EncodeData;
@@ -2476,5 +2481,6 @@ struct Event {
     uiPlanDEPRECATED @106 :UiPlan;
     liveLocationKalmanDEPRECATED @72 :LiveLocationKalman;
     liveTracksDEPRECATED @16 :List(LiveTracksDEPRECATED);
+    testJoystickDEPRECATED @52 :Joystick;
   }
 }
