@@ -133,6 +133,103 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setAltitude(msg->height() * 1e-03);
   gpsLoc.setSpeed(msg->g_speed() * 1e-03);
   gpsLoc.setBearingDeg(msg->head_mot() * 1e-5);
+  //ここからGPSのlat,lon,bearingを取る。更新されるので呼ばれているのは間違いない。
+  //bearingの平滑化
+  //static bool not_first_gps = false;
+  static double bear_add; //蓄積値
+  static double bear_before; //素の前回値
+  //static double bear_add_before; //蓄積値の前回値
+  double bear_now = msg->head_mot() * 1e-5; //素の角度(degree)
+  if(bear_now < 0){
+    bear_now += 360; //0〜360を保証
+  }
+  double bear_d = bear_now - bear_before;
+  double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
+
+  double vego = msg->g_speed() * 1e-03;
+  std::string car_vego_txt = util::read_file("/tmp/car_vego.txt");
+  if(car_vego_txt.empty() == false){
+    vego = std::stof(car_vego_txt);
+  }
+
+  //10->20:1->0
+  const double cx1 = 10.0;
+  const double cx2 = 20.0;
+  double head_acc_k = 1.0;
+  if(head_acc > cx1){
+    head_acc_k -= (head_acc - cx1) / (cx2-cx1);
+  }
+  if(head_acc_k < 0){
+    head_acc_k = 0;
+  }
+  if(bear_d > 180){
+    bear_d = bear_d - 360;
+  } else if(bear_d < -180){
+    bear_d = bear_d + 360;
+  }
+  //回転角速度制限5度
+  if(bear_d > 5){
+    bear_d = 5;
+  } else  if(bear_d < -5){
+    bear_d = -5;
+  }
+  bear_d *= head_acc_k;
+  if(vego <= 0.1/3.6){ //速度ゼロなら回転しない
+    bear_d = 0;
+  }
+  bear_now = bear_before + bear_d; //再設定しないと誤差が残り続ける。
+  if(bear_now < 0){
+    bear_now += 360; //0〜360を保証
+  }
+#if 1
+  // if(not_first_gps == true){ //初回を弾く。
+  //   //バックに対応する処理
+  //   if(bear_d > 120){
+  //     bear_d -= 180;
+  //   } else if(bear_d < -120){
+  //     bear_d += 180;
+  //   }
+  // }
+  //not_first_gps = true;
+  bear_add += bear_d; //とりあえず蓄積のオーバーフローは気にしない。
+  const int BEAR_BUF_MAX = 20;
+  static double bear_buf[BEAR_BUF_MAX];
+  static int bear_buf_ct;
+  bear_buf[bear_buf_ct++] = bear_add;
+  if(bear_buf_ct >= BEAR_BUF_MAX){
+    bear_buf_ct = 0;
+  }
+  double sum_bear = 0;
+  for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+    sum_bear += bear_buf[ii];
+  }
+  double avr_bear = sum_bear / BEAR_BUF_MAX;
+  //avr_bearも0〜360を保証
+  if(avr_bear > 360){
+    while(avr_bear > 360){
+      avr_bear -= 360;
+    }
+  } else if(avr_bear < 0){
+    while(avr_bear < 0){
+      avr_bear += 360;
+    }
+  }
+#else
+  //このやり方ではフラフラすす。
+  const int BEAR_BUF_MAX = 20;
+  static double bear_buf[BEAR_BUF_MAX];
+  static int bear_buf_ct;
+  bear_buf[bear_buf_ct++] = bear_d;
+  if(bear_buf_ct >= BEAR_BUF_MAX){
+    bear_buf_ct = 0;
+  }
+  double sum_bear_d = 0;
+  for(int ii=0; ii<BEAR_BUF_MAX; ii++){
+    sum_bear_d += bear_buf[ii];
+  }
+  bear_now = bear_before + (sum_bear_d / BEAR_BUF_MAX); //bear_d; //再設定しないと誤差が残り続ける。
+#endif
+  bear_before = bear_now;
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
@@ -146,9 +243,43 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setUnixTimestampMillis(utc_tt * 1e+03 + msg->nano() * 1e-06);
   float f[] = { msg->vel_n() * 1e-03f, msg->vel_e() * 1e-03f, msg->vel_d() * 1e-03f };
   gpsLoc.setVNED(f);
+  FILE *fp1 = fopen("/tmp/gps_vel_data.txt","w");
+  if(fp1){
+    fprintf(fp1,"%.3f,%.3f,%.3f",(double)f[0],(double)f[1],(double)f[2]);
+    fclose(fp1);
+  }
   gpsLoc.setVerticalAccuracy(msg->v_acc() * 1e-03);
   gpsLoc.setSpeedAccuracy(msg->s_acc() * 1e-03);
   gpsLoc.setBearingAccuracyDeg(msg->head_acc() * 1e-05);
+  FILE *fp2 = fopen("/tmp/gps_acc_data.txt","w");
+  if(fp2){
+    fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)<%.1f/%.1f>",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k,vego,msg->g_speed() * 1e-03);
+    fclose(fp2);
+  }
+
+  int locationd_valid = 1;
+  if(f[0] == 0 && f[1] == 0 && f[2] == 0){
+    locationd_valid = 0;
+  }
+  if(head_acc > 60){
+    locationd_valid = 0;
+  }
+  static double before_lat;
+  static double before_lon;
+  static double max_vego; //パワーオン後に発進するまでは、常に更新した方がマシ？
+  if(max_vego < vego){
+    max_vego = vego;
+  }
+  if((before_lat == 0 && before_lon == 0) || (max_vego < 8/3.6) || head_acc < 30 && vego > 0.1/3.6){ //速度ゼロもしくは信用ならないなら前回のを継続
+    before_lat = msg->lat();
+    before_lon = msg->lon();
+  }
+  static uint64_t monoTime; //とりあえずlivePoseを使うので不要。
+  FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
+  if(fp){
+    fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,avr_bear/*(double)sum_bear/BEAR_BUF_MAX*/,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+    fclose(fp);
+  }
   return capnp::messageToFlatArray(msg_builder);
 }
 

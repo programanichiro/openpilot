@@ -44,6 +44,10 @@ function launch {
   # 2. The FINALIZED consistent file has to exist, indicating there's an update
   #    that completed successfully and synced to disk.
 
+  if [ ! -f $DIR/../force_prebuild ]; then
+    rm ${BASEDIR}/.overlay_init
+  fi
+
   if [ -f "${BASEDIR}/.overlay_init" ]; then
     find ${BASEDIR}/.git -newer ${BASEDIR}/.overlay_init | grep -q '.' 2> /dev/null
     if [ $? -eq 0 ]; then
@@ -81,9 +85,13 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  if [ ! -f $DIR/common/params_pyx.so ]; then
+    echo 1 > $DIR/../force_prebuild
+  fi
+
   # start manager
   cd system/manager
-  if [ ! -f $DIR/prebuilt ]; then
+  if [ ! -f $DIR/prebuilt ] && [ -f $DIR/../force_prebuild ]; then
     ./build.py
   fi
   ./manager.py
