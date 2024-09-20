@@ -12,7 +12,7 @@ import time
 
 from cereal import log
 from msgq.visionipc import VisionIpcServer, VisionStreamType
-from cereal.messaging import PubMaster, log_from_bytes
+from cereal.messaging import PubMaster, log_from_bytes, sub_sock
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 from openpilot.common.prefix import OpenpilotPrefix
@@ -40,13 +40,26 @@ def setup_homescreen(click, pm: PubMaster):
 def setup_settings_device(click, pm: PubMaster):
   click(100, 100)
 
+def setup_settings_toggles(click, pm: PubMaster):
+  setup_settings_device(click, pm)
+  click(278, 760)
+  time.sleep(UI_DELAY)
+
 def setup_onroad(click, pm: PubMaster):
   vipc_server = VisionIpcServer("camerad")
   for stream_type, cam, _ in STREAMS:
     vipc_server.create_buffers(stream_type, 5, False, cam.width, cam.height)
   vipc_server.start_listener()
 
-  for packet_id in range(30):
+  uidebug_received_cnt = 0
+  packet_id = 0
+  uidebug_sock = sub_sock('uiDebug')
+
+  # Condition check for uiDebug processing
+  check_uidebug = DATA['deviceState'].deviceState.started and not DATA['carParams'].carParams.notCar
+
+  # Loop until 20 'uiDebug' messages are received
+  while uidebug_received_cnt <= 20:
     for service, data in DATA.items():
       if data:
         data.clear_write_flag()
@@ -55,6 +68,13 @@ def setup_onroad(click, pm: PubMaster):
     for stream_type, _, image in STREAMS:
       vipc_server.send(stream_type, image, packet_id, packet_id, packet_id)
 
+    if check_uidebug:
+      while uidebug_sock.receive(non_blocking=True):
+        uidebug_received_cnt += 1
+    else:
+      uidebug_received_cnt += 1
+
+    packet_id += 1
     time.sleep(0.05)
 
 def setup_onroad_wide(click, pm: PubMaster):
@@ -65,10 +85,12 @@ def setup_onroad_wide(click, pm: PubMaster):
 def setup_onroad_sidebar(click, pm: PubMaster):
   setup_onroad(click, pm)
   click(500, 500)
+  setup_onroad(click, pm)
 
 def setup_onroad_wide_sidebar(click, pm: PubMaster):
   setup_onroad_wide(click, pm)
   click(500, 500)
+  setup_onroad_wide(click, pm)
 
 def setup_body(click, pm: PubMaster):
   DATA['carParams'].carParams.carName = "BODY"
@@ -141,6 +163,7 @@ CASES = {
   "prime": setup_homescreen,
   "pair_device": setup_pair_device,
   "settings_device": setup_settings_device,
+  "settings_toggles": setup_settings_toggles,
   "onroad": setup_onroad,
   "onroad_sidebar": setup_onroad_sidebar,
   "onroad_alert_small": setup_onroad_alert_small,
