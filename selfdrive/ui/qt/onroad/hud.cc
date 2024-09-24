@@ -114,8 +114,8 @@ void HudRenderer::updateState(const UIState &s) {
   //     fclose(fp);
   //   }
   // }
-  has_us_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::MUTCD);
-  has_eu_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
+  has_us_speed_limit = false;// && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::MUTCD);
+  has_eu_speed_limit = false;// && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
   // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
   speedUnit = is_metric ? tr("km/h") : tr("mph");
   status = s.status;
