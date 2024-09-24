@@ -26,7 +26,7 @@ void HudRenderer::updateState(const UIState &s) {
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("carState");
-  const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
+  //const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
   //const auto cs = sm["controlsState"].getControlsState();
   const auto &car_state = sm["carState"].getCarState();
   //const auto &nav_instruction = sm["navInstruction"].getNavInstruction();
