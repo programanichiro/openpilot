@@ -43,6 +43,7 @@ float maxspeed_org;
 std::string road_info_txt;
 bool g_rightHandDM;
 int ACC_speed;
+extern void setButtonEnabled0(const char*fn , bool flag);
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
