@@ -231,6 +231,8 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
 }
 
 void AnnotatedCameraWidget::knightScanner(QPainter &p) {
+  extern bool all_brake_light;
+  extern int global_status;
   extern int Knight_scanner;
 
   static const int ct_n = 1;
@@ -576,13 +578,13 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
     static double h_manual_dist = 0.001 , h_autopilot_dist; //停止時間は1秒を1m換算でカウントする。
     double now_dist = distance_traveled - before_distance_traveled;
     before_distance_traveled = distance_traveled;
-    if(status == STATUS_DISENGAGED || status == STATUS_OVERRIDE){
+    if(global_status == STATUS_DISENGAGED || global_status == STATUS_OVERRIDE){
       manual_dist += now_dist; //手動運転中
       h_manual_dist += now_dist; //手動運転中
       if ((all_brake_light && vc_speed < 0.1/3.6)){
         h_manual_dist += 1.0/20; //1秒を1m換算
       }
-      if (status != STATUS_DISENGAGED || (all_brake_light && vc_speed < 0.1/3.6)){
+      if (global_status != STATUS_DISENGAGED || (all_brake_light && vc_speed < 0.1/3.6)){
         manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。特例としてエンゲージしてなくてもブレーキ踏めば含める（人が運転しているから）
       }
     } else {
@@ -650,6 +652,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 
 static float global_a_rel;
 static float global_a_rel_col;
+extern bool mapVisible;
 void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd , int num /*使っていない, size_t leads_num*/) {
   painter.save();
 
