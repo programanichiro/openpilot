@@ -135,7 +135,7 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
 
   p.restore();
 #else
-  drawHud(p);
+  drawHud(p,surface_rect);
 #endif
 }
 
@@ -211,7 +211,7 @@ extern bool mapVisible;
 extern void soundButton2(int onOff);
 extern void setButtonEnabled0(const char*fn , bool flag);
 int g_night_mode;
-void HudRenderer::drawHud(QPainter &p) {
+void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   p.save();
   int y_ofs = 150;
 
@@ -219,7 +219,7 @@ void HudRenderer::drawHud(QPainter &p) {
   QLinearGradient bg(0, UI_HEADER_HEIGHT - (UI_HEADER_HEIGHT / 2.5), 0, UI_HEADER_HEIGHT);
   bg.setColorAt(0, QColor::fromRgbF(0, 0, 0, 0.45));
   bg.setColorAt(1, QColor::fromRgbF(0, 0, 0, 0));
-  p.fillRect(0, 0, width(), UI_HEADER_HEIGHT+y_ofs, bg);
+  p.fillRect(0, 0, surface_rect.width(), UI_HEADER_HEIGHT+y_ofs, bg);
 
   QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
   QString speedStr = QString::number(std::nearbyint(speed));
@@ -228,8 +228,8 @@ void HudRenderer::drawHud(QPainter &p) {
   // max speed
   float max_disp_k = 1.8;
   //float max_disp_a = 50;
-  const int rect_w = rect().width();
-  const int rect_h = rect().height();
+  const int rect_w = surface_rect.width();
+  const int rect_h = surface_rect.height();
   if(false && (float)rect_w / rect_h > 1.4f){
   } else {
     //こちらの大きさを採用。
@@ -465,10 +465,10 @@ void HudRenderer::drawHud(QPainter &p) {
   double velo_for_trans = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
   const double velo_for_trans_limit = 0.05; //0.05km/h以下では速度を半透明にする。
   if(velo_for_trans >= velo_for_trans_limit){
-    drawText(p, rect().center().x()-7, 210+y_ofs-5, speedStr,speed_waku);
-    drawText(p, rect().center().x()+7, 210+y_ofs-5, speedStr,speed_waku);
-    drawText(p, rect().center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
-    drawText(p, rect().center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
+    drawText(p, surface_rect.center().x()-7, 210+y_ofs-5, speedStr,speed_waku);
+    drawText(p, surface_rect.center().x()+7, 210+y_ofs-5, speedStr,speed_waku);
+    drawText(p, surface_rect.center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
+    drawText(p, surface_rect.center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
   }
   QColor speed_num;
   static bool red_signal_scan_flag_2 = false;
@@ -489,23 +489,23 @@ void HudRenderer::drawHud(QPainter &p) {
       speed_num = QColor(0xff, 0xff, 0xff , 70);
     }
   }
-  drawText(p, rect().center().x(), 210 + y_ofs-5, speedStr , speed_num);
+  drawText(p, surface_rect.center().x(), 210 + y_ofs-5, speedStr , speed_num);
 
   p.setFont(InterFont(66));
   if (uiState()->scene.longitudinal_control == false) {
 #define COLOR_STATUS_WARNING QColor(0xDA, 0x6F, 0x25, 0xf1)
 //  [STATUS_ALERT] = QColor(0xC9, 0x22, 0x31, 0xf1),
-    drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, COLOR_STATUS_WARNING); //縦制御無効状態でkm/hを警告色に。
+    drawText(p, surface_rect.center().x(), 290 + y_ofs-5, speedUnit, COLOR_STATUS_WARNING); //縦制御無効状態でkm/hを警告色に。
   } else {
     int w;
     if(velo_for_trans < velo_for_trans_limit){
-      w = drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, speed_num);
+      w = drawText(p, surface_rect.center().x(), 290 + y_ofs-5, speedUnit, speed_num);
     } else {
-      w = drawText(p, rect().center().x(), 290 + y_ofs-5, speedUnit, 200);
+      w = drawText(p, surface_rect.center().x(), 290 + y_ofs-5, speedUnit, 200);
     }
     if(is_cruise_set){
       p.setFont(InterFont(40, QFont::ExtraBold));
-      drawTextCenter(p, rect().center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
+      drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
     }
   }
 
@@ -612,7 +612,7 @@ void HudRenderer::drawHud(QPainter &p) {
     th_tmp2 = 71; //ここから赤
   }
 
-  QRect temp_rc(rect().left()+65-27, rect().top()+110+6, 233+27*2-5, 54);
+  QRect temp_rc(surface_rect.left()+65-27, surface_rect.top()+110+6, 233+27*2-5, 54);
   p.setPen(Qt::NoPen);
   if(temp < th_tmp1){ //警告色の変化はサイドバーと違う。もっと早く警告される。
     p.setBrush(bg_colors[status]);
@@ -631,12 +631,12 @@ void HudRenderer::drawHud(QPainter &p) {
   } else {
     p.setPen(QColor(0xff, 0xff, 0 , 255));
   }
-  //p.drawText(QRect(rect().left()+65, rect().top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp);
-  p.drawText(QRect(rect().left()+65+120-5, rect().top()+110+7, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
+  //p.drawText(QRect(surface_rect.left()+65, surface_rect.top()+110, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp);
+  p.drawText(QRect(surface_rect.left()+65+120-5, surface_rect.top()+110+7, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
   p.setFont(InterFont(54, QFont::Bold));
-  p.drawText(QRect(rect().left()+65+55+5-5, rect().top()+110-8+9, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
+  p.drawText(QRect(surface_rect.left()+65+55+5-5, surface_rect.top()+110-8+9, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
   p.setFont(InterFont(48));
-  p.drawText(QRect(rect().left()+65+5+5, rect().top()+110-8+11, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
+  p.drawText(QRect(surface_rect.left()+65+5+5, surface_rect.top()+110-8+11, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
 
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
   all_brake_light = false;
@@ -661,37 +661,37 @@ void HudRenderer::drawHud(QPainter &p) {
   }
   if((float)rect_w / rect_h > 1.5f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
+    drawText(p, surface_rect.left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
   } else if((float)rect_w / rect_h > 1.02f){
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+140, 55, "COMMA.AI", logo_trs, brake_light);
+    drawText(p, surface_rect.left()+140, 55, "COMMA.AI", logo_trs, brake_light);
   } else if((float)rect_w / rect_h >= 0.975f){ //消えるタイミングは合わせたい。
     p.setFont(InterFont(44, QFont::DemiBold));
-    drawText(p, rect().left()+102, 55, "COMMA", logo_trs, brake_light);
+    drawText(p, surface_rect.left()+102, 55, "COMMA", logo_trs, brake_light);
   }
   if((float)rect_w / rect_h > 1.35f){
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
-      int next_x = drawTextRight(p, rect().right()-20, 60 , " TSSP", logo_trs, brake_light, label_red, label_grn, label_blu); //47060車はTSSP部分が黄色くなる。
+      int next_x = drawTextRight(p, surface_rect.right()-20, 60 , " TSSP", logo_trs, brake_light, label_red, label_grn, label_blu); //47060車はTSSP部分が黄色くなる。
       drawTextRight(p, next_x, 60 , "for toyota", logo_trs, brake_light);
     } else {
-      drawTextRight(p, rect().right()-20, 60 , "for toyota TSS2", logo_trs, brake_light);
+      drawTextRight(p, surface_rect.right()-20, 60 , "for toyota TSS2", logo_trs, brake_light);
     }
   } else if((float)rect_w / rect_h > 1.2f){
     p.setFont(InterFont(55, QFont::DemiBold));
     if(tss_type <= 1){
-      int next_x = drawTextRight(p, rect().right()-20, 60 , " TSSP", logo_trs, brake_light, label_red, label_grn, label_blu);
+      int next_x = drawTextRight(p, surface_rect.right()-20, 60 , " TSSP", logo_trs, brake_light, label_red, label_grn, label_blu);
       drawTextRight(p, next_x, 60 , "toyota", logo_trs, brake_light);
     } else {
-      drawTextRight(p, rect().right()-20, 60 , "toyota TSS2", logo_trs, brake_light);
+      drawTextRight(p, surface_rect.right()-20, 60 , "toyota TSS2", logo_trs, brake_light);
     }
   } else if((float)rect_w / rect_h >= 0.975f){ //消えるタイミングは合わせたい。
     p.setFont(InterFont(50, QFont::DemiBold));
     if(tss_type <= 1){
-      int next_x = drawTextRight(p, rect().right()-20, 60 , " P", logo_trs, brake_light, label_red, label_grn, label_blu);
+      int next_x = drawTextRight(p, surface_rect.right()-20, 60 , " P", logo_trs, brake_light, label_red, label_grn, label_blu);
       drawTextRight(p, next_x, 57 , "toyota", logo_trs, brake_light);
     } else {
-      drawTextRight(p, rect().right()-20, 57 , "toyota 2", logo_trs, brake_light);
+      drawTextRight(p, surface_rect.right()-20, 57 , "toyota 2", logo_trs, brake_light);
     }
   }
   p.setFont(InterFont(33, QFont::DemiBold));
@@ -731,15 +731,15 @@ void HudRenderer::drawHud(QPainter &p) {
     } else {
       road_info_txt_flag = true;
       p.setFont(InterFont(33, QFont::Bold));
-      int next_x = drawTextRight(p, rect().right()-10, rect().bottom() - 10 , QString::fromStdString(token), 220);
+      int next_x = drawTextRight(p, surface_rect.right()-10, surface_rect.bottom() - 10 , QString::fromStdString(token), 220);
       if(kmh != "0"){
-        drawTextRight(p, next_x-4, rect().bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0);
+        drawTextRight(p, next_x-4, surface_rect.bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0);
       }
     }
   }
   if(road_info_txt_flag == false){
     p.setFont(InterFont(33, QFont::DemiBold));
-    drawTextRight(p, rect().right()-10, rect().bottom() - 10 , "Rrograman Ichiro modified", 150 /*, 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6*/);
+    drawTextRight(p, surface_rect.right()-10, surface_rect.bottom() - 10 , "Rrograman Ichiro modified", 150 /*, 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6*/);
   }
   p.setFont(InterFont(33, QFont::Bold));
   float angle_steer = 0;
@@ -795,10 +795,10 @@ void HudRenderer::drawHud(QPainter &p) {
     //taco_rpm = taco_max/2; //表示テスト
     double upper_2w = 200+80;
     double under_2w = 100+55;
-    double lu = (double)rect().center().x()-upper_2w;
-    double ur = lu + upper_2w * 2 * taco_rpm / taco_max; //(double)rect().center().x()+upper_2w;
-    double ld = (double)rect().center().x()-under_2w;
-    double dr = ld + under_2w * 2 * taco_rpm / taco_max; //(double)rect().center().x()+under_2w;
+    double lu = (double)surface_rect.center().x()-upper_2w;
+    double ur = lu + upper_2w * 2 * taco_rpm / taco_max; //(double)surface_rect.center().x()+upper_2w;
+    double ld = (double)surface_rect.center().x()-under_2w;
+    double dr = ld + under_2w * 2 * taco_rpm / taco_max; //(double)surface_rect.center().x()+under_2w;
     QPointF taco_meter[] = {{lu,(double)20},{ld,(double)50 + 40*3+10}, {dr,(double)50 + 40*3+10}, {ur,(double)20}};
     p.setPen(Qt::NoPen);
     //p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
@@ -808,12 +808,12 @@ void HudRenderer::drawHud(QPainter &p) {
     p.setCompositionMode(QPainter::CompositionMode_SourceOver);
   }
 
-  drawText(p, rect().center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
-  drawText(p, rect().center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
-  drawText(p, rect().center().x(), 50 + 40*2 , "speed limit auto detect", a2 , brake_light);
-  //drawText(p, rect().center().x(), 50 + 40*2 , "curvature reinforcement", a2 , brake_light);
-  //drawText(p, rect().center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
-  drawText(p, rect().center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
+  drawText(p, surface_rect.center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
+  drawText(p, surface_rect.center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
+  drawText(p, surface_rect.center().x(), 50 + 40*2 , "speed limit auto detect", a2 , brake_light);
+  //drawText(p, surface_rect.center().x(), 50 + 40*2 , "curvature reinforcement", a2 , brake_light);
+  //drawText(p, surface_rect.center().x(), 50 + 40*2 , QString::number(angle_steer), a2 , brake_light);
+  drawText(p, surface_rect.center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
 
   // engage-ability icon
   if (true) {
@@ -823,11 +823,11 @@ void HudRenderer::drawHud(QPainter &p) {
       //停止時の青信号発進抑制、一時的に緩和、15->50度
       bg_color = COLOR_STATUS_WARNING; //ワンペダル時に信号スタート可能角度でなければ警告色。
     }
-    my_drawIcon(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
+    my_drawIcon(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
              sm["selfdriveState"].getSelfdriveState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
   }
-  const float x_Long_enable = rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2;
+  const float x_Long_enable = surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2;
   const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
   std::string long_speeddown_disable_txt = util::read_file("/tmp/long_speeddown_disable.txt");
   Long_enable = true;
@@ -918,7 +918,7 @@ void HudRenderer::drawHud(QPainter &p) {
       traffic_speed = QString::number(limit_speed_num);
     }
 
-    const float traffic_speed_r = 120 / 2 , traffic_speed_x = 247 , traffic_speed_y = rect().height() - traffic_speed_r*2 - 50;
+    const float traffic_speed_r = 120 / 2 , traffic_speed_x = 247 , traffic_speed_y = surface_rect.height() - traffic_speed_r*2 - 50;
     p.setPen(Qt::NoPen);
     if(g_night_mode == 0){
       p.setBrush(QColor::fromRgbF(1.0, 1.0, 1.0, 0.85));
@@ -946,7 +946,7 @@ void HudRenderer::drawHud(QPainter &p) {
   p.setPen(QPen(QColor(0xff, 0xff, 0xff, 0), 0));
   //int calib_h = radius;
   int calib_h = -33 -33 - 30; //表示位置を上に
-  QRect rc2(rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2 - 100, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36);
+  QRect rc2(surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 - 100, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36);
   if(/*engageable ||*/ handle_center == -100){
     std::string handle_center_txt = util::read_file("/tmp/handle_center_info.txt");
     if(handle_center_txt.empty() == false){
@@ -978,7 +978,7 @@ void HudRenderer::drawHud(QPainter &p) {
     float hc = handle_center;
 
     p.setFont(InterFont(33, QFont::Bold));
-    drawText(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, QString::number(hc,'f',2) + "deg", 200);
+    drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, QString::number(hc,'f',2) + "deg", 200);
   } else {
     p.setBrush(QColor(150, 150, 0, 0xf1));
     p.drawRoundedRect(rc2, 18, 18);
@@ -986,10 +986,10 @@ void HudRenderer::drawHud(QPainter &p) {
 
     if(handle_calibct == 0){
       p.setFont(InterFont(33));
-      drawText(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
+      drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
     } else {
       p.setFont(InterFont(33, QFont::Bold));
-      drawText(p, rect().right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
+      drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
     }
   }
 
