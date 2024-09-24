@@ -25,6 +25,9 @@ public:
 signals:
   void openSettings(int index = 0, const QString &param = "");
 
+private slots:
+  void poweroff();
+
 private:
   void showEvent(QShowEvent *event) override;
   void hideEvent(QHideEvent *event) override;
@@ -55,6 +58,7 @@ public slots:
   void offroadTransition(bool offroad);
   void showDriverView(bool show);
   void showSidebar(bool show);
+  void showMapPanel(bool show);
 
 protected:
   void mousePressEvent(QMouseEvent* e) override;

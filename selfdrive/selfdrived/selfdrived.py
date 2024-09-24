@@ -8,13 +8,14 @@ import cereal.messaging as messaging
 from cereal import car, log
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.gps import get_gps_location_service
 
-from openpilot.selfdrive.selfdrived.events import Events, ET
+from openpilot.selfdrive.selfdrived.events import Events, ET, EmptyAlert
 from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 from openpilot.selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEED
@@ -112,8 +113,11 @@ class SelfdriveD:
     self.state_machine = StateMachine()
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
+    with open('/tmp/red_signal_scan_flag.txt','w') as fp: #要る？
+      fp.write('%d' % (0))
+
     # Determine startup event
-    self.startup_event = EventName.startup if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
+    self.startup_event = EventName.startup #if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
     if not car_recognized:
       self.startup_event = EventName.startupNoCar
     elif car_recognized and self.CP.passive:
@@ -328,7 +332,7 @@ class SelfdriveD:
     if not SIMULATION or REPLAY:
       # Not show in first 1.5 km to allow for driving out of garage. This event shows after 5 minutes
       gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
-      if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
+      if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID and not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500 and self.distance_traveled < 3000):
         self.events.add(EventName.noGps)
       if gps_ok:
         self.distance_traveled = 0
@@ -342,7 +346,7 @@ class SelfdriveD:
       if any(not be.pressed and be.type == ButtonType.gapAdjustCruise for be in CS.buttonEvents):
         self.personality = (self.personality - 1) % 3
         self.params.put_nonblocking('LongitudinalPersonality', str(self.personality))
-        self.events.add(EventName.personalityChanged)
+        # self.events.add(EventName.personalityChanged)イチロウパイロットでは要らない。
 
   def data_sample(self):
     car_state = messaging.recv_one(self.car_state_sock)
@@ -416,12 +420,14 @@ class SelfdriveD:
     ss.experimentalMode = self.experimental_mode
     ss.personality = self.personality
 
-    ss.alertText1 = self.AM.current_alert.alert_text_1
-    ss.alertText2 = self.AM.current_alert.alert_text_2
-    ss.alertSize = self.AM.current_alert.alert_size
-    ss.alertStatus = self.AM.current_alert.alert_status
-    ss.alertType = self.AM.current_alert.alert_type
-    ss.alertSound = self.AM.current_alert.audible_alert
+    # if self.AM.current_alert:
+    if self.AM.current_alert != EmptyAlert:
+      ss.alertText1 = self.AM.current_alert.alert_text_1
+      ss.alertText2 = self.AM.current_alert.alert_text_2
+      ss.alertSize = self.AM.current_alert.alert_size
+      ss.alertStatus = self.AM.current_alert.alert_status
+      ss.alertType = self.AM.current_alert.alert_type
+      ss.alertSound = self.AM.current_alert.audible_alert
 
     self.pm.send('selfdriveState', ss_msg)
 
