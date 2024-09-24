@@ -6,6 +6,13 @@
 
 //constexpr int SET_SPEED_NA = 255;
 #define PI0_DEBUG false
+extern bool global_engageable;
+extern float vc_speed;
+extern int tss_type;
+extern float maxspeed_org;
+extern std::string road_info_txt;
+extern bool g_rightHandDM;
+extern int ACC_speed;
 
 HudRenderer::HudRenderer() {}
 
@@ -78,7 +85,7 @@ void HudRenderer::updateState(const UIState &s) {
   float v_ego = v_ego_cluster_seen ? car_state.getVEgoCluster() : car_state.getVEgo();
   speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
   vc_speed = v_ego;
-  QString maxspeed_str = is_cruise_set ? QString::number(std::nearbyint(setSpeed)) : "N/A";
+  QString maxspeed_str = is_cruise_set ? QString::number(std::nearbyint(set_speed)) : "N/A";
   std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
   static std::string stdstr_txt_save;
   if(is_cruise_set && stdstr_txt.empty() == false){
@@ -194,14 +201,6 @@ void HudRenderer::drawText(QPainter &p, int x, int y, const QString &text, int a
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 
-extern bool global_engageable;
-extern float vc_speed;
-extern static int tss_type = 0;
-extern static float maxspeed_org;
-extern std::string road_info_txt;
-extern bool g_rightHandDM;
-extern int ACC_speed;
-
 static bool all_brake_light = false;
 int global_status;
 float curve_value;
@@ -231,7 +230,7 @@ void HudRenderer::drawHud(QPainter &p) {
 
   QString speedLimitStr = (speedLimit > 1) ? QString::number(std::nearbyint(speedLimit)) : "–";
   QString speedStr = QString::number(std::nearbyint(speed));
-  //QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(setSpeed)) : "–";
+  //QString setSpeedStr = is_cruise_set ? QString::number(std::nearbyint(set_speed)) : "–";
 
   // max speed
   float max_disp_k = 1.8;
@@ -351,7 +350,7 @@ void HudRenderer::drawHud(QPainter &p) {
       max_color = QColor(0x91, 0x9b, 0x95, 0xff);
     } else if (speedLimit > 0 && Limit_speed_mode != 1) { //ACC自動設定時は警告カラー設定をしない
       auto interp_color = [=](QColor c1, QColor c2, QColor c3) {
-        return speedLimit > 0 ? interpColor(setSpeed, {speedLimit + 5, speedLimit + 15, speedLimit + 25}, {c1, c2, c3}) : c1;
+        return speedLimit > 0 ? interpColor(set_speed, {speedLimit + 5, speedLimit + 15, speedLimit + 25}, {c1, c2, c3}) : c1;
       };
       max_color = interp_color(max_color, QColor(0xff, 0xe4, 0xbf), QColor(0xff, 0xbf, 0xbf));
       set_speed_color = interp_color(set_speed_color, QColor(0xff, 0x95, 0x00), QColor(0xff, 0x00, 0x00));

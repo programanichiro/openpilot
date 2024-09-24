@@ -38,8 +38,8 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
 
 bool global_engageable;
 float vc_speed;
-static int tss_type = 0;
-static float maxspeed_org;
+int tss_type = 0;
+float maxspeed_org;
 std::string road_info_txt;
 bool g_rightHandDM;
 int ACC_speed;
