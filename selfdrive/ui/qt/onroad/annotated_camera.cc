@@ -33,6 +33,12 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   main_layout->addWidget(buttons);
 }
 
+extern float handle_center;
+extern int handle_calibct;
+extern float distance_traveled;
+extern float global_angle_steer0 = 0;
+extern float clipped_brightness0 = 101; //初回ファイルアクセスさせるため、わざと101
+extern float global_fps;
 bool global_engageable;
 float vc_speed;
 int tss_type = 0;
@@ -270,6 +276,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 
   static float dir0 = 1.0;
   float dir;
+  extern float curve_value;
   if(curve_value == 0){
     dir = dir0 * 0.25;
     hh = hh / 3;

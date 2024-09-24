@@ -13,6 +13,7 @@ class AnnotatedCameraWidget : public CameraWidget {
 public:
   explicit AnnotatedCameraWidget(VisionStreamType type, QWidget* parent = 0);
   void updateState(const UIState &s);
+  MapSettingsButton *map_settings_btn;
 
 private:
   QVBoxLayout *main_layout;
@@ -20,7 +21,6 @@ private:
   DriverMonitorRenderer dmon;
   HudRenderer hud;
   ButtonsWindow *buttons;
-  MapSettingsButton *map_settings_btn;
   std::unique_ptr<PubMaster> pm;
 
   int skip_frame_count = 0;

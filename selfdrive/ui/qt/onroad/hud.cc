@@ -4,6 +4,7 @@
 
 #include "selfdrive/ui/qt/util.h"
 
+#include "selfdrive/ui/qt/onroad/buttons.h"
 //constexpr int SET_SPEED_NA = 255;
 #define PI0_DEBUG false
 extern bool global_engageable;
@@ -14,7 +15,6 @@ extern std::string road_info_txt;
 extern bool g_rightHandDM;
 extern int ACC_speed;
 extern void setButtonInt(const char*fn , int num);
-static const int btn_size = 192;
 
 HudRenderer::HudRenderer() {
   engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
@@ -202,12 +202,12 @@ void HudRenderer::drawText(QPainter &p, int x, int y, const QString &text, int a
 static bool all_brake_light = false;
 int global_status;
 float curve_value;
-static float handle_center = -100;
-static int handle_calibct = 0;
-static float distance_traveled;
-static float global_angle_steer0 = 0;
-static float clipped_brightness0 = 101; //初回ファイルアクセスさせるため、わざと101
-static float global_fps;
+float handle_center = -100;
+int handle_calibct = 0;
+float distance_traveled;
+float global_angle_steer0 = 0;
+float clipped_brightness0 = 101; //初回ファイルアクセスさせるため、わざと101
+float global_fps;
 bool add_v_by_lead;
 int limit_speed_auto_detect; //map.ccから参照あり
 extern int Limit_speed_mode; //標識
