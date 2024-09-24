@@ -230,8 +230,8 @@ void AnnotatedCameraWidget::drawLaneLines(QPainter &painter, const UIState *s) {
   painter.restore();
 }
 
+bool all_brake_light = false;
 void AnnotatedCameraWidget::knightScanner(QPainter &p) {
-  extern bool all_brake_light;
   extern int global_status;
   extern int Knight_scanner;
 

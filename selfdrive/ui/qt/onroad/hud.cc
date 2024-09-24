@@ -199,7 +199,7 @@ void HudRenderer::drawText(QPainter &p, int x, int y, const QString &text, int a
   p.drawText(real_rect.x(), real_rect.bottom(), text);
 }
 #endif
-static bool all_brake_light = false;
+extern bool all_brake_light;
 int global_status;
 float curve_value;
 float handle_center = -100;
