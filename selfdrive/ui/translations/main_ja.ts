@@ -88,29 +88,6 @@
     </message>
 </context>
 <context>
-    <name>AnnotatedCameraWidget</name>
-    <message>
-        <source>km/h</source>
-        <translation>km/h</translation>
-    </message>
-    <message>
-        <source>mph</source>
-        <translation>mph</translation>
-    </message>
-    <message>
-        <source>MAX</source>
-        <translation>最高速度</translation>
-    </message>
-    <message>
-        <source>SPEED</source>
-        <translation>速度</translation>
-    </message>
-    <message>
-        <source>LIMIT</source>
-        <translation>制限速度</translation>
-    </message>
-</context>
-<context>
     <name>ConfirmationDialog</name>
     <message>
         <source>Ok</source>
@@ -322,6 +299,21 @@
     <message>
         <source>CHILL MODE ON</source>
         <translation>チルモード</translation>
+    </message>
+</context>
+<context>
+    <name>HudRenderer</name>
+    <message>
+        <source>km/h</source>
+        <translation>km/h</translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation>mph</translation>
+    </message>
+    <message>
+        <source>MAX</source>
+        <translation>最高速度</translation>
     </message>
 </context>
 <context>

@@ -88,29 +88,6 @@
     </message>
 </context>
 <context>
-    <name>AnnotatedCameraWidget</name>
-    <message>
-        <source>km/h</source>
-        <translation>كم/س</translation>
-    </message>
-    <message>
-        <source>mph</source>
-        <translation>ميل/س</translation>
-    </message>
-    <message>
-        <source>MAX</source>
-        <translation>MAX</translation>
-    </message>
-    <message>
-        <source>SPEED</source>
-        <translation>SPEED</translation>
-    </message>
-    <message>
-        <source>LIMIT</source>
-        <translation>LIMIT</translation>
-    </message>
-</context>
-<context>
     <name>ConfirmationDialog</name>
     <message>
         <source>Ok</source>
@@ -322,6 +299,21 @@
     <message>
         <source>CHILL MODE ON</source>
         <translation>تشغيل وضع الراحة</translation>
+    </message>
+</context>
+<context>
+    <name>HudRenderer</name>
+    <message>
+        <source>km/h</source>
+        <translation>كم/س</translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation>ميل/س</translation>
+    </message>
+    <message>
+        <source>MAX</source>
+        <translation>MAX</translation>
     </message>
 </context>
 <context>

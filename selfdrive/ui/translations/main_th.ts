@@ -88,29 +88,6 @@
     </message>
 </context>
 <context>
-    <name>AnnotatedCameraWidget</name>
-    <message>
-        <source>km/h</source>
-        <translation>กม./ชม.</translation>
-    </message>
-    <message>
-        <source>mph</source>
-        <translation>ไมล์/ชม.</translation>
-    </message>
-    <message>
-        <source>MAX</source>
-        <translation>สูงสุด</translation>
-    </message>
-    <message>
-        <source>SPEED</source>
-        <translation>ความเร็ว</translation>
-    </message>
-    <message>
-        <source>LIMIT</source>
-        <translation>จำกัด</translation>
-    </message>
-</context>
-<context>
     <name>ConfirmationDialog</name>
     <message>
         <source>Ok</source>
@@ -322,6 +299,21 @@
     <message>
         <source>CHILL MODE ON</source>
         <translation>คุณกำลังใช้โหมดชิล</translation>
+    </message>
+</context>
+<context>
+    <name>HudRenderer</name>
+    <message>
+        <source>km/h</source>
+        <translation>กม./ชม.</translation>
+    </message>
+    <message>
+        <source>mph</source>
+        <translation>ไมล์/ชม.</translation>
+    </message>
+    <message>
+        <source>MAX</source>
+        <translation>สูงสุด</translation>
     </message>
 </context>
 <context>
