@@ -29,7 +29,7 @@ void HudRenderer::updateState(const UIState &s) {
   const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
   //const auto cs = sm["controlsState"].getControlsState();
   const auto &car_state = sm["carState"].getCarState();
-  const auto &nav_instruction = sm["navInstruction"].getNavInstruction();
+  //const auto &nav_instruction = sm["navInstruction"].getNavInstruction();
 
   is_metric = s.scene.is_metric;
 
@@ -103,17 +103,17 @@ void HudRenderer::updateState(const UIState &s) {
   }
   speed *= is_metric ? MS_TO_KPH : MS_TO_MPH;
 
-  auto speed_limit_sign = nav_instruction.getSpeedLimitSign();
-  float old_speedLimit = speedLimit;
-  speedLimit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
-  speedLimit *= (is_metric ? MS_TO_KPH : MS_TO_MPH);
-  if(speedLimit != old_speedLimit){ //km/h限定
-    FILE *fp = fopen("/tmp/limitspeed_navi.txt","w");
-    if(fp != NULL){
-      fprintf(fp,"%d",(int)std::nearbyint(speedLimit)); //29とか出るので、その対策？
-      fclose(fp);
-    }
-  }
+  // auto speed_limit_sign = nav_instruction.getSpeedLimitSign();
+  // float old_speedLimit = speedLimit;
+  // speedLimit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
+  // speedLimit *= (is_metric ? MS_TO_KPH : MS_TO_MPH);
+  // if(speedLimit != old_speedLimit){ //km/h限定
+  //   FILE *fp = fopen("/tmp/limitspeed_navi.txt","w");
+  //   if(fp != NULL){
+  //     fprintf(fp,"%d",(int)std::nearbyint(speedLimit)); //29とか出るので、その対策？
+  //     fclose(fp);
+  //   }
+  // }
   has_us_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::MUTCD);
   has_eu_speed_limit = false && (nav_alive && speed_limit_sign == cereal::NavInstruction::SpeedLimitSign::VIENNA);
   // レイアウトは崩れるが、速度は取れる模様。OSMの速度情報の補完には使えるか？
