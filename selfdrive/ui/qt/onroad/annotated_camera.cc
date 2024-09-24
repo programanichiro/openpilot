@@ -642,6 +642,7 @@ void AnnotatedCameraWidget::knightScanner(QPainter &p) {
 
 static float global_a_rel;
 static float global_a_rel_col;
+extern bool mapVisible;
 void AnnotatedCameraWidget::drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd , int num /*使っていない, size_t leads_num*/) {
   painter.save();
 
