@@ -36,8 +36,8 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
 extern float handle_center;
 extern int handle_calibct;
 extern float distance_traveled;
-extern float global_angle_steer0 = 0;
-extern float clipped_brightness0 = 101; //初回ファイルアクセスさせるため、わざと101
+extern float global_angle_steer0;
+extern float clipped_brightness0; //初回ファイルアクセスさせるため、わざと101
 extern float global_fps;
 bool global_engageable;
 float vc_speed;
@@ -1107,4 +1107,33 @@ void AnnotatedCameraWidget::showEvent(QShowEvent *event) {
 
   ui_update_params(uiState());
   prev_draw_t = millis_since_boot();
+}
+
+int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r , int bk_add_w, int bk_xofs, int bk_add_h) {
+  QRect real_rect = p.fontMetrics().boundingRect(text);
+  real_rect.moveCenter({x + real_rect.width() / 2, y - real_rect.height() / 2});
+
+  if(bk_alp > 0){
+    //バックを塗る。
+    p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
+    if(bk_corner_r == 0){
+      p.drawRect(real_rect.x()+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height() + bk_add_h);
+    } else {
+      QRect rc(real_rect.x()+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height() + bk_add_h);
+      p.drawRoundedRect(rc, bk_corner_r, bk_corner_r);
+    }
+  }
+
+  if(brakeLight == false){
+    p.setPen(QColor(red, blu, grn, alpha));
+  } else {
+    alpha += 100;
+    if(alpha > 255){
+      alpha = 255;
+    }
+    p.setPen(QColor(0xff, 0, 0, alpha));
+  }
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return x + real_rect.width(); //続けて並べるxposを返す。
 }
