@@ -13,8 +13,13 @@ extern float maxspeed_org;
 extern std::string road_info_txt;
 extern bool g_rightHandDM;
 extern int ACC_speed;
+extern void setButtonInt(const char*fn , int num);
+static const int btn_size = 192;
 
-HudRenderer::HudRenderer() {}
+HudRenderer::HudRenderer() {
+  engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
+  experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size - 5, img_size - 5});
+}
 
 void HudRenderer::updateState(const UIState &s) {
   int SET_SPEED_NA = 410; ///409; //406; //557; //255; ,

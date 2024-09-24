@@ -31,9 +31,6 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   buttons = new ButtonsWindow(this , map_settings_btn); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
   QObject::connect(uiState(), &UIState::uiUpdate, buttons, &ButtonsWindow::updateState);
   main_layout->addWidget(buttons);
-
-  engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
-  experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size - 5, img_size - 5});
 }
 
 bool global_engageable;
