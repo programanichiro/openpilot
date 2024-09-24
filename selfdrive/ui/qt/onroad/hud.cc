@@ -11,6 +11,7 @@ HudRenderer::HudRenderer() {}
 
 void HudRenderer::updateState(const UIState &s) {
   int SET_SPEED_NA = 410; ///409; //406; //557; //255; ,
+  const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("carState");
   const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
@@ -49,7 +50,6 @@ void HudRenderer::updateState(const UIState &s) {
 
   status = s.status;
 
-  const SubMaster &sm = *(s.sm);
   if (!sm.alive("carState")) {
     is_cruise_set = false;
     set_speed = SET_SPEED_NA;

@@ -36,4 +36,7 @@ private:
   float speedLimit;
   bool has_us_speed_limit = false;
   bool has_eu_speed_limit = false;
+
+  inline QColor whiteColor(int alpha = 255) { return QColor(255, 255, 255, alpha); }
+  inline QColor blackColor(int alpha = 255) { return QColor(0, 0, 0, alpha); }
 };
