@@ -46,7 +46,12 @@ int ACC_speed;
 extern void setButtonInt(const char*fn , int num);
 extern int getButtonInt(const char*fn , int defaultNum);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
+  // update engageability/experimental mode button
+//  experimental_btn->updateState(s);
   dmon.updateState(s);
+  buttons->psn_update();
+  const auto ss = (*s.sm)["selfdriveState"].getSelfdriveState();
+  global_engageable = (ss.getEngageable() || ss.getEnabled());
 
   // hide map settings button for alerts and flip for right hand DM
   // if (map_settings_btn->isEnabled()) {

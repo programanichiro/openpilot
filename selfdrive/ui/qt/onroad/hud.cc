@@ -23,8 +23,8 @@ void HudRenderer::updateState(const UIState &s) {
   const bool cs_alive = sm.alive("carState");
   const bool nav_alive = sm.alive("navInstruction") && sm["navInstruction"].getValid();
   //const auto cs = sm["controlsState"].getControlsState();
-  const auto car_state = sm["carState"].getCarState();
-  const auto nav_instruction = sm["navInstruction"].getNavInstruction();
+  const auto &car_state = sm["carState"].getCarState();
+  const auto &nav_instruction = sm["navInstruction"].getNavInstruction();
 
   is_metric = s.scene.is_metric;
 
@@ -64,8 +64,7 @@ void HudRenderer::updateState(const UIState &s) {
     return;
   }
 
-  const auto &controls_state = sm["controlsState"].getControlsState();
-  const auto &car_state = sm["carState"].getCarState();
+  //const auto &controls_state = sm["controlsState"].getControlsState();
 
   // Handle older routes where vCruiseCluster is not set
   //set_speed = car_state.getVCruiseCluster() == 0.0 ? controls_state.getVCruiseDEPRECATED() : car_state.getVCruiseCluster();
@@ -117,12 +116,6 @@ void HudRenderer::updateState(const UIState &s) {
   status = s.status;
 
   maxSpeed = maxspeed_str; //ichiro pilot
-
-  // update engageability/experimental mode button
-//  experimental_btn->updateState(s);
-  buttons->psn_update();
-  const auto ss = (*s.sm)["selfdriveState"].getSelfdriveState();
-  global_engageable = (ss.getEngageable() || ss.getEnabled());
 
 }
 
