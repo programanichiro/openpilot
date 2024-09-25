@@ -96,7 +96,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
 
   std::vector<QString> accel_method_button_texts{tr("Official"), tr("Cydia2020")};
   accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
-                                          tr("Switch Accel Method Official or Cydia2020."),
+                                          tr("Switch Accel Method to Official version or Cydia2020. A reboot is required."),
                                           "../assets/offroad/icon_calibration.png",
                                           accel_method_button_texts);
 
