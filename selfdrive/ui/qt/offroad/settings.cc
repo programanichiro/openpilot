@@ -94,6 +94,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
                                           "../assets/offroad/icon_speed_limit.png",
                                           longi_button_texts);
 
+  std::vector<QString> accel_method_button_texts{tr("Official"), tr("Cydia2020")};
+  accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
+                                          tr("Switch Accel Method Official or Cydia2020."),
+                                          "../assets/offroad/icon_calibration.png",
+                                          accel_method_button_texts);
+
   // set up uiState update for personality setting
   QObject::connect(uiState(), &UIState::uiUpdate, this, &TogglesPanel::updateState);
 
@@ -109,6 +115,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
     // insert longitudinal personality after NDOG toggle
     if (param == "DisengageOnAccelerator") {
       addItem(long_personality_setting);
+      addItem(accel_method_setting);
     }
   }
 
