@@ -157,6 +157,7 @@ static void update_state(UIState *s) {
 void ui_update_params(UIState *s) {
   auto params = Params();
   s->scene.is_metric = params.getBool("IsMetric");
+  s->scene.map_on_left = params.getBool("NavSettingLeftSide");
 }
 
 void UIState::updateStatus() {
@@ -176,9 +177,20 @@ void UIState::updateStatus() {
       status = STATUS_DISENGAGED;
       scene.started_frame = sm->frame;
     }
-    started_prev = scene.started;
-    scene.world_objects_visible = false;
-    emit offroadTransition(!scene.started);
+    //developer control
+    std::string branch = Params().get("GitBranch");
+    std::string dongleId = Params().get("DongleId");
+    bool enable = true;
+    if(branch != "release3" && branch != "release2" && branch.find("release3-pi")  == std::string::npos && branch.find("release2-pi")  == std::string::npos && branch.find("rehearsal")  == std::string::npos && dongleId.find("1131d250d405") == std::string::npos && branch.find("debug") == std::string::npos){
+      if(sm->frame != 1){
+        enable = false;
+      }
+    }
+    if(enable == true){
+      started_prev = scene.started;
+      scene.world_objects_visible = false;
+      emit offroadTransition(!scene.started);
+    }
   }
 }
 
@@ -187,6 +199,7 @@ UIState::UIState(QObject *parent) : QObject(parent) {
     "modelV2", "controlsState", "liveCalibration", "radarState", "deviceState",
     "pandaStates", "carParams", "driverMonitoringState", "carState", "driverStateV2",
     "wideRoadCameraState", "managerState", "selfdriveState",
+    "livePose", "navInstruction", "navRoute", "clocks",
   });
   prime_state = new PrimeState(this);
   language = QString::fromStdString(Params().get("LanguageSetting"));

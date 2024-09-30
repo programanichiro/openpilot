@@ -82,6 +82,8 @@ def build(spinner: Spinner, dirty: bool = False, minimal: bool = False) -> None:
     cache_size -= f.stat().st_size
     f.unlink()
 
+  os.remove('/data/force_prebuild')
+
 
 if __name__ == "__main__":
   spinner = Spinner()

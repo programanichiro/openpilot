@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import math
 from typing import SupportsFloat
+import numpy as np
 
 from cereal import car, log
 import cereal.messaging as messaging
