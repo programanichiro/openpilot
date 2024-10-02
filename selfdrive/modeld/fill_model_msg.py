@@ -65,6 +65,12 @@ def fill_xyz_poly(builder, degree, x, y, z):
   builder.yCoefficients = coeffs[:, 1].tolist()
   builder.zCoefficients = coeffs[:, 2].tolist()
 
+def fill_lane_line_meta(builder, lane_lines, lane_line_probs):
+  builder.leftY = lane_lines[1].y[0]
+  builder.leftProb = lane_line_probs[1]
+  builder.rightY = lane_lines[2].y[0]
+  builder.rightProb = lane_line_probs[2]
+
 def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._DynamicStructBuilder,
                    net_output_data: dict[str, np.ndarray], publish_state: PublishState,
                    vipc_frame_id: int, vipc_frame_id_extra: int, frame_id: int, frame_drop: float,
@@ -193,10 +199,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
         fp.write('%.5f' % (lane_d))
 
   lane_line_meta = driving_model_data.laneLineMeta
-  lane_line_meta.leftY = modelV2.laneLines[1].y[0]
-  lane_line_meta.leftProb = modelV2.laneLineProbs[1]
-  lane_line_meta.rightY = modelV2.laneLines[2].y[0]
-  lane_line_meta.rightProb = modelV2.laneLineProbs[2]
+  fill_lane_line_meta(lane_line_meta, modelV2.laneLines, modelV2.laneLineProbs)
 
   # road edges
   modelV2.init('roadEdges', 2)
