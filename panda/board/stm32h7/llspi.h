@@ -1,4 +1,3 @@
-#if defined(ENABLE_SPI) || defined(BOOTSTUB)
 // master -> panda DMA start
 void llspi_mosi_dma(uint8_t *addr, int len) {
   // disable DMA + SPI
@@ -49,9 +48,8 @@ void llspi_miso_dma(uint8_t *addr, int len) {
   register_set_bits(&(SPI4->CR1), SPI_CR1_SPE);
 }
 
-static bool spi_tx_dma_done = false;
 // master -> panda DMA finished
-static void DMA2_Stream2_IRQ_Handler(void) {
+void DMA2_Stream2_IRQ_Handler(void) {
   // Clear interrupt flag
   DMA2->LIFCR = DMA_LIFCR_CTCIF2;
 
@@ -59,7 +57,7 @@ static void DMA2_Stream2_IRQ_Handler(void) {
 }
 
 // panda -> master DMA finished
-static void DMA2_Stream3_IRQ_Handler(void) {
+void DMA2_Stream3_IRQ_Handler(void) {
   ENTER_CRITICAL();
 
   DMA2->LIFCR = DMA_LIFCR_CTCIF3;
@@ -69,7 +67,7 @@ static void DMA2_Stream3_IRQ_Handler(void) {
 }
 
 // panda TX finished
-static void SPI4_IRQ_Handler(void) {
+void SPI4_IRQ_Handler(void) {
   // clear flag
   SPI4->IFCR |= (0x1FFU << 3U);
 
@@ -106,4 +104,3 @@ void llspi_init(void) {
   NVIC_EnableIRQ(DMA2_Stream3_IRQn);
   NVIC_EnableIRQ(SPI4_IRQn);
 }
-#endif

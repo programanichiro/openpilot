@@ -180,20 +180,20 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
 
   QFrame* finishRegistration = new QFrame;
   finishRegistration->setObjectName("primeWidget");
-  QVBoxLayout* finishRegistrationLayout = new QVBoxLayout(finishRegistration);
-  finishRegistrationLayout->setSpacing(38);
-  finishRegistrationLayout->setContentsMargins(64, 48, 64, 48);
+  QVBoxLayout* finishRegistationLayout = new QVBoxLayout(finishRegistration);
+  finishRegistationLayout->setSpacing(38);
+  finishRegistationLayout->setContentsMargins(64, 48, 64, 48);
 
   QLabel* registrationTitle = new QLabel(tr("Finish Setup"));
   registrationTitle->setStyleSheet("font-size: 75px; font-weight: bold;");
-  finishRegistrationLayout->addWidget(registrationTitle);
+  finishRegistationLayout->addWidget(registrationTitle);
 
   QLabel* registrationDescription = new QLabel(tr("Pair your device with comma connect (connect.comma.ai) and claim your comma prime offer."));
   registrationDescription->setWordWrap(true);
   registrationDescription->setStyleSheet("font-size: 50px; font-weight: light;");
-  finishRegistrationLayout->addWidget(registrationDescription);
+  finishRegistationLayout->addWidget(registrationDescription);
 
-  finishRegistrationLayout->addStretch();
+  finishRegistationLayout->addStretch();
 
   QPushButton* pair = new QPushButton(tr("Pair device"));
   pair->setStyleSheet(R"(
@@ -208,7 +208,7 @@ SetupWidget::SetupWidget(QWidget* parent) : QFrame(parent) {
       background-color: #3049F4;
     }
   )");
-  finishRegistrationLayout->addWidget(pair);
+  finishRegistationLayout->addWidget(pair);
 
   popup = new PairingPopup(this);
   QObject::connect(pair, &QPushButton::clicked, popup, &PairingPopup::exec);

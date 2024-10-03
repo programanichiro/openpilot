@@ -2012,8 +2012,7 @@ struct Joystick {
 struct DriverStateV2 {
   frameId @0 :UInt32;
   modelExecutionTime @1 :Float32;
-  dspExecutionTimeDEPRECATED @2 :Float32;
-  gpuExecutionTime @8 :Float32;
+  dspExecutionTime @2 :Float32;
   rawPredictions @3 :Data;
 
   poorVisionProb @4 :Float32;
@@ -2414,7 +2413,6 @@ struct Event {
     uiDebug @102 :UIDebug;
 
     # *********** debug ***********
-    testJoystick @52 :Joystick;
     roadEncodeData @86 :EncodeData;
     driverEncodeData @87 :EncodeData;
     wideRoadEncodeData @88 :EncodeData;
@@ -2484,5 +2482,6 @@ struct Event {
     uiPlanDEPRECATED @106 :UiPlan;
     liveLocationKalmanDEPRECATED @72 :LiveLocationKalman;
     liveTracksDEPRECATED @16 :List(LiveTracksDEPRECATED);
+    testJoystickDEPRECATED @52 :Joystick;
   }
 }

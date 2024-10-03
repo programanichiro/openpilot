@@ -4,11 +4,12 @@ from opendbc.car.hyundai.values import HyundaiFlags
 
 
 class CanBus(CanBusBase):
-  def __init__(self, CP, fingerprint=None, hda2=None) -> None:
+  def __init__(self, CP, hda2=None, fingerprint=None) -> None:
     super().__init__(CP, fingerprint)
 
     if hda2 is None:
-      hda2 = CP.flags & HyundaiFlags.CANFD_HDA2.value if CP is not None else False
+      assert CP is not None
+      hda2 = CP.flags & HyundaiFlags.CANFD_HDA2.value
 
     # On the CAN-FD platforms, the LKAS camera is on both A-CAN and E-CAN. HDA2 cars
     # have a different harness than the HDA1 and non-HDA variants in order to split

@@ -52,6 +52,7 @@ struct OnroadEvent @0x9b1657f34caf3ad3 {
     brakeHold @28;
     parkBrake @29;
     manualRestart @30;
+    lowSpeedLockout @31;
     joystickDebug @34;
     longitudinalManeuver @124;
     steerTempUnavailableSilent @35;
@@ -86,7 +87,6 @@ struct OnroadEvent @0x9b1657f34caf3ad3 {
     startup @75;
     startupNoCar @76;
     startupNoControl @77;
-    startupNoSecOcKey @125;
     startupMaster @78;
     fcw @79;
     steerSaturated @80;
@@ -103,6 +103,7 @@ struct OnroadEvent @0x9b1657f34caf3ad3 {
     selfdriveInitializing @98;
     usbError @99;
     cruiseMismatch @106;
+    lkasDisabled @107;
     canBusMissing @111;
     selfdrivedLagging @112;
     resumeBlocked @113;
@@ -148,8 +149,6 @@ struct OnroadEvent @0x9b1657f34caf3ad3 {
     wideRoadCameraErrorDEPRECATED @102;
     highCpuUsageDEPRECATED @105;
     startupNoFwDEPRECATED @104;
-    lowSpeedLockoutDEPRECATED @31;
-    lkasDisabledDEPRECATED @107;
   }
 }
 
@@ -199,7 +198,6 @@ struct CarState {
   steeringPressed @9 :Bool;        # if the user is using the steering wheel
   steerFaultTemporary @35 :Bool;   # temporary EPS fault
   steerFaultPermanent @36 :Bool;   # permanent EPS fault
-  invalidLkasSetting @55 :Bool;    # stock LKAS is incorrectly configured (i.e. on or off)
   stockAeb @30 :Bool;
   stockFcw @31 :Bool;
   espDisabled @32 :Bool;
@@ -282,7 +280,7 @@ struct CarState {
       cancel @5;
       altButton1 @6;
       altButton2 @7;
-      mainCruise @8;
+      altButton3 @8;
       setCruise @9;
       resumeCruise @10;
       gapAdjustCruise @11;
@@ -517,9 +515,6 @@ struct CarParams {
 
   wheelSpeedFactor @63 :Float32; # Multiplier on wheels speeds to computer actual speeds
 
-  secOcRequired @75 :Bool;  # Car requires SecOC message authentication to operate
-  secOcKeyAvailable @76 :Bool;  # Stored SecOC key loaded from params
-
   struct SafetyConfig {
     safetyModel @0 :SafetyModel;
     safetyParam @3 :UInt16;
@@ -719,5 +714,5 @@ struct CarParams {
   brakeMaxVDEPRECATED @16 :List(Float32);
   directAccelControlDEPRECATED @30 :Bool;
   maxSteeringAngleDegDEPRECATED @54 :Float32;
-  longitudinalActuatorDelayLowerBoundDEPRECATED @61 :Float32;
+  longitudinalActuatorDelayLowerBoundDEPRECATEDDEPRECATED @61 :Float32;
 }

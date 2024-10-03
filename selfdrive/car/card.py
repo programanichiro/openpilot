@@ -28,6 +28,8 @@ REPLAY = "REPLAY" in os.environ
 
 EventName = car.OnroadEvent.EventName
 
+ACCEL_PUSH_COUNT = 0
+accel_engaged_str = '0'
 # forward
 carlog.addHandler(ForwardingHandler(cloudlog))
 
@@ -127,18 +129,6 @@ class Car:
       safety_config.safetyModel = structs.CarParams.SafetyModel.noOutput
       self.CP.safetyConfigs = [safety_config]
 
-    if self.CP.secOcRequired and not self.params.get_bool("IsReleaseBranch"):
-      secoc_key = self.params.get("SecOCKey", encoding='utf8')
-      if secoc_key is not None:
-        saved_secoc_key = bytes.fromhex(secoc_key.strip())
-        if len(saved_secoc_key) == 16:
-          self.CP.secOcKeyAvailable = True
-          self.CI.CS.secoc_key = saved_secoc_key
-          if controller_available:
-            self.CI.CC.secoc_key = saved_secoc_key
-        else:
-          cloudlog.warning("Saved SecOC key is invalid")
-
     # Write previous route's CarParams
     prev_cp = self.params.get("CarParamsPersistent")
     if prev_cp is not None:
@@ -199,7 +189,7 @@ class Car:
   def update_events(self, CS: car.CarState, RD: structs.RadarData | None):
     self.events.clear()
 
-    CS.events = self.car_events.update(self.CI.CS, self.CS_prev, self.CC_prev).to_msg()
+    CS.events = self.car_events.update(self.CI.CS, self.CS_prev, self.CI.CC, self.CC_prev).to_msg()
 
     self.events.add_from_msg(CS.events)
 
@@ -209,8 +199,33 @@ class Car:
         # body always wants to enable
         self.events.add(EventName.pcmEnable)
 
+    global ACCEL_PUSH_COUNT,accel_engaged_str
+    engage_disable = False
+    if CS.gasPressed:
+      accel_engaged = False
+      if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
+        try:
+          with open('/tmp/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
+            accel_engaged_str = fp.read()
+        except Exception as e:
+          pass
+      if accel_engaged_str:
+        if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+          accel_engaged = True
+        if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+          accel_engaged = True
+          ACCEL_PUSH_COUNT = 100
+      if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
+        engage_disable = True
+      ACCEL_PUSH_COUNT += 1
+    else:
+      if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+        engage_disable = True
+      ACCEL_PUSH_COUNT = 0
+
     # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-    if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+    if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
       (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
       (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
       self.events.add(EventName.pedalPressed)

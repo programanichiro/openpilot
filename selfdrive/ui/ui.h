@@ -37,7 +37,7 @@ const Eigen::Matrix3f FCAM_INTRINSIC_MATRIX = (Eigen::Matrix3f() <<
 // tici ecam focal probably wrong? magnification is not consistent across frame
 // Need to retrain model before this can be changed
 const Eigen::Matrix3f ECAM_INTRINSIC_MATRIX = (Eigen::Matrix3f() <<
-  567.0, 0.0, 1928.0 / 2,
+  567.0 * 0.92, 0.0, 1928.0 / 2 * 0.92, //FCAM_INTRINSIC_MATRIXより横に間伸びしているのを調整する。
   0.0, 567.0, 1208.0 / 2,
   0.0, 0.0, 1.0).finished();
 
@@ -71,9 +71,19 @@ typedef struct UIScene {
   cereal::LongitudinalPersonality personality;
 
   float light_sensor = -1;
-  bool started, ignition, is_metric, longitudinal_control;
+  bool started, ignition, is_metric, map_on_left, longitudinal_control;
   bool world_objects_visible = false;
   uint64_t started_frame;
+
+  // PI button statuses
+  bool mLockOnButton = true;
+  bool mAccelCtrlButton = true;
+  bool mDecelCtrlButton = true;
+  int mAccelEngagedButton = 0;
+  int mLTA_EnableButton = 0;
+  bool mStartAccelPowerUpButton = false;
+  int mUseDynmicExpButton = 0;
+
 } UIScene;
 
 class UIState : public QObject {

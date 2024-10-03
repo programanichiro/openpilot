@@ -284,7 +284,6 @@ class CarStateBase(ABC):
     self.right_blinker_prev = False
     self.cluster_speed_hyst_gap = 0.0
     self.cluster_min_speed = 0.0  # min speed before dropping to 0
-    self.secoc_key: bytes = b"00" * 16
 
     Q = [[0.0, 0.0], [0.0, 100.0]]
     R = 0.3
@@ -293,6 +292,9 @@ class CarStateBase(ABC):
     x0=[[0.0], [0.0]]
     K = get_kalman_gain(DT_CTRL, np.array(A), np.array(C), np.array(Q), R)
     self.v_ego_kf = KF1D(x0=x0, A=A, C=C[0], K=K)
+
+    self.knight_scanner_bit3 = 7 # carstate.updateで knight_scanner_bit3.txt が反映される,デフォは7
+    self.steeringAngleDegOrg = 0 #回転先予想する前のオリジナル値
 
   @abstractmethod
   def update(self, cp, cp_cam, cp_adas, cp_body, cp_loopback) -> structs.CarState:
@@ -383,7 +385,6 @@ class CarControllerBase(ABC):
   def __init__(self, dbc_name: str, CP: structs.CarParams):
     self.CP = CP
     self.frame = 0
-    self.secoc_key: bytes = b"00" * 16
 
   @abstractmethod
   def update(self, CC: structs.CarControl, CS: CarStateBase, now_nanos: int) -> tuple[structs.CarControl.Actuators, list[CanData]]:

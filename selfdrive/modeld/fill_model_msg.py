@@ -3,6 +3,23 @@ import capnp
 import numpy as np
 from cereal import log
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
+from openpilot.common.params import Params
+from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
+TRAJECTORY_SIZE = 33
+STEERING_CENTER_calibration = []
+STEERING_CENTER_calibration_update_count = 0
+params = Params()
+try:
+  with open('/data/handle_center_info.txt','r') as fp:
+    handle_center_info_str = fp.read()
+    if handle_center_info_str:
+      STEERING_CENTER = float(handle_center_info_str)
+      with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+        fp.write('%0.2f' % (STEERING_CENTER) )
+except Exception as e:
+  pass
+LP = LanePlanner(False) #widw_cameraが推論に使われていない模様。常にONではなくOFFとしてみる。2024/5/9
+g_lane_d = -999
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
@@ -48,16 +65,10 @@ def fill_xyz_poly(builder, degree, x, y, z):
   builder.yCoefficients = coeffs[:, 1].tolist()
   builder.zCoefficients = coeffs[:, 2].tolist()
 
-def fill_lane_line_meta(builder, lane_lines, lane_line_probs):
-  builder.leftY = lane_lines[1].y[0]
-  builder.leftProb = lane_line_probs[1]
-  builder.rightY = lane_lines[2].y[0]
-  builder.rightProb = lane_line_probs[2]
-
 def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._DynamicStructBuilder,
                    net_output_data: dict[str, np.ndarray], publish_state: PublishState,
                    vipc_frame_id: int, vipc_frame_id_extra: int, frame_id: int, frame_drop: float,
-                   timestamp_eof: int, model_execution_time: float, valid: bool) -> None:
+                   timestamp_eof: int, model_execution_time: float, valid: bool , STEER_CTRL_Y: float, v_ego: float, DH) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   frame_drop_perc = frame_drop * 100
   extended_msg.valid = valid
@@ -92,13 +103,6 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   fill_xyzt(orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
   orientation_rate = modelV2.orientationRate
   fill_xyzt(orientation_rate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
-
-  # temporal pose
-  temporal_pose = modelV2.temporalPose
-  temporal_pose.trans = net_output_data['plan'][0,0,Plan.VELOCITY].tolist()
-  temporal_pose.transStd = net_output_data['plan_stds'][0,0,Plan.VELOCITY].tolist()
-  temporal_pose.rot = net_output_data['plan'][0,0,Plan.ORIENTATION_RATE].tolist()
-  temporal_pose.rotStd = net_output_data['plan_stds'][0,0,Plan.ORIENTATION_RATE].tolist()
 
   # poly path
   poly_path = driving_model_data.path
@@ -135,8 +139,57 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
+  if len(position.x) == TRAJECTORY_SIZE and len(orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
+    LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
+    path_xyz = np.column_stack([position.x, position.y, position.z])
+    t_idxs = np.array(position.t)
+
+    path_y = path_xyz[:,1]
+    max_yp = 0
+    for yp in path_y:
+      max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+    STEERING_CENTER_calibration_max = 300 #3秒
+    if abs(max_yp) / 2.5 < 0.1 and v_ego > 20/3.6 and abs(STEER_CTRL_Y) < 8:
+      STEERING_CENTER_calibration.append(STEER_CTRL_Y)
+      if len(STEERING_CENTER_calibration) > STEERING_CENTER_calibration_max:
+        STEERING_CENTER_calibration.pop(0)
+    if len(STEERING_CENTER_calibration) > 0:
+      value_STEERING_CENTER_calibration = sum(STEERING_CENTER_calibration) / len(STEERING_CENTER_calibration)
+    else:
+      value_STEERING_CENTER_calibration = 0
+    #handle_center = 0 #STEERING_CENTER,もうhandle_center_info.txtもいらないか。
+    global STEERING_CENTER_calibration_update_count,g_lane_d
+    STEERING_CENTER_calibration_update_count += 1
+    if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
+      #handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
+      if STEERING_CENTER_calibration_update_count % 100 == 0:
+        with open('/data/handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+      if STEERING_CENTER_calibration_update_count % 10 == 5:
+        with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+    else:
+      with open('/data/handle_calibct_info.txt','w') as fp:
+        fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
+
+    lane_d = 0
+    if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
+      pred_angle = (-max_yp / 2.5)
+      lane_d = LP.get_d_path(pred_angle , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
+      # if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
+      #   k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
+      #   # x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
+      #   # action.desiredCurvature += lane_d * 0.015 * k #ハンドル制御の曲率をレーンの反対へ戻す
+    if lane_d != g_lane_d:
+      g_lane_d = lane_d
+      with open('/tmp/lane_d_info.txt','w') as fp:
+        fp.write('%.5f' % (lane_d))
+
   lane_line_meta = driving_model_data.laneLineMeta
-  fill_lane_line_meta(lane_line_meta, modelV2.laneLines, modelV2.laneLineProbs)
+  lane_line_meta.leftY = modelV2.laneLines[1].y[0]
+  lane_line_meta.leftProb = modelV2.laneLineProbs[1]
+  lane_line_meta.rightY = modelV2.laneLines[2].y[0]
+  lane_line_meta.rightProb = modelV2.laneLineProbs[2]
 
   # road edges
   modelV2.init('roadEdges', 2)
@@ -177,6 +230,13 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   hard_brake_predicted = (publish_state.prev_brake_5ms2_probs > ModelConstants.FCW_THRESHOLDS_5MS2).all() and \
     (publish_state.prev_brake_3ms2_probs > ModelConstants.FCW_THRESHOLDS_3MS2).all()
   meta.hardBrakePredicted = hard_brake_predicted.item()
+
+  # temporal pose
+  temporal_pose = modelV2.temporalPose
+  temporal_pose.trans = net_output_data['sim_pose'][0,:3].tolist()
+  temporal_pose.transStd = net_output_data['sim_pose_stds'][0,:3].tolist()
+  temporal_pose.rot = net_output_data['sim_pose'][0,3:].tolist()
+  temporal_pose.rotStd = net_output_data['sim_pose_stds'][0,3:].tolist()
 
   # confidence
   if vipc_frame_id % (2*ModelConstants.MODEL_FREQ) == 0:

@@ -1,8 +1,25 @@
-#include "fdcan_declarations.h"
+// IRQs: FDCAN1_IT0, FDCAN1_IT1
+//       FDCAN2_IT0, FDCAN2_IT1
+//       FDCAN3_IT0, FDCAN3_IT1
 
-FDCAN_GlobalTypeDef *cans[CANS_ARRAY_SIZE] = {FDCAN1, FDCAN2, FDCAN3};
+#define CANFD
 
-static bool can_set_speed(uint8_t can_number) {
+typedef struct {
+  volatile uint32_t header[2];
+  volatile uint32_t data_word[CANPACKET_DATA_SIZE_MAX/4U];
+} canfd_fifo;
+
+FDCAN_GlobalTypeDef *cans[] = {FDCAN1, FDCAN2, FDCAN3};
+
+uint8_t can_irq_number[3][2] = {
+  { FDCAN1_IT0_IRQn, FDCAN1_IT1_IRQn },
+  { FDCAN2_IT0_IRQn, FDCAN2_IT1_IRQn },
+  { FDCAN3_IT0_IRQn, FDCAN3_IT1_IRQn },
+};
+
+#define CAN_ACK_ERROR 3U
+
+bool can_set_speed(uint8_t can_number) {
   bool ret = true;
   FDCAN_GlobalTypeDef *FDCANx = CANIF_FROM_CAN_NUM(can_number);
   uint8_t bus_number = BUS_NUM_FROM_CAN_NUM(can_number);
@@ -25,12 +42,6 @@ void can_clear_send(FDCAN_GlobalTypeDef *FDCANx, uint8_t can_number) {
 }
 
 void update_can_health_pkt(uint8_t can_number, uint32_t ir_reg) {
-  uint8_t can_irq_number[3][2] = {
-    { FDCAN1_IT0_IRQn, FDCAN1_IT1_IRQn },
-    { FDCAN2_IT0_IRQn, FDCAN2_IT1_IRQn },
-    { FDCAN3_IT0_IRQn, FDCAN3_IT1_IRQn },
-  };
-
   FDCAN_GlobalTypeDef *FDCANx = CANIF_FROM_CAN_NUM(can_number);
   uint32_t psr_reg = FDCANx->PSR;
   uint32_t ecr_reg = FDCANx->ECR;
@@ -230,14 +241,14 @@ void can_rx(uint8_t can_number) {
   }
 }
 
-static void FDCAN1_IT0_IRQ_Handler(void) { can_rx(0); }
-static void FDCAN1_IT1_IRQ_Handler(void) { process_can(0); }
+void FDCAN1_IT0_IRQ_Handler(void) { can_rx(0); }
+void FDCAN1_IT1_IRQ_Handler(void) { process_can(0); }
 
-static void FDCAN2_IT0_IRQ_Handler(void) { can_rx(1); }
-static void FDCAN2_IT1_IRQ_Handler(void) { process_can(1); }
+void FDCAN2_IT0_IRQ_Handler(void) { can_rx(1); }
+void FDCAN2_IT1_IRQ_Handler(void) { process_can(1); }
 
-static void FDCAN3_IT0_IRQ_Handler(void) { can_rx(2);  }
-static void FDCAN3_IT1_IRQ_Handler(void) { process_can(2); }
+void FDCAN3_IT0_IRQ_Handler(void) { can_rx(2);  }
+void FDCAN3_IT1_IRQ_Handler(void) { process_can(2); }
 
 bool can_init(uint8_t can_number) {
   bool ret = false;
