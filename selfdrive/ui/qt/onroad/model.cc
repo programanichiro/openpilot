@@ -628,7 +628,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
 
 
 void ModelRenderer::drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data,
-                             const QPointF &vd , int num, const QRect &surface_rect) {
+                             const QPointF &vd, const QRect &surface_rect , int num) {
   const float speedBuff = 10.;
   const float leadBuff = 40.;
   const float d_rel = lead_data.getDRel();
