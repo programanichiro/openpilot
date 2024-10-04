@@ -117,8 +117,8 @@ mat4 AnnotatedCameraWidget::calcFrameMatrix() {
   }};
 }
 
-static float global_a_rel;
-static float global_a_rel_col;
+float global_a_rel;
+float global_a_rel_col;
 extern bool mapVisible;
 bool g_wide_cam_requested;
 void AnnotatedCameraWidget::paintGL() {
