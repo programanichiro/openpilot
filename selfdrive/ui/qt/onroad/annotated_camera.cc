@@ -117,6 +117,7 @@ mat4 AnnotatedCameraWidget::calcFrameMatrix() {
   }};
 }
 
+bool all_brake_light = false;
 float global_a_rel;
 float global_a_rel_col;
 extern bool mapVisible;
