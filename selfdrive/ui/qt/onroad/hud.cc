@@ -491,7 +491,8 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   drawText(p, surface_rect.center().x(), 210 + y_ofs-5, speedStr , speed_num);
 
   p.setFont(InterFont(66));
-  if (uiState()->scene.longitudinal_control == false) {
+  extern bool g_longitudinal_control;
+  if (g_longitudinal_control == false) {
 #define COLOR_STATUS_WARNING QColor(0xDA, 0x6F, 0x25, 0xf1)
 //  [STATUS_ALERT] = QColor(0xC9, 0x22, 0x31, 0xf1),
     drawText(p, surface_rect.center().x(), 290 + y_ofs-5, speedUnit, COLOR_STATUS_WARNING); //縦制御無効状態でkm/hを警告色に。
