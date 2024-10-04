@@ -55,7 +55,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     size_t leads_num = leads.size();
     for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
       if(leads[i].getProb() > .2){ //信用度20%以上で表示。調整中。
-        drawLockon(painter, leads[i], lead_vertices[i] , i /*, leads_num , leads[0] , leads[1]*/);
+        drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
       }
     }
 
@@ -628,7 +628,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
 
 
 void ModelRenderer::drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data,
-                             const QPointF &vd, const QRect &surface_rect , int num) {
+                             const QPointF &vd, const QRect &surface_rect , int num, const QRect &surface_rect) {
   const float speedBuff = 10.;
   const float leadBuff = 40.;
   const float d_rel = lead_data.getDRel();
@@ -814,7 +814,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
 
   ww = ww * 2 * 5 / d;
   hh = hh * 2 * 5 / d;
-  y = std::fmin(height() /*- sz * .6*/, y - dh) + dh;
+  y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
   QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
 
 #if 0
@@ -835,7 +835,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
     //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
     if(leadcar_lockon[0].x > leadcar_lockon[1].x - 20){
       leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.right() - leadcar_lockon[num].lxt) / 20;
-      leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (width() - leadcar_lockon[num].lxf) / 20;
+      leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (surface_rect.width() - leadcar_lockon[num].lxf) / 20;
       //painter.drawLine(r.right(),r.top() , width() , 0);
     } else {
       leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.left() - leadcar_lockon[num].lxt) / 20;
@@ -960,7 +960,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
         //painter.drawLine(r.left(),r.top() , 0 , 0);
       } else {
         leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.right() - leadcar_lockon[num].lxt) / 20;
-        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (width() - leadcar_lockon[num].lxf) / 20;
+        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (surface_rect.width() - leadcar_lockon[num].lxf) / 20;
         //painter.drawLine(r.right(),r.top() , width() , 0);
       }
       float lxt = leadcar_lockon[num].lxt;
