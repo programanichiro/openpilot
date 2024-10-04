@@ -24,10 +24,12 @@ static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float
   return max_idx;
 }
 
+bool g_longitudinal_control;
 void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   auto &sm = *(uiState()->sm);
   if (sm.updated("carParams")) {
     longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
+    g_longitudinal_control = longitudinal_control;
   }
 
   // Check if data is up-to-date
