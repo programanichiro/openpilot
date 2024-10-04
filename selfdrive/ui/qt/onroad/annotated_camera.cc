@@ -129,7 +129,7 @@ bool all_brake_light = false;
 float global_a_rel;
 float global_a_rel_col;
 extern bool mapVisible;
-bool g_wide_cam_requested
+bool g_wide_cam_requested;
 void AnnotatedCameraWidget::paintGL() {
   UIState *s = uiState();
   SubMaster &sm = *(s->sm);
