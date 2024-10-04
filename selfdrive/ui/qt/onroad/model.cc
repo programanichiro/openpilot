@@ -12,6 +12,7 @@ extern float vc_speed;
 extern bool global_engageable;
 extern float handle_center;
 extern float distance_traveled;
+extern int handle_calibct;
 
 
 static int get_path_length_idx(const cereal::XYZTData::Reader &line, const float path_height) {
@@ -674,8 +675,8 @@ void ModelRenderer::drawLead(QPainter &painter, const cereal::RadarState::LeadDa
   }
 
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
-  float x = std::clamp((float)vd.x(), 0.f, width() - sz / 2);
-  float y = std::fmin(height() - sz * .6, (float)vd.y());
+  float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
+  float y = std::fmin(surface_rect.height() - sz * .6, (float)vd.y());
 
   float g_xo = sz / 5;
   float g_yo = sz / 10;
@@ -746,7 +747,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
   global_a_rel = a_rel;
 
   float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
-  float x = std::clamp((float)vd.x(), 0.f, width() - sz / 2);
+  float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
   //float y = std::fmin(height() /*- sz * .6*/, (float)vd.y());
   float y = (float)vd.y();
 
@@ -792,8 +793,8 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
   a_rel = leadcar_lockon[num].a;
 
   float dh = 50;
-  bool wide_cam = active_stream_type == VISION_STREAM_WIDE_ROAD;
-  if(wide_cam == false) { //dhに奥行き値を反映させる。
+  extern bool g_wide_cam;
+  if(g_wide_cam == false) { //dhに奥行き値を反映させる。
     float dd = d;
     dd -= 25; //dd=0〜75
     dd /= (75.0/2); //dd=0〜2
@@ -995,7 +996,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
       //ここではy0,y1を参照できない。
       float d_lim = 12;
       extern bool g_wide_cam_requested;
-      if(wide_cam_requested == false){
+      if(g_wide_cam_requested == false){
         d_lim = 32; //ロングカメラだとちょっと枠が大きい。実測
       }
       if(num == 0 || (num==1 && (d_rel < d_lim || std::abs(y0 - y1) > 300))){ //num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。

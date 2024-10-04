@@ -22,7 +22,7 @@ private:
   void drawLaneLines(QPainter &painter, const UIState *s);
   void drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height, int width);
   void knightScanner(QPainter &p, int height, int width);
-  int drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r , int bk_add_w, int bk_xofs, int bk_add_h);
+  int drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false , int red=255, int blu=255, int grn=255 , int bk_red=0, int bk_blu=0, int bk_grn=0, int bk_alp=0, int bk_yofs=0, int bk_corner_r=0 , int bk_add_w=0, int bk_xofs=0 , int bk_add_h=0);
 
   bool longitudinal_control = false;
   bool experimental_model = false;

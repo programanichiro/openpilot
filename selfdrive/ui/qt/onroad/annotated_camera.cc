@@ -76,6 +76,7 @@ void AnnotatedCameraWidget::initializeGL() {
   setBackgroundColor(bg_colors[STATUS_DISENGAGED]);
 }
 
+bool g_wide_cam;
 mat4 AnnotatedCameraWidget::calcFrameMatrix() {
   // Project point at "infinity" to compute x and y offsets
   // to ensure this ends up in the middle of the screen
@@ -85,6 +86,7 @@ mat4 AnnotatedCameraWidget::calcFrameMatrix() {
   // Select intrinsic matrix and calibration based on camera type
   auto *s = uiState();
   bool wide_cam = active_stream_type == VISION_STREAM_WIDE_ROAD;
+  g_wide_cam = wide_cam;
   const auto &intrinsic_matrix = wide_cam ? ECAM_INTRINSIC_MATRIX : FCAM_INTRINSIC_MATRIX;
   const auto &calibration = wide_cam ? s->scene.view_from_wide_calib : s->scene.view_from_calib;
 
