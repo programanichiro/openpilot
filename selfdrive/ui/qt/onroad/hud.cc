@@ -659,7 +659,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
   }
   const auto cp = (*uiState()->sm)["carParams"].getCarParams();
-  bool tssp_47700 = (((cp.getFlags() & 2048) != 0) && brake_light == false);
+  bool tssp_47700 = (((cp.getFlags() & 8192) != 0) && brake_light == false);
   int label_red = 255;
   int label_grn = 255;
   int label_blu = 255;
