@@ -185,6 +185,75 @@ mat4 CameraWidget::calcFrameMatrix() {
   float zx = std::min(frame_aspect_ratio / widget_aspect_ratio, 1.0f);
   float zy = std::min(widget_aspect_ratio / frame_aspect_ratio, 1.0f);
 
+//   if (zoomed_view) {
+//     if (active_stream_type != VISION_STREAM_WIDE_ROAD) {
+//       // Always ready to switch if wide is not active, start at full zoom
+//       zoom_transition = 1;
+//       ready_to_switch_stream = true;
+//     }
+
+//     if (active_stream_type == VISION_STREAM_DRIVER) {
+//       if (stream_width > 0 && stream_height > 0) {
+//         frame_mat = get_driver_view_transform(w, h, stream_width, stream_height);
+//       }
+//     } else {
+//       // Project point at "infinity" to compute x and y offsets
+//       // to ensure this ends up in the middle of the screen
+//       // for narrow come and a little lower for wide cam.
+//       // TODO: use proper perspective transform?
+//       if (active_stream_type == VISION_STREAM_WIDE_ROAD) {
+//         const float cam_trs_speed_k = 0.4; //0.2;
+//         // If narrow road camera is requested, start zooming in.
+//         // Mark ready to switch once we're fully zoomed in
+//         if (requested_stream_type != VISION_STREAM_WIDE_ROAD) {
+//           zoom_transition += zoom_transition * cam_trs_speed_k + 0.01;
+//         } else {
+//           zoom_transition -= (1.0 - zoom_transition) * cam_trs_speed_k + 0.01;
+//         }
+//         zoom_transition = std::clamp(zoom_transition, 0.0f, 1.0f);
+//         ready_to_switch_stream = fabs(zoom_transition - 1) < 1e-3;
+
+//         intrinsic_matrix = ECAM_INTRINSIC_MATRIX;
+//         intrinsic_matrix.v[5] -= 70 * zoom_transition; //中心位置がズレるのを誤魔化す。
+//         const float ecam_to_fcam_zoom = FCAM_INTRINSIC_MATRIX.v[0] / ECAM_INTRINSIC_MATRIX.v[0]; // zoom multiplier between cameras
+//         zoom = util::map_val(zoom_transition, 0.0f, 1.0f, ecam_zoom, ecam_to_fcam_zoom * fcam_zoom);
+//       } else {
+//         intrinsic_matrix = FCAM_INTRINSIC_MATRIX;
+//         zoom = fcam_zoom;
+//       }
+//       const vec3 inf = {{1000., 0., 0.}};
+//       const vec3 Ep = matvecmul3(calibration, inf);
+//       const vec3 Kep = matvecmul3(intrinsic_matrix, Ep);
+
+//       float x_offset_ = (Kep.v[0] / Kep.v[2] - intrinsic_matrix.v[2]) * zoom;
+//       float y_offset_ = (Kep.v[1] / Kep.v[2] - intrinsic_matrix.v[5]) * zoom;
+
+//       float max_x_offset = intrinsic_matrix.v[2] * zoom - w / 2 - 5;
+//       float max_y_offset = intrinsic_matrix.v[5] * zoom - h / 2 - 5;
+
+//       x_offset = std::clamp(x_offset_, -max_x_offset, max_x_offset);
+//       y_offset = std::clamp(y_offset_, -max_y_offset, max_y_offset);
+
+//       float zx = zoom * 2 * intrinsic_matrix.v[2] / w;
+//       float zy = zoom * 2 * intrinsic_matrix.v[5] / h;
+//       const mat4 frame_transform = {{
+//         zx, 0.0, 0.0, -x_offset / w * 2,
+//         0.0, zy, 0.0, y_offset / h * 2,
+//         0.0, 0.0, 1.0, 0.0,
+//         0.0, 0.0, 0.0, 1.0,
+//       }};
+//       frame_mat = frame_transform;
+//     }
+//   } else if (stream_width > 0 && stream_height > 0) {
+//     // fit frame to widget size
+//     float widget_aspect_ratio = (float)w / h;
+//     float frame_aspect_ratio = (float)stream_width  / stream_height;
+//     frame_mat = get_fit_view_transform(widget_aspect_ratio, frame_aspect_ratio);
+//   }
+// }
+
+// void CameraWidget::updateCalibration(const mat3 &calib) {
+//   calibration = calib;
   return mat4{{
     zx, 0.0, 0.0, 0.0,
     0.0, zy, 0.0, 0.0,
@@ -315,13 +384,13 @@ void CameraWidget::vipcThread() {
   VisionIpcBufExtra meta_main = {0};
 
   while (!QThread::currentThread()->isInterruptionRequested()) {
-    if (!vipc_client || cur_stream != requested_stream_type) {
+    if (!vipc_client || cur_stream != requested_stream_type && ready_to_switch_stream) {
       clearFrames();
       qDebug().nospace() << "connecting to stream " << requested_stream_type << ", was connected to " << cur_stream;
       cur_stream = requested_stream_type;
       vipc_client.reset(new VisionIpcClient(stream_name, cur_stream, false));
+      active_stream_type = cur_stream;
     }
-    active_stream_type = cur_stream;
 
     if (!vipc_client->connected) {
       clearFrames();
