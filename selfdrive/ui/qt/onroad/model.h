@@ -21,11 +21,15 @@ private:
   void update_model(const cereal::ModelDataV2::Reader &model, const cereal::RadarState::LeadData::Reader &lead);
   void drawLaneLines(QPainter &painter, const UIState *s);
   void drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height, int width);
+  void updatePathGradient(QLinearGradient &bg);
+  QColor blendColors(const QColor &start, const QColor &end, float t);
   void knightScanner(QPainter &p, int height, int width);
   int drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha = 255 , bool brakeLight = false , int red=255, int blu=255, int grn=255 , int bk_red=0, int bk_blu=0, int bk_grn=0, int bk_alp=0, int bk_yofs=0, int bk_corner_r=0 , int bk_add_w=0, int bk_xofs=0 , int bk_add_h=0);
 
   bool longitudinal_control = false;
-  bool experimental_model = false;
+  bool experimental_mode = false;
+  float blend_factor = 1.0f;
+  bool prev_allow_throttle = false;
   float lane_line_probs[4] = {};
   float road_edge_stds[2] = {};
   QPolygonF track_vertices;
