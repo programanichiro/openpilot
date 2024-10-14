@@ -132,11 +132,11 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   float delta_r = driver_pose_sins[2]; //首のかしげ角度のsin
   static unsigned int key_n_ct = 0; //キーが入った順番
   static unsigned int left_face_key_n;
-  static unsigned int right_face_key_n;
+  //static unsigned int right_face_key_n;
   static unsigned int up_face_key_n;
   static unsigned int down_face_key_n;
-  static unsigned int lr_face_key_n;
-  static unsigned int rr_face_key_n;
+  //static unsigned int lr_face_key_n;
+  //static unsigned int rr_face_key_n;
 
   const int long_press = 20;
   const int face_max_ct = 60; //long_pressを超えて（face_center_ctなどが）最大ここまでカウントする。
@@ -182,7 +182,8 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   static int face_right_ct = 0;
   if(delta_x > right_face_x){
     if(delta_x > right_face_x && face_right_ct >= 0){
-      right_face_key_n = key_n_ct ++;
+      //right_face_key_n = key_n_ct ++;
+      key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , -45 , 90 ,QColor(200,face_right_ct < long_press ? 200 : 100,0,250));
     if(face_right_ct < face_max_ct)
@@ -240,7 +241,8 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   static int face_rr_ct = 0;
   if(delta_r < r_face_r){
     if(delta_r < r_face_r && face_rr_ct >= 0){
-      rr_face_key_n = key_n_ct ++;
+      //rr_face_key_n = key_n_ct ++;
+      key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , -90-20 , 180, QColor(200,face_rr_ct < long_press ? 200 : 100,0,250));
     if(face_rr_ct < face_max_ct)
@@ -254,7 +256,8 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   static int face_lr_ct = 0;
   if(delta_r > l_face_r){
     if(delta_r > l_face_r && face_lr_ct >= 0){
-      lr_face_key_n = key_n_ct ++;
+      //lr_face_key_n = key_n_ct ++;
+      key_n_ct ++;
     }
     set_face_gesture_arc(painter,x,y , 90+20 , 180, QColor(200,face_lr_ct < long_press ? 200 : 100,0,250));
     if(face_lr_ct < face_max_ct)
@@ -300,11 +303,11 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
       && face_lr_ct == 0){
       key_n_ct = 0;
       left_face_key_n = 0;
-      right_face_key_n = 0;
+      //right_face_key_n = 0;
       up_face_key_n = 0;
       down_face_key_n = 0;
-      lr_face_key_n = 0;
-      rr_face_key_n = 0;
+      //lr_face_key_n = 0;
+      //rr_face_key_n = 0;
     }
   }
 #if 0 //顔一回転は流石に無理があるか。
@@ -314,7 +317,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     face_up_ct = 0;
     face_down_ct = 0;
     left_face_key_n = 0;
-    right_face_key_n = 0;
+    //right_face_key_n = 0;
     up_face_key_n = 0;
     down_face_key_n = 0;
     void soundPikiri();
@@ -369,7 +372,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   // }
   if(face_rr_ct >= long_press && face_left_ct < 3*face_rr_ct/long_press && face_up_ct < 3*face_rr_ct/long_press){ //↘︎ジェスチャー
     face_rr_ct = -long_press; //連続動作しないように工夫。
-    rr_face_key_n = 0;
+    //rr_face_key_n = 0;
     {
       //カメラ↔︎地図の画面切り替え
       extern bool head_gesture_home; //サイドバーを消す
@@ -382,7 +385,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   const int long_press_tmp = (int)(long_press*0.75); //ミスカウントする分、少し短く。
   if(face_lr_ct > long_press_tmp && face_right_ct < 3*face_lr_ct/long_press_tmp && face_up_ct < 3*face_lr_ct/long_press_tmp){ //↙︎ジェスチャー
     face_lr_ct = -long_press_tmp; //連続動作しないように工夫。
-    lr_face_key_n = 0;
+    //lr_face_key_n = 0;
     {
       //ノースアップ↔︎ヘディングアップの画面切り替え
       extern bool head_gesture_home; //サイドバーを消す
