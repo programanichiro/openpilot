@@ -742,7 +742,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     drawTextRight(p, surface_rect.right()-10, surface_rect.bottom() - 10 , "Rrograman Ichiro modified", 150 /*, 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6*/);
   }
   p.setFont(InterFont(33, QFont::Bold));
-  float angle_steer = 0;
+  //float angle_steer = 0;
   std::string angle_steer0_txt = util::read_file("/tmp/steer_ang_info.txt");
   if(angle_steer0_txt.empty() == false){
     global_angle_steer0 = std::stof(angle_steer0_txt);
@@ -765,7 +765,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     if(vc_speed < 1/3.6){
       a3 = 200;
     }
-    angle_steer = global_angle_steer0;
+    //angle_steer = global_angle_steer0;
     if(1 /*vc_speed >= 1/3.6 && (angle_steer > 1.5 || angle_steer < -1.5)*/){
       if(/*Limit_speed_mode == 1 &&*/ limit_speed_auto_detect == 1){ //インジケーターはACC自動設定時にするか、速度標識表示時にするか検討中
         a2 = 200;
