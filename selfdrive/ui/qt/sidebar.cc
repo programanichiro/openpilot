@@ -81,9 +81,11 @@ void Sidebar::updateState(const UIState &s) {
 
   auto &sm = *(s.sm);
 
+  networking = networking ? networking : window()->findChild<Networking *>("");
+  bool tethering_on = networking && networking->wifi->tethering_on;
   auto deviceState = sm["deviceState"].getDeviceState();
-  setProperty("netType", network_type[deviceState.getNetworkType()]);
-  int strength = (int)deviceState.getNetworkStrength();
+  setProperty("netType", tethering_on ? "Hotspot": network_type[deviceState.getNetworkType()]);
+  int strength = tethering_on ? 4 : (int)deviceState.getNetworkStrength();
   setProperty("netStrength", strength > 0 ? strength + 1 : 0);
 
   ItemStatus connectStatus;
@@ -205,9 +207,9 @@ void Sidebar::paintEvent(QPaintEvent *event) {
 
   p.setFont(InterFont(35));
   p.setPen(QColor(0xff, 0xff, 0xff));
-  const QRect r = QRect(50, 247, 100, 50);
+  const QRect r = QRect(58, 247, width() - 100, 50);
   if(ipaddress[0] == 0 || net_type != "Wi-Fi"){
-    p.drawText(r, Qt::AlignCenter, net_type);
+    p.drawText(r, Qt::AlignLeft | Qt::AlignVCenter, net_type);
   } else {
     p.drawText(QRect(60, 247, 180, 50), Qt::AlignLeft, net_type + ipaddress);
   }
