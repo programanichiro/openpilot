@@ -45,7 +45,7 @@ function launch {
   # 2. The FINALIZED consistent file has to exist, indicating there's an update
   #    that completed successfully and synced to disk.
 
-  if [ ! -f $DIR/../force_prebuild ] && [ ! -f $DIR/../agnos_update ]; then
+  if [ ! -f $DIR/../force_prebuild ]; then
     rm ${BASEDIR}/.overlay_init
   fi
 
