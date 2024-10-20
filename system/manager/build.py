@@ -82,7 +82,7 @@ def build(spinner: Spinner, dirty: bool = False, minimal: bool = False) -> None:
     cache_size -= f.stat().st_size
     f.unlink()
 
-  os.remove('/data/force_prebuild')
+  # os.remove('/data/force_prebuild') #ここでは消さずにwindow.ccのコンストラクタで消してみる。
 
 
 if __name__ == "__main__":
