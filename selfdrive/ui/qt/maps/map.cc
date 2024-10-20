@@ -70,7 +70,8 @@ void max_zoom_pitch_effect(){
   float tmp_2_vc_accel = _2_vc_accel;
   _1_vc_accel = 0; //影響を与えない。
   _2_vc_accel = 0; //影響を与えない。
-  MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 1.7; //30度でMAX_ZOOM=18くらいになる。
+  //MAX_ZOOM_ = MAX_ZOOM0 + sin(MIN_PITCH * M_PI / 180) * 1.7; //30度でMAX_ZOOM=18くらいになる。
+  MAX_ZOOM_ = MAX_ZOOM0; //素直にピッチの起点を自車位置にする。
   _1_vc_accel = tmp_1_vc_accel;
   _2_vc_accel = tmp_2_vc_accel;
   if(MAX_ZOOM_ > 22){
