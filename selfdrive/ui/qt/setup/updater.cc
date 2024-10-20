@@ -145,7 +145,6 @@ Updater::Updater(const QString &updater_path, const QString &manifest_path, QWid
 }
 
 void Updater::installUpdate() {
-  std::system("echo 1 > /data/force_prebuild");
   setCurrentWidget(progress);
   QObject::connect(&proc, &QProcess::readyReadStandardOutput, this, &Updater::readProgress);
   QObject::connect(&proc, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &Updater::updateFinished);
