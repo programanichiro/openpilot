@@ -22,6 +22,7 @@ function agnos_init {
 
   # Check if AGNOS update is required
   if [ $(< /VERSION) != "$AGNOS_VERSION" ]; then
+    echo 1 > $DIR/../agnos_update
     AGNOS_PY="$DIR/system/hardware/tici/agnos.py"
     MANIFEST="$DIR/system/hardware/tici/agnos.json"
     if $AGNOS_PY --verify $MANIFEST; then
@@ -91,7 +92,7 @@ function launch {
 
   # start manager
   cd system/manager
-  if [ ! -f $DIR/prebuilt ] && [ -f $DIR/../force_prebuild ]; then
+  if [ -f $DIR/../agnos_update ] || [ ! -f $DIR/prebuilt ] && [ -f $DIR/../force_prebuild ]; then
     ./build.py
   fi
   ./manager.py
