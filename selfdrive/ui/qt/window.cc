@@ -5,6 +5,9 @@
 #include "system/hardware/hw.h"
 
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
+  unlink("/data/force_prebuild");
+  unlink("/data/agnos_update");
+
   main_layout = new QStackedLayout(this);
   main_layout->setMargin(0);
 

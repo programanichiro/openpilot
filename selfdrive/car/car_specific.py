@@ -89,8 +89,10 @@ class CarSpecificEvents:
     elif self.CP.carName == 'toyota':
       events = self.create_common_events(CS, CS_prev)
 
+      # new_stand_still = False
       if self.CP.openpilotLongitudinalControl:
         if CS.cruiseState.standstill and not CS.brakePressed:
+          # new_stand_still = True
           events.add(EventName.resumeRequired)
         if CS.vEgo < self.CP.minEnableSpeed:
           events.add(EventName.belowEngageSpeed)
@@ -100,6 +102,12 @@ class CarSpecificEvents:
           if CS.vEgo < 0.001:
             # while in standstill, send a user alert
             events.add(EventName.manualRestart)
+
+      # global NowStandStill
+      # if NowStandStill != new_stand_still:
+      #   NowStandStill = new_stand_still
+      #   # with open('/tmp/stand_still.txt','w') as fp:
+      #   #   fp.write('%d' % (new_stand_still))
 
     elif self.CP.carName == 'gm':
       # The ECM allows enabling on falling edge of set, but only rising edge of resume
@@ -175,7 +183,19 @@ class CarSpecificEvents:
        CS.gearShifter not in extra_gears):
       events.add(EventName.wrongGear)
     if CS.gearShifter == GearShifter.reverse:
-      events.add(EventName.reverseGear)
+      one_pedal = False
+      try:
+        with open('/tmp/accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) >= 3: #ワンペダルモード
+              one_pedal = True
+      except Exception as e:
+        pass
+      if one_pedal == True and CS.vEgo < 7/3.6 and CS.cruiseState.enabled:
+        events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前(7km/h未満)でも可)にバックに入れたらディスエンゲージ
+      else:
+        events.add(EventName.reverseGear)
     if not CS.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if CS.espDisabled:
