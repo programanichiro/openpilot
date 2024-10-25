@@ -11,6 +11,7 @@ public:
   void paintGL() override;
   mat4 calcFrameMatrix() override;
   DriverMonitorRenderer driver_monitor;
+  void mini_knightScanner(QPainter &p);
 };
 
 class DriverViewDialog : public DialogBase {
