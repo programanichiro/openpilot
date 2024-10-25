@@ -38,11 +38,7 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   body = new BodyWindow(this);
   slayout->addWidget(body);
 
-  my_driver_view = new DriverViewWindow(this,1); //必ず1を付ける。
-  connect(my_driver_view, &DriverViewWindow::done, [=] {
-    myShowDriverView(false);
-  });
-  slayout->addWidget(my_driver_view);
+  my_driver_view = null; //Dialogとは別のやり方で常駐を防ぐ
 
   setAttribute(Qt::WA_NoSystemBackground);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &HomeWindow::updateState);
@@ -139,6 +135,11 @@ void HomeWindow::myShowDriverView(bool show) {
     } else {
       emit closeSettings();
     }
+    my_driver_view = new DriverViewWindow(this,1); //必ず1を付ける。
+    connect(my_driver_view, &DriverViewWindow::done, [=] {
+      myShowDriverView(false);
+    });
+    slayout->addWidget(my_driver_view);
     slayout->setCurrentWidget(my_driver_view);
   } else {
     if (!uiState()->scene.started) {
@@ -150,6 +151,11 @@ void HomeWindow::myShowDriverView(bool show) {
         sidebar->setVisible(true);
         ipaddress_update = true;
       }
+    }
+    if(my_driver_view){
+      slayout->removeWidget(my_driver_view);
+      delete my_driver_view; //メモリ解放
+      my_driver_view = null;
     }
   }
   if (!uiState()->scene.started) {
