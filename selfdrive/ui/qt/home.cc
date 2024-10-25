@@ -121,6 +121,11 @@ void HomeWindow::offroadTransition(bool offroad) {
   sidebar->setVisible(offroad);
   if (offroad) {
     slayout->setCurrentWidget(home);
+    if(my_driver_view){
+      slayout->removeWidget(my_driver_view);
+      delete my_driver_view; //メモリ解放
+      my_driver_view = nullptr;
+    }
   } else {
     slayout->setCurrentWidget(onroad);
   }
