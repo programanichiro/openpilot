@@ -38,7 +38,7 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   body = new BodyWindow(this);
   slayout->addWidget(body);
 
-  my_driver_view = null; //Dialogとは別のやり方で常駐を防ぐ
+  my_driver_view = nullptr; //Dialogとは別のやり方で常駐を防ぐ
 
   setAttribute(Qt::WA_NoSystemBackground);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &HomeWindow::updateState);
@@ -155,7 +155,7 @@ void HomeWindow::myShowDriverView(bool show) {
     if(my_driver_view){
       slayout->removeWidget(my_driver_view);
       delete my_driver_view; //メモリ解放
-      my_driver_view = null;
+      my_driver_view = nullptr;
     }
   }
   if (!uiState()->scene.started) {

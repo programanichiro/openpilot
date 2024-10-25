@@ -23,6 +23,7 @@ protected:
   void showEvent(QShowEvent *event) override;
   void hideEvent(QHideEvent *event) override;
   int my_method;
+  Params params;
 };
 
 class DriverViewDialog : public DialogBase {
