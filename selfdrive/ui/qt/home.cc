@@ -38,6 +38,12 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   body = new BodyWindow(this);
   slayout->addWidget(body);
 
+  my_driver_view = new DriverViewWindow(this,1); //必ず1を付ける。
+  connect(my_driver_view, &DriverViewWindow::done, [=] {
+    myShowDriverView(false);
+  });
+  slayout->addWidget(my_driver_view);
+
   setAttribute(Qt::WA_NoSystemBackground);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &HomeWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &HomeWindow::offroadTransition);
@@ -97,14 +103,12 @@ void HomeWindow::updateState(const UIState &s) {
   if(lsta == 1 /*left_blinker || right_blinker*/ || back_gear){
     if(blinker_stat == false){
       blinker_stat = true;
-      //showDriverView(true); ドライバービューの表示方法が変わったので一旦封印。
-      //DriverViewDialogを使う？
+      myShowDriverView(true); //ドライバービューの表示方法が変わったので独自実装。
     }
   } else {
     if(blinker_stat == true){
       blinker_stat = false;
-      //showDriverView(false); ドライバービューの表示方法が変わったので一旦封印。
-      //DriverViewDialogを使う？
+      myShowDriverView(false); //ドライバービューの表示方法が変わったので独自実装。
       lsta_can_get = false; //一旦ウインカーを戻すまでは発動しない。
     }
   }
@@ -126,6 +130,33 @@ void HomeWindow::offroadTransition(bool offroad) {
   }
 }
 
+void HomeWindow::myShowDriverView(bool show) {
+  static bool sidebar_disp = false;
+  if (show) {
+    if (uiState()->scene.started) {
+      sidebar_disp = sidebar->isVisible();
+      sidebar->setVisible(false);
+    } else {
+      emit closeSettings();
+    }
+    slayout->setCurrentWidget(my_driver_view);
+  } else {
+    if (!uiState()->scene.started) {
+      slayout->setCurrentWidget(home);
+    } else {
+      slayout->setCurrentWidget(onroad);
+      if(sidebar_disp == true){
+        sidebar_disp = false;
+        sidebar->setVisible(true);
+        ipaddress_update = true;
+      }
+    }
+  }
+  if (!uiState()->scene.started) {
+    sidebar->setVisible(show == false);
+  }
+}
+
 void HomeWindow::mousePressEvent(QMouseEvent* e) {
   // Handle sidebar collapsing
   if ((onroad->isVisible() || body->isVisible()) && (!sidebar->isVisible() || e->x() > sidebar->width())) {
@@ -137,11 +168,10 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
 }
 
 void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
-  // if(uiState()->scene.started){
-  //   showDriverView(true); ドライバービューの表示方法が変わったので一旦封印。
-  //DriverViewDialogを使う？
-  //   return;
-  // }
+  if(uiState()->scene.started){
+    myShowDriverView(true); //ドライバービューの表示方法が変わったので独自実装。
+    return;
+  }
   HomeWindow::mousePressEvent(e);
   const SubMaster &sm = *(uiState()->sm);
   if (sm["carParams"].getCarParams().getNotCar()) {

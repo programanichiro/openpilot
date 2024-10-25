@@ -12,6 +12,17 @@ public:
   mat4 calcFrameMatrix() override;
   DriverMonitorRenderer driver_monitor;
   void mini_knightScanner(QPainter &p);
+
+public:
+  DriverViewWindow(QWidget* parent , int myMethod);
+
+signals:
+  void done();
+
+protected:
+  void showEvent(QShowEvent *event) override;
+  void hideEvent(QHideEvent *event) override;
+  int my_method;
 };
 
 class DriverViewDialog : public DialogBase {
