@@ -38,11 +38,6 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   body = new BodyWindow(this);
   slayout->addWidget(body);
 
-  driver_view = new DriverViewWindow(this);
-  connect(driver_view, &DriverViewWindow::done, [=] {
-    showDriverView(false);
-  });
-  slayout->addWidget(driver_view);
   setAttribute(Qt::WA_NoSystemBackground);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &HomeWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &HomeWindow::offroadTransition);
@@ -77,24 +72,6 @@ void HomeWindow::updateState(const UIState &s) {
   }
 
   static bool blinker_stat = false;
-#if 0
-  uint16_t lsta = (uint16_t)(sm["modelV2"].getModelV2().getMeta().getLaneChangeState()); //enum LaneChangeState.preLaneChange == 1 , log.capnp
-  double vEgo = sm["carState"].getCarState().getVEgo() * 3.6;
-  bool left_blinker = sm["carState"].getCarState().getLeftBlinker() && vEgo > 45 && lsta == 1;
-  bool right_blinker = sm["carState"].getCarState().getRightBlinker() && vEgo > 45 && lsta == 1;
-  bool back_gear = ((uint16_t)(sm["carState"].getCarState().getGearShifter()) == 4);//car.capnp , enum GearShifterにバックギアが定義されている。
-  if(left_blinker || right_blinker || back_gear){
-    if(blinker_stat == false){
-      blinker_stat = true;
-      showDriverView(true);
-    }
-  } else {
-    if(blinker_stat == true){
-      blinker_stat = false;
-      showDriverView(false);
-    }
-  }
-#else
   static bool lsta_can_get = false;
   uint16_t lsta = 0;
   const bool left_blinker = false; //sm["carState"].getCarState().getLeftBlinker();
@@ -120,12 +97,14 @@ void HomeWindow::updateState(const UIState &s) {
   if(lsta == 1 /*left_blinker || right_blinker*/ || back_gear){
     if(blinker_stat == false){
       blinker_stat = true;
-      showDriverView(true);
+      //showDriverView(true); ドライバービューの表示方法が変わったので一旦封印。
+      //DriverViewDialogを使う？
     }
   } else {
     if(blinker_stat == true){
       blinker_stat = false;
-      showDriverView(false);
+      //showDriverView(false); ドライバービューの表示方法が変わったので一旦封印。
+      //DriverViewDialogを使う？
       lsta_can_get = false; //一旦ウインカーを戻すまでは発動しない。
     }
   }
@@ -135,7 +114,6 @@ void HomeWindow::updateState(const UIState &s) {
     fprintf(fp,"%.2f",vEgo);
     fclose(fp);
   }
-#endif
 }
 
 void HomeWindow::offroadTransition(bool offroad) {
@@ -145,33 +123,6 @@ void HomeWindow::offroadTransition(bool offroad) {
     slayout->setCurrentWidget(home);
   } else {
     slayout->setCurrentWidget(onroad);
-  }
-}
-
-void HomeWindow::showDriverView(bool show) {
-  static bool sidebar_disp = false;
-  if (show) {
-    if (uiState()->scene.started) {
-      sidebar_disp = sidebar->isVisible();
-      sidebar->setVisible(false);
-    } else {
-      emit closeSettings();
-    }
-    slayout->setCurrentWidget(driver_view);
-  } else {
-    if (!uiState()->scene.started) {
-      slayout->setCurrentWidget(home);
-    } else {
-      slayout->setCurrentWidget(onroad);
-      if(sidebar_disp == true){
-        sidebar_disp = false;
-        sidebar->setVisible(true);
-        ipaddress_update = true;
-      }
-    }
-  }
-  if (!uiState()->scene.started) {
-    sidebar->setVisible(show == false);
   }
 }
 
@@ -186,10 +137,11 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
 }
 
 void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
-  if(uiState()->scene.started){
-    showDriverView(true);
-    return;
-  }
+  // if(uiState()->scene.started){
+  //   showDriverView(true); ドライバービューの表示方法が変わったので一旦封印。
+  //DriverViewDialogを使う？
+  //   return;
+  // }
   HomeWindow::mousePressEvent(e);
   const SubMaster &sm = *(uiState()->sm);
   if (sm["carParams"].getCarParams().getNotCar()) {
