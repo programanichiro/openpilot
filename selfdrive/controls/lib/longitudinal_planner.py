@@ -720,7 +720,7 @@ class LongitudinalPlanner:
         self.v_cruise_kph_1_15 = v_abs * 3.6 + 7
         if self.v_cruise_kph_1_15 > v_cruise_kph + 11:
           self.v_cruise_kph_1_15 = v_cruise_kph + 11 #MAXを最大11は超えない
-        if v_ego * 3.6 >= v_cruise_kph * 0.95: #ACC設定速度がすでに出ている。
+        if v_ego * 3.6 >= v_cruise_kph * 0.90: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
           if self.ac_vc_time < 1.0:
