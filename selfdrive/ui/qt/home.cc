@@ -33,6 +33,8 @@ HomeWindow::HomeWindow(QWidget* parent) : QWidget(parent) {
   body = new BodyWindow(this);
   slayout->addWidget(body);
 
+  my_driver_view = nullptr; //Dialogとは別のやり方で常駐を防ぐ
+
   setAttribute(Qt::WA_NoSystemBackground);
   QObject::connect(uiState(), &UIState::uiUpdate, this, &HomeWindow::updateState);
   QObject::connect(uiState(), &UIState::offroadTransition, this, &HomeWindow::offroadTransition);
@@ -88,12 +90,12 @@ void HomeWindow::updateState(const UIState &s) {
   if(lsta == 1 /*left_blinker || right_blinker*/ || back_gear){
     if(blinker_stat == false){
       blinker_stat = true;
-      //showDriverView(true);
+      myShowDriverView(true); //ドライバービューの表示方法が変わったので独自実装。
     }
   } else {
     if(blinker_stat == true){
       blinker_stat = false;
-      //showDriverView(false);
+      myShowDriverView(false); //ドライバービューの表示方法が変わったので独自実装。
       lsta_can_get = false; //一旦ウインカーを戻すまでは発動しない。
     }
   }
@@ -110,8 +112,50 @@ void HomeWindow::offroadTransition(bool offroad) {
   sidebar->setVisible(offroad);
   if (offroad) {
     slayout->setCurrentWidget(home);
+    if(my_driver_view){
+      slayout->removeWidget(my_driver_view);
+      delete my_driver_view; //メモリ解放
+      my_driver_view = nullptr;
+    }
   } else {
     slayout->setCurrentWidget(onroad);
+  }
+}
+
+void HomeWindow::myShowDriverView(bool show) {
+  static bool sidebar_disp = false;
+  if (show) {
+    if (uiState()->scene.started) {
+      sidebar_disp = sidebar->isVisible();
+      sidebar->setVisible(false);
+    } else {
+      emit closeSettings();
+    }
+    my_driver_view = new DriverViewWindow(this,1); //必ず1を付ける。
+    connect(my_driver_view, &DriverViewWindow::done, [=] {
+      myShowDriverView(false);
+    });
+    slayout->addWidget(my_driver_view);
+    slayout->setCurrentWidget(my_driver_view);
+  } else {
+    if (!uiState()->scene.started) {
+      slayout->setCurrentWidget(home);
+    } else {
+      slayout->setCurrentWidget(onroad);
+      if(sidebar_disp == true){
+        sidebar_disp = false;
+        sidebar->setVisible(true);
+        ipaddress_update = true;
+      }
+    }
+    if(my_driver_view){
+      slayout->removeWidget(my_driver_view);
+      delete my_driver_view; //メモリ解放
+      my_driver_view = nullptr;
+    }
+  }
+  if (!uiState()->scene.started) {
+    sidebar->setVisible(show == false);
   }
 }
 
@@ -126,10 +170,10 @@ void HomeWindow::mousePressEvent(QMouseEvent* e) {
 }
 
 void HomeWindow::mouseDoubleClickEvent(QMouseEvent* e) {
-  // if(uiState()->scene.started){
-  //   showDriverView(true);
-  //   return;
-  // }
+  if(uiState()->scene.started){
+    myShowDriverView(true); //ドライバービューの表示方法が変わったので独自実装。
+    return;
+  }
   HomeWindow::mousePressEvent(e);
   const SubMaster &sm = *(uiState()->sm);
   if (sm["carParams"].getCarParams().getNotCar()) {

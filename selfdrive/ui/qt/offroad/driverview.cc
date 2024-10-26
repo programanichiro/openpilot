@@ -7,6 +7,33 @@
 #include "selfdrive/ui/qt/util.h"
 
 DriverViewWindow::DriverViewWindow(QWidget* parent) : CameraWidget("camerad", VISION_STREAM_DRIVER, parent) {
+  my_method = 0;
+}
+
+DriverViewWindow::DriverViewWindow(QWidget* parent , int myMethod) : CameraWidget("camerad", VISION_STREAM_DRIVER, parent) {
+  my_method = myMethod;
+  QObject::connect(this, &CameraWidget::clicked, this, &DriverViewWindow::done);
+  QObject::connect(device(), &Device::interactiveTimeout, this, [this]() {
+    if (isVisible()) {
+      //emit done(); , ひとまず時間で閉じるのをやめる
+    }
+  });
+}
+
+void DriverViewWindow::showEvent(QShowEvent* event) {
+  if(my_method != 0){
+    params.putBool("IsDriverViewEnabled", true);
+    device()->resetInteractiveTimeout(60);
+  }
+  CameraWidget::showEvent(event);
+}
+
+void DriverViewWindow::hideEvent(QHideEvent* event) {
+  if(my_method != 0){
+    params.putBool("IsDriverViewEnabled", false);
+    stopVipcThread();
+  }
+  CameraWidget::hideEvent(event);
 }
 
 void DriverViewWindow::paintGL() {

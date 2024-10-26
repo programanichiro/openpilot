@@ -8,6 +8,7 @@
 #include <QWidget>
 
 #include "common/params.h"
+#include "selfdrive/ui/qt/offroad/driverview.h"
 #include "selfdrive/ui/qt/body.h"
 #include "selfdrive/ui/qt/onroad/onroad_home.h"
 #include "selfdrive/ui/qt/sidebar.h"
@@ -55,6 +56,7 @@ signals:
 
 public slots:
   void offroadTransition(bool offroad);
+  void myShowDriverView(bool show);
   void showSidebar(bool show);
 
 protected:
@@ -67,6 +69,7 @@ private:
   OnroadWindow *onroad;
   BodyWindow *body;
   QStackedLayout *slayout;
+  DriverViewWindow *my_driver_view;
 
 private slots:
   void updateState(const UIState &s);
