@@ -466,7 +466,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       QObject::connect(bearing_scale, &QPushButton::released, [=]() {
         quint64 now = QDateTime::currentMSecsSinceEpoch();
         //ボタンを離した時に何かしたいならここで。
-        if(now - m_pressedTime > 1500){
+        if(now - press_time > 1500){
           steer_always = !steer_always;
           press_time = 0;
           return;
