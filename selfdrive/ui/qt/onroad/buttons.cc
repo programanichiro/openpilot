@@ -463,7 +463,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         //ボタンを押した時に何かしたいならここで。
       });
 
-      QObject::connect(bearing_scale, &QPushButton::released, [=]() {
+      QObject::connect(LongEnablrButton, &QPushButton::released, [=]() {
         quint64 now = QDateTime::currentMSecsSinceEpoch();
         //ボタンを離した時に何かしたいならここで。
         if(now - press_time > 1500){
