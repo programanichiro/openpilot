@@ -181,6 +181,7 @@ const static char *btn_styleb1 = "font-size: 30px; border-width: 0px; color: rgb
 const static char *btn_styleb2 = "font-size: 50px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 const static char *btn_styleb3 = "font-size: 40px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
+bool steer_always = false;
 int Knight_scanner = 7;
 int DrivingPsn = 0; //運転傾向
 int Limit_speed_mode = 0; //標識
@@ -456,7 +457,20 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
       // Long enable 透明button
       QPushButton *LongEnablrButton = new QPushButton(""); //表示文字も無し。
       Long_enable = getButtonEnabled("/data/long_speeddown_disable.txt");
+      static quint64 press_time;
       QObject::connect(LongEnablrButton, &QPushButton::pressed, [=]() {
+        press_time = QDateTime::currentMSecsSinceEpoch();
+        //ボタンを押した時に何かしたいならここで。
+      });
+
+      QObject::connect(bearing_scale, &QPushButton::released, [=]() {
+        quint64 now = QDateTime::currentMSecsSinceEpoch();
+        //ボタンを離した時に何かしたいならここで。
+        if(now - m_pressedTime > 1500){
+          steer_always = !steer_always;
+          press_time = 0;
+          return;
+        }
         if(mUseDynmicExpButton){
           mUseDynmicExpButton = (mUseDynmicExpButton + 1) % 2; //0->1->0
           uiState()->scene.mUseDynmicExpButton = mUseDynmicExpButton;
@@ -485,6 +499,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
             Params().putBool("ExperimentalMode", true);
           }
         }
+        press_time = 0;
       });
       int rect_width = 200;
       int rect_height = 200;

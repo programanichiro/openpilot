@@ -216,6 +216,7 @@ extern bool mapVisible;
 extern void soundButton2(int onOff);
 extern void setButtonEnabled0(const char*fn , bool flag);
 int g_night_mode;
+extern bool steer_always;
 void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   p.save();
   int y_ofs = 150;
@@ -832,7 +833,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
     my_drawIcon(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
-             sm["selfdriveState"].getSelfdriveState().getExperimentalMode() ? experimental_img : engage_img, blackColor(166), global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
+             sm["selfdriveState"].getSelfdriveState().getExperimentalMode() ? experimental_img : engage_img, steer_always ? QColor(244, 100, 100, 166) : blackColor(166), global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
   }
   const float x_Long_enable = surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2;
   const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
