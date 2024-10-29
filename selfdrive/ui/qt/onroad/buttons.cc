@@ -469,7 +469,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         //ボタンを離した時に何かしたいならここで。
         if(now - press_time > 900){
           steer_always = !steer_always;
-          setButtonEnabled0("/data/steer_always.txt",false);
+          setButtonEnabled0("/data/steer_always.txt",steer_always);
           press_time = 0;
           return;
         }
