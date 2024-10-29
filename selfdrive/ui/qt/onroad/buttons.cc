@@ -463,11 +463,13 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
         //ボタンを押した時に何かしたいならここで。
       });
 
+      steer_always = getButtonEnabled0("/data/steer_always.txt");
       QObject::connect(LongEnablrButton, &QPushButton::released, [=]() {
         quint64 now = QDateTime::currentMSecsSinceEpoch();
         //ボタンを離した時に何かしたいならここで。
         if(now - press_time > 900){
           steer_always = !steer_always;
+          setButtonEnabled0("/data/steer_always.txt",false);
           press_time = 0;
           return;
         }
