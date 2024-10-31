@@ -20,6 +20,7 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongControl
 from openpilot.selfdrive.controls.lib.vehicle_model import VehicleModel
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
 
+from openpilot.common.realtime import DT_CTRL
 
 State = log.SelfdriveState.OpenpilotState
 LaneChangeState = log.LaneChangeState
@@ -30,6 +31,7 @@ ACTUATOR_FIELDS = tuple(car.CarControl.Actuators.schema.fields.keys())
 class Controls:
   def __init__(self) -> None:
     self.params = Params()
+    self.last_blinker_frame = 0
     cloudlog.info("controlsd is waiting for CarParams")
     self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
     cloudlog.info("controlsd got CarParams")
@@ -89,8 +91,22 @@ class Controls:
 
     # Check which actuators can be enabled
     standstill = abs(CS.vEgo) <= max(self.CP.minSteerSpeed, MIN_LATERAL_CONTROL_SPEED) or CS.standstill
-    CC.latActive = self.sm['selfdriveState'].active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and not standstill
+    steer_always = 0
+    try:
+      with open('/tmp/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+    except Exception as e:
+      pass
+    CC.latActive = (self.sm['selfdriveState'].active or steer_always != 0) and not CS.steerFaultTemporary \
+                    and not CS.steerFaultPermanent and not standstill and True if steer_always == 0 else \
+                    (not CS.vEgo < 50 * CV.KPH_TO_MS) or (not (((self.sm.frame - self.last_blinker_frame) * DT_CTRL) < 1.0)) and CS.vEgo > 5 * CV.KPH_TO_MS
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
+
+    if CS.leftBlinker or CS.rightBlinker:
+      self.last_blinker_frame = self.sm.frame
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state

@@ -398,18 +398,30 @@ class DriverMonitoring:
       car_speed=sm['carState'].vEgo
     )
 
+    steer_always = 0
+    try:
+      with open('/tmp/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+    except Exception as e:
+      pass
+
     # Parse data from dmonitoringmodeld
     self._update_states(
       driver_state=sm['driverStateV2'],
       cal_rpy=sm['liveCalibration'].rpyCalib,
       car_speed=sm['carState'].vEgo,
-      op_engaged=sm['selfdriveState'].enabled
+      #op_engaged=sm['selfdriveState'].enabled
+      op_engaged=sm['selfdriveState'].enabled or (steer_always != 0 and sm['carState'].vEgo > 2),
     )
 
     # Update distraction events
     self._update_events(
       driver_engaged=sm['carState'].steeringPressed or sm['carState'].gasPressed,
-      op_engaged=sm['selfdriveState'].enabled,
+      #op_engaged=sm['selfdriveState'].enabled,
+      op_engaged=sm['selfdriveState'].enabled or (steer_always != 0 and sm['carState'].vEgo > 2),
       standstill=sm['carState'].standstill,
       wrong_gear=sm['carState'].gearShifter in [car.CarState.GearShifter.reverse, car.CarState.GearShifter.park],
       car_speed=sm['carState'].vEgo
