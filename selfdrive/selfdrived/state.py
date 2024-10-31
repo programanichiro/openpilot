@@ -92,7 +92,16 @@ class StateMachine:
     # Check if openpilot is engaged and actuators are enabled
     enabled = self.state in ENABLED_STATES
     active = self.state in ACTIVE_STATES
-    if active:
+    steer_always = 0
+    try:
+      with open('/tmp/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+    except Exception as e:
+      pass
+    if active or steer_always != 0:
       self.current_alert_types.append(ET.WARNING)
     return enabled, active
 
