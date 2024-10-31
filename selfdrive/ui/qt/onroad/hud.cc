@@ -834,16 +834,16 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
           steer_always = false;
         }
       }
-      std::string scruise_available_txt = util::read_file("/tmp/cruise_available.txt");
-      if(scruise_available_txt.empty() == false){
-        if(std::stoi(scruise_available_txt) >= 1){
+      std::string cruise_available_txt = util::read_file("/tmp/cruise_available.txt");
+      if(cruise_available_txt.empty() == false){
+        if(std::stoi(cruise_available_txt) >= 1){
           cruise_available = true;
         } else {
           cruise_available = false;
         }
       }
     }
-    QColor icon_back = QColor(70, 128, 70, 166);
+    QColor icon_back = blackColor(166);
     if(steer_always){
       if(cruise_available){
         icon_back = QColor(70, 128, 70, 224);
