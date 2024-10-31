@@ -405,6 +405,7 @@ class DriverMonitoring:
         if steer_always_str:
           if int(steer_always_str) >= 1:
             steer_always = 2
+      # cruise_available.txtのチェックは省略
     except Exception as e:
       pass
 

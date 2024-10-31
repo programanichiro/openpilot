@@ -824,6 +824,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
       //停止時の青信号発進抑制、一時的に緩和、15->50度
       bg_color = COLOR_STATUS_WARNING; //ワンペダル時に信号スタート可能角度でなければ警告色。
     }
+    static bool cruise_available;
     if (limitspeed_update_ct % 10 == 5) {
       std::string steer_always_txt = util::read_file("/tmp/steer_always.txt");
       if(steer_always_txt.empty() == false){
@@ -833,10 +834,26 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
           steer_always = false;
         }
       }
+      std::string scruise_available_txt = util::read_file("/tmp/cruise_available.txt");
+      if(scruise_available_txt.empty() == false){
+        if(std::stoi(scruise_available_txt) >= 1){
+          cruise_available = true;
+        } else {
+          cruise_available = false;
+        }
+      }
+    }
+    QColor icon_back = QColor(70, 128, 70, 166);
+    if(steer_always){
+      if(cruise_available){
+        icon_back = QColor(70, 128, 70, 224);
+      } else {
+        icon_back = QColor(70, 128, 70, 144);
+      }
     }
     my_drawIcon(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
              //engage_img, bg_color, 1.0 , -global_angle_steer0);
-             sm["selfdriveState"].getSelfdriveState().getExperimentalMode() ? experimental_img : engage_img, steer_always ? QColor(70, 128, 70, 166) : blackColor(166), global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
+             sm["selfdriveState"].getSelfdriveState().getExperimentalMode() ? experimental_img : engage_img, icon_back, global_engageable ? 1.0 : 0.3 , -global_angle_steer0);
   }
   const float x_Long_enable = surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2;
   const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
