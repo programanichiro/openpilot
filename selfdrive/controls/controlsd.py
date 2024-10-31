@@ -31,7 +31,6 @@ ACTUATOR_FIELDS = tuple(car.CarControl.Actuators.schema.fields.keys())
 class Controls:
   def __init__(self) -> None:
     self.params = Params()
-    self.last_blinker_frame = 0
     cloudlog.info("controlsd is waiting for CarParams")
     self.CP = messaging.log_from_bytes(self.params.get("CarParams", block=True), car.CarParams)
     cloudlog.info("controlsd got CarParams")
@@ -106,13 +105,8 @@ class Controls:
             cruise_available = 1 #ACCボタンがOFFならlatActiveをTrueにしない。
     except Exception as e:
       pass
-    CC.latActive = (self.sm['selfdriveState'].active or (steer_always != 0 and cruise_available != 0)) and not CS.steerFaultTemporary \
-                    and not CS.steerFaultPermanent and not standstill and True if (steer_always == 0 or cruise_available == 0) else \
-                    (not CS.vEgo < 50 * CV.KPH_TO_MS) or (not (((self.sm.frame - self.last_blinker_frame) * DT_CTRL) < 1.0)) and CS.vEgo > 5 * CV.KPH_TO_MS
+    CC.latActive = (self.sm['selfdriveState'].active or (steer_always != 0 and cruise_available != 0)) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and not standstill
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
-
-    if CS.leftBlinker or CS.rightBlinker:
-      self.last_blinker_frame = self.sm.frame
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
