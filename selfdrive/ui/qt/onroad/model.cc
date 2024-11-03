@@ -75,13 +75,14 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line,size_t leads_num) {
   for (int i = 0; i < leads_num && i < LeadcarLockon_MAX; ++i) {
     if(i == 2){
+      // /tmp/lead_three.txtからstatus,dRel,yRelを読む。
       std::string lead_three_txt = util::read_file("/tmp/lead_three.txt");
+      int status = 0;
+      float dRel=0,yRel=0;
       if(lead_three_txt.empty() == false){
         int ii = 0; // インデックス
         std::stringstream ss(lead_three_txt); // 入力文字列をstringstreamに変換
         std::string token; // 一時的にトークンを格納する変数
-        int status = 0;
-        float dRel,yRel;
         while (std::getline(ss, token, ',') && ii < 3) { // カンマで分割し、一つずつ処理する
           if(ii==0){
             status = std::stoi(token);
@@ -96,7 +97,6 @@ void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, 
           ii++; // インデックスを1つ進める
         }
       }
-      // /tmp/lead_three.txtからstatus,dRel,YRelを読む。
       if(status){
         float z = line.getZ()[get_path_length_idx(line, dRel)];
         mapToScreen(dRel, -yRel, z + 1.22, &lead_vertices[i]);
