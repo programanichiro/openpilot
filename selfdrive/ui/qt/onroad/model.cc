@@ -5,7 +5,7 @@ constexpr float MIN_DRAW_DISTANCE = 10.0;
 constexpr float MAX_DRAW_DISTANCE = 100.0;
 
 #include "selfdrive/ui/qt/util.h"
-#define LeadcarLockon_MAX 2 //3 //5
+#define LeadcarLockon_MAX 3 //5
 extern void setButtonInt(const char*fn , int num);
 extern void setButtonEnabled0(const char*fn , bool flag); //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
 extern float vc_speed;
@@ -74,14 +74,35 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 
 void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line,size_t leads_num) {
   for (int i = 0; i < leads_num && i < LeadcarLockon_MAX; ++i) {
-    // if(i == 2){
-    //   // /tmp/lead_Three.txtからstatus,dRel,YRelを読む。
-    //   if(status){
-    //     float z = line.getZ()[get_path_length_idx(line, three_getDRel())];
-    //     mapToScreen(three_getDRel(), -three_getYRel(), z + 1.22, &lead_vertices[i]);
-    //   }
-    //   continue;
-    // }
+    if(i == 2){
+      std::string lead_three_txt = util::read_file("/tmp/lead_three.txt");
+      if(lead_three_txt.empty() == false){
+        int ii = 0; // インデックス
+        std::stringstream ss(lead_three_txt); // 入力文字列をstringstreamに変換
+        std::string token; // 一時的にトークンを格納する変数
+        int status = 0;
+        float dRel,yRel;
+        while (std::getline(ss, token, ',') && ii < 3) { // カンマで分割し、一つずつ処理する
+          if(ii==0){
+            int status = std::stoi(token);
+            if(!status){
+              break;
+            }
+          } else if(ii==1){
+            dRel = std::stof(token);
+          } else if(ii==2){
+            yRel = std::stof(token);
+          }
+          ii++; // インデックスを1つ進める
+        }
+      }
+      // /tmp/lead_three.txtからstatus,dRel,YRelを読む。
+      if(status){
+        float z = line.getZ()[get_path_length_idx(line, dRel)];
+        mapToScreen(dRel, -yRel, z + 1.22, &lead_vertices[i]);
+      }
+      continue;
+    }
     const auto &lead_data = (i == 0) ? radar_state.getLeadOne() : radar_state.getLeadTwo();
     if (lead_data.getStatus()) {
       float z = line.getZ()[get_path_length_idx(line, lead_data.getDRel())];
