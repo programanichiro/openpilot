@@ -836,8 +836,14 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
       std::string steer_always_txt = util::read_file("/tmp/steer_always.txt");
       if(steer_always_txt.empty() == false){
         if(std::stoi(steer_always_txt) >= 1){
+          if(steer_always == false && cruise_available == true){
+            soundButton2(1);
+          }
           steer_always = true;
         } else {
+          if(steer_always == true && cruise_available == true){
+            soundButton2(0);
+          }
           steer_always = false;
         }
       }

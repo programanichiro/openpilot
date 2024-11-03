@@ -5,7 +5,7 @@ constexpr float MIN_DRAW_DISTANCE = 10.0;
 constexpr float MAX_DRAW_DISTANCE = 100.0;
 
 #include "selfdrive/ui/qt/util.h"
-#define LeadcarLockon_MAX 5
+#define LeadcarLockon_MAX 2 //5
 extern void setButtonInt(const char*fn , int num);
 extern void setButtonEnabled0(const char*fn , bool flag); //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
 extern float vc_speed;
