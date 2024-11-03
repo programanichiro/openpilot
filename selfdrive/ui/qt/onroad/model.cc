@@ -5,7 +5,7 @@ constexpr float MIN_DRAW_DISTANCE = 10.0;
 constexpr float MAX_DRAW_DISTANCE = 100.0;
 
 #include "selfdrive/ui/qt/util.h"
-#define LeadcarLockon_MAX 3
+#define LeadcarLockon_MAX 2 //3 //5
 extern void setButtonInt(const char*fn , int num);
 extern void setButtonEnabled0(const char*fn , bool flag); //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
 extern float vc_speed;
@@ -74,6 +74,14 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 
 void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line,size_t leads_num) {
   for (int i = 0; i < leads_num && i < LeadcarLockon_MAX; ++i) {
+    // if(i == 2){
+    //   // /tmp/lead_Three.txtからstatus,dRel,YRelを読む。
+    //   if(status){
+    //     float z = line.getZ()[get_path_length_idx(line, three_getDRel())];
+    //     mapToScreen(three_getDRel(), -three_getYRel(), z + 1.22, &lead_vertices[i]);
+    //   }
+    //   continue;
+    // }
     const auto &lead_data = (i == 0) ? radar_state.getLeadOne() : radar_state.getLeadTwo();
     if (lead_data.getStatus()) {
       float z = line.getZ()[get_path_length_idx(line, lead_data.getDRel())];
