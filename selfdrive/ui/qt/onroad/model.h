@@ -17,7 +17,7 @@ private:
                         QPolygonF *pvd, int max_idx, bool allow_invert = true);
   void drawLead(QPainter &painter, const cereal::RadarState::LeadData::Reader &lead_data, const QPointF &vd, const QRect &surface_rect , int num);
   void drawLockon(QPainter &painter, const cereal::ModelDataV2::LeadDataV3::Reader &lead_data, const QPointF &vd , int num , const QRect &surface_rect /*使っていない, size_t leads_num , const cereal::RadarState::LeadData::Reader &lead0, const cereal::RadarState::LeadData::Reader &lead1 */);
-  void update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line);
+  void update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line,size_t leads_num);
   void update_model(const cereal::ModelDataV2::Reader &model, const cereal::RadarState::LeadData::Reader &lead);
   void drawLaneLines(QPainter &painter, const UIState *s);
   void drawPath(QPainter &painter, const cereal::ModelDataV2::Reader &model, int height, int width);
@@ -35,7 +35,7 @@ private:
   QPolygonF track_vertices;
   QPolygonF lane_line_vertices[4] = {};
   QPolygonF road_edge_vertices[2] = {};
-  QPointF lead_vertices[2] = {};
+  QPointF lead_vertices[3] = {};
   Eigen::Matrix3f car_space_transform = Eigen::Matrix3f::Zero();
   QRectF clip_region;
 };

@@ -5,7 +5,7 @@ constexpr float MIN_DRAW_DISTANCE = 10.0;
 constexpr float MAX_DRAW_DISTANCE = 100.0;
 
 #include "selfdrive/ui/qt/util.h"
-#define LeadcarLockon_MAX 2 //5
+#define LeadcarLockon_MAX 3
 extern void setButtonInt(const char*fn , int num);
 extern void setButtonEnabled0(const char*fn , bool flag); //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
 extern float vc_speed;
@@ -50,10 +50,10 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   drawPath(painter, model, surface_rect.height(), surface_rect.width());
 
   if (longitudinal_control && sm.alive("radarState")) {
-    update_leads(radar_state, model.getPosition());
-
     const auto leads = model.getLeadsV3();
     size_t leads_num = leads.size();
+    update_leads(radar_state, model.getPosition() , leads_num);
+
     for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
       if(leads[i].getProb() > .2){ //信用度20%以上で表示。調整中。
         drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
@@ -72,8 +72,8 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   painter.restore();
 }
 
-void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line) {
-  for (int i = 0; i < 2; ++i) {
+void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line,size_t leads_num) {
+  for (int i = 0; i < leads_num && i < LeadcarLockon_MAX; ++i) {
     const auto &lead_data = (i == 0) ? radar_state.getLeadOne() : radar_state.getLeadTwo();
     if (lead_data.getStatus()) {
       float z = line.getZ()[get_path_length_idx(line, lead_data.getDRel())];
@@ -1021,8 +1021,8 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
       }
     } else if(num == 2){
       //推論3番
-      //事実上ない。動かない0,0に居るみたい？
-      painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+      //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+      painter.setPen(QPen(QColor(0.6*255, 0.6*255, 0.6*255, prob_alpha), 2));
       //painter.drawLine(r.right(),r.center().y() , width() , height());
     } else {
       //推論4番以降。
