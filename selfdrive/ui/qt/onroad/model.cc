@@ -84,7 +84,7 @@ void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, 
         float dRel,yRel;
         while (std::getline(ss, token, ',') && ii < 3) { // カンマで分割し、一つずつ処理する
           if(ii==0){
-            int status = std::stoi(token);
+            status = std::stoi(token);
             if(!status){
               break;
             }
