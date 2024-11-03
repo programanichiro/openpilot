@@ -249,8 +249,8 @@ class RadarD:
       self.radar_state.leadTwo = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[1], model_v_ego, low_speed_override=False)
       if len(leads_v3) > 2:
         leadThree              = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[1], model_v_ego, low_speed_override=False)
-        if leadThree.status:
-          pass
+        # if leadThree.status:
+        #   pass
           # with open('/tmp/lead_three.txt','w') as fp:
           #   fp.write('%d,%f,%f' % (leadThree.status , leadThree.dRel , leadThree.yRel))
 
