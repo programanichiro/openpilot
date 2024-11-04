@@ -5,7 +5,7 @@ constexpr float MIN_DRAW_DISTANCE = 10.0;
 constexpr float MAX_DRAW_DISTANCE = 100.0;
 
 #include "selfdrive/ui/qt/util.h"
-#define LeadcarLockon_MAX 5
+#define LeadcarLockon_MAX 3 //5
 extern void setButtonInt(const char*fn , int num);
 extern void setButtonEnabled0(const char*fn , bool flag); //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。flagはそのままtrueなら有効。
 extern float vc_speed;
@@ -50,10 +50,10 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   drawPath(painter, model, surface_rect.height(), surface_rect.width());
 
   if (longitudinal_control && sm.alive("radarState")) {
-    update_leads(radar_state, model.getPosition());
-
     const auto leads = model.getLeadsV3();
     size_t leads_num = leads.size();
+    update_leads(radar_state, model.getPosition() , leads_num);
+
     for(size_t i=0; i<leads_num && i < LeadcarLockon_MAX; i++){
       if(leads[i].getProb() > .2){ //信用度20%以上で表示。調整中。
         drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
@@ -72,8 +72,37 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   painter.restore();
 }
 
-void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line) {
-  for (int i = 0; i < 2; ++i) {
+void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line,size_t leads_num) {
+  for (int i = 0; i < leads_num && i < LeadcarLockon_MAX; ++i) {
+    if(i == 2){
+      // /tmp/lead_three.txtからstatus,dRel,yRelを読む。
+      std::string lead_three_txt = util::read_file("/tmp/lead_three.txt");
+      int status = 0;
+      float dRel=0,yRel=0;
+      if(lead_three_txt.empty() == false){
+        int ii = 0; // インデックス
+        std::stringstream ss(lead_three_txt); // 入力文字列をstringstreamに変換
+        std::string token; // 一時的にトークンを格納する変数
+        while (std::getline(ss, token, ',') && ii < 3) { // カンマで分割し、一つずつ処理する
+          if(ii==0){
+            status = std::stoi(token);
+            if(!status){
+              break;
+            }
+          } else if(ii==1){
+            dRel = std::stof(token);
+          } else if(ii==2){
+            yRel = std::stof(token);
+          }
+          ii++; // インデックスを1つ進める
+        }
+      }
+      if(status){
+        float z = line.getZ()[get_path_length_idx(line, dRel)];
+        mapToScreen(dRel, -yRel, z + 1.22, &lead_vertices[i]);
+      }
+      continue;
+    }
     const auto &lead_data = (i == 0) ? radar_state.getLeadOne() : radar_state.getLeadTwo();
     if (lead_data.getStatus()) {
       float z = line.getZ()[get_path_length_idx(line, lead_data.getDRel())];
@@ -1021,17 +1050,21 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
       }
     } else if(num == 2){
       //推論3番
-      //事実上ない。動かない0,0に居るみたい？
-      painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+      //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 1));
+      painter.setPen(QPen(QColor(0.6*255, 0.6*255, 0.6*255, prob_alpha), 1));
       //painter.drawLine(r.right(),r.center().y() , width() , height());
     } else {
       //推論4番以降。
       //存在していない。
-      painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+      painter.setPen(QPen(QColor(0.8*255, 0.2*255, 0.2*255, prob_alpha), 1));
       //painter.drawLine(r.left(),r.center().y() , 0 , height());
     }
 
-    painter.drawRect(r);
+    if(num < 2){
+      painter.drawRect(r);
+    } else {
+      painter.drawArc(r , 0 * 16, 360 * 16);
+    }
 
     //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
 
