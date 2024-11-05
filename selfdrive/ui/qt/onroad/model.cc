@@ -1051,7 +1051,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
     } else if(num == 2){
       //推論3番
       //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 1));
-      painter.setPen(QPen(QColor(0.6*255, 0.6*255, 0.6*255, prob_alpha), 1));
+      painter.setPen(QPen(QColor(0.9*255, 0.9*255, 0.9*255, prob_alpha), 1));
       //painter.drawLine(r.right(),r.center().y() , width() , height());
     } else {
       //推論4番以降。
