@@ -44,6 +44,7 @@ class Controls:
 
     self.steer_limited = False
     self.desired_curvature = 0.0
+    self.first_cruise_available_ct = 0
 
     self.pose_calibrator = PoseCalibrator()
     self.calibrated_pose: Pose|None = None
@@ -102,7 +103,10 @@ class Controls:
         cruise_available_str = fp.read()
         if cruise_available_str:
           if int(cruise_available_str) >= 1:
-            cruise_available = 1 #ACCボタンがOFFならlatActiveをTrueにしない。
+            if self.first_cruise_available_ct < 100: #latActive=trueを1秒遅らせる。
+              self.first_cruise_available_ct += 1
+            else:
+              cruise_available = 1 #ACCボタンがOFFならlatActiveをTrueにしない。
     except Exception as e:
       pass
     CC.latActive = (self.sm['selfdriveState'].active or (steer_always != 0 and cruise_available != 0)) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and not standstill
