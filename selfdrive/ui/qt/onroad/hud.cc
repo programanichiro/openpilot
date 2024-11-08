@@ -859,9 +859,9 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     QColor icon_back = blackColor(166);
     if(steer_always){
       if(cruise_available){
-        icon_back = QColor(70, 128, 70, 224);
+        icon_back = QColor(0x17, 0x86, 0x44, 224); //bg_colors[STATUS_ENGAGED]と同じ色
       } else {
-        icon_back = QColor(70, 128, 70, 144);
+        icon_back = QColor(0x17, 0x86, 0x44, 144); //bg_colors[STATUS_ENGAGED]と同じ色
       }
     }
     my_drawIcon(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2, btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs,
