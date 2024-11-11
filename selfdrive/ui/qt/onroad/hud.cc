@@ -891,6 +891,9 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
       std::string desired_path_x_rate_txt = util::read_file("/tmp/desired_path_x_rate.txt");
       if(desired_path_x_rate_txt.empty() == false){
         desired_path_x_rate0 = std::stof(desired_path_x_rate_txt);
+        if(desired_path_x_rate0 < 0.0f){
+          desired_path_x_rate0 = 0.0f; //なんか逆に動く場合がある？
+        }
         if(desired_path_x_rate0 > 1.0f){
           desired_path_x_rate0 = 1.0f;
         }
