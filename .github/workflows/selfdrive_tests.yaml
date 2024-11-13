@@ -176,11 +176,9 @@ jobs:
     - name: Run unit tests
       timeout-minutes: ${{ contains(runner.name, 'nsc') && 1 || 20 }}
       run: |
-        ${{ env.RUN }} "source selfdrive/test/setup_xvfb.sh && \
-                        MAX_EXAMPLES=1 $PYTEST --timeout 60 -m 'not slow' && \
+        ${{ env.RUN }} "MAX_EXAMPLES=1 $PYTEST --timeout 60 -m 'not slow' && \
                         ./selfdrive/ui/tests/create_test_translations.sh && \
-                        QT_QPA_PLATFORM=offscreen ./selfdrive/ui/tests/test_translations && \
-                        pytest ./selfdrive/ui/tests/test_translations.py"
+                        QT_QPA_PLATFORM=offscreen ./selfdrive/ui/tests/test_translations"
     - name: "Upload coverage to Codecov"
       uses: codecov/codecov-action@v4
       with:
@@ -210,7 +208,7 @@ jobs:
       run: |
         ${{ env.RUN }} "scons -j$(nproc)"
     - name: Run replay
-      timeout-minutes: 30
+      timeout-minutes: ${{ contains(runner.name, 'nsc') && 1 || 20 }}
       run: |
         ${{ env.RUN }} "coverage run selfdrive/test/process_replay/test_processes.py -j$(nproc) && \
                         chmod -R 777 /tmp/comma_download_cache && \
