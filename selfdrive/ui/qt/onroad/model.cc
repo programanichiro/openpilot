@@ -38,6 +38,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   experimental_mode = sm["selfdriveState"].getSelfdriveState().getExperimentalMode();
   longitudinal_control = sm["carParams"].getCarParams().getOpenpilotLongitudinalControl();
   g_longitudinal_control = longitudinal_control;
+  path_offset_z = sm["liveCalibration"].getLiveCalibration().getHeight()[0];
 
   painter.save();
 
@@ -99,14 +100,14 @@ void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, 
       }
       if(status){
         float z = line.getZ()[get_path_length_idx(line, dRel)];
-        mapToScreen(dRel, -yRel, z + 1.22, &lead_vertices[i]);
+        mapToScreen(dRel, -yRel, z + path_offset_z, &lead_vertices[i]);
       }
       continue;
     }
     const auto &lead_data = (i == 0) ? radar_state.getLeadOne() : radar_state.getLeadTwo();
     if (lead_data.getStatus()) {
       float z = line.getZ()[get_path_length_idx(line, lead_data.getDRel())];
-      mapToScreen(lead_data.getDRel(), -lead_data.getYRel(), z + 1.22, &lead_vertices[i]);
+      mapToScreen(lead_data.getDRel(), -lead_data.getYRel(), z + path_offset_z, &lead_vertices[i]);
     }
   }
 }
@@ -138,7 +139,7 @@ void ModelRenderer::update_model(const cereal::ModelDataV2::Reader &model, const
     max_distance = std::clamp((float)(lead_d - fmin(lead_d * 0.35, 10.)), 0.0f, max_distance);
   }
   max_idx = get_path_length_idx(model_position, max_distance);
-  mapLineToPolygon(model_position, 0.9, 1.22, &track_vertices, max_idx, false);
+  mapLineToPolygon(model_position, 0.9, path_offset_z, &track_vertices, max_idx, false);
 }
 
 void ModelRenderer::drawLaneLines(QPainter &painter, const UIState *s) {
