@@ -186,6 +186,9 @@ bool check_night_mode(){
   QString g_hour = q_time.toString("HH:mm");
   //bool night = (QString::compare(g_hour,"17:00") >= 0 || QString::compare(g_hour,"06:00") < 0);
   bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
+#elif 1
+  extern int g_night_mode;
+  return g_night_mode != 0; //ここで取得せずg_night_modeを使う。
 #else
   //時間ではなく、カメラ輝度で判定する
   bool night = false;
@@ -1516,7 +1519,7 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
 
     QObject::connect(bearing_scale, &QPushButton::released, [=]() {
       quint64 now = QDateTime::currentMSecsSinceEpoch();
-      //ボタンを押した時に何かしたいならここで。
+      //ボタンを離した時に何かしたいならここで。
       if(now - m_pressedTime > 1500){
         //qDebug() << "long clicked"; //これでは放さないと長押しが取れない。
         //2秒以上長押しでzoom_offsetクリア。
