@@ -188,7 +188,7 @@ bool check_night_mode(){
   bool night = (strcmp(g_hour.toUtf8().data(),"17:00") >= 0 || strcmp(g_hour.toUtf8().data(),"06:00") < 0);
 #elif 1
   extern int g_night_mode;
-  return g_night_mode != 0; //ここで取得せずg_night_modeを使う。
+  bool night = g_night_mode != 0; //ここで取得せずg_night_modeを使う。
 #else
   //時間ではなく、カメラ輝度で判定する
   bool night = false;
