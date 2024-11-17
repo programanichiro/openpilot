@@ -1530,6 +1530,28 @@ MapBearingScale::MapBearingScale(QWidget * parent) : QWidget(parent) {
         setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
       } else if(now - m_pressedTime > 500){
         bs_color_revert  ^= 1; //0.5秒以上の長押しでダークモード反転。
+#if 1
+      } else if(now_navigation == true){
+        if(MIN_PITCH_ == 0){ // 0<->-1
+          MIN_PITCH_ = -1;
+          head_north = true; //地図の角度をリセットする。
+        } else if(MIN_PITCH_ == -1){
+          MIN_PITCH_ = 0;
+          north_head = true; //地図の角度をリセットする。
+        } else {
+          MIN_PITCH_ = -MIN_PITCH_;
+          if(MIN_PITCH_ >= 0){
+            north_head = true; //地図の角度をリセットする。
+          } else {
+            head_north = true; //地図の角度をリセットする。
+          }
+        }
+        max_zoom_pitch_effect();
+        setButtonInt("/data/mb_pitch.txt",MIN_PITCH_); //MIN_PITCH_ = 0,10,20,30,40度,ノースアップから選択
+        chg_pitch = true;
+        extern void soundPipo();
+        soundPipo();
+#endif
       } else /*if(north_up == 0)*/{
         //qDebug() << "clicked";
         //bs_color_revert ^= 1;
