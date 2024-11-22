@@ -73,7 +73,7 @@ PROCS = {
 
 PROCS.update({
   "tici": {
-    "./pandad": 4.0,
+    "./pandad": 5.0,
     "./ubloxd": 1.0,
     "system.ubloxd.pigeond": 6.0,
   },
