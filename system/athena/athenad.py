@@ -814,6 +814,8 @@ def main(exit_event: threading.Event = None):
       cur_upload_items.clear()
 
       handle_long_poll(ws, exit_event)
+
+      ws.close()
     except (KeyboardInterrupt, SystemExit):
       break
     except (ConnectionError, TimeoutError, WebSocketException):
