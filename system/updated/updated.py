@@ -313,7 +313,7 @@ class Updater:
       except Exception:
         cloudlog.exception("updater.get_description")
       agnos = os.environ.get('AGNOS_VERSION', None)
-      return f"AGNOS{agnos} / {version} / {branch} / {commit} / {commit_date}"
+      return f"OS{agnos} / {version} / {branch} / {commit} / {commit_date}"
     self.params.put("UpdaterCurrentDescription", get_description(BASEDIR))
     self.params.put("UpdaterCurrentReleaseNotes", parse_release_notes(BASEDIR))
     self.params.put("UpdaterNewDescription", get_description(FINALIZED))
