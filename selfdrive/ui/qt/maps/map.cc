@@ -211,7 +211,7 @@ bool check_night_mode(){
 #if 0 //昼間で97以上。多少影に入っても関係ない。トンネルで一気に10まで下がった。上の制御で十分だが、夕方の切り替わるタイミングはlight_sensorの挙動依存となる。
     if(1 || (night == true && night_mode != 1) || (night == false && night_mode != 0)){
       //切り替わるなら書き出し。
-      FILE *fp = fopen("/tmp/brightness_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
+      FILE *fp = fopen("/dev/shm/brightness_info.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
       if(fp != NULL){
         char buf[32];
         sprintf(buf,"brightness:%.1f",clipped_brightness);
@@ -370,7 +370,7 @@ void MapWindow::updateState(const UIState &s) {
   if(already_vego_over_8 == false && sm_vego > 1/3.6){ //8->4->1km/h
     already_vego_over_8 = true; //一旦時速8km/h以上になった。
   }
-  std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+  std::string gps_axs_data_txt = util::read_file("/dev/shm/gps_axs_data.txt");
   int gps_idx_i = 0;
   static bool gps_ok;
   static double gps_output[6]; // double型の配列
@@ -400,7 +400,7 @@ void MapWindow::updateState(const UIState &s) {
     // if (false && locationd_valid) {
     //   // Check std norm
     //   auto pos_ecef_std = locationd_ecef.getStd();
-    //   FILE *fp10 = fopen("/tmp/gps_vel2_data.txt","w");
+    //   FILE *fp10 = fopen("/dev/shm/gps_vel2_data.txt","w");
     //   if(fp10){
     //     fprintf(fp10,"%.3f,%.3f,%.3f",(double)pos_ecef_std[0],(double)pos_ecef_std[1],(double)pos_ecef_std[2]);
     //     fclose(fp10);
@@ -708,7 +708,7 @@ void MapWindow::updateState(const UIState &s) {
 
   if(style_reload == 1 && locationd_valid == true && routing_problem == false){
     style_reload --;
-    FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+    FILE *fp = fopen("/dev/shm/route_style_reload.txt","w");
     if(fp != NULL){
       fprintf(fp,"%d",1);
       fclose(fp);
@@ -974,7 +974,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
       fclose(latlon);
 
       if (sm.valid("navInstruction")) {
-        FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+        FILE *fp = fopen("/dev/shm/route_style_reload.txt","w");
         if(fp != NULL){
           fprintf(fp,"%d",1);
           fclose(fp);
@@ -1371,7 +1371,7 @@ MapLimitspeed::MapLimitspeed(QWidget * parent) : QWidget(parent) {
       if (sm.valid("navInstruction")) {
         //ナビ中
         on_vavi_highway ^= 1; //反転
-        FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+        FILE *fp = fopen("/dev/shm/route_style_reload.txt","w");
         if(fp != NULL){
           fprintf(fp,"%d",1);
           fclose(fp);
@@ -1423,7 +1423,7 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
 
   int old_limit_speed_num = limit_speed_num;
 
-  std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
+  std::string limitspeed_data_txt = util::read_file("/dev/shm/limitspeed_data.txt");
   if(limitspeed_data_txt.empty() == false){
     float output[3]; // float型の配列
     int i = 0; // インデックス
@@ -1445,7 +1445,7 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
     }
   }
 #if 0
-  std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
+  std::string stand_still_txt = util::read_file("/dev/shm/stand_still.txt");
   g_stand_still = false;
   if(stand_still_txt.empty() == false){
     g_stand_still = std::stoi(stand_still_txt) ? true : false;

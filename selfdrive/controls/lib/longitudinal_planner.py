@@ -34,7 +34,7 @@ red_signal_scan_ct_2 = 0 #red_signal_scan_flagが2になった瞬間から加算
 red_signal_scan_span = 0 #red_signal_scan_flagが3になった瞬間のred_signal_scan_ct_2を保持する。
 red_signal_speed_down_before = 0
 red_signal_scan_flag = 0 #0:何もしない, 1:赤信号センシング, 2:赤信号検出, 3:赤信号停止動作中
-with open('/tmp/red_signal_scan_flag.txt','w') as fp:
+with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
   fp.write('%d' % (0))
 path_x_old_signal = 0
 path_x_old_signal_check = 0
@@ -165,11 +165,11 @@ class LongitudinalPlanner:
     self.red_signal_eP_iP_flag = 0
 
     try:
-      with open('/tmp/dexp_sw_mode.txt','r') as fp:
+      with open('/dev/shm/dexp_sw_mode.txt','r') as fp:
         dexp_sw_mode_str = fp.read()
         if dexp_sw_mode_str:
           if int(dexp_sw_mode_str) >= 1: #dynamic experimental mode
-            with open('/tmp/long_speeddown_disable.txt','w') as fp:
+            with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
               fp.write('%d' % (1)) #初期はイチロウロング無効
     except Exception as e:
       pass
@@ -217,7 +217,7 @@ class LongitudinalPlanner:
     a_ego = sm['carState'].aEgo
     dexp_mode = False
     try:
-      with open('/tmp/dexp_sw_mode.txt','r') as fp:
+      with open('/dev/shm/dexp_sw_mode.txt','r') as fp:
         dexp_sw_mode_str = fp.read()
         if dexp_sw_mode_str:
           if int(dexp_sw_mode_str) >= 1: #dynamic experimental mode
@@ -228,12 +228,12 @@ class LongitudinalPlanner:
       if self.mpc.mode == 'acc':
         if (v_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (sm['carState'].leftBlinker or sm['carState'].rightBlinker):
           params.put_bool("ExperimentalMode", True) # blended
-          with open('/tmp/long_speeddown_disable.txt','w') as fp:
+          with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (1)) #イチロウロング無効
       else:
         if (v_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False):
           params.put_bool("ExperimentalMode", False) # acc
-          with open('/tmp/long_speeddown_disable.txt','w') as fp:
+          with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (0)) #イチロウロング有効
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
     min_acc_speed = 31
@@ -259,7 +259,7 @@ class LongitudinalPlanner:
 
     accel_engaged_str = None
     try:
-      with open('/tmp/accel_engaged.txt','r') as fp:
+      with open('/dev/shm/accel_engaged.txt','r') as fp:
         accel_engaged_str = fp.read()
     except Exception as e:
       pass
@@ -280,7 +280,7 @@ class LongitudinalPlanner:
         on_onepedal_ct = -1 #アクセル判定消去
     if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
       if sm['selfdriveState'].enabled and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6):
-        with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+        with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
           #しばらくやってもなかなか出ない？fp.write('%d' % (3)) #デバッグでpo.wav音を鳴らす。
       OP_ENABLE_v_cruise_kph = v_cruise_kph
@@ -291,7 +291,7 @@ class LongitudinalPlanner:
     if one_pedal == True and v_ego < 0.1/3.6 and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False:
       force_one_pedal_set = False
       try:
-        with open('/tmp/force_one_pedal.txt','r') as fp:
+        with open('/dev/shm/force_one_pedal.txt','r') as fp:
           force_one_pedal_str = fp.read()
           if force_one_pedal_str:
             if int(force_one_pedal_str) == 1:
@@ -301,9 +301,9 @@ class LongitudinalPlanner:
       except Exception as e:
         pass
       if force_one_pedal_set == True:
-        with open('/tmp/force_one_pedal.txt','w') as fp:
+        with open('/dev/shm/force_one_pedal.txt','w') as fp:
           fp.write('%d' % (0))
-        with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+        with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
 
     sm_longControlState = sm['controlsState'].longControlState
@@ -351,7 +351,7 @@ class LongitudinalPlanner:
         #   fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[TRAJECTORY_SIZE -1],signal_scan_ct,path_x_old_signal_check,v_ego))
         #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
         #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
-        with open('/tmp/blue_signal_chk.txt','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
+        with open('/dev/shm/blue_signal_chk.txt','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
           fp.write('%d' % (int(path_x[TRAJECTORY_SIZE -1])))
         half_limit = 25 #40
         if (path_x_old_signal < 2) and path_x[TRAJECTORY_SIZE -1] > half_limit:
@@ -362,7 +362,7 @@ class LongitudinalPlanner:
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
           limit_8 = 8 if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit else 16
           if signal_scan_ct > limit_8 and signal_scan_ct < 100 and (path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or (path_x_old_signal_check-half_limit) > 1.25*limit_8 * half_limit): #path_x_old_signal_check-half_limitの20倍程度
-            with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
               if sm['driverMonitoringState'].isActiveMode == True: #よそ見をしていたら発進しない。
                 if OP_ENABLE_v_cruise_kph > 0: #MAX==1の状態。
                   fp.write('%d' % (2)) #engage.wavを鳴らす。
@@ -373,7 +373,7 @@ class LongitudinalPlanner:
                 #   red_signal_scan_flag = 0 #赤ブレーキキャンセルならゼロに戻す。
                 if self.red_signal_eP_iP_flag != 0:
                   self.red_signal_eP_iP_flag = 0
-                  with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
+                  with open('/dev/shm/red_signal_eP_iP_set.txt','w') as fp:
                     fp.write('%d' % (0))
               else:
                 fp.write('%d' % (1)) #よそ見してたらprompt.wavを鳴らす。
@@ -391,19 +391,19 @@ class LongitudinalPlanner:
     if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       signal_scan_ct = 200 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
-      with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+      with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
     # if CVS_FRAME % 10 == 0 and v_ego >= 1/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled:
     #   try: #首ジェスチャーでエクストラエンゲージ解除をやろうと思ったが、誤作動懸念で保留。アクセル踏み込みとレバーアップがあるし
-    #     with open('/tmp/gesture_onpe2AP.txt','r') as fp:
+    #     with open('/dev/shm/gesture_onpe2AP.txt','r') as fp:
     #       gesture_onpe2AP_str = fp.read()
     #       if gesture_onpe2AP_str and int(gesture_onpe2AP_str) == 1:
     #         OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
     #         signal_scan_ct = 200 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
-    #         with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+    #         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
     #           fp.write('%d' % (2)) #engage.wavを鳴らす。
-    #         with open('/tmp/gesture_onpe2AP.txt','w') as fp:
+    #         with open('/dev/shm/gesture_onpe2AP.txt','w') as fp:
     #           fp.write('%d' % (0))
     #   except Exception as e:
     #     pass
@@ -458,7 +458,7 @@ class LongitudinalPlanner:
       self.desired_path_x_rates = np.delete(self.desired_path_x_rates , [0])
       desired_path_x_rate = np.sum(self.desired_path_x_rates) / self.desired_path_x_rates.size
       if True: #CVS_FRAME % 2 == 0:
-        with open('/tmp/desired_path_x_rate.txt','w') as fp:
+        with open('/dev/shm/desired_path_x_rate.txt','w') as fp:
           fp.write('%0.2f' % (desired_path_x_rate))
       # with open('/tmp/debug_out_k','w') as fp:
       # #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
@@ -477,7 +477,7 @@ class LongitudinalPlanner:
       self.night_time_refresh_ct += 1
       if (self.night_time_refresh_ct % 11 == 6 and red_signal == "●") or self.night_time_refresh_ct % 200 == 100:
         try:
-          with open('/tmp/night_time_info.txt','r') as fp:
+          with open('/dev/shm/night_time_info.txt','r') as fp:
             night_time_info_str = fp.read()
             if night_time_info_str:
               self.night_time = int(night_time_info_str)
@@ -512,15 +512,15 @@ class LongitudinalPlanner:
               if int(accel_engaged_str) >= 3: #ワンペダルモード
                   # fp.write('%d' % (3)) #デバッグ用にpo.wavを鳴らしてみる。
                 lock_off = False
-                if os.path.isfile('/tmp/lockon_disp_disable.txt'):
-                  with open('/tmp/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
+                if os.path.isfile('/dev/shm/lockon_disp_disable.txt'):
+                  with open('/dev/shm/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
                     lockon_disp_disable_str = fp.read()
                     if lockon_disp_disable_str:
                       lockon_disp_disable = int(lockon_disp_disable_str)
                       if lockon_disp_disable != 0:
                         lock_off = True #ロックオンOFFで停車コードOFF
                 if lock_off == False:
-                  with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+                  with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
                     fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
                   OP_ENABLE_v_cruise_kph = v_cruise_kph
                   OP_ENABLE_gas_speed = 1.0 / 3.6
@@ -530,7 +530,7 @@ class LongitudinalPlanner:
                   red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
                   if self.red_signal_eP_iP_flag != 1:
                     self.red_signal_eP_iP_flag = 1
-                    with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
+                    with open('/dev/shm/red_signal_eP_iP_set.txt','w') as fp:
                       fp.write('%d' % (1))
           except Exception as e:
             pass
@@ -551,7 +551,7 @@ class LongitudinalPlanner:
       if set_red_signal_scan_flag_3 == False:
         if self.red_signal_eP_iP_flag != 0:
           self.red_signal_eP_iP_flag = 0
-          with open('/tmp/red_signal_eP_iP_set.txt','w') as fp:
+          with open('/dev/shm/red_signal_eP_iP_set.txt','w') as fp:
             fp.write('%d' % (0))
 
     if (hasLead == True and distLead_near == True) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
@@ -566,20 +566,20 @@ class LongitudinalPlanner:
       if accel_engaged_str:
         if int(accel_engaged_str) < 3: #ワンペダルモード以外
           rssf = 0
-      with open('/tmp/red_signal_scan_flag.txt','w') as fp:
+      with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
         fp.write('%d' % (rssf))
 
     if hasLead == False and one_pedal == True and v_ego < 0.1/3.6: #速度ゼロでIPモード時にレバー下に入れたら
       if v_cruise_kph < before_v_cruise_kph_max_1 and before_v_cruise_kph_max_1 < 200: #200km/h以下の場合のみ。初回の誤設定を弾く。
         if OP_ENABLE_v_cruise_kph == 0:
-          with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+          with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
             fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = 1.0 / 3.6
     if v_ego > 3/3.6 and v_ego <= 30/3.6:
       force_low_engage_set = False #MAX!=1でタッチすると低速(スピードが3〜30km/h)でエンゲージ。
       try:
-        with open('/tmp/force_low_engage.txt','r') as fp:
+        with open('/dev/shm/force_low_engage.txt','r') as fp:
           force_low_engage_str = fp.read()
           if force_low_engage_str:
             if int(force_low_engage_str) == 1:
@@ -591,16 +591,16 @@ class LongitudinalPlanner:
       except Exception as e:
         pass
       if force_low_engage_set:
-        with open('/tmp/force_low_engage.txt','w') as fp:
+        with open('/dev/shm/force_low_engage.txt','w') as fp:
           fp.write('%d' % (0))
-        with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+        with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
     if v_ego > 3/3.6 and v_ego <= 30/3.6 and sm['carState'].gasPressed and sm['selfdriveState'].enabled: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
       if before_v_cruise_kph_max_1 <= 37 and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = v_ego
         OP_ENABLE_ACCEL_RELEASE = False #このあとのアクセルコントロールを許可する
-        with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+        with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
     before_v_cruise_kph_max_1 = v_cruise_kph
 
@@ -608,13 +608,13 @@ class LongitudinalPlanner:
       OP_ENABLE_v_cruise_kph = 0
       if red_signal_scan_flag == 3:
         red_signal_scan_flag = 2
-        with open('/tmp/red_signal_scan_flag.txt','w') as fp:
+        with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
           fp.write('%d' % (red_signal_scan_flag))
     if OP_ENABLE_v_cruise_kph != 0:
       v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う,MAX=1もここで入ってくる。
     if CVS_FRAME % 5 == 4:
       try:
-        with open('/tmp/handle_center_info.txt','r') as fp:
+        with open('/dev/shm/handle_center_info.txt','r') as fp:
           handle_center_info_str = fp.read()
           if handle_center_info_str:
             handle_center = float(handle_center_info_str)
@@ -623,7 +623,7 @@ class LongitudinalPlanner:
 
     limitspeed_set = False
     try:
-      with open('/tmp/limitspeed_data.txt','r') as fp2:
+      with open('/dev/shm/limitspeed_data.txt','r') as fp2:
         limitspeed_data_str = fp2.read()
         if limitspeed_data_str:
           limitspeed_data = limitspeed_data_str.split(",")
@@ -655,7 +655,7 @@ class LongitudinalPlanner:
             self.limitspeed_point_dim.pop(0)
           self.limitspeed_point_avg = sum(self.limitspeed_point_dim) / len(self.limitspeed_point_dim) #直近50個の平均。
 
-          with open('/tmp/limitspeed_sw.txt','r') as fp:
+          with open('/dev/shm/limitspeed_sw.txt','r') as fp:
             limitspeed_sw_str = fp.read()
             if limitspeed_sw_str and limitspeed_data_str:
               if int(limitspeed_sw_str) == 1 and OP_ENABLE_v_cruise_kph == 0 and sm['selfdriveState'].enabled: #自動設定モード
@@ -668,7 +668,7 @@ class LongitudinalPlanner:
       pass
 
     if lever_up_down != 0 and limitspeed_set == True:
-      with open('/tmp/accel_ctrl_disable.txt','w') as fp:
+      with open('/dev/shm/accel_ctrl_disable.txt','w') as fp:
         fp.write('%d' % (0 if lever_up_down > 0 else 1))
 
 #  struct LeadData {
@@ -694,7 +694,7 @@ class LongitudinalPlanner:
     global accel_lead_ctrl
     if CVS_FRAME % 30 == 13:
       try:
-        with open('/tmp/accel_ctrl_disable.txt','r') as fp:
+        with open('/dev/shm/accel_ctrl_disable.txt','r') as fp:
           accel_lead_ctrl_disable_str = fp.read()
           if accel_lead_ctrl_disable_str:
             accel_lead_ctrl_disable = int(accel_lead_ctrl_disable_str)
@@ -759,7 +759,7 @@ class LongitudinalPlanner:
     global decel_lead_ctrl
     if CVS_FRAME % 30 == 29:
       try:
-        with open('/tmp/decel_ctrl_disable.txt','r') as fp:
+        with open('/dev/shm/decel_ctrl_disable.txt','r') as fp:
           decel_lead_ctrl_disable_str = fp.read()
           if decel_lead_ctrl_disable_str:
             decel_lead_ctrl_disable = int(decel_lead_ctrl_disable_str)
@@ -793,15 +793,15 @@ class LongitudinalPlanner:
       limit_vc = (limit_vc * ((limit_vc_th)-v_cruise_kph_org) + limit_vc_h * (v_cruise_kph_org - (limit_vc_tl))) / (limit_vc_th - limit_vc_tl)
     v_cruise_kph = limit_vc if limit_vc < v_cruise_kph else v_cruise_kph
     if CVS_FRAME % 5 == 2:
-      with open('/tmp/limit_vc_info.txt','w') as fp:
+      with open('/dev/shm/limit_vc_info.txt','w') as fp:
         fp.write('%d' % (limit_vc))
     # if True: #CVS_FRAME % 5 == 1:
     #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
-    #   with open('/tmp/steer_ang_info.txt','w') as fp: #carstateに移動。
+    #   with open('/dev/shm/steer_ang_info.txt','w') as fp: #carstateに移動。
     #    fp.write('%f' % (steerAng))
     #    #fp.write('%f' % (-max_yp / 2.5))
     if CVS_FRAME % 5 == 0:
-      with open('/tmp/cruise_info.txt','w') as fp:
+      with open('/dev/shm/cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
         if v_cruise_kph == limit_vc:
           if cruise_info_power_up:
@@ -840,7 +840,7 @@ class LongitudinalPlanner:
     if desired_path_x_rate > 0.1 and desired_path_x_rate < 1.0:
       long_speeddown_disable = 0
       try:
-        with open('/tmp/long_speeddown_disable.txt','r') as fp:
+        with open('/dev/shm/long_speeddown_disable.txt','r') as fp:
           long_speeddown_disable_str = fp.read()
           if long_speeddown_disable_str:
             long_speeddown_disable = int(long_speeddown_disable_str) #0で有効。
@@ -964,7 +964,7 @@ class LongitudinalPlanner:
         add_k = interp(v_ego,[0,10/3.6],[0.12,0.25]) #0.2固定だと雨の日ホイールスピンする
         self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
         try:
-          with open('/tmp/start_accel_power_up_disp_enable.txt','r') as fp:
+          with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
             start_accel_power_up_disp_enable_str = fp.read()
             if start_accel_power_up_disp_enable_str:
               start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
@@ -1033,7 +1033,7 @@ class LongitudinalPlanner:
       longitudinalPlan.speeds = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), 119/3.6).tolist() #全要素を119km/h以下にする
     else:
       longitudinalPlan.speeds = (self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul)).tolist()
-    # with open('/tmp/long_e2e_ready.txt','w') as fp:
+    # with open('/dev/shm/long_e2e_ready.txt','w') as fp:
       # fp.write('v%f / %f' % (self.v_desired_trajectory[0],self.v_desired_filter.x)) #long e2eに備えて、確認してみる。v_desired_filter.xへの扱いはv_desired_trajectoryを直に改変で代用できるか？、基本的にはオーバースピードさせないためにだけ使っている。
       # fp.write('V%f / %f' % (self.v_desired_trajectory[CONTROL_N-1],self.v_desired_filter.x))
       # fp.write('a%f / %f' % (self.a_desired_trajectory[0],self.a_desired)) #aもvも大体同じ値らしい。aは全体にa_desired_mulをかけるだけで済みそう。

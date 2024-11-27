@@ -120,13 +120,13 @@ class Soundd:
   def get_audible_alert(self, sm):
 
     try:
-      with open('/tmp/sound_py_request.txt','r') as fp:
+      with open('/dev/shm/sound_py_request.txt','r') as fp:
         sound_py_request_str = fp.read()
         if sound_py_request_str:
           if int(sound_py_request_str) != 0:
             self.current_alert = AudibleAlert.none #前回鳴っていても強制的に鳴らす
             self.update_alert(int(sound_py_request_str))
-            with open('/tmp/sound_py_request.txt','w') as fp:
+            with open('/dev/shm/sound_py_request.txt','w') as fp:
               fp.write('%d' % (0))
               return
     except Exception as e:

@@ -76,8 +76,8 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 void ModelRenderer::update_leads(const cereal::RadarState::Reader &radar_state, const cereal::XYZTData::Reader &line,size_t leads_num) {
   for (int i = 0; i < leads_num && i < LeadcarLockon_MAX; ++i) {
     if(i == 2){
-      // /tmp/lead_three.txtからstatus,dRel,yRelを読む。
-      std::string lead_three_txt = util::read_file("/tmp/lead_three.txt");
+      // /dev/shm/lead_three.txtからstatus,dRel,yRelを読む。
+      std::string lead_three_txt = util::read_file("/dev/shm/lead_three.txt");
       int status = 0;
       float dRel=0,yRel=0;
       if(lead_three_txt.empty() == false){
@@ -156,7 +156,7 @@ void ModelRenderer::drawLaneLines(QPainter &painter, const UIState *s) {
 #if 1
     if(lta_mode == true){
       if(lane_collision == -1){
-          std::string lane_collision_txt = util::read_file("/tmp/lane_collision.txt");
+          std::string lane_collision_txt = util::read_file("/dev/shm/lane_collision.txt");
           if(lane_collision_txt.empty() == false){
             lane_collision = std::stoi(lane_collision_txt);
           } else {
@@ -288,15 +288,15 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
   static float ct;
 
 #if 1
-  std::string signal_start_prompt_info_txt = util::read_file("/tmp/signal_start_prompt_info.txt");
+  std::string signal_start_prompt_info_txt = util::read_file("/dev/shm/signal_start_prompt_info.txt");
   if(signal_start_prompt_info_txt.empty() == false){
     int pr = std::stoi(signal_start_prompt_info_txt);
     if(pr == 1){
-      setButtonInt("/tmp/sound_py_request.txt" , 6); //prompt.wav
-      setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
+      setButtonInt("/dev/shm/sound_py_request.txt" , 6); //prompt.wav
+      setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
     } else if(pr == 2){ //自動発進とワンペダル->オートパイロットはこちら。
-      setButtonInt("/tmp/sound_py_request.txt" , 1); //engage.wav
-      setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
+      setButtonInt("/dev/shm/sound_py_request.txt" , 1); //engage.wav
+      setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
     } else if(pr == 3){ //デバッグ用。
       // static QSoundEffect effect;
       // static bool once = false;
@@ -308,8 +308,8 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
       //   effect.setVolume(1.0);
       // }
       // effect.play();
-      setButtonInt("/tmp/sound_py_request.txt" , 101); //po.wav
-      setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
+      setButtonInt("/dev/shm/sound_py_request.txt" , 101); //po.wav
+      setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
     }
   }
 #endif
@@ -361,7 +361,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
         lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定
       lane_change_height = 270;
     } else { //stand_stillでもウインカーを上げる。
-      std::string stand_still_txt = util::read_file("/tmp/stand_still.txt");
+      std::string stand_still_txt = util::read_file("/dev/shm/stand_still.txt");
       bool stand_still = false;
       if(stand_still_txt.empty() == false){
         stand_still = std::stoi(stand_still_txt) ? true : false;
@@ -393,7 +393,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
       dir0 = -dir0;
     }
     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
-      std::string limit_vc_txt = util::read_file("/tmp/limit_vc_info.txt");
+      std::string limit_vc_txt = util::read_file("/dev/shm/limit_vc_info.txt");
       if(limit_vc_txt.empty() == false){
         float cv = std::stof(limit_vc_txt);
         if(cv > 0){
@@ -401,7 +401,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
         }
       }
     }
-    std::string handle_center_txt = util::read_file("/tmp/handle_center_info.txt");
+    std::string handle_center_txt = util::read_file("/dev/shm/handle_center_info.txt");
     if(handle_center_txt.empty() == false){
         handle_center = std::stof(handle_center_txt);
     } else {
@@ -495,7 +495,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
 #if 0 //曲率、k_v表示テスト
   static float curvature = 0;
   static float k_v = 1.0;
-  std::string curvature_info = util::read_file("/tmp/curvature_info.txt");
+  std::string curvature_info = util::read_file("/dev/shm/curvature_info.txt");
   if(curvature_info.empty() == false && global_engageable && (status == STATUS_ENGAGED || status == STATUS_OVERRIDE)) {
     auto separator = std::string("/");         // 区切り文字
     //auto separator_length = separator.length(); // 区切り文字の長さ
@@ -540,7 +540,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
   }
 #else
   //open street mapへのアクセス頻度を左端緑メーターで視覚化。通信が滞れば赤になる。
-  // with open('/tmp/osm_access_counter.txt','w') as fp:
+  // with open('/dev/shm/osm_access_counter.txt','w') as fp:
   //   fp.write('%d,%d,%d' % (int(per * 100),self.frame_ct2,self.frame_ct))
 
   static int osm_frame_ct_ct = -1; //-1 or 100以上でosmへの通信が死んでいる。
@@ -548,7 +548,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
   static std::string osm_access_counter_txt;
   static unsigned int osm_access_counter_ct = 0;
   if(osm_access_counter_ct++ % 20 == 0){
-    osm_access_counter_txt = util::read_file("/tmp/osm_access_counter.txt");
+    osm_access_counter_txt = util::read_file("/dev/shm/osm_access_counter.txt");
   }
   if(osm_access_counter_txt.empty() == false){
     int i = 0; // インデックス
@@ -605,7 +605,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
 #if 1
   static unsigned int debug_ct;
   if(debug_ct % 10 == 0){
-    std::string limit_vc_txt = util::read_file("/tmp/limit_vc_info.txt");
+    std::string limit_vc_txt = util::read_file("/dev/shm/limit_vc_info.txt");
     if(limit_vc_txt.empty() == false){
       cv = std::stof(limit_vc_txt);
     }
@@ -652,7 +652,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
     QString debug_disp = QString::number((int)ahr) + "%";
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 200 , false , 0xdf, 0xdf, 0x00);
     //p.drawText(QRect(0+20 + 130, rect_h - 46, 210, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
-    // FILE *fp = fopen("/tmp/autopilot_rate.txt","w");
+    // FILE *fp = fopen("/dev/shm/autopilot_rate.txt","w");
     // if(fp != NULL){
     //   fprintf(fp,"H:%.0f+%.0f=%.0fh %.2f%%\n",h_autopilot_dist,h_manual_dist,h_autopilot_dist + h_manual_dist,ahr);
     //   fprintf(fp,"D:%.0f+%.0f=%.0fm %.2f%%\n",autopilot_dist,manual_dist,distance_traveled,adr);
@@ -668,7 +668,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   if(fabs(vc_speed) < 0.1/3.6){
-    std::string blue_signal_chk_txt = util::read_file("/tmp/blue_signal_chk.txt");
+    std::string blue_signal_chk_txt = util::read_file("/dev/shm/blue_signal_chk.txt");
     if(blue_signal_chk_txt.empty() == false){
       p.setPen(Qt::NoPen);
       debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("⚫︎") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 13 , 0 , -5) + 11;

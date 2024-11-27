@@ -93,7 +93,7 @@ class RouteEngine:
     #   self.last_bearing = math.degrees(location.calibratedOrientationNED.value[2])
     #   self.last_position = Coordinate(location.positionGeodetic.value[0], location.positionGeodetic.value[1])
     try:
-      with open('/tmp/gps_axs_data.txt','r') as fp2:
+      with open('/dev/shm/gps_axs_data.txt','r') as fp2:
         gps_axs_data_str = fp2.read()
         if gps_axs_data_str:
           gps_axs_data = gps_axs_data_str.split(",")
@@ -126,14 +126,14 @@ class RouteEngine:
       should_recompute = True
 
     try: #1Hzなら毎回判定しても構わない。
-      with open('/tmp/route_style_reload.txt','r') as fp:
+      with open('/dev/shm/route_style_reload.txt','r') as fp:
         route_style_reload_str = fp.read()
         if route_style_reload_str:
           if int(route_style_reload_str) == 1:
             should_recompute = True
             self.recompute_countdown = 0
       if should_recompute == True:
-        with open('/tmp/route_style_reload.txt','w') as fp:
+        with open('/dev/shm/route_style_reload.txt','w') as fp:
           fp.write('%d' % (0))
     except Exception as e:
       pass

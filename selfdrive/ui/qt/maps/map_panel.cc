@@ -110,7 +110,7 @@ void MapPanel::toggleMapSettings() {
             fclose(latlon);
 
             if (sm.valid("navInstruction")) {
-              FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+              FILE *fp = fopen("/dev/shm/route_style_reload.txt","w");
               if(fp != NULL){
                 fprintf(fp,"%d",1);
                 fclose(fp);
@@ -186,7 +186,7 @@ void MapPanel::toggleMapSettings() {
                           fclose(latlon);
 
                           if (sm.valid("navInstruction")) {
-                            FILE *fp = fopen("/tmp/route_style_reload.txt","w");
+                            FILE *fp = fopen("/dev/shm/route_style_reload.txt","w");
                             if(fp != NULL){
                               fprintf(fp,"%d",1);
                               fclose(fp);

@@ -336,7 +336,7 @@ class TiciFanController(BaseFanController):
 
         self.min_road_v_kph = min_road_v_kph0
 
-      with open('/tmp/road_info.txt','w') as fp:
+      with open('/dev/shm/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
         if len(road_info_list) != 0:
           self.road_info_list_select += 1
@@ -399,12 +399,12 @@ class TiciFanController(BaseFanController):
     rec_mode = False
     rec_speed = 0
     try:
-      with open('/tmp/limitspeed_sw.txt','r') as fp:
+      with open('/dev/shm/limitspeed_sw.txt','r') as fp:
         limitspeed_sw_str = fp.read()
         if limitspeed_sw_str:
           if int(limitspeed_sw_str) == 2: #RECモード
             rec_mode = True
-            with open('/tmp/cruise_info.txt','r') as fp:
+            with open('/dev/shm/cruise_info.txt','r') as fp:
               cruise_info_str = fp.read()
               if cruise_info_str:
                 #",30"とかの状況を考慮
@@ -414,11 +414,11 @@ class TiciFanController(BaseFanController):
     except Exception as e:
       pass
 
-    #"/tmp/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出して速度30km/h以上ならspeedsに挿入する
+    #"/dev/shm/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出して速度30km/h以上ならspeedsに挿入する
     limitspeed_info_ok = False
     limitspeed_min = 30
     try:
-      with open('/tmp/limitspeed_info.txt','r') as fp:
+      with open('/dev/shm/limitspeed_info.txt','r') as fp:
         limitspeed_info_str = fp.read()
         if limitspeed_info_str:
           limitspeed_info_ok = True
@@ -577,7 +577,7 @@ class TiciFanController(BaseFanController):
           self.get_limit_avg = get_limitspeed
 
     try:
-      with open('/tmp/limitspeed_navi.txt','r') as fp: #navdから取得できる案内中の制限速度があれば、OSMより優先する。
+      with open('/dev/shm/limitspeed_navi.txt','r') as fp: #navdから取得できる案内中の制限速度があれば、OSMより優先する。
         limitspeed_navi_str = fp.read()
         if limitspeed_navi_str:
           limitspeed_navi = int(limitspeed_navi_str)
@@ -592,18 +592,18 @@ class TiciFanController(BaseFanController):
     #   if self.min_road_v_kph+14 < get_limitspeed:
     #     get_limitspeed = self.min_road_v_kph+14 #40km/hだったら54より上がらないように
 
-    #制限速度があれば"/tmp/limitspeed_data.txt"へ999で書き込む。なければ111となる。
+    #制限速度があれば"/dev/shm/limitspeed_data.txt"へ999で書き込む。なければ111となる。
     self.get_limitspeed_old = get_limitspeed
     if get_limitspeed > 0:
       if get_limitspeed < self.min_road_v_kph:
         get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
-      with open('/tmp/limitspeed_data.txt','w') as fp:
+      with open('/dev/shm/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
     elif self.min_road_v_kph > 0:
-      with open('/tmp/limitspeed_data.txt','w') as fp:
+      with open('/dev/shm/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,999,%d,%.1fm,=%d,-%d' % (int(self.min_road_v_kph/10) * 10 , self.min_road_v_kph , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
     else:
-      with open('/tmp/limitspeed_data.txt','w') as fp:
+      with open('/dev/shm/limitspeed_data.txt','w') as fp:
         fp.write('%d,%.2f,111,%d,%.1fm,=%d,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
 
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
@@ -636,7 +636,7 @@ class TiciFanController(BaseFanController):
       self.frame_ct2 = self.frame_ct * per
     # with open('/tmp/debug_out_o','w') as fp:
     #   fp.write('up:%d(%d/%d) %.5f, %.5f' % (int(per * 100),self.frame_ct2,self.frame_ct,self.latitude,self.longitude))
-    with open('/tmp/osm_access_counter.txt','w') as fp:
+    with open('/dev/shm/osm_access_counter.txt','w') as fp:
       fp.write('%d,%d,%d' % (int(per * 100),self.frame_ct2,self.frame_ct))
 
     return fan_pwr_out

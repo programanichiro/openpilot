@@ -109,7 +109,7 @@ void HomeWindow::updateState(const UIState &s) {
     }
   }
   double vEgo = sm["carState"].getCarState().getVEgo();
-  FILE *fp = fopen("/tmp/car_vego.txt","w");
+  FILE *fp = fopen("/dev/shm/car_vego.txt","w");
   if(fp != NULL){
     fprintf(fp,"%.2f",vEgo);
     fclose(fp);

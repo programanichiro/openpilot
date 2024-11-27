@@ -120,7 +120,7 @@ static bool gps_ok;
 void MapRenderer::msgUpdate() {
   sm->update(1000);
 
-  std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+  std::string gps_axs_data_txt = util::read_file("/dev/shm/gps_axs_data.txt");
   int gps_idx_i = 0;
   static double gps_output[6]; // double型の配列
   if(gps_axs_data_txt.empty() == false){

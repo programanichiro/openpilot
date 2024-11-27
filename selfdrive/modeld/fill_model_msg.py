@@ -14,7 +14,7 @@ try:
     handle_center_info_str = fp.read()
     if handle_center_info_str:
       STEERING_CENTER = float(handle_center_info_str)
-      with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+      with open('/dev/shm/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
         fp.write('%0.2f' % (STEERING_CENTER) )
 except Exception as e:
   pass
@@ -179,7 +179,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
         with open('/data/handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
           fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
       if STEERING_CENTER_calibration_update_count % 10 == 5:
-        with open('/tmp/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+        with open('/dev/shm/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
           fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
     else:
       with open('/data/handle_calibct_info.txt','w') as fp:
@@ -195,7 +195,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
       #   # action.desiredCurvature += lane_d * 0.015 * k #ハンドル制御の曲率をレーンの反対へ戻す
     if lane_d != g_lane_d:
       g_lane_d = lane_d
-      with open('/tmp/lane_d_info.txt','w') as fp:
+      with open('/dev/shm/lane_d_info.txt','w') as fp:
         fp.write('%.5f' % (lane_d))
 
   lane_line_meta = driving_model_data.laneLineMeta
