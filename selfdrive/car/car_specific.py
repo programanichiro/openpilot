@@ -106,7 +106,7 @@ class CarSpecificEvents:
       # global NowStandStill
       # if NowStandStill != new_stand_still:
       #   NowStandStill = new_stand_still
-      #   # with open('/tmp/stand_still.txt','w') as fp:
+      #   # with open('/dev/shm/stand_still.txt','w') as fp:
       #   #   fp.write('%d' % (new_stand_still))
 
     elif self.CP.carName == 'gm':
@@ -185,7 +185,7 @@ class CarSpecificEvents:
     if CS.gearShifter == GearShifter.reverse:
       one_pedal = False
       try:
-        with open('/tmp/accel_engaged.txt','r') as fp:
+        with open('/dev/shm/accel_engaged.txt','r') as fp:
           accel_engaged_str = fp.read()
           if accel_engaged_str:
             if int(accel_engaged_str) >= 3: #ワンペダルモード

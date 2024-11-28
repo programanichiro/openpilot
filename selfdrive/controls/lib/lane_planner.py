@@ -57,7 +57,7 @@ class LanePlanner:
       chill_enable = False #(sm['selfdriveState'].experimentalMode == False) #ここにsmはないので、experimentalMode判定を復活するなら一手間かかる。
       lta_enable_sw = False
       try:
-        with open('/tmp/lta_enable_sw.txt','r') as fp:
+        with open('/dev/shm/lta_enable_sw.txt','r') as fp:
           lta_enable_sw_str = fp.read()
           if lta_enable_sw_str:
             if int(lta_enable_sw_str) == 1: #LTA有効。
@@ -189,9 +189,9 @@ class LanePlanner:
       pass
     if self.lane_collision != new_lane_collision:
       # if new_lane_collision == 1 or new_lane_collision == 2:
-      #   with open('/tmp/signal_start_prompt_info.txt','w') as fp:
+      #   with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
       #     fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
-      with open('/tmp/lane_collision.txt','w') as fp:
+      with open('/dev/shm/lane_collision.txt','w') as fp:
         fp.write('%d' % (new_lane_collision))
         self.lane_collision = new_lane_collision
     #return path_xyz , lane_d #パスは戻り値に要らない。

@@ -147,7 +147,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   double head_acc = (double)msg->head_acc() * 1e-05; //beringが20未満で概ね正確？
 
   double vego = msg->g_speed() * 1e-03;
-  std::string car_vego_txt = util::read_file("/tmp/car_vego.txt");
+  std::string car_vego_txt = util::read_file("/dev/shm/car_vego.txt");
   if(car_vego_txt.empty() == false){
     vego = std::stof(car_vego_txt);
   }
@@ -243,7 +243,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setUnixTimestampMillis(utc_tt * 1e+03 + msg->nano() * 1e-06);
   float f[] = { msg->vel_n() * 1e-03f, msg->vel_e() * 1e-03f, msg->vel_d() * 1e-03f };
   gpsLoc.setVNED(f);
-  FILE *fp1 = fopen("/tmp/gps_vel_data.txt","w");
+  FILE *fp1 = fopen("/dev/shm/gps_vel_data.txt","w");
   if(fp1){
     fprintf(fp1,"%.3f,%.3f,%.3f",(double)f[0],(double)f[1],(double)f[2]);
     fclose(fp1);
@@ -251,7 +251,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setVerticalAccuracy(msg->v_acc() * 1e-03);
   gpsLoc.setSpeedAccuracy(msg->s_acc() * 1e-03);
   gpsLoc.setBearingAccuracyDeg(msg->head_acc() * 1e-05);
-  FILE *fp2 = fopen("/tmp/gps_acc_data.txt","w");
+  FILE *fp2 = fopen("/dev/shm/gps_acc_data.txt","w");
   if(fp2){
     fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)<%.1f/%.1f>",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k,vego,msg->g_speed() * 1e-03);
     fclose(fp2);
@@ -275,7 +275,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
     before_lon = msg->lon();
   }
   static uint64_t monoTime; //とりあえずlivePoseを使うので不要。
-  FILE *fp = fopen("/tmp/gps_axs_data.txt","w");
+  FILE *fp = fopen("/dev/shm/gps_axs_data.txt","w");
   if(fp){
     fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,avr_bear/*(double)sum_bear/BEAR_BUF_MAX*/,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
     fclose(fp);

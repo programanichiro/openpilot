@@ -250,7 +250,7 @@ class RadarD:
       if len(leads_v3) > 2:
         leadThree              = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[2], model_v_ego, low_speed_override=False)
         if leadThree['status']:
-          with open('/tmp/lead_three.txt','w') as fp:
+          with open('/dev/shm/lead_three.txt','w') as fp:
             fp.write('%d,%f,%f' % (leadThree['status'] , leadThree['dRel'] , leadThree['yRel']))
 
   def publish(self, pm: messaging.PubMaster):

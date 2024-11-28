@@ -157,7 +157,7 @@ void Sidebar::updateState(const UIState &s) {
   if (s.scene.pandaType == cereal::PandaState::PandaType::UNKNOWN) {
     pandaStatus = {{tr("NO"), tr("PANDA")}, danger_color};
   } else if (s.scene.started){
-    std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+    std::string gps_axs_data_txt = util::read_file("/dev/shm/gps_axs_data.txt");
     int gps_idx_i = 0;
     bool gps_ok = false;
     double gps_output[6]; // double型の配列

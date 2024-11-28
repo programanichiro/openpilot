@@ -90,7 +90,7 @@ void HudRenderer::updateState(const UIState &s) {
   speed = cs_alive ? std::max<float>(0.0, v_ego) : 0.0;
   vc_speed = v_ego;
   QString maxspeed_str = is_cruise_set ? QString::number(std::nearbyint(set_speed)) : "N/A";
-  std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
+  std::string stdstr_txt = util::read_file("/dev/shm/cruise_info.txt");
   static std::string stdstr_txt_save;
   if(is_cruise_set && stdstr_txt.empty() == false){
     QString qstr = QString::fromStdString(stdstr_txt);
@@ -108,7 +108,7 @@ void HudRenderer::updateState(const UIState &s) {
   // speedLimit = nav_alive ? nav_instruction.getSpeedLimit() : 0.0;
   // speedLimit *= (is_metric ? MS_TO_KPH : MS_TO_MPH);
   // if(speedLimit != old_speedLimit){ //km/h限定
-  //   FILE *fp = fopen("/tmp/limitspeed_navi.txt","w");
+  //   FILE *fp = fopen("/dev/shm/limitspeed_navi.txt","w");
   //   if(fp != NULL){
   //     fprintf(fp,"%d",(int)std::nearbyint(speedLimit)); //29とか出るので、その対策？
   //     fclose(fp);
@@ -361,7 +361,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   static int red_signal_scan_flag = 0;
   static unsigned int red_signal_scan_flag_txt_ct = 0;
   if(red_signal_scan_flag_txt_ct % 7 == 0){
-    std::string red_signal_scan_flag_txt = util::read_file("/tmp/red_signal_scan_flag.txt");
+    std::string red_signal_scan_flag_txt = util::read_file("/dev/shm/red_signal_scan_flag.txt");
     if(red_signal_scan_flag_txt.empty() == false){
       if(uiState()->scene.mAccelEngagedButton >= 3){
         red_signal_scan_flag = std::stoi(red_signal_scan_flag_txt);
@@ -389,7 +389,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
 
       if(clipped_brightness0 != clipped_brightness){
         clipped_brightness0 = clipped_brightness;
-        setButtonInt("/tmp/night_time_info.txt" , (int)clipped_brightness);
+        setButtonInt("/dev/shm/night_time_info.txt" , (int)clipped_brightness);
 
         g_night_mode = clipped_brightness0 < (g_night_mode == 1 ? 90 : 75); //ばたつかないようにする。80程度でかなり夕方。
       }
@@ -403,7 +403,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   }
   p.setPen(set_speed_color);
   if(setSpeedStr == "1" && uiState()->scene.mAccelEngagedButton == 4){ //MAXが1の時
-    std::string red_signal_eP_iP_set_txt = util::read_file("/tmp/red_signal_eP_iP_set.txt");
+    std::string red_signal_eP_iP_set_txt = util::read_file("/dev/shm/red_signal_eP_iP_set.txt");
     bool red_signal_eP_iP_set = false;
     if(red_signal_eP_iP_set_txt.empty() == false){
       if(std::stoi(red_signal_eP_iP_set_txt) == 1){
@@ -530,7 +530,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
 #if 0
   QString temp_disp = QString("Temp:") + QString::number(temp) + "°C";
 #else
-  std::string gps_axs_data_txt = util::read_file("/tmp/gps_axs_data.txt");
+  std::string gps_axs_data_txt = util::read_file("/dev/shm/gps_axs_data.txt");
   int gps_idx_i = 0;
   bool gps_ok = false;
   static double gps_output[6]; // double型の配列
@@ -573,9 +573,9 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     bool locationd_valid = ((int)gps_output[5] == 1);
 
     if (locationd_valid) {
-      FILE *fp = fopen("/tmp/limitspeed_info.txt","w");
+      FILE *fp = fopen("/dev/shm/limitspeed_info.txt","w");
       if(fp != NULL){
-        //この辺で30mか1秒？ごとに、以下を/tmp/limitspeed_info.txtに書き込む。
+        //この辺で30mか1秒？ごとに、以下を/dev/shm/limitspeed_info.txtに書き込む。
         double latitude = locationd_pos[0]; // 緯度を取得
         double longitude = locationd_pos[1]; // 経度を取得
         double bearing = locationd_orientation;  //-180〜180
@@ -642,7 +642,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   bool brake_light = false; //ブレーキランプは無くなった？(*(uiState()->sm))["carState"].getCarState().getBrakeLightsDEPRECATED();
   all_brake_light = false;
   int logo_trs = 150;
-  std::string brake_light_txt = util::read_file("/tmp/brake_light_state.txt");
+  std::string brake_light_txt = util::read_file("/dev/shm/brake_light_state.txt");
   if(brake_light_txt.empty() == false){
     if(std::stoi(brake_light_txt) != 0){
       if(global_engageable){
@@ -699,7 +699,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   bool road_info_txt_flag = false;
   static unsigned int road_info_txt_ct = 0;
   if(road_info_txt_ct++ % 20 == 0){
-    road_info_txt = util::read_file("/tmp/road_info.txt");
+    road_info_txt = util::read_file("/dev/shm/road_info.txt");
   }
   if(road_info_txt.empty() == false){
     int i = 0; // インデックス
@@ -744,7 +744,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   }
   p.setFont(InterFont(33, QFont::Bold));
   //float angle_steer = 0;
-  std::string angle_steer0_txt = util::read_file("/tmp/steer_ang_info.txt");
+  std::string angle_steer0_txt = util::read_file("/dev/shm/steer_ang_info.txt");
   if(angle_steer0_txt.empty() == false){
     global_angle_steer0 = std::stof(angle_steer0_txt);
   }
@@ -781,7 +781,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
         a0 = 200;
       }
     }
-    std::string limit_vc_txt = util::read_file("/tmp/limit_vc_info.txt");
+    std::string limit_vc_txt = util::read_file("/dev/shm/limit_vc_info.txt");
     if(limit_vc_txt.empty() == false && vc_speed >= 1/3.6){
       curve_value = std::stof(limit_vc_txt);
     }
@@ -826,7 +826,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
     static bool cruise_available;
     if (limitspeed_update_ct % 10 == 5) {
-      std::string steer_always_txt = util::read_file("/tmp/steer_always.txt");
+      std::string steer_always_txt = util::read_file("/dev/shm/steer_always.txt");
       if(steer_always_txt.empty() == false){
         if(std::stoi(steer_always_txt) >= 1){
           if(steer_always == false && cruise_available == true){
@@ -840,7 +840,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
           steer_always = false;
         }
       }
-      std::string cruise_available_txt = util::read_file("/tmp/cruise_available.txt");
+      std::string cruise_available_txt = util::read_file("/dev/shm/cruise_available.txt");
       if(cruise_available_txt.empty() == false){
         if(std::stoi(cruise_available_txt) >= 1){
           cruise_available = true;
@@ -863,7 +863,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   }
   const float x_Long_enable = surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2;
   const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
-  std::string long_speeddown_disable_txt = util::read_file("/tmp/long_speeddown_disable.txt");
+  std::string long_speeddown_disable_txt = util::read_file("/dev/shm/long_speeddown_disable.txt");
   Long_enable = true;
   if(long_speeddown_disable_txt.empty() == false){
     if(std::stoi(long_speeddown_disable_txt) != 0){
@@ -881,7 +881,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     static float desired_path_x_rate = 0 , desired_path_x_rate0 = 0;
     //static unsigned int desired_path_x_rate_ct = 0;
     if(true /*|| desired_path_x_rate_ct ++ % 2 == 0*/){
-      std::string desired_path_x_rate_txt = util::read_file("/tmp/desired_path_x_rate.txt");
+      std::string desired_path_x_rate_txt = util::read_file("/dev/shm/desired_path_x_rate.txt");
       if(desired_path_x_rate_txt.empty() == false){
         desired_path_x_rate0 = std::stof(desired_path_x_rate_txt);
         if(desired_path_x_rate0 < 0.0f){
@@ -927,7 +927,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   static int limit_speed_num = 0;
   if (mapVisible == false){
     if(limitspeed_info_read_ct++ % 10 == 5){
-      std::string limitspeed_data_txt = util::read_file("/tmp/limitspeed_data.txt");
+      std::string limitspeed_data_txt = util::read_file("/dev/shm/limitspeed_data.txt");
       if(limitspeed_data_txt.empty() == false){
         float output[3]; // float型の配列
         int i = 0; // インデックス
@@ -985,7 +985,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   int calib_h = -33 -33 - 30; //表示位置を上に
   QRect rc2(surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 - 100, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36);
   if(/*engageable ||*/ handle_center == -100){
-    std::string handle_center_txt = util::read_file("/tmp/handle_center_info.txt");
+    std::string handle_center_txt = util::read_file("/dev/shm/handle_center_info.txt");
     if(handle_center_txt.empty() == false){
         handle_center = std::stof(handle_center_txt);
     }

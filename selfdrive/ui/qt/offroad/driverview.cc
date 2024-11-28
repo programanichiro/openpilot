@@ -98,15 +98,15 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
   static float ct;
 
 #if 1
-  std::string signal_start_prompt_info_txt = util::read_file("/tmp/signal_start_prompt_info.txt");
+  std::string signal_start_prompt_info_txt = util::read_file("/dev/shm/signal_start_prompt_info.txt");
   if(signal_start_prompt_info_txt.empty() == false){
     int pr = std::stoi(signal_start_prompt_info_txt);
     if(pr == 1){
-      setButtonInt("/tmp/sound_py_request.txt" , 6); //prompt.wav
-      setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
+      setButtonInt("/dev/shm/sound_py_request.txt" , 6); //prompt.wav
+      setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
     } else if(pr == 2){ //自動発進とワンペダル->オートパイロットはこちら。
-      setButtonInt("/tmp/sound_py_request.txt" , 1); //engage.wav
-      setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
+      setButtonInt("/dev/shm/sound_py_request.txt" , 1); //engage.wav
+      setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
     } else if(pr == 3){ //デバッグ用。
       // static QSoundEffect effect;
       // static bool once = false;
@@ -118,8 +118,8 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
       //   effect.setVolume(1.0);
       // }
       // effect.play();
-      setButtonInt("/tmp/sound_py_request.txt" , 101); //po.wav
-      setButtonEnabled0("/tmp/signal_start_prompt_info.txt" , false);
+      setButtonInt("/dev/shm/sound_py_request.txt" , 101); //po.wav
+      setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
     }
   }
 #endif
@@ -182,7 +182,7 @@ void DriverViewWindow::mini_knightScanner(QPainter &p) {
       dir0 = -dir0;
     }
     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
-      std::string limit_vc_txt = util::read_file("/tmp/limit_vc_info.txt");
+      std::string limit_vc_txt = util::read_file("/dev/shm/limit_vc_info.txt");
       if(limit_vc_txt.empty() == false){
         float cv = std::stof(limit_vc_txt);
         if(cv > 0){

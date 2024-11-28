@@ -18,7 +18,7 @@ MAX_LATERAL_JERK = 5.0
 #k_vs_org_47700 = [0  , 0.01, 0.02, 0.035, 0.05]
 k_vs_47700 =     [1.0, 0.96, 0.92, 0.91 , 0.90, 0.85 ] #47700用減少補正。
 k_vs_org_47700 = [0  , 0.01, 0.02, 0.035, 0.05, 0.075] #ツインウェイブ終盤オーバーステア対策
-with open('/tmp/curvature_info.txt','w') as fp:
+with open('/dev/shm/curvature_info.txt','w') as fp:
   fp.write('%.9f/%.3f' % (0 , 1.0))
 
 skip_curvature_info = False

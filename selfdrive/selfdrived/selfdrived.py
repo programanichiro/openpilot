@@ -119,7 +119,7 @@ class SelfdriveD:
     self.state_machine = StateMachine()
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
-    with open('/tmp/red_signal_scan_flag.txt','w') as fp: #要る？
+    with open('/dev/shm/red_signal_scan_flag.txt','w') as fp: #要る？
       fp.write('%d' % (0))
 
     # Determine startup event
@@ -189,7 +189,7 @@ class SelfdriveD:
         accel_engaged = False
         if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
           try:
-            with open('/tmp/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
+            with open('/dev/shm/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
               accel_engaged_str = fp.read()
           except Exception as e:
             pass

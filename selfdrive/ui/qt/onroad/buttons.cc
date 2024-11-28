@@ -20,15 +20,15 @@ void drawIcon(QPainter &p, const QPoint &center, const QPixmap &img, const QBrus
 //const float BUTTON_VOLUME = 0.35; //setVolumeが効いてないかも。
 void setButtonInt(const char*fn , int num);
 void soundPo(){
-  setButtonInt("/tmp/sound_py_request.txt" , 101); //po.wav
+  setButtonInt("/dev/shm/sound_py_request.txt" , 101); //po.wav
 }
 
 void soundPipo(){
-  setButtonInt("/tmp/sound_py_request.txt" , 102); //pipo.wav
+  setButtonInt("/dev/shm/sound_py_request.txt" , 102); //pipo.wav
 }
 
 void soundPikiri(){
-  setButtonInt("/tmp/sound_py_request.txt" , 103); //pikiri.wav
+  setButtonInt("/dev/shm/sound_py_request.txt" , 103); //pikiri.wav
 }
 
 void soundButton(int onOff){
@@ -52,7 +52,7 @@ void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //tx
   if(strstr(fn_mng,"/data/"))dir_ofs = 6;
   if(dir_ofs > 0){
     char tmpfn[128];
-    sprintf(tmpfn,"/tmp/%s",fn_mng + dir_ofs);
+    sprintf(tmpfn,"/dev/shm/%s",fn_mng + dir_ofs);
     if(first == true){
       FILE *dst_tmp = fopen(tmpfn,"r");
       if(dst_tmp){
@@ -75,7 +75,7 @@ void copy_manager2tmp(const char*fn_mng , const char*txt_mng , bool first){ //tx
 bool getButtonEnabled(const char*fn){ //fn="/data/lockon_disp_disable.txt"など、このファイルが無かったらtrueのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // /data/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
+    // /data/abc.txtを/dev/shm/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return true; //ファイルが無効値なのでtrue
@@ -90,7 +90,7 @@ bool getButtonEnabled(const char*fn){ //fn="/data/lockon_disp_disable.txt"など
 bool getButtonEnabled0(const char*fn){ //旧fn="/data/accel_engaged.txt"など、このファイルが無かったらfalseのニュアンスで。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // /data/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
+    // /data/abc.txtを/dev/shm/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     if ( txt == "0" ) {
       return false; //ファイルが無効値なのでfalse
@@ -105,7 +105,7 @@ bool getButtonEnabled0(const char*fn){ //旧fn="/data/accel_engaged.txt"など�
 int getButtonInt(const char*fn , int defaultNum){ //新fn="/data/accel_engaged.txt"など、このファイルが無かったらdefaultNum。あとは数字に変換してそのまま返す。
   std::string txt = util::read_file(fn);
   if(txt.empty() == false){
-    // /data/abc.txtを/tmp/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
+    // /data/abc.txtを/dev/shm/abc.txtにコピーする(pythonでは/tmpから読み込みで高速化を期待する)
     copy_manager2tmp(fn,txt.c_str(),true);
     return std::stoi(txt);
   }
@@ -124,7 +124,7 @@ void setButtonEnabled(const char*fn , bool flag){ //fn="/data/lockon_disp_disabl
       fwrite("1",1,1,fp);
     }
     fclose(fp);
-    // /data/abc.txtを/tmp/abc.txtにコピーする
+    // /data/abc.txtを/dev/shm/abc.txtにコピーする
     copy_manager2tmp(fn,flag ? "0" : "1",false);
   } else {
     fp_error = true;
@@ -141,7 +141,7 @@ void setButtonEnabled0(const char*fn , bool flag){ //旧fn="/data/accel_engaged.
       fwrite("0",1,1,fp);
     }
     fclose(fp);
-    // /data/abc.txtを/tmp/abc.txtにコピーする
+    // /data/abc.txtを/dev/shm/abc.txtにコピーする
     copy_manager2tmp(fn,flag ? "1" : "0",false);
   } else {
     fp_error = true;
@@ -168,7 +168,7 @@ void setButtonInt(const char*fn , int num){ //新fn="/data/accel_engaged.txt"な
     fwrite(buf,strlen(buf),1,fp);
 #endif
     fclose(fp);
-    // /data/abc.txt(or /data/abc.txt)を/tmp/abc.txtにコピーする
+    // /data/abc.txt(or /data/abc.txt)を/dev/shm/abc.txtにコピーする
     copy_manager2tmp(fn,buf,false);
   } else {
     fp_error = true;
@@ -370,12 +370,12 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QPushButton *forceOnePedalButton = new QPushButton(""); //表示文字も無し。
     QObject::connect(forceOnePedalButton, &QPushButton::pressed, [=]() {
       const auto cs = (*(uiState()->sm))["selfdriveState"].getSelfdriveState();
-      if(getButtonInt("/tmp/accel_engaged.txt" , 0) >= 3 && cs.getEnabled()){ //ワンペダルのみ
-        std::string stdstr_txt = util::read_file("/tmp/cruise_info.txt");
+      if(getButtonInt("/dev/shm/accel_engaged.txt" , 0) >= 3 && cs.getEnabled()){ //ワンペダルのみ
+        std::string stdstr_txt = util::read_file("/dev/shm/cruise_info.txt");
         if(stdstr_txt.empty() == false){
           if(stdstr_txt != "1" && stdstr_txt != ",1"){ //MAXが1ではない時
             if((*(uiState()->sm))["carState"].getCarState().getVEgo() < 0.1/3.6){ //スピードが出ていない時
-              setButtonEnabled0("/tmp/force_one_pedal.txt" , true); //これがセットされる条件をなるべく絞る。
+              setButtonEnabled0("/dev/shm/force_one_pedal.txt" , true); //これがセットされる条件をなるべく絞る。
             } else {
               //⚫︎ボタンの代わりに動作する
               //soundPo(); //操作不能音として鳴らす。
@@ -385,7 +385,7 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
             //MAX=1でタッチ(↑ボタン効果で",1"も含む)
             float vego = (*(uiState()->sm))["carState"].getCarState().getVEgo();
             if(vego > 3/3.6 && vego <= 30/3.6){ //スピードが3〜30km/hのとき
-              setButtonEnabled0("/tmp/force_low_engage.txt" , true);
+              setButtonEnabled0("/dev/shm/force_low_engage.txt" , true);
             } else {
               //⚫︎ボタンの代わりに動作する
               //soundPo(); //操作不能音として鳴らす。
@@ -575,8 +575,8 @@ ButtonsWindow::ButtonsWindow(QWidget *parent) : QWidget(parent) {
     QObject::connect(accelEngagedButton, &QPushButton::pressed, [=]() {
       //uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 4; //0->1->2->3->0 , 4:ePはしばらく封印。一応8キロで走行はするが、小道でクリープを使いたいのに狭いとパスが邪魔されて停止してしまう。これではワンペダル(3:iP)と変わらない。
       uiState()->scene.mAccelEngagedButton = (mAccelEngagedButton + 1) % 5; //0->1->2->3->4->0
-      setButtonEnabled0("/tmp/force_one_pedal.txt" , false);
-      setButtonEnabled0("/tmp/force_low_engage.txt" , false);
+      setButtonEnabled0("/dev/shm/force_one_pedal.txt" , false);
+      setButtonEnabled0("/dev/shm/force_low_engage.txt" , false);
     });
     accelEngagedButton->setFixedWidth(BTN_W_NORMAL);
     accelEngagedButton->setFixedHeight(BTN_W_NORMAL);
@@ -726,7 +726,7 @@ void ButtonsWindow::updateState(const UIState &s) {
     setButtonInt("/data/dexp_sw_mode.txt" , mUseDynmicExpButton);
     soundButton(mUseDynmicExpButton);
     if(mUseDynmicExpButton == 0){
-      //ここで"/tmp/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
+      //ここで"/dev/shm/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
     }
   }
 
@@ -769,7 +769,7 @@ void ButtonsWindow::psn_update(){
     }
   }
 
-  bool lever_mAccelCtrlButton = getButtonEnabled("/tmp/accel_ctrl_disable.txt");
+  bool lever_mAccelCtrlButton = getButtonEnabled("/dev/shm/accel_ctrl_disable.txt");
   if (lever_mAccelCtrlButton != uiState()->scene.mAccelCtrlButton) {  // update mAccelCtrlButton
     mAccelCtrlButton = lever_mAccelCtrlButton;
     uiState()->scene.mAccelCtrlButton = lever_mAccelCtrlButton;
@@ -778,7 +778,7 @@ void ButtonsWindow::psn_update(){
     soundButton(mAccelCtrlButton);
   }
 
-  int _Limit_speed_mode = getButtonInt("/tmp/limitspeed_sw.txt",0);
+  int _Limit_speed_mode = getButtonInt("/dev/shm/limitspeed_sw.txt",0);
   if(_Limit_speed_mode != Limit_speed_mode){
     //顔ジェスチャーの変更をキャッチ。
     setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
