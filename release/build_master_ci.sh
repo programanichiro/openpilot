@@ -95,3 +95,15 @@ master commit: $GIT_HASH
 git push -f origin master-ci:master-ci
 
 echo "[-] done T=$SECONDS, ready at $TARGET_DIR"
+
+if [ -n "$1" ]; then
+  git branch -D $1 || true
+  git push origin --delete $1 || true
+
+  git checkout -b $1
+  git push --set-upstream origin $1
+  echo "add checkout : $1"
+else
+  echo "done!!"
+fi
+
