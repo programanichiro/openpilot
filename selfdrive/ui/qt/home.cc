@@ -247,7 +247,18 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
 #ifdef ENABLE_MAPS
     left_widget->addWidget(new MapSettings);
 #else
-    left_widget->addWidget(new QWidget);
+    //イチロウパイロットではまだ地図が有効だから、こちらは使われない？
+    #####################
+    QVBoxLayout *left_prime_layout = new QVBoxLayout();
+    left_prime_layout->setContentsMargins(0, 0, 0, 0);
+    QWidget *prime_user = new PrimeUserWidget();
+    prime_user->setStyleSheet(R"(
+    border-radius: 10px;
+    background-color: #333333;
+    )");
+    left_prime_layout->addWidget(prime_user);
+    left_prime_layout->addStretch();
+    left_widget->addWidget(new LayoutWidget(left_prime_layout));
 #endif
     left_widget->addWidget(new PrimeAdWidget);
     left_widget->setStyleSheet("border-radius: 10px;");
