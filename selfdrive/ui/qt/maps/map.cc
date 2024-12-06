@@ -766,6 +766,7 @@ void MapWindow::initializeGL() {
   } else {
     m_map->setCoordinateZoom(QMapLibre::Coordinate(64.31990695292795, -149.79038934046247), MIN_ZOOM);
   }
+  m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
 
   if(north_up == 0){
     m_map->setMargins({0, (int)(350*2/MAP_SCALE), 0, (int)(50*2/MAP_SCALE)});
