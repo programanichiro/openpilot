@@ -185,6 +185,7 @@ const static char *btn_styleb2 = "font-size: 50px; border-width: 0px; color: rgb
 const static char *btn_styleb3 = "font-size: 40px; border-width: 0px; color: rgba(255, 255, 255, 128); background-color: rgba(0, 0, 0, 0); border-radius: 20px; border-color: %1"; //透明ボタン用
 bool Long_enable = true;
 bool steer_always = false;
+bool cruise_available = false;
 int Knight_scanner = 7;
 int DrivingPsn = 0; //運転傾向
 int Limit_speed_mode = 0; //標識
