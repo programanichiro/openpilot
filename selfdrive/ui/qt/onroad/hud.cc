@@ -217,6 +217,7 @@ extern void soundButton2(int onOff);
 extern void setButtonEnabled0(const char*fn , bool flag);
 int g_night_mode;
 extern bool steer_always;
+extern bool cruise_available;
 void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   p.save();
   int y_ofs = 150;
@@ -824,7 +825,6 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
       //停止時の青信号発進抑制、一時的に緩和、15->50度
       bg_color = COLOR_STATUS_WARNING; //ワンペダル時に信号スタート可能角度でなければ警告色。
     }
-    static bool cruise_available;
     if (limitspeed_update_ct % 10 == 5) {
       std::string steer_always_txt = util::read_file("/dev/shm/steer_always.txt");
       if(steer_always_txt.empty() == false){

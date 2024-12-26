@@ -25,6 +25,8 @@ DriverMonitorRenderer::DriverMonitorRenderer() : face_kpts_draw(std::size(DEFAUL
 }
 
 extern bool g_rightHandDM;
+extern bool steer_always;
+extern bool cruise_available;
 void DriverMonitorRenderer::updateState(const UIState &s) {
   auto &sm = *(s.sm);
   is_visible = //sm["selfdriveState"].getSelfdriveState().getAlertSize() == cereal::SelfdriveState::AlertSize::NONE &&
@@ -32,7 +34,7 @@ void DriverMonitorRenderer::updateState(const UIState &s) {
   if (!is_visible) return;
 
   auto dm_state = sm["driverMonitoringState"].getDriverMonitoringState();
-  is_active = dm_state.getIsActiveMode();
+  is_active = dm_state.getIsActiveMode() || (steer_always && cruise_available); //MADS時のドライバー監視ロジック追加箇所
   is_rhd = dm_state.getIsRHD();
   g_rightHandDM = is_rhd;
   dm_fade_state = std::clamp(dm_fade_state + 0.2f * (0.5f - is_active), 0.0f, 1.0f);
@@ -114,7 +116,7 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   const int arc_l = 133;
   const float arc_t_default = 6.7f;
   const float arc_t_extend = 12.0f;
-  QColor arc_color = uiState()->engaged() ? DMON_ENGAGED_COLOR : DMON_DISENGAGED_COLOR;
+  QColor arc_color = (uiState()->engaged() || (steer_always && cruise_available)) ? DMON_ENGAGED_COLOR : DMON_DISENGAGED_COLOR; //MADS時のドライバー監視ロジック追加箇所
   arc_color.setAlphaF(0.4 * (1.0f - dm_fade_state));
 
   float delta_x = -driver_pose_sins[1] * arc_l / 2.0f;
