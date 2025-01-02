@@ -4,12 +4,10 @@ import numpy as np
 from cereal import log
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
 from openpilot.selfdrive.controls.lib.drive_helpers import MIN_SPEED
-from openpilot.common.params import Params
 from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
 TRAJECTORY_SIZE = 33
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
-params = Params()
 try:
   with open('/data/handle_center_info.txt','r') as fp:
     handle_center_info_str = fp.read()
