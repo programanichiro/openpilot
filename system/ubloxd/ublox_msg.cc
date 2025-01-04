@@ -243,19 +243,19 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
   gpsLoc.setUnixTimestampMillis(utc_tt * 1e+03 + msg->nano() * 1e-06);
   float f[] = { msg->vel_n() * 1e-03f, msg->vel_e() * 1e-03f, msg->vel_d() * 1e-03f };
   gpsLoc.setVNED(f);
-  FILE *fp1 = fopen("/dev/shm/gps_vel_data.txt","w");
-  if(fp1){
-    fprintf(fp1,"%.3f,%.3f,%.3f",(double)f[0],(double)f[1],(double)f[2]);
-    fclose(fp1);
-  }
+  // FILE *fp1 = fopen("/dev/shm/gps_vel_data.txt","w"); //現状、参照してない
+  // if(fp1){
+  //   fprintf(fp1,"%.3f,%.3f,%.3f",(double)f[0],(double)f[1],(double)f[2]);
+  //   fclose(fp1);
+  // }
   gpsLoc.setVerticalAccuracy(msg->v_acc() * 1e-03);
   gpsLoc.setSpeedAccuracy(msg->s_acc() * 1e-03);
   gpsLoc.setBearingAccuracyDeg(msg->head_acc() * 1e-05);
-  FILE *fp2 = fopen("/dev/shm/gps_acc_data.txt","w");
-  if(fp2){
-    fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)<%.1f/%.1f>",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k,vego,msg->g_speed() * 1e-03);
-    fclose(fp2);
-  }
+  // FILE *fp2 = fopen("/dev/shm/gps_acc_data.txt","w"); //現状、参照してない
+  // if(fp2){
+  //   fprintf(fp2,"%.3f,%.3f,%.1f(%.2f)<%.1f/%.1f>",(double)msg->v_acc() * 1e-03,(double)msg->s_acc() * 1e-03,head_acc,head_acc_k,vego,msg->g_speed() * 1e-03);
+  //   fclose(fp2);
+  // }
 
   int locationd_valid = 1;
   if(f[0] == 0 && f[1] == 0 && f[2] == 0){
