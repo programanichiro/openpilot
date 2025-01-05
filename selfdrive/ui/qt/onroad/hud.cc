@@ -998,7 +998,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
   }
 
-  if(fabs(global_angle_steer0/*-handle_center*/) > 5 && handle_center > -99){
+  if(fabs(global_angle_steer0-handle_center) > 5 && handle_center > -99){
     //ハンドル角度を表示
     p.setBrush(bg_colors[status]);
     QRect rc3(rc2.x()+20,rc2.y()-30,rc2.width()-40,rc2.height()+30);
@@ -1006,7 +1006,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     p.setPen(Qt::NoPen);
 
     char h_ang[16];
-    int h_ang_i = (int)global_angle_steer0;
+    int h_ang_i = (int)(global_angle_steer0-handle_center);
     if(h_ang_i > 99)h_ang_i=99; else if(h_ang_i < -99)h_ang_i=-99;
     sprintf(h_ang,"%+d°",h_ang_i); //99カンスト
 
