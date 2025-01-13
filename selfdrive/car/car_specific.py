@@ -257,7 +257,17 @@ class CarSpecificEvents:
       self.no_steer_warning = False
       self.silent_steer_warning = False
     if CS.steerFaultPermanent:
-      events.add(EventName.steerUnavailable)
+      steer_always = 0
+      try:
+        with open('/dev/shm/steer_always.txt','r') as fp:
+          steer_always_str = fp.read()
+          if steer_always_str:
+            if int(steer_always_str) >= 1:
+              steer_always = 2
+      except Exception as e:
+        pass
+      if steer_always == 0: # MADS有効時に出さない。Engage後10秒程度にとどめたいが。
+        events.add(EventName.steerUnavailable)
 
     # we engage when pcm is active (rising edge)
     # enabling can optionally be blocked by the car interface
