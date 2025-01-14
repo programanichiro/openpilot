@@ -91,7 +91,10 @@ class CarSpecificEvents:
       events = self.create_common_events(CS, CS_prev)
 
       # new_stand_still = False
-      self.engage_time += 1
+      if CC.enabled:
+        self.engage_time += 1
+      else:
+        self.engage_time = 0
       if self.CP.openpilotLongitudinalControl:
         if CS.cruiseState.standstill and not CS.brakePressed:
           # new_stand_still = True
