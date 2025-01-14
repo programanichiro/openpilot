@@ -272,9 +272,9 @@ class CarSpecificEvents:
               steer_always = 2
       except Exception as e:
         pass
-      if steer_always == 0 or self.engage_time > 100*5: # MADS有効時に出さない。Engage後5秒以上ならsteerUnavailableとする。
+      if steer_always == 0 or self.engage_time > int(5 / DT_CTRL): # MADS有効時に出さない。Engage後5秒以上ならsteerUnavailableとする。
         events.add(EventName.steerUnavailable)
-      else:
+      elif self.steering_unpressed > int(0.5 / DT_CTRL):
         events.add(EventName.steerTempUnavailable) #なくても良さそうなら後で取り除きたい。
 
     # we engage when pcm is active (rising edge)
