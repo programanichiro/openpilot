@@ -2,7 +2,6 @@
 import os
 import math
 import numpy as np
-from openpilot.common.numpy_fast import clip, interp
 from openpilot.common.params import Params
 
 import cereal.messaging as messaging
@@ -90,7 +89,7 @@ _A_TOTAL_MAX_BP = [20., 40.]
 
 
 def get_max_accel(v_ego):
-  return interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
+  return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
 
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
@@ -103,7 +102,7 @@ def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
   """
   # FIXME: This function to calculate lateral accel is incorrect and should use the VehicleModel
   # The lookup table for turns should also be updated if we do this
-  a_total_max = interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
+  a_total_max = np.interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
   a_y = v_ego ** 2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)
   a_x_allowed = math.sqrt(max(a_total_max ** 2 - a_y ** 2, 0.))
 
@@ -115,9 +114,9 @@ def get_accel_from_plan(speeds, accels, action_t=DT_MDL, vEgoStopping=0.05):
     v_now = speeds[0]
     a_now = accels[0]
 
-    v_target = interp(action_t, CONTROL_N_T_IDX, speeds)
+    v_target = np.interp(action_t, CONTROL_N_T_IDX, speeds)
     a_target = 2 * (v_target - v_now) / (action_t) - a_now
-    v_target_1sec = interp(action_t + 1.0, CONTROL_N_T_IDX, speeds)
+    v_target_1sec = np.interp(action_t + 1.0, CONTROL_N_T_IDX, speeds)
   else:
     v_target = 0.0
     v_target_1sec = 0.0
@@ -334,7 +333,7 @@ class LongitudinalPlanner:
 
     md = sm['modelV2']
     hasLead = sm['radarState'].leadOne.status
-    distLead_near = sm['radarState'].leadOne.dRel < interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
+    distLead_near = sm['radarState'].leadOne.dRel < np.interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
     global signal_scan_ct,path_x_old_signal,path_x_old_signal_check , red_signal_scan_flag
     if v_ego <= 0.1/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
@@ -421,7 +420,7 @@ class LongitudinalPlanner:
       self.red_signal_path_xs = np.delete(self.red_signal_path_xs , [0])
       sum_red_signal_path_xs = np.sum(self.red_signal_path_xs)
 
-      if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
+      if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < np.interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
         red_signal = "●"
         self.red_signals = np.append(self.red_signals,1)
       else:
@@ -438,7 +437,7 @@ class LongitudinalPlanner:
           red_signal_scan_flag_1 = 2 #赤信号検出
           #この信号認識状態 and sum_red_signal_path_xs < self.old_red_signal_path_xsなら速度を落とし始めてもいい？ 473行のv_cruiseを1割落とすとか
           if v_ego > 20/3.6 and sum_red_signal_path_xs < self.old_red_signal_path_xs:
-            red_signal_speed_down = interp(v_ego*3.6 , [10,20,30,40,50,55,60] , [0.97,0.96,0.95,0.94,0.93,0.92,0.91])
+            red_signal_speed_down = np.interp(v_ego*3.6 , [10,20,30,40,50,55,60] , [0.97,0.96,0.95,0.94,0.93,0.92,0.91])
             red_signal_scan_ct_2_rate = 200 if red_signal_scan_ct_2 > 200 else red_signal_scan_ct_2 #最大200
             red_signal_speed_down -= red_signal_scan_ct_2_rate * 0.3 / 200 #徐々にブレーキが強くなる
             red_signal_speed_down_before = red_signal_speed_down
@@ -448,7 +447,7 @@ class LongitudinalPlanner:
       else:
         red_signals_mark = "□"
 
-      desired_path_x_by_speed = interp(v_ego*3.6,desired_path_x_speeds,desired_path_x_by_speeds)
+      desired_path_x_by_speed = np.interp(v_ego*3.6,desired_path_x_speeds,desired_path_x_by_speeds)
       desired_path_x_rate = 0 if desired_path_x_by_speed <= 0.01 else path_x[TRAJECTORY_SIZE -1]/desired_path_x_by_speed
       self.desired_path_x_rates = np.append(self.desired_path_x_rates,desired_path_x_rate)
       self.desired_path_x_rates = np.delete(self.desired_path_x_rates , [0])
@@ -482,19 +481,19 @@ class LongitudinalPlanner:
       red_stop_immediately = False
       if long_speeddown_flag == False and self.mpc.mode == 'acc': #公式ロングではelseへ強制遷移する追加条件
         if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
-          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
+          stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
         else: #夜
-          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
+          stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
         if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
           red_stop_immediately = True #停止せよ。
       else:
         if True: #self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
-          stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50,60] , [15,20,23,28,43,57,66]) #事前減速で40km/h以下になることを期待している。昼
+          stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50,60] , [15,20,23,28,43,57,66]) #事前減速で40km/h以下になることを期待している。昼
         # else: #夜
-        #   stop_threshold = interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
+        #   stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
         if path_x[TRAJECTORY_SIZE -1] < stop_threshold or desired_path_x_rate < 0.11:
           red_stop_immediately = True #停止せよ。
-        # stop_threshold_r = interp(v_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
+        # stop_threshold_r = np.interp(v_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
         #                                     , [0.25,0.30,0.33,0.35,0.38,0.41,0.43]) #さらに減速度の強さa_egoを加味。弱ければより小さくできる？
         # if desired_path_x_rate < stop_threshold_r: #0.4:
         #   red_stop_immediately = True #停止せよ。
@@ -723,7 +722,7 @@ class LongitudinalPlanner:
           org_v_cruise_kph = v_cruise_kph
           if self.ac_vc_time < 1.0:
             self.ac_vc_time += 0.02
-          self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
+          self.ac_vc_time = np.clip(self.ac_vc_time,0.0,1.0)
           # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
           v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
           if v_cruise_kph > 115:
@@ -740,7 +739,7 @@ class LongitudinalPlanner:
           self.ac_vc_time -= 0.02 #停車時では早く終わらせる。数字が元の速度と同じ時も同様。
         if OP_ENABLE_v_cruise_kph != 0:
           self.ac_vc_time = 0 #ワンペダル操作では直に終わらせる。
-      self.ac_vc_time = clip(self.ac_vc_time,0.0,1.0)
+      self.ac_vc_time = np.clip(self.ac_vc_time,0.0,1.0)
       if self.ac_vc_time <= 0:
         self.v_cruise_kph_1_15 = 0
         self.lead_v_abs = []
@@ -861,22 +860,22 @@ class LongitudinalPlanner:
       if ePedal == False or sm['carState'].cruiseState.standstill or self.red_signal_eP_iP_flag == 1:
         #クリープ中にここを通してはいけない。AI判断でやたら停止してしまう。self.red_signal_eP_iP_flag == 1なら一時的iPモード。
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
-        self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
+        self.v_cruise_onep_k = np.interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
       else:
         t_v = 9/3.6  #m/s完全停止しない。クリープ速度。
         v_cruise = t_v
         if v_ego < t_v and self.a_desired > 0: #クリープ発進を滑らかに。
-          creep_a_mul = interp(v_ego*3.6
+          creep_a_mul = np.interp(v_ego*3.6
                                ,[0  ,1  ,2  ,3  ,6  ,7  ,8  ,9  ]
                                ,[1.0,1.0,0.7,0.6,0.5,0.7,0.9,1.0])
         self.v_cruise_onep_k = 1.0
-      #v_cruise = interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
-      # self.v_cruise_onep_k = interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
+      #v_cruise = np.interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
+      # self.v_cruise_onep_k = np.interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
     else:
       self.v_cruise_onep_k = 1.0
 
       # if red_signal_scan_span > 0: これでブレーキングの強さが変わったら制御しづらいのでやめる。
-      #   v_cruise *= interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
+      #   v_cruise *= np.interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
     v_cruise_initialized = sm['carState'].vCruise != V_CRUISE_UNSET
 
     long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
@@ -901,7 +900,7 @@ class LongitudinalPlanner:
     if reset_state:
       self.v_desired_filter.x = v_ego
       # Clip aEgo to cruise limits to prevent large accelerations when becoming active
-      self.a_desired = clip(sm['carState'].aEgo, accel_limits[0], accel_limits[1])
+      self.a_desired = np.clip(sm['carState'].aEgo, accel_limits[0], accel_limits[1])
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
@@ -919,7 +918,7 @@ class LongitudinalPlanner:
 
     if not self.allow_throttle:
       clipped_accel_coast = max(accel_coast, accel_limits_turns[0])
-      clipped_accel_coast_interp = interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [accel_limits_turns[1], clipped_accel_coast])
+      clipped_accel_coast_interp = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [accel_limits_turns[1], clipped_accel_coast])
       accel_limits_turns[1] = min(accel_limits_turns[1], clipped_accel_coast_interp)
 
     if force_slow_decel:
@@ -949,7 +948,7 @@ class LongitudinalPlanner:
       if vl > 100/3.6:
         vl = 100/3.6
       #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
-      vl = interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
+      vl = np.interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
       vd = v_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
@@ -957,7 +956,7 @@ class LongitudinalPlanner:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
         vd = math.sqrt(vd) #sqrt(vd)
-        add_k = interp(v_ego,[0,10/3.6],[0.12,0.25]) #0.2固定だと雨の日ホイールスピンする
+        add_k = np.interp(v_ego,[0,10/3.6],[0.12,0.25]) #0.2固定だと雨の日ホイールスピンする
         self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
         try:
           with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
@@ -982,7 +981,7 @@ class LongitudinalPlanner:
         self.a_desired = 0 #アクセル離して加速ならゼロに。
       if self.a_desired < 0 and ePedal == False:
         #ワンペダル停止の減速を強めてみる。
-        self.a_desired_mul = interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
+        self.a_desired_mul = np.interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
     self.a_desired_mul *= creep_a_mul #クリープダッシュを緩和してみる。
     if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
@@ -1010,7 +1009,7 @@ class LongitudinalPlanner:
 
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
-    self.a_desired = float(interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
+    self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
   def publish(self, sm, pm):
@@ -1046,9 +1045,9 @@ class LongitudinalPlanner:
     action_t =  self.CP.longitudinalActuatorDelay + DT_MDL
     a_target, should_stop = get_accel_from_plan(longitudinalPlan.speeds, longitudinalPlan.accels,
                                                 action_t=action_t, vEgoStopping=self.CP.vEgoStopping)
-    longitudinalPlan.aTarget = a_target
-    longitudinalPlan.shouldStop = should_stop
+    longitudinalPlan.aTarget = float(a_target)
+    longitudinalPlan.shouldStop = bool(should_stop)
     longitudinalPlan.allowBrake = True
-    longitudinalPlan.allowThrottle = self.allow_throttle
+    longitudinalPlan.allowThrottle = bool(self.allow_throttle)
 
     pm.send('longitudinalPlan', plan_send)
