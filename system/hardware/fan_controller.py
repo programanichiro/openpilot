@@ -478,7 +478,7 @@ class TiciFanController(BaseFanController):
 
       # データ内容を検査して走行速度を推定する。
       earth_ang = 0.0009 #大体200m四方
-      earth_ang *= interp(self.velocity, [0, 50.0], [0.3, 1.0])#検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+      earth_ang *= np.interp(self.velocity, [0, 50.0], [0.3, 1.0])#検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
       rows = []
       velo_max = 0
       velo_max_ct = 0
@@ -615,7 +615,7 @@ class TiciFanController(BaseFanController):
     #   fp.write('osm_fetch:%d, %.5f, %.5f' % (self.thread == None,self.latitude,self.longitude))
     if self.thread == None and (self.latitude != 0 or self.longitude != 0):
       try:
-        self.distance = 50 * interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+        self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
         self_thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
         self.thread = self_thread
         #self_thread.setDaemon(True)

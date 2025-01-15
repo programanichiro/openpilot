@@ -1,5 +1,4 @@
 import numpy as np
-from openpilot.common.numpy_fast import interp
 #import os
 #from openpilot.common.params import Params
 #from cereal import log
@@ -95,13 +94,13 @@ class LanePlanner:
     width_pts = self.rll_y - self.lll_y
     prob_mods = []
     for t_check in (0.0, 1.5, 3.0):
-      width_at_t = interp(t_check * (v_ego + 7), self.ll_x, width_pts)
-      prob_mods.append(interp(width_at_t, [4.0, 5.0], [1.0, 0.0]))
+      width_at_t = np.interp(t_check * (v_ego + 7), self.ll_x, width_pts)
+      prob_mods.append(np.interp(width_at_t, [4.0, 5.0], [1.0, 0.0]))
     mod = min(prob_mods)
     l_prob *= mod
     r_prob *= mod
 
-    lane_speed_margin = interp(v_ego*3.6 , [30,100] , [1,0]) #時速60キロで1.5倍弱になるよう調整。走行モデル向上によってオーバーしにくくなったのか、効果を弱める。
+    lane_speed_margin = np.interp(v_ego*3.6 , [30,100] , [1,0]) #時速60キロで1.5倍弱になるよう調整。走行モデル向上によってオーバーしにくくなったのか、効果を弱める。
     path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.2*lane_speed_margin #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
     path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.2*lane_speed_margin
 
