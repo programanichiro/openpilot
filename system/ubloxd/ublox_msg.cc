@@ -231,6 +231,7 @@ kj::Array<capnp::word> UbloxMsgParser::gen_nav_pvt(ubx_t::nav_pvt_t *msg) {
 #endif
   bear_before = bear_now;
   gpsLoc.setHorizontalAccuracy(msg->h_acc() * 1e-03);
+  gpsLoc.setSatelliteCount(msg->num_sv());
   std::tm timeinfo = std::tm();
   timeinfo.tm_year = msg->year() - 1900;
   timeinfo.tm_mon = msg->month() - 1;
