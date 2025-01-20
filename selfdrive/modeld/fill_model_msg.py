@@ -86,9 +86,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   driving_model_data.frameIdExtra = vipc_frame_id_extra
   driving_model_data.frameDropPerc = frame_drop_perc
   driving_model_data.modelExecutionTime = model_execution_time
-
-  action = driving_model_data.action
-  action.desiredCurvature = float(net_output_data['desired_curvature'][0,0])
+  driving_model_data.action.desiredCurvature = float(net_output_data['desired_curvature'][0,0])
 
   modelV2 = extended_msg.modelV2
   modelV2.frameId = vipc_frame_id
@@ -99,16 +97,11 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.modelExecutionTime = model_execution_time
 
   # plan
-  position = modelV2.position
-  fill_xyzt(position, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.POSITION].T, *net_output_data['plan_stds'][0,:,Plan.POSITION].T)
-  velocity = modelV2.velocity
-  fill_xyzt(velocity, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.VELOCITY].T)
-  acceleration = modelV2.acceleration
-  fill_xyzt(acceleration, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ACCELERATION].T)
-  orientation = modelV2.orientation
-  fill_xyzt(orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
-  orientation_rate = modelV2.orientationRate
-  fill_xyzt(orientation_rate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
+  fill_xyzt(modelV2.position, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.POSITION].T, *net_output_data['plan_stds'][0,:,Plan.POSITION].T)
+  fill_xyzt(modelV2.velocity, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.VELOCITY].T)
+  fill_xyzt(modelV2.acceleration, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ACCELERATION].T)
+  fill_xyzt(modelV2.orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
+  fill_xyzt(modelV2.orientationRate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
 
   # temporal pose
   temporal_pose = modelV2.temporalPose
@@ -118,12 +111,10 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   temporal_pose.rotStd = net_output_data['plan_stds'][0,0,Plan.ORIENTATION_RATE].tolist()
 
   # poly path
-  poly_path = driving_model_data.path
-  fill_xyz_poly(poly_path, ModelConstants.POLY_PATH_DEGREE, *net_output_data['plan'][0,:,Plan.POSITION].T)
+  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, *net_output_data['plan'][0,:,Plan.POSITION].T)
 
   # lateral planning
-  action = modelV2.action
-  action.desiredCurvature = float(net_output_data['desired_curvature'][0,0])
+  modelV2.action.desiredCurvature = float(net_output_data['desired_curvature'][0,0])
 
   # times at X_IDXS according to model plan
   PLAN_T_IDXS = [np.nan] * ModelConstants.IDX_N
@@ -152,8 +143,9 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
-  if len(position.x) == TRAJECTORY_SIZE and len(orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
+  if len(modelV2.position.x) == TRAJECTORY_SIZE and len(modelV2.orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
     LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
+    position = modelV2.position
     path_xyz = np.column_stack([position.x, position.y, position.z])
     t_idxs = np.array(position.t)
 
@@ -189,17 +181,12 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
       pred_angle = (-max_yp / 2.5)
       lane_d = LP.get_d_path(pred_angle , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
-      # if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
-      #   k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
-      #   # x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
-      #   # action.desiredCurvature += lane_d * 0.015 * k #ハンドル制御の曲率をレーンの反対へ戻す
     if lane_d != g_lane_d:
       g_lane_d = lane_d
       with open('/dev/shm/lane_d_info.txt','w') as fp:
         fp.write('%.5f' % (lane_d))
 
-  lane_line_meta = driving_model_data.laneLineMeta
-  fill_lane_line_meta(lane_line_meta, modelV2.laneLines, modelV2.laneLineProbs)
+  fill_lane_line_meta(driving_model_data.laneLineMeta, modelV2.laneLines, modelV2.laneLineProbs)
 
   # road edges
   modelV2.init('roadEdges', 2)
