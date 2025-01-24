@@ -785,7 +785,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
     if (is_cruise_set){
       float acc_speed = maxSpeed.toFloat();
-      if(acc_speed > 0 && (acc_speed < 31.0 || (acc_speed > 119.0 && tss_type <= 1)) ) {
+      if(acc_speed > 0 && (acc_speed < 31.0 || (acc_speed > 109.0 && tss_type <= 1)) ) {
         a0 = 200;
       }
     }
