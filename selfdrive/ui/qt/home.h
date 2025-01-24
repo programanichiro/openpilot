@@ -56,7 +56,7 @@ signals:
 
 public slots:
   void offroadTransition(bool offroad);
-  void myShowDriverView(bool show);
+  void showDriverView(bool show);
   void showSidebar(bool show);
 
 protected:
@@ -68,8 +68,8 @@ private:
   OffroadHome *home;
   OnroadWindow *onroad;
   BodyWindow *body;
+  DriverViewWindow *driver_view;
   QStackedLayout *slayout;
-  DriverViewWindow *my_driver_view;
 
 private slots:
   void updateState(const UIState &s);
