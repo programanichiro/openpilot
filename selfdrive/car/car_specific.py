@@ -38,6 +38,7 @@ class CarSpecificEvents:
     self.low_speed_alert = False
     self.no_steer_warning = False
     self.silent_steer_warning = True
+    self.engage_time = 0
 
     self.cruise_buttons: deque = deque([], maxlen=HYUNDAI_PREV_BUTTON_SAMPLES)
 
@@ -90,10 +91,15 @@ class CarSpecificEvents:
       events = self.create_common_events(CS, CS_prev)
 
       # new_stand_still = False
+      if CC.enabled:
+        self.engage_time += 1
+      else:
+        self.engage_time = 0
       if self.CP.openpilotLongitudinalControl:
         if CS.cruiseState.standstill and not CS.brakePressed:
           # new_stand_still = True
           events.add(EventName.resumeRequired)
+          self.engage_time = 0
         if CS.vEgo < self.CP.minEnableSpeed:
           events.add(EventName.belowEngageSpeed)
           if CC.actuators.accel > 0.3:
@@ -258,7 +264,20 @@ class CarSpecificEvents:
       self.no_steer_warning = False
       self.silent_steer_warning = False
     if CS.steerFaultPermanent:
-      events.add(EventName.steerUnavailable)
+      steer_always = 0
+      try:
+        with open('/dev/shm/steer_always.txt','r') as fp:
+          steer_always_str = fp.read()
+          if steer_always_str:
+            if int(steer_always_str) >= 1:
+              steer_always = 2
+      except Exception as e:
+        pass
+      if steer_always == 0 or self.engage_time > int(5 / DT_CTRL): # MADS有効時に出さない。Engage後5秒以上ならsteerUnavailableとする。
+        events.add(EventName.steerUnavailable)
+      elif self.steering_unpressed > int(0.5 / DT_CTRL):
+        # events.add(EventName.steerTempUnavailable) #なくても良さそうなら後で取り除きたい。
+        pass #何も鳴らさない
 
     # we engage when pcm is active (rising edge)
     # enabling can optionally be blocked by the car interface
