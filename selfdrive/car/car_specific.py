@@ -276,7 +276,8 @@ class CarSpecificEvents:
       if steer_always == 0 or self.engage_time > int(5 / DT_CTRL): # MADS有効時に出さない。Engage後5秒以上ならsteerUnavailableとする。
         events.add(EventName.steerUnavailable)
       elif self.steering_unpressed > int(0.5 / DT_CTRL):
-        events.add(EventName.steerTempUnavailable) #なくても良さそうなら後で取り除きたい。
+        # events.add(EventName.steerTempUnavailable) #なくても良さそうなら後で取り除きたい。
+        pass #何も鳴らさない
 
     # we engage when pcm is active (rising edge)
     # enabling can optionally be blocked by the car interface
