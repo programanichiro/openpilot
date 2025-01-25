@@ -38,7 +38,7 @@ class CarSpecificEvents:
     self.low_speed_alert = False
     self.no_steer_warning = False
     self.silent_steer_warning = True
-    self.engage_time = 0
+    self.engage_time = -1
 
     self.cruise_buttons: deque = deque([], maxlen=HYUNDAI_PREV_BUTTON_SAMPLES)
 
@@ -273,7 +273,7 @@ class CarSpecificEvents:
               steer_always = 2
       except Exception as e:
         pass
-      if steer_always == 0 or self.engage_time > int(5 / DT_CTRL): # MADS有効時に出さない。Engage後5秒以上ならsteerUnavailableとする。
+      if steer_always == 0 or self.engage_time > int(5 / DT_CTRL) or self.engage_time < 0: # MADS有効時に出さない。Engage後5秒以上ならsteerUnavailableとする。< 0は初期値例外処理。
         events.add(EventName.steerUnavailable)
       elif self.steering_unpressed > int(0.5 / DT_CTRL):
         # events.add(EventName.steerTempUnavailable) #なくても良さそうなら後で取り除きたい。
