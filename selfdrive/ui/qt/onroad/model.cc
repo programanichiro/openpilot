@@ -838,6 +838,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
   } else if(prob_alpha > 1.0){
     prob_alpha = 1.0;
   }
+  float prob_alpha0 = prob_alpha;
   prob_alpha *= 245;
 
   painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
@@ -1064,7 +1065,7 @@ void ModelRenderer::drawLockon(QPainter &painter, const cereal::ModelDataV2::Lea
     if(num < 2){
       painter.drawRect(r);
     } else {
-      painter.drawArc(r , 0 * 16, 360 * 16);
+      painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
     }
 
     //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
