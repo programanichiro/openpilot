@@ -137,11 +137,11 @@
     </message>
     <message>
         <source>Enable ADB</source>
-        <translation type="unfinished"></translation>
+        <translation>ADBを有効にする</translation>
     </message>
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
-        <translation type="unfinished"></translation>
+        <translation>ADB（Android Debug Bridge）により、USBまたはネットワーク経由でデバイスに接続できます。詳細は、https://docs.comma.ai/how-to/connect-to-comma を参照してください。</translation>
     </message>
 </context>
 <context>
@@ -1047,7 +1047,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>openpilot longitudinal control may come in a future update.</source>
-        <translation>openpilotのアクセル制御は将来のアップデートで提供される可能性があります。</translation>
+        <translation>openpilotのアクセル制御は将来のアップデートで利用できる可能性があります。</translation>
     </message>
     <message>
         <source>An alpha version of openpilot longitudinal control can be tested, along with Experimental mode, on non-release branches.</source>
@@ -1129,7 +1129,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Training data will be pulled periodically while your device is on Wi-Fi</source>
-        <translation>デバイスがWi-Fiに接続されている間、トレーニングデータが定期的に送信されます</translation>
+        <translation>デバイスがWi-Fiに接続中は、トレーニングデータが定期的に送信されます</translation>
     </message>
 </context>
 <context>
