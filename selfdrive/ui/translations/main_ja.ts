@@ -371,7 +371,7 @@
     <name>MapETA</name>
     <message>
         <source>eta</source>
-        <translation>到着予定時間</translation>
+        <translation>到着予定</translation>
     </message>
     <message>
         <source>min</source>
@@ -639,19 +639,19 @@
     </message>
     <message>
         <source>km</source>
-        <translation>ｷﾛﾒｰﾄﾙ</translation>
+        <translation>km</translation>
     </message>
     <message>
         <source>m</source>
-        <translation>ﾒｰﾄﾙ</translation>
+        <translation>m</translation>
     </message>
     <message>
         <source>mi</source>
-        <translation>ﾏｲﾙ</translation>
+        <translation>mi</translation>
     </message>
     <message>
         <source>ft</source>
-        <translation>ﾌｨｰﾄ</translation>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
