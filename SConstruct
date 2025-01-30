@@ -109,7 +109,6 @@ if arch == "larch64":
   ]
 
   libpath += [
-    "#third_party/snpe/larch64",
     "#third_party/libyuv/larch64/lib",
     "/usr/lib/aarch64-linux-gnu"
   ]
@@ -147,14 +146,6 @@ else:
       "/usr/lib",
       "/usr/local/lib",
     ]
-
-    if arch == "x86_64":
-      libpath += [
-        f"#third_party/snpe/{arch}"
-      ]
-      rpath += [
-        Dir(f"#third_party/snpe/{arch}").abspath,
-      ]
 
 if GetOption('asan'):
   ccflags = ["-fsanitize=address", "-fno-omit-frame-pointer"]
@@ -199,7 +190,6 @@ env = Environment(
     "#third_party/libyuv/include",
     "#third_party/json11",
     "#third_party/linux/include",
-    "#third_party/snpe/include",
     "#third_party",
     "#msgq",
     "#third_party/maplibre-native-qt/include",
@@ -355,7 +345,7 @@ SConscript(['opendbc_repo/SConscript'], exports={'env': env_swaglog})
 SConscript(['cereal/SConscript'])
 
 Import('socketmaster', 'msgq')
-messaging = [socketmaster, msgq, 'zmq', 'capnp', 'kj',]
+messaging = [socketmaster, msgq, 'capnp', 'kj',]
 Export('messaging')
 
 
