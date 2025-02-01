@@ -994,7 +994,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Warning: This grants SSH access to all public keys in your GitHub settings. Never enter a GitHub username other than your own. A comma employee will NEVER ask you to add their GitHub username.</source>
-        <translation>警告: これは、GitHub の設定にあるすべての公開鍵への SSH アクセスを許可するものです。自分以外の GitHub のユーザー名を入力しないでください。commaのスタッフが GitHub のユーザー名を追加するようお願いすることはありません。</translation>
+        <translation>警告: これはGitHubの設定にあるすべての公開鍵への SSH アクセスを許可するものです。自分以外のGitHubユーザー名を入力しないでください。commaのスタッフがGitHubのユーザー名を追加するようお願いすることはありません。</translation>
     </message>
     <message>
         <source>ADD</source>
@@ -1002,7 +1002,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enter your GitHub username</source>
-        <translation>GitHub のユーザー名を入力してください</translation>
+        <translation>GitHubのユーザー名を入力してください</translation>
     </message>
     <message>
         <source>LOADING</source>
@@ -1055,7 +1055,7 @@ This may take up to a minute.</source>
     <name>TogglesPanel</name>
     <message>
         <source>Enable openpilot</source>
-        <translation>openpilot を有効化</translation>
+        <translation>openpilotを有効化</translation>
     </message>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
@@ -1063,7 +1063,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enable Lane Departure Warnings</source>
-        <translation>車線逸脱警報機能の有効化</translation>
+        <translation>車線逸脱警報の有効化</translation>
     </message>
     <message>
         <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h).</source>
