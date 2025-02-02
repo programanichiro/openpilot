@@ -386,26 +386,26 @@
     <name>MapSettings</name>
     <message>
         <source>NAVIGATION</source>
-        <translation type="unfinished"></translation>
+        <translation>カーナビ</translation>
     </message>
     <message>
         <source>Manage at connect.comma.ai</source>
-        <translation type="unfinished"></translation>
+        <translation>connect.comma.aiで設定</translation>
     </message>
 </context>
 <context>
     <name>MapWindow</name>
     <message>
         <source>Map Loading</source>
-        <translation>マップを読み込んでいます</translation>
+        <translation>マップ読み込み中</translation>
     </message>
     <message>
         <source>Waiting for GPS</source>
-        <translation>GPS信号を探しています</translation>
+        <translation>GPS信号を受信中</translation>
     </message>
     <message>
         <source>Waiting for route</source>
-        <translation type="unfinished"></translation>
+        <translation>経路を検索中</translation>
     </message>
 </context>
 <context>
@@ -583,7 +583,7 @@
     </message>
     <message>
         <source>Turn-by-turn navigation</source>
-        <translation type="unfinished"></translation>
+        <translation>カーナビ機能</translation>
     </message>
     <message>
         <source>1 year of drive storage</source>
