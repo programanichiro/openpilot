@@ -1103,11 +1103,11 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Show Map on Left Side of UI</source>
-        <translation>ﾃﾞｨｽﾌﾟﾚｲの左側にﾏｯﾌﾟを表示</translation>
+        <translation>画面の左側にマップを表示</translation>
     </message>
     <message>
         <source>Show map on left side when in split screen view.</source>
-        <translation>分割画面表示の場合、ディスプレイの左側にマップを表示します。</translation>
+        <translation>分割画面表示の際、ディスプレイの左側にマップを表示します。</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1188,6 +1188,10 @@ This may take up to a minute.</source>
     <message>
         <source>Accel Method</source>
         <translation>アクセル制御セレクト</translation>
+    </message>
+    <message>
+        <source>Switch Accel Method to Official version or Cydia2020. A reboot is required.</source>
+        <translation>アクセル制御をCydia2020氏の手法と公式から選択します。再起動が必要です。TSSPでは公式は非推奨です。</translation>
     </message>
 </context>
 <context>
