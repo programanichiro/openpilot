@@ -1,3 +1,4 @@
+import time
 import capnp
 import os
 import pytest
@@ -9,14 +10,15 @@ import hypothesis.strategies as st
 from hypothesis import Phase, given, settings
 from parameterized import parameterized_class
 
-from cereal import messaging, log, car
-from openpilot.common.basedir import BASEDIR
 from opendbc.car import DT_CTRL, gen_empty_fingerprint, structs
-from opendbc.car.fingerprints import all_known_cars, MIGRATION
+from opendbc.car.can_definitions import CanData
 from opendbc.car.car_helpers import FRAME_FINGERPRINT, interfaces
+from opendbc.car.fingerprints import all_known_cars, MIGRATION
 from opendbc.car.honda.values import CAR as HONDA, HondaFlags
-from opendbc.car.values import Platform
+from opendbc.car.structs import car
 from opendbc.car.tests.routes import non_tested_cars, routes, CarTestRoute
+from opendbc.car.values import Platform
+from openpilot.common.basedir import BASEDIR
 from openpilot.selfdrive.pandad import can_capnp_to_list
 from openpilot.selfdrive.test.helpers import read_segment_list
 from openpilot.system.hardware.hw import DEFAULT_DOWNLOAD_CACHE_ROOT
@@ -26,9 +28,6 @@ from openpilot.tools.lib.route import SegmentName
 
 from panda.tests.libpanda import libpanda_py
 
-ButtonType = car.CarState.ButtonEvent.Type
-EventName = log.OnroadEvent.EventName
-PandaType = log.PandaState.PandaType
 SafetyModel = car.CarParams.SafetyModel
 
 NUM_JOBS = int(os.environ.get("NUM_JOBS", "1"))
@@ -335,10 +334,8 @@ class TestCarModelBase(unittest.TestCase):
       to_send = libpanda_py.make_CANPacket(address, bus, dat)
       self.safety.safety_rx_hook(to_send)
 
-      can = messaging.new_message('can', 1)
-      can.can = [log.CanData(address=address, dat=dat, src=bus)]
-
-      CS = self.CI.update(can_capnp_to_list((can.to_bytes(),)))
+      can = [(int(time.monotonic() * 1e9), [CanData(address=address, dat=dat, src=bus)])]
+      CS = self.CI.update(can)
 
       if self.safety.get_gas_pressed_prev() != prev_panda_gas:
         self.assertEqual(CS.gasPressed, self.safety.get_gas_pressed_prev())
