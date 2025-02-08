@@ -401,7 +401,7 @@
     </message>
     <message>
         <source>Waiting for GPS</source>
-        <translation>GPS信号を受信中</translation>
+        <translation>GPS信号を探索中</translation>
     </message>
     <message>
         <source>Waiting for route</source>
