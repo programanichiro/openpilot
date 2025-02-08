@@ -28,7 +28,7 @@ def ublox(started: bool, params: Params, CP: car.CarParams) -> bool:
   use_ublox = ublox_available()
   if use_ublox != params.get_bool("UbloxAvailable"):
     params.put_bool("UbloxAvailable", use_ublox)
-  return True and use_ublox #startedをTrueに、Onroad後にGPSと捉えるのが遅いから対策。
+  return (started or params.get_bool("GpsAlwaysSwitch")) and use_ublox #startedをGpsAlwaysSwitchで常に有効に。
 
 def joystick(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and params.get_bool("JoystickDebugMode")

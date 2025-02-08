@@ -1193,6 +1193,14 @@ This may take up to a minute.</source>
         <source>Switch Accel Method to Official version or Cydia2020. A reboot is required.</source>
         <translation>アクセル制御をCydia2020氏の手法と公式から選択します。再起動が必要です。TSSPでは公式は非推奨です。</translation>
     </message>
+    <message>
+        <source>Always receive GPS signals</source>
+        <translation>GPS信号の常時受信</translation>
+    </message>
+    <message>
+        <source>GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.</source>
+        <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
+    </message>
 </context>
 <context>
     <name>Updater</name>
