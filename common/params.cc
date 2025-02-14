@@ -161,6 +161,7 @@ std::unordered_map<std::string, uint32_t> keys = {
     {"LongitudinalManeuverMode", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"LongitudinalPersonality", PERSISTENT},
     {"AccelMethodSwitch", PERSISTENT},
+    {"GpsAlwaysSwitch", PERSISTENT},
     {"NetworkMetered", PERSISTENT},
     {"ObdMultiplexingChanged", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
     {"ObdMultiplexingEnabled", CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION},
