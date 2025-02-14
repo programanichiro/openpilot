@@ -78,7 +78,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "GpsAlwaysSwitch",
       tr("Always receive GPS signals"),
       tr("GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary."),
-      "../assets/offroad/icon_network.png",
+      "../assets/offroad/icon_gps_car.png",
     },
   };
 
