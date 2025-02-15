@@ -385,7 +385,7 @@ class LongitudinalPlanner:
     if path_x_old_signal < 20:
       path_x_old_signal_check = 0
 
-    if a_ego > 0 and v_ego >= min_acc_speed/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ
+    if a_ego > 0 and v_ego > 24/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ。30キロ(min_acc_speed)以上から24キロ以上へ変更
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       signal_scan_ct = 200 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
       with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
