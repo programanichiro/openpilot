@@ -335,7 +335,8 @@ class LongitudinalPlanner:
 
     md = sm['modelV2']
     hasLead = sm['radarState'].leadOne.status
-    distLead_near = sm['radarState'].leadOne.dRel < np.interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
+    #distLead_near = sm['radarState'].leadOne.dRel < np.interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
+    distLead_near = hasLead #and sm['radarState'].leadOne.dRel < np.interp(v_ego*3.6 , [30,80] , [60,130]) #前走車が近ければTrue,最近前走者が遠くてもワンペダル遷移してしまうので、ちょっと調整。
     global signal_scan_ct,path_x_old_signal,path_x_old_signal_check , red_signal_scan_flag
     if v_ego <= 0.1/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
