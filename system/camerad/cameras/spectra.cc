@@ -1,5 +1,6 @@
 #include "cdm.h"
 
+#include <algorithm>
 #include <stdint.h>
 #include <cassert>
 #include <sys/ioctl.h>
@@ -1143,26 +1144,18 @@ void SpectraCamera::configISP() {
   LOGD("acquire isp dev");
 
   // allocate IFE memory, then configure it
-  ife_cmd.init(m, 67984, 0x20,
-               CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE,
-               m->device_iommu, m->cdm_iommu, ife_buf_depth);
+  ife_cmd.init(m, 67984, 0x20, false, m->device_iommu, m->cdm_iommu, ife_buf_depth);
   if (output_type == ISP_IFE_PROCESSED) {
     assert(sensor->gamma_lut_rgb.size() == 64);
-    ife_gamma_lut.init(m, sensor->gamma_lut_rgb.size()*sizeof(uint32_t), 0x20,
-                       CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE,
-                       m->device_iommu, m->cdm_iommu, 3); // 3 for RGB
+    ife_gamma_lut.init(m, sensor->gamma_lut_rgb.size()*sizeof(uint32_t), 0x20, false, m->device_iommu, m->cdm_iommu, 3); // 3 for RGB
     for (int i = 0; i < 3; i++) {
       memcpy(ife_gamma_lut.ptr + ife_gamma_lut.size*i, sensor->gamma_lut_rgb.data(), ife_gamma_lut.size);
     }
     assert(sensor->linearization_lut.size() == 36);
-    ife_linearization_lut.init(m, sensor->linearization_lut.size()*sizeof(uint32_t), 0x20,
-                               CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE,
-                               m->device_iommu, m->cdm_iommu);
+    ife_linearization_lut.init(m, sensor->linearization_lut.size()*sizeof(uint32_t), 0x20, false, m->device_iommu, m->cdm_iommu);
     memcpy(ife_linearization_lut.ptr, sensor->linearization_lut.data(), ife_linearization_lut.size);
     assert(sensor->vignetting_lut.size() == 221);
-    ife_vignetting_lut.init(m, sensor->vignetting_lut.size()*sizeof(uint32_t), 0x20,
-                            CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE,
-                            m->device_iommu, m->cdm_iommu, 2);
+    ife_vignetting_lut.init(m, sensor->vignetting_lut.size()*sizeof(uint32_t), 0x20, false, m->device_iommu, m->cdm_iommu, 2);
     for (int i = 0; i < 2; i++) {
       memcpy(ife_vignetting_lut.ptr + ife_vignetting_lut.size*i, sensor->vignetting_lut.data(), ife_vignetting_lut.size);
     }
@@ -1212,40 +1205,28 @@ void SpectraCamera::configICP() {
   release(m->video0_fd, cfg_handle);
 
   // BPS has a lot of buffers to init
-  bps_cmd.init(m, 464, 0x20,
-               CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE | CAM_MEM_FLAG_HW_SHARED_ACCESS,
-               m->icp_device_iommu, 0, ife_buf_depth);
+  bps_cmd.init(m, 464, 0x20, true, m->icp_device_iommu, 0, ife_buf_depth);
 
   // BPSIQSettings struct
   uint32_t settings_size = sizeof(bps_settings[0]) / sizeof(bps_settings[0][0]);
-  bps_iq.init(m, settings_size, 0x20,
-              CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE | CAM_MEM_FLAG_HW_SHARED_ACCESS,
-              m->icp_device_iommu);
+  bps_iq.init(m, settings_size, 0x20, true, m->icp_device_iommu);
   memcpy(bps_iq.ptr, bps_settings[sensor->num()], settings_size);
 
   // for cdm register writes, just make it bigger than you need
-  bps_cdm_program_array.init(m, 0x1000, 0x20,
-              CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE | CAM_MEM_FLAG_HW_SHARED_ACCESS,
-              m->icp_device_iommu);
+  bps_cdm_program_array.init(m, 0x1000, 0x20, true, m->icp_device_iommu);
 
   // striping lib output
   uint32_t striping_size = sizeof(bps_striping_output[0]) / sizeof(bps_striping_output[0][0]);
-  bps_striping.init(m, striping_size, 0x20,
-              CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE | CAM_MEM_FLAG_HW_SHARED_ACCESS,
-              m->icp_device_iommu);
+  bps_striping.init(m, striping_size, 0x20, true, m->icp_device_iommu);
   memcpy(bps_striping.ptr, bps_striping_output[sensor->num()], striping_size);
 
   // used internally by the BPS, we just allocate it.
   // size comes from the BPSStripingLib
-  bps_cdm_striping_bl.init(m, 0xa100, 0x20,
-                           CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE | CAM_MEM_FLAG_HW_SHARED_ACCESS,
-                           m->icp_device_iommu);
+  bps_cdm_striping_bl.init(m, 0xa100, 0x20, true, m->icp_device_iommu);
 
   // LUTs
   /*
-  bps_linearization_lut.init(m, sensor->linearization_lut.size()*sizeof(uint32_t), 0x20,
-              CAM_MEM_FLAG_HW_READ_WRITE | CAM_MEM_FLAG_KMD_ACCESS | CAM_MEM_FLAG_UMD_ACCESS | CAM_MEM_FLAG_CMD_BUF_TYPE | CAM_MEM_FLAG_HW_SHARED_ACCESS,
-              m->icp_device_iommu);
+  bps_linearization_lut.init(m, sensor->linearization_lut.size()*sizeof(uint32_t), 0x20, true, m->icp_device_iommu);
   memcpy(bps_linearization_lut.ptr, sensor->linearization_lut.data(), bps_linearization_lut.size);
   */
 }
@@ -1390,50 +1371,92 @@ void SpectraCamera::camera_close() {
 void SpectraCamera::handle_camera_event(const cam_req_mgr_message *event_data) {
   if (!enabled) return;
 
-  uint64_t timestamp = event_data->u.frame_msg.timestamp;
-  uint64_t main_id = event_data->u.frame_msg.frame_id;
-  uint64_t real_id = event_data->u.frame_msg.request_id;
+  // ID from the qcom camera request manager
+  uint64_t request_id = event_data->u.frame_msg.request_id;
 
-  if (real_id != 0) { // next ready
-    if (real_id == 1) {
-      idx_offset = main_id;
-    }
-    int buf_idx = (real_id - 1) % ife_buf_depth;
+  // raw as opposed to our re-indexed frame ID
+  uint64_t frame_id_raw = event_data->u.frame_msg.frame_id;
 
-    // check for skipped frames
-    if (main_id > frame_id_last + 1 && !skipped) {
+  if (request_id != 0) { // next ready
+    int buf_idx = (request_id - 1) % ife_buf_depth;
+
+    // check for skipped_last frames
+    if (frame_id_raw > frame_id_raw_last + 1 && !skipped_last) {
       LOGE("camera %d realign", cc.camera_num);
       clear_req_queue();
-      enqueue_req_multi(real_id + 1, ife_buf_depth - 1, 0);
-      skipped = true;
-    } else if (main_id == frame_id_last + 1) {
-      skipped = false;
+      enqueue_req_multi(request_id + 1, ife_buf_depth - 1, 0);
+      skipped_last = true;
+    } else if (frame_id_raw == frame_id_raw_last + 1) {
+      skipped_last = false;
     }
 
     // check for dropped requests
-    if (real_id > request_id_last + 1) {
-      LOGE("camera %d dropped requests %ld %ld", cc.camera_num, real_id, request_id_last);
-      enqueue_req_multi(request_id_last + 1 + ife_buf_depth, real_id - (request_id_last + 1), 0);
+    if (request_id > request_id_last + 1) {
+      LOGE("camera %d dropped requests %ld %ld", cc.camera_num, request_id, request_id_last);
+      enqueue_req_multi(request_id_last + 1 + ife_buf_depth, request_id - (request_id_last + 1), 0);
     }
 
     // metas
-    frame_id_last = main_id;
-    request_id_last = real_id;
+    frame_id_raw_last = frame_id_raw;
+    request_id_last = request_id;
 
-    auto &meta_data = buf.frame_metadata[buf_idx];
-    meta_data.frame_id = main_id - idx_offset;
-    meta_data.request_id = real_id;
-    meta_data.timestamp_sof = timestamp; // this is timestamped in the kernel's SOF IRQ callback
+    uint64_t timestamp = event_data->u.frame_msg.timestamp;  // this is timestamped in the kernel's SOF IRQ callback
+    if (syncFirstFrame(cc.camera_num, frame_id_raw, timestamp)) {
+      auto &meta_data = buf.frame_metadata[buf_idx];
+      meta_data.frame_id = frame_id_raw - camera_sync_data[cc.camera_num].frame_id_offset;
+      meta_data.request_id = request_id;
+      meta_data.timestamp_sof = timestamp;
 
-    // dispatch
-    enqueue_req_multi(real_id + ife_buf_depth, 1, 1);
+      // wait for this frame's EOF, then queue up the next one
+      enqueue_req_multi(request_id + ife_buf_depth, 1, true);
+    } else {
+      // Frames not yet synced
+      enqueue_req_multi(request_id + ife_buf_depth, 1, false);
+    }
   } else { // not ready
-    if (main_id > frame_id_last + 10) {
+    if (frame_id_raw > frame_id_raw_last + 10) {
       LOGE("camera %d reset after half second of no response", cc.camera_num);
       clear_req_queue();
       enqueue_req_multi(request_id_last + 1, ife_buf_depth, 0);
-      frame_id_last = main_id;
-      skipped = true;
+      frame_id_raw_last = frame_id_raw;
+      skipped_last = true;
     }
   }
+}
+
+bool SpectraCamera::syncFirstFrame(int camera_id, uint64_t raw_id, uint64_t timestamp) {
+  if (first_frame_synced) return true;
+
+  // Store the frame data for this camera
+  camera_sync_data[camera_id] = SyncData{timestamp, raw_id + 1};
+
+  // Ensure all cameras are up
+  int enabled_camera_count = std::count_if(std::begin(ALL_CAMERA_CONFIGS), std::end(ALL_CAMERA_CONFIGS),
+                                           [](const auto &config) { return config.enabled; });
+  bool all_cams_up = camera_sync_data.size() == enabled_camera_count;
+
+  // Wait until the timestamps line up
+  bool all_cams_synced = true;
+  for (const auto &[_, sync_data] : camera_sync_data) {
+    uint64_t diff = std::max(timestamp, sync_data.timestamp) -
+                    std::min(timestamp, sync_data.timestamp);
+    if (diff > 2*1e6) {  // within 2ms
+      all_cams_synced = false;
+    }
+  }
+
+  if (all_cams_up && all_cams_synced) {
+    first_frame_synced = true;
+    for (const auto&[cam, sync_data] : camera_sync_data) {
+      LOGW("camera %d synced on frame_id_offset %ld timestamp %lu", cam, sync_data.frame_id_offset, sync_data.timestamp);
+    }
+  }
+
+  // Timeout in case the timestamps never line up
+  if (raw_id > 40) {
+    LOGE("camera first frame sync timed out");
+    first_frame_synced = true;
+  }
+
+  return false;
 }
