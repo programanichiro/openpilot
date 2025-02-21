@@ -3,7 +3,7 @@
 #include <sys/mman.h>
 #include <functional>
 #include <memory>
-#include <mutex>
+#include <queue>
 #include <optional>
 #include <utility>
 
@@ -58,7 +58,6 @@ private:
   void *alloc_buf(int len, uint32_t *handle);
   void free(void *ptr);
 
-  std::mutex lock;
   std::map<void *, uint32_t> handle_lookup;
   std::map<void *, int> size_lookup;
   std::map<int, std::queue<void *> > cached_allocations;
@@ -76,6 +75,7 @@ public:
   int device_iommu = -1;
   int cdm_iommu = -1;
   int icp_device_iommu = -1;
+  MemoryManager mem_mgr;
 };
 
 class SpectraBuf {
@@ -120,15 +120,15 @@ public:
   ~SpectraCamera();
 
   void camera_open(VisionIpcServer *v, cl_device_id device_id, cl_context ctx);
-  void handle_camera_event(const cam_req_mgr_message *event_data);
+  bool handle_camera_event(const cam_req_mgr_message *event_data);
   void camera_close();
   void camera_map_bufs();
   void config_bps(int idx, int request_id);
   void config_ife(int idx, int request_id, bool init=false);
 
   int clear_req_queue();
-  void enqueue_buffer(int i, bool dp);
-  void enqueue_req_multi(uint64_t start, int n, bool dp);
+  bool enqueue_buffer(int i, uint64_t request_id);
+  void enqueue_req_multi(uint64_t start, int n);
 
   int sensors_init();
   void sensors_start();
@@ -187,7 +187,6 @@ public:
   int buf_handle_raw[MAX_IFE_BUFS] = {};
   int sync_objs_ife[MAX_IFE_BUFS] = {};
   int sync_objs_bps[MAX_IFE_BUFS] = {};
-  uint64_t request_ids[MAX_IFE_BUFS] = {};
   uint64_t request_id_last = 0;
   uint64_t frame_id_raw_last = 0;
   int64_t frame_id_offset = 0;
@@ -196,7 +195,6 @@ public:
   SpectraOutputType output_type;
 
   CameraBuf buf;
-  MemoryManager mm;
   SpectraMaster *m;
 
 private:
