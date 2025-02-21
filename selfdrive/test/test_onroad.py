@@ -333,6 +333,40 @@ class TestOnroad:
     result += "------------------------------------------------\n"
     print(result)
 
+  def test_camera_sync(self, subtests):
+    cam_states = ['roadCameraState', 'wideRoadCameraState', 'driverCameraState']
+    encode_cams = ['roadEncodeIdx', 'wideRoadEncodeIdx', 'driverEncodeIdx']
+    for cams in (cam_states, encode_cams):
+      with subtests.test(cams=cams):
+        # sanity checks within a single cam
+        for cam in cams:
+          with subtests.test(test="frame_skips", camera=cam):
+            assert set(np.diff(self.ts[cam]['frameId'])) == {1, }, "Frame ID skips"
+
+            # EOF > SOF
+            eof_sof_diff = self.ts[cam]['timestampEof'] - self.ts[cam]['timestampSof']
+            assert np.all(eof_sof_diff > 0)
+            assert np.all(eof_sof_diff < 50*1e6)
+
+        first_fid = {c: min(self.ts[c]['frameId']) for c in cams}
+        if cam.endswith('CameraState'):
+          # camerad guarantees that all cams start on frame ID 0
+          # (note loggerd also needs to start up fast enough to catch it)
+          assert set(first_fid.values()) == {0, }, "Cameras don't start on frame ID 0"
+        else:
+          # encoder guarantees all cams start on the same frame ID
+          assert len(set(first_fid.values())) == 1, "Cameras don't start on same frame ID"
+
+        # we don't do a full segment rotation, so these might not match exactly
+        last_fid = {c: max(self.ts[c]['frameId']) for c in cams}
+        assert max(last_fid.values()) - min(last_fid.values()) < 10
+
+        start, end = min(first_fid.values()), min(last_fid.values())
+        for i in range(end-start):
+          ts = {c: round(self.ts[c]['timestampSof'][i]/1e6, 1) for c in cams}
+          diff = (max(ts.values()) - min(ts.values()))
+          assert diff < 2, f"Cameras not synced properly: frame_id={start+i}, {diff=:.1f}ms, {ts=}"
+
   def test_mpc_execution_timings(self):
     result = "\n"
     result += "------------------------------------------------\n"
