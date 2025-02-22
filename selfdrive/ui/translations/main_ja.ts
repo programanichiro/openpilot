@@ -910,6 +910,10 @@ This may take up to a minute.</source>
         <source>5G</source>
         <translation>5G</translation>
     </message>
+    <message>
+        <source>EXPLORE</source>
+        <translation>探索中</translation>
+    </message>
 </context>
 <context>
     <name>SoftwarePanel</name>
