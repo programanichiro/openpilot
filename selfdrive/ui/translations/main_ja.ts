@@ -145,6 +145,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>仕事</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>目的地が設定されていません</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>%1の地点が設定されていません</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>仕事</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -366,6 +393,47 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
 </context>
 <context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>到着予定</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>分</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>時間</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>カーナビ</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>connect.comma.aiで設定</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>マップ読み込み中</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>GPS信号を探索中</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>経路を検索中</translation>
+    </message>
+</context>
+<context>
     <name>MultiOptionDialog</name>
     <message>
         <source>Select</source>
@@ -539,6 +607,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>24時間365日のLTE接続</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>カーナビ機能</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>1年間分のドライブストレージ</translation>
     </message>
@@ -589,6 +661,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>%n日前</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -851,6 +939,10 @@ This may take up to a minute.</source>
         <source>5G</source>
         <translation>5G</translation>
     </message>
+    <message>
+        <source>EXPLORE</source>
+        <translation>探索中</translation>
+    </message>
 </context>
 <context>
     <name>SoftwarePanel</name>
@@ -935,7 +1027,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Warning: This grants SSH access to all public keys in your GitHub settings. Never enter a GitHub username other than your own. A comma employee will NEVER ask you to add their GitHub username.</source>
-        <translation>警告: これは、GitHub の設定にあるすべての公開鍵への SSH アクセスを許可するものです。自分以外の GitHub のユーザー名を入力しないでください。commaのスタッフが GitHub のユーザー名を追加するようお願いすることはありません。</translation>
+        <translation>警告: これはGitHubの設定にあるすべての公開鍵への SSH アクセスを許可するものです。自分以外のGitHubユーザー名を入力しないでください。commaのスタッフがGitHubのユーザー名を追加するようお願いすることはありません。</translation>
     </message>
     <message>
         <source>ADD</source>
@@ -943,7 +1035,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enter your GitHub username</source>
-        <translation>GitHub のユーザー名を入力してください</translation>
+        <translation>GitHubのユーザー名を入力してください</translation>
     </message>
     <message>
         <source>LOADING</source>
@@ -996,7 +1088,7 @@ This may take up to a minute.</source>
     <name>TogglesPanel</name>
     <message>
         <source>Enable openpilot</source>
-        <translation>openpilot を有効化</translation>
+        <translation>openpilotを有効化</translation>
     </message>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
@@ -1004,7 +1096,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enable Lane Departure Warnings</source>
-        <translation>車線逸脱警報機能の有効化</translation>
+        <translation>車線逸脱警報の有効化</translation>
     </message>
     <message>
         <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h).</source>
@@ -1033,6 +1125,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>この機能を有効化すると、openpilotを利用中にアクセルを踏むとopenpilotによる運転サポートを中断します。</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>24時間表示</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>AM/PM の代わりに24時間形式を使用します</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>画面の左側にマップを表示</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>分割画面表示の際、ディスプレイの左側にマップを表示します。</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1101,6 +1209,22 @@ This may take up to a minute.</source>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>openpilotが作動していない場合でも運転者モニタリングを有効にする。</translation>
+    </message>
+    <message>
+        <source>Accel Method</source>
+        <translation>アクセル制御セレクト</translation>
+    </message>
+    <message>
+        <source>Switch Accel Method to Official version or Cydia2020. A reboot is required.</source>
+        <translation>アクセル制御をCydia2020氏の手法と公式から選択します。再起動が必要です。TSSPでは公式は非推奨です。</translation>
+    </message>
+    <message>
+        <source>Always receive GPS signals</source>
+        <translation>GPS信号の常時受信</translation>
+    </message>
+    <message>
+        <source>GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.</source>
+        <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
     </message>
 </context>
 <context>
