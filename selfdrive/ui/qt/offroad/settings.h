@@ -99,3 +99,6 @@ private:
   Params params;
   ParamWatcher *fs_watch;
 };
+
+// Forward declaration
+class FirehosePanel;
