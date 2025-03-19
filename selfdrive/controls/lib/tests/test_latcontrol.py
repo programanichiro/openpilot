@@ -17,9 +17,9 @@ class TestLatControl:
 
   @parameterized.expand([(HONDA.HONDA_CIVIC, LatControlPID), (TOYOTA.TOYOTA_RAV4, LatControlTorque),  (NISSAN.NISSAN_LEAF, LatControlAngle)])
   def test_saturation(self, car_name, controller):
-    CarInterface, CarController, CarState, RadarInterface = interfaces[car_name]
+    CarInterface = interfaces[car_name]
     CP = CarInterface.get_non_essential_params(car_name)
-    CI = CarInterface(CP, CarController, CarState)
+    CI = CarInterface(CP)
     VM = VehicleModel(CP)
 
     controller = controller(CP.as_reader(), CI)
@@ -33,7 +33,15 @@ class TestLatControl:
     lp = generate_livePose()
     pose = Pose.from_live_pose(lp.livePose)
 
+    # Saturate for curvature limited and controller limited
     for _ in range(1000):
-      _, _, lac_log = controller.update(True, CS, VM, params, False, 1, pose)
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, True)
+    assert lac_log.saturated
 
+    for _ in range(1000):
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 0, pose, False)
+    assert not lac_log.saturated
+
+    for _ in range(1000):
+      _, _, lac_log = controller.update(True, CS, VM, params, False, 1, pose, False)
     assert lac_log.saturated

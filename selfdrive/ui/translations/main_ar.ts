@@ -336,25 +336,42 @@
     <name>FirehosePanel</name>
     <message>
         <source>🔥 Firehose Mode 🔥</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Enable Firehose Mode</source>
-        <translation type="unfinished"></translation>
+        <translation>🔥 وضع خرطوم الحريق 🔥</translation>
     </message>
     <message>
         <source>openpilot learns to drive by watching humans, like you, drive.
 
-Firehose Mode allows you to maximize your training data uploads to improve openpilot&apos;s driving models. More data means bigger models with better Experimental Mode.</source>
-        <translation type="unfinished"></translation>
+Firehose Mode allows you to maximize your training data uploads to improve openpilot&apos;s driving models. More data means bigger models, which means better Experimental Mode.</source>
+        <translation>يتعلم تطبيق openpilot كيفية القيادة من خلال مشاهدة البشر، مثلك، أثناء القيادة.
+
+يتيح لك وضع خرطوم الحريق زيادة تحميلات بيانات التدريب لتحسين نماذج القيادة في OpenPilot. كلما زادت البيانات، زادت النماذج، مما يعني وضعًا تجريبيًا أفضل.</translation>
     </message>
     <message>
-        <source>0%</source>
-        <translation type="unfinished">5G {0%?}</translation>
+        <source>Firehose Mode: ACTIVE</source>
+        <translation>وضع خرطوم الحريق: نشط</translation>
     </message>
     <message>
-        <source>Follow these steps to get your device ready:&lt;br&gt;	1. Bring your device inside and connect to a good USB-C adapter&lt;br&gt;	2. Connect to Wi-Fi&lt;br&gt;	3. Enable the toggle&lt;br&gt;	4. Leave it connected for at least 30 minutes&lt;br&gt;&lt;br&gt;The toggle turns off once you restart your device. Repeat at least once a week for maximum effectiveness.&lt;br&gt;&lt;br&gt;&lt;b&gt;FAQ&lt;/b&gt;&lt;br&gt;&lt;i&gt;Does it matter how or where I drive?&lt;/i&gt; Nope, just drive as you normally would.&lt;br&gt;&lt;i&gt;What&apos;s a good USB-C adapter?&lt;/i&gt; Any fast phone or laptop charger should be fine.&lt;br&gt;&lt;i&gt;Do I need to be on Wi-Fi?&lt;/i&gt; Yes.&lt;br&gt;&lt;i&gt;Do I need to bring the device inside?&lt;/i&gt; No, you can enable once you&apos;re parked, however your uploads will be limited by your car&apos;s battery.&lt;br&gt;</source>
-        <translation type="unfinished"></translation>
+        <source>ACTIVE</source>
+        <translation>نشط</translation>
+    </message>
+    <message>
+        <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to unmetered network</source>
+        <translation>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;غير نشط&lt;/span&gt;: اتصل بشبكة غير محسوبة</translation>
+    </message>
+    <message>
+        <source>For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.&lt;br&gt;&lt;br&gt;Firehose Mode can also work while you&apos;re driving if connected to a hotspot or unlimited SIM card.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Frequently Asked Questions&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter how or where I drive?&lt;/i&gt; Nope, just drive as you normally would.&lt;br&gt;&lt;br&gt;&lt;i&gt;Do all of my segments get pulled in Firehose Mode?&lt;/i&gt; No, we selectively pull a subset of your segments.&lt;br&gt;&lt;br&gt;&lt;i&gt;What&apos;s a good USB-C adapter?&lt;/i&gt; Any fast phone or laptop charger should be fine.&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter which software I run?&lt;/i&gt; Yes, only upstream openpilot (and particular forks) are able to be used for training.</source>
+        <translation>للحصول على أقصى فعالية، أحضر جهازك إلى الداخل واتصل بمحول USB-C جيد وشبكة Wi-Fi أسبوعياً.&lt;br&gt;&lt;br&gt;يمكن أن يعمل وضع خرطوم الحريق أيضاً أثناء القيادة إذا كنت متصلاً بنقطة اتصال أو ببطاقة SIM غير محدودة.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;الأسئلة المتكررة&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;هل يهم كيف أو أين أقود؟&lt;/i&gt; لا، فقط قد كما تفعل عادة.&lt;br&gt;&lt;br&gt;&lt;i&gt;هل يتم سحب كل مقاطع رحلاتي في وضع خرطوم الحريق؟&lt;/i&gt; لا، نقوم بسحب مجموعة مختارة من مقاطع رحلاتك.&lt;br&gt;&lt;br&gt;&lt;i&gt;ما هو محول USB-C الجيد؟&lt;/i&gt; أي شاحن سريع للهاتف أو اللابتوب يجب أن يكون مناسباً.&lt;br&gt;&lt;br&gt;&lt;i&gt;هل يهم أي برنامج أستخدم؟&lt;/i&gt; نعم، فقط النسخة الأصلية من openpilot (وأفرع معينة) يمكن استخدامها للتدريب.</translation>
+    </message>
+    <message numerus="yes">
+        <source>&lt;b&gt;%n segment(s)&lt;/b&gt; of your driving is in the training dataset so far.</source>
+        <translation>
+            <numerusform>حتى الآن، يوجد &lt;/b&gt;%n مقطع&lt;b&gt;%n من قيادتك في مجموعة بيانات التدريب.</numerusform>
+            <numerusform>حتى الآن، يوجد &lt;/b&gt;%n مقطع&lt;b&gt;%n من قيادتك في مجموعة بيانات التدريب.</numerusform>
+            <numerusform>حتى الآن، يوجد &lt;/b&gt;%n مقطع&lt;b&gt;%n من قيادتك في مجموعة بيانات التدريب.</numerusform>
+            <numerusform>حتى الآن، يوجد &lt;/b&gt;%n مقطع&lt;b&gt;%n من قيادتك في مجموعة بيانات التدريب.</numerusform>
+            <numerusform>حتى الآن، يوجد &lt;/b&gt;%n مقطع&lt;b&gt;%n من قيادتك في مجموعة بيانات التدريب.</numerusform>
+            <numerusform>حتى الآن، يوجد &lt;/b&gt;%n مقطع&lt;b&gt;%n من قيادتك في مجموعة بيانات التدريب.</numerusform>
+        </translation>
     </message>
 </context>
 <context>
@@ -772,7 +789,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Firehose</source>
-        <translation type="unfinished"></translation>
+        <translation>خرطوم الحريق</translation>
     </message>
 </context>
 <context>
@@ -1084,20 +1101,20 @@ This may take up to a minute.</source>
 <context>
     <name>TermsPage</name>
     <message>
-        <source>Terms &amp; Conditions</source>
-        <translation>الشروط والأحكام</translation>
-    </message>
-    <message>
         <source>Decline</source>
         <translation>رفض</translation>
     </message>
     <message>
-        <source>Scroll to accept</source>
-        <translation>قم بالتمرير للقبول</translation>
-    </message>
-    <message>
         <source>Agree</source>
         <translation>أوافق</translation>
+    </message>
+    <message>
+        <source>Welcome to openpilot</source>
+        <translation>مرحباً بكم في openpilot</translation>
+    </message>
+    <message>
+        <source>You must accept the Terms and Conditions to use openpilot. Read the latest terms at &lt;span style=&apos;color: #465BEA;&apos;&gt;https://comma.ai/terms&lt;/span&gt; before continuing.</source>
+        <translation>يجب عليك قبول الشروط والأحكام لاستخدام openpilot. اقرأ أحدث الشروط على &lt;span style=&apos;color: #465BEA;&apos;&gt;https://comma.ai/terms&lt;/span&gt; قبل الاستمرار.</translation>
     </message>
 </context>
 <context>
@@ -1266,15 +1283,15 @@ This may take up to a minute.</source>
     <name>WiFiPromptWidget</name>
     <message>
         <source>Open</source>
-        <translation type="unfinished"></translation>
+        <translation>انفتح</translation>
     </message>
     <message>
         <source>Maximize your training data uploads to improve openpilot&apos;s driving models.</source>
-        <translation type="unfinished"></translation>
+        <translation>قم بزيادة تحميلات بيانات التدريب الخاصة بك لتحسين نماذج القيادة الخاصة بـ openpilot.</translation>
     </message>
     <message>
         <source>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; Firehose Mode &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; وضع خرطوم الحريق &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</translation>
     </message>
 </context>
 <context>
