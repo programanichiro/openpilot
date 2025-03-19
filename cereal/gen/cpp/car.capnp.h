@@ -505,7 +505,7 @@ struct CarControl::Actuators {
 
 
   struct _capnpPrivate {
-    CAPNP_DECLARE_STRUCT_HEADER(e97275a919432828, 5, 0)
+    CAPNP_DECLARE_STRUCT_HEADER(e97275a919432828, 6, 0)
     #if !CAPNP_LITE
     static constexpr ::capnp::_::RawBrandedSchema const* brand() { return &schema->defaultBrand; }
     #endif  // !CAPNP_LITE
@@ -2082,6 +2082,12 @@ public:
 
   inline float getTorqueOutputCan() const;
 
+  inline float getDebug() const;
+
+  inline float getDebug2() const;
+
+  inline float getDebug3() const;
+
 private:
   ::capnp::_::StructReader _reader;
   template <typename, ::capnp::Kind>
@@ -2136,6 +2142,15 @@ public:
 
   inline float getTorqueOutputCan();
   inline void setTorqueOutputCan(float value);
+
+  inline float getDebug();
+  inline void setDebug(float value);
+
+  inline float getDebug2();
+  inline void setDebug2(float value);
+
+  inline float getDebug3();
+  inline void setDebug3(float value);
 
 private:
   ::capnp::_::StructBuilder _builder;
@@ -6232,6 +6247,48 @@ inline float CarControl::Actuators::Builder::getTorqueOutputCan() {
 inline void CarControl::Actuators::Builder::setTorqueOutputCan(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<8>() * ::capnp::ELEMENTS, value);
+}
+
+inline float CarControl::Actuators::Reader::getDebug() const {
+  return _reader.getDataField<float>(
+      ::capnp::bounded<9>() * ::capnp::ELEMENTS);
+}
+
+inline float CarControl::Actuators::Builder::getDebug() {
+  return _builder.getDataField<float>(
+      ::capnp::bounded<9>() * ::capnp::ELEMENTS);
+}
+inline void CarControl::Actuators::Builder::setDebug(float value) {
+  _builder.setDataField<float>(
+      ::capnp::bounded<9>() * ::capnp::ELEMENTS, value);
+}
+
+inline float CarControl::Actuators::Reader::getDebug2() const {
+  return _reader.getDataField<float>(
+      ::capnp::bounded<10>() * ::capnp::ELEMENTS);
+}
+
+inline float CarControl::Actuators::Builder::getDebug2() {
+  return _builder.getDataField<float>(
+      ::capnp::bounded<10>() * ::capnp::ELEMENTS);
+}
+inline void CarControl::Actuators::Builder::setDebug2(float value) {
+  _builder.setDataField<float>(
+      ::capnp::bounded<10>() * ::capnp::ELEMENTS, value);
+}
+
+inline float CarControl::Actuators::Reader::getDebug3() const {
+  return _reader.getDataField<float>(
+      ::capnp::bounded<11>() * ::capnp::ELEMENTS);
+}
+
+inline float CarControl::Actuators::Builder::getDebug3() {
+  return _builder.getDataField<float>(
+      ::capnp::bounded<11>() * ::capnp::ELEMENTS);
+}
+inline void CarControl::Actuators::Builder::setDebug3(float value) {
+  _builder.setDataField<float>(
+      ::capnp::bounded<11>() * ::capnp::ELEMENTS, value);
 }
 
 inline bool CarControl::CruiseControl::Reader::getCancel() const {

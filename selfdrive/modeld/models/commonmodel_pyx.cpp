@@ -3548,6 +3548,7 @@ static const char __pyx_k_stringsource[] = "<stringsource>";
 static const char __pyx_k_version_info[] = "version_info";
 static const char __pyx_k_class_getitem[] = "__class_getitem__";
 static const char __pyx_k_reduce_cython[] = "__reduce_cython__";
+static const char __pyx_k_temporal_skip[] = "temporal_skip";
 static const char __pyx_k_AssertionError[] = "AssertionError";
 static const char __pyx_k_buffer_from_cl[] = "buffer_from_cl";
 static const char __pyx_k_View_MemoryView[] = "View.MemoryView";
@@ -3664,7 +3665,7 @@ static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_10ModelFr
 static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_10ModelFrame_4buffer_from_cl(struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_ModelFrame *__pyx_v_self, struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLMem *__pyx_v_in_frames); /* proto */
 static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_10ModelFrame_6__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_ModelFrame *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_10ModelFrame_8__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_ModelFrame *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
-static int __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame___cinit__(struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *__pyx_v_self, struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext *__pyx_v_context); /* proto */
+static int __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame___cinit__(struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *__pyx_v_self, struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext *__pyx_v_context, int __pyx_v_temporal_skip); /* proto */
 static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame_2__reduce_cython__(CYTHON_UNUSED struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *__pyx_v_self); /* proto */
 static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame_4__setstate_cython__(CYTHON_UNUSED struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *__pyx_v_self, CYTHON_UNUSED PyObject *__pyx_v___pyx_state); /* proto */
 static int __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_20MonitoringModelFrame___cinit__(struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_MonitoringModelFrame *__pyx_v_self, struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext *__pyx_v_context); /* proto */
@@ -3939,6 +3940,7 @@ typedef struct {
   PyObject *__pyx_kp_s_stringsource;
   PyObject *__pyx_n_s_struct;
   PyObject *__pyx_n_s_sys;
+  PyObject *__pyx_n_s_temporal_skip;
   PyObject *__pyx_n_s_test;
   PyObject *__pyx_kp_s_unable_to_allocate_array_data;
   PyObject *__pyx_kp_s_unable_to_allocate_shape_and_str;
@@ -4225,6 +4227,7 @@ static int __pyx_m_clear(PyObject *m) {
   Py_CLEAR(clear_module_state->__pyx_kp_s_stringsource);
   Py_CLEAR(clear_module_state->__pyx_n_s_struct);
   Py_CLEAR(clear_module_state->__pyx_n_s_sys);
+  Py_CLEAR(clear_module_state->__pyx_n_s_temporal_skip);
   Py_CLEAR(clear_module_state->__pyx_n_s_test);
   Py_CLEAR(clear_module_state->__pyx_kp_s_unable_to_allocate_array_data);
   Py_CLEAR(clear_module_state->__pyx_kp_s_unable_to_allocate_shape_and_str);
@@ -4489,6 +4492,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
   Py_VISIT(traverse_module_state->__pyx_kp_s_stringsource);
   Py_VISIT(traverse_module_state->__pyx_n_s_struct);
   Py_VISIT(traverse_module_state->__pyx_n_s_sys);
+  Py_VISIT(traverse_module_state->__pyx_n_s_temporal_skip);
   Py_VISIT(traverse_module_state->__pyx_n_s_test);
   Py_VISIT(traverse_module_state->__pyx_kp_s_unable_to_allocate_array_data);
   Py_VISIT(traverse_module_state->__pyx_kp_s_unable_to_allocate_shape_and_str);
@@ -4799,6 +4803,7 @@ static int __pyx_m_traverse(PyObject *m, visitproc visit, void *arg) {
 #define __pyx_kp_s_stringsource __pyx_mstate_global->__pyx_kp_s_stringsource
 #define __pyx_n_s_struct __pyx_mstate_global->__pyx_n_s_struct
 #define __pyx_n_s_sys __pyx_mstate_global->__pyx_n_s_sys
+#define __pyx_n_s_temporal_skip __pyx_mstate_global->__pyx_n_s_temporal_skip
 #define __pyx_n_s_test __pyx_mstate_global->__pyx_n_s_test
 #define __pyx_kp_s_unable_to_allocate_array_data __pyx_mstate_global->__pyx_kp_s_unable_to_allocate_array_data
 #define __pyx_kp_s_unable_to_allocate_shape_and_str __pyx_mstate_global->__pyx_kp_s_unable_to_allocate_shape_and_str
@@ -21642,8 +21647,8 @@ static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_10ModelFr
 /* "selfdrive/modeld/models/commonmodel_pyx.pyx":62
  *   cdef cppDrivingModelFrame * _frame
  * 
- *   def __cinit__(self, CLContext context):             # <<<<<<<<<<<<<<
- *     self._frame = new cppDrivingModelFrame(context.device_id, context.context)
+ *   def __cinit__(self, CLContext context, int temporal_skip):             # <<<<<<<<<<<<<<
+ *     self._frame = new cppDrivingModelFrame(context.device_id, context.context, temporal_skip)
  *     self.frame = <cppModelFrame*>(self._frame)
  */
 
@@ -21651,9 +21656,10 @@ static PyObject *__pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_10ModelFr
 static int __pyx_pw_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds); /*proto*/
 static int __pyx_pw_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame_1__cinit__(PyObject *__pyx_v_self, PyObject *__pyx_args, PyObject *__pyx_kwds) {
   struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext *__pyx_v_context = 0;
+  int __pyx_v_temporal_skip;
   CYTHON_UNUSED Py_ssize_t __pyx_nargs;
   CYTHON_UNUSED PyObject *const *__pyx_kwvalues;
-  PyObject* values[1] = {0};
+  PyObject* values[2] = {0,0};
   int __pyx_lineno = 0;
   const char *__pyx_filename = NULL;
   int __pyx_clineno = 0;
@@ -21667,10 +21673,12 @@ static int __pyx_pw_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelF
   #endif
   __pyx_kwvalues = __Pyx_KwValues_VARARGS(__pyx_args, __pyx_nargs);
   {
-    PyObject **__pyx_pyargnames[] = {&__pyx_n_s_context,0};
+    PyObject **__pyx_pyargnames[] = {&__pyx_n_s_context,&__pyx_n_s_temporal_skip,0};
     if (__pyx_kwds) {
       Py_ssize_t kw_args;
       switch (__pyx_nargs) {
+        case  2: values[1] = __Pyx_Arg_VARARGS(__pyx_args, 1);
+        CYTHON_FALLTHROUGH;
         case  1: values[0] = __Pyx_Arg_VARARGS(__pyx_args, 0);
         CYTHON_FALLTHROUGH;
         case  0: break;
@@ -21685,21 +21693,33 @@ static int __pyx_pw_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelF
         }
         else if (unlikely(PyErr_Occurred())) __PYX_ERR(1, 62, __pyx_L3_error)
         else goto __pyx_L5_argtuple_error;
+        CYTHON_FALLTHROUGH;
+        case  1:
+        if (likely((values[1] = __Pyx_GetKwValue_VARARGS(__pyx_kwds, __pyx_kwvalues, __pyx_n_s_temporal_skip)) != 0)) {
+          (void)__Pyx_Arg_NewRef_VARARGS(values[1]);
+          kw_args--;
+        }
+        else if (unlikely(PyErr_Occurred())) __PYX_ERR(1, 62, __pyx_L3_error)
+        else {
+          __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 2, 2, 1); __PYX_ERR(1, 62, __pyx_L3_error)
+        }
       }
       if (unlikely(kw_args > 0)) {
         const Py_ssize_t kwd_pos_args = __pyx_nargs;
         if (unlikely(__Pyx_ParseOptionalKeywords(__pyx_kwds, __pyx_kwvalues, __pyx_pyargnames, 0, values + 0, kwd_pos_args, "__cinit__") < 0)) __PYX_ERR(1, 62, __pyx_L3_error)
       }
-    } else if (unlikely(__pyx_nargs != 1)) {
+    } else if (unlikely(__pyx_nargs != 2)) {
       goto __pyx_L5_argtuple_error;
     } else {
       values[0] = __Pyx_Arg_VARARGS(__pyx_args, 0);
+      values[1] = __Pyx_Arg_VARARGS(__pyx_args, 1);
     }
     __pyx_v_context = ((struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext *)values[0]);
+    __pyx_v_temporal_skip = __Pyx_PyInt_As_int(values[1]); if (unlikely((__pyx_v_temporal_skip == (int)-1) && PyErr_Occurred())) __PYX_ERR(1, 62, __pyx_L3_error)
   }
   goto __pyx_L6_skip;
   __pyx_L5_argtuple_error:;
-  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 1, 1, __pyx_nargs); __PYX_ERR(1, 62, __pyx_L3_error)
+  __Pyx_RaiseArgtupleInvalid("__cinit__", 1, 2, 2, __pyx_nargs); __PYX_ERR(1, 62, __pyx_L3_error)
   __pyx_L6_skip:;
   goto __pyx_L4_argument_unpacking_done;
   __pyx_L3_error:;
@@ -21714,7 +21734,7 @@ static int __pyx_pw_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelF
   return -1;
   __pyx_L4_argument_unpacking_done:;
   if (unlikely(!__Pyx_ArgTypeTest(((PyObject *)__pyx_v_context), __pyx_ptype_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext, 1, "context", 0))) __PYX_ERR(1, 62, __pyx_L1_error)
-  __pyx_r = __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame___cinit__(((struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *)__pyx_v_self), __pyx_v_context);
+  __pyx_r = __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame___cinit__(((struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *)__pyx_v_self), __pyx_v_context, __pyx_v_temporal_skip);
 
   /* function exit code */
   goto __pyx_L0;
@@ -21731,22 +21751,22 @@ static int __pyx_pw_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelF
   return __pyx_r;
 }
 
-static int __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame___cinit__(struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *__pyx_v_self, struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext *__pyx_v_context) {
+static int __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelFrame___cinit__(struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_DrivingModelFrame *__pyx_v_self, struct __pyx_obj_9selfdrive_6modeld_6models_15commonmodel_pyx_CLContext *__pyx_v_context, int __pyx_v_temporal_skip) {
   int __pyx_r;
   int __pyx_t_1;
 
   /* "selfdrive/modeld/models/commonmodel_pyx.pyx":63
  * 
- *   def __cinit__(self, CLContext context):
- *     self._frame = new cppDrivingModelFrame(context.device_id, context.context)             # <<<<<<<<<<<<<<
+ *   def __cinit__(self, CLContext context, int temporal_skip):
+ *     self._frame = new cppDrivingModelFrame(context.device_id, context.context, temporal_skip)             # <<<<<<<<<<<<<<
  *     self.frame = <cppModelFrame*>(self._frame)
  *     self.buf_size = self._frame.buf_size
  */
-  __pyx_v_self->_frame = new DrivingModelFrame(__pyx_v_context->__pyx_base.device_id, __pyx_v_context->__pyx_base.context);
+  __pyx_v_self->_frame = new DrivingModelFrame(__pyx_v_context->__pyx_base.device_id, __pyx_v_context->__pyx_base.context, __pyx_v_temporal_skip);
 
   /* "selfdrive/modeld/models/commonmodel_pyx.pyx":64
- *   def __cinit__(self, CLContext context):
- *     self._frame = new cppDrivingModelFrame(context.device_id, context.context)
+ *   def __cinit__(self, CLContext context, int temporal_skip):
+ *     self._frame = new cppDrivingModelFrame(context.device_id, context.context, temporal_skip)
  *     self.frame = <cppModelFrame*>(self._frame)             # <<<<<<<<<<<<<<
  *     self.buf_size = self._frame.buf_size
  * 
@@ -21754,7 +21774,7 @@ static int __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelF
   __pyx_v_self->__pyx_base.frame = ((ModelFrame *)__pyx_v_self->_frame);
 
   /* "selfdrive/modeld/models/commonmodel_pyx.pyx":65
- *     self._frame = new cppDrivingModelFrame(context.device_id, context.context)
+ *     self._frame = new cppDrivingModelFrame(context.device_id, context.context, temporal_skip)
  *     self.frame = <cppModelFrame*>(self._frame)
  *     self.buf_size = self._frame.buf_size             # <<<<<<<<<<<<<<
  * 
@@ -21766,8 +21786,8 @@ static int __pyx_pf_9selfdrive_6modeld_6models_15commonmodel_pyx_17DrivingModelF
   /* "selfdrive/modeld/models/commonmodel_pyx.pyx":62
  *   cdef cppDrivingModelFrame * _frame
  * 
- *   def __cinit__(self, CLContext context):             # <<<<<<<<<<<<<<
- *     self._frame = new cppDrivingModelFrame(context.device_id, context.context)
+ *   def __cinit__(self, CLContext context, int temporal_skip):             # <<<<<<<<<<<<<<
+ *     self._frame = new cppDrivingModelFrame(context.device_id, context.context, temporal_skip)
  *     self.frame = <cppModelFrame*>(self._frame)
  */
 
@@ -24144,6 +24164,7 @@ static int __Pyx_CreateStringTabAndInitStrings(void) {
     {&__pyx_kp_s_stringsource, __pyx_k_stringsource, sizeof(__pyx_k_stringsource), 0, 0, 1, 0},
     {&__pyx_n_s_struct, __pyx_k_struct, sizeof(__pyx_k_struct), 0, 0, 1, 1},
     {&__pyx_n_s_sys, __pyx_k_sys, sizeof(__pyx_k_sys), 0, 0, 1, 1},
+    {&__pyx_n_s_temporal_skip, __pyx_k_temporal_skip, sizeof(__pyx_k_temporal_skip), 0, 0, 1, 1},
     {&__pyx_n_s_test, __pyx_k_test, sizeof(__pyx_k_test), 0, 0, 1, 1},
     {&__pyx_kp_s_unable_to_allocate_array_data, __pyx_k_unable_to_allocate_array_data, sizeof(__pyx_k_unable_to_allocate_array_data), 0, 0, 1, 0},
     {&__pyx_kp_s_unable_to_allocate_shape_and_str, __pyx_k_unable_to_allocate_shape_and_str, sizeof(__pyx_k_unable_to_allocate_shape_and_str), 0, 0, 1, 0},
