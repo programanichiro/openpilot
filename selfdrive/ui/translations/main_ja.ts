@@ -145,6 +145,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>仕事</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>目的地が設定されていません</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>%1の地点が設定されていません</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>仕事</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -315,28 +342,30 @@
         <source>openpilot learns to drive by watching humans, like you, drive.
 
 Firehose Mode allows you to maximize your training data uploads to improve openpilot&apos;s driving models. More data means bigger models, which means better Experimental Mode.</source>
-        <translation type="unfinished"></translation>
+        <translation>openpilotは人間であるあなたの運転から学び、AI学習します。
+
+Firehoseモードを有効にすると、学習データを最大限アップロードし、openpilotの運転モデルを向上させることができます。より多くのデータはより大きなモデルとなり、Experimentalモードの精度を向上させます。</translation>
     </message>
     <message>
         <source>Firehose Mode: ACTIVE</source>
-        <translation type="unfinished"></translation>
+        <translation>Firehoseモード: 作動中</translation>
     </message>
     <message>
         <source>ACTIVE</source>
-        <translation type="unfinished"></translation>
+        <translation>動作中</translation>
     </message>
     <message>
         <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to unmetered network</source>
-        <translation type="unfinished"></translation>
+        <translation>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;動作停止&lt;/span&gt;: 大容量のネットワークに接続してください</translation>
     </message>
     <message>
         <source>For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.&lt;br&gt;&lt;br&gt;Firehose Mode can also work while you&apos;re driving if connected to a hotspot or unlimited SIM card.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Frequently Asked Questions&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter how or where I drive?&lt;/i&gt; Nope, just drive as you normally would.&lt;br&gt;&lt;br&gt;&lt;i&gt;Do all of my segments get pulled in Firehose Mode?&lt;/i&gt; No, we selectively pull a subset of your segments.&lt;br&gt;&lt;br&gt;&lt;i&gt;What&apos;s a good USB-C adapter?&lt;/i&gt; Any fast phone or laptop charger should be fine.&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter which software I run?&lt;/i&gt; Yes, only upstream openpilot (and particular forks) are able to be used for training.</source>
-        <translation type="unfinished"></translation>
+        <translation>最大の効果を得るためにはデバイスを屋内に持ち込み、大容量のUSB-C充電器とWi-Fiに毎週接続してください。&lt;br&gt;&lt;br&gt;Firehoseモードは公衆無線LANや大容量契約のSIMカードに接続していれば、運転中でも動作します。&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;よくある質問(FAQ)&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;運転のやり方や走る場所は重要ですか？&lt;/i&gt; いいえ、普段どおりに運転するだけで大丈夫です。&lt;br&gt;&lt;br&gt;&lt;i&gt;Firehoseモードでは全てのデータがアップロードされますか？&lt;/i&gt; いいえ、アップロードするデータを選ぶことができます。&lt;br&gt;&lt;br&gt;&lt;i&gt;大容量のUSB-C充電器とは何ですか？&lt;/i&gt; スマートフォンやノートパソコンを高速に充電できるものを使って下さい。&lt;br&gt;&lt;br&gt;&lt;i&gt;どのフォークを使うかは重要ですか？&lt;/i&gt;はい、トレーニングには公式のopenpilot(および特定のフォーク)のみが使用できます。</translation>
     </message>
     <message numerus="yes">
         <source>&lt;b&gt;%n segment(s)&lt;/b&gt; of your driving is in the training dataset so far.</source>
-        <translation type="unfinished">
-            <numerusform></numerusform>
+        <translation>
+            <numerusform>あなたの運転の&lt;b&gt;%nセグメント&lt;/b&gt;がこれまでのトレーニングデータに含まれています。</numerusform>
         </translation>
     </message>
 </context>
@@ -373,6 +402,47 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>Installing...</source>
         <translation>インストール中...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>到着予定</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>分</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>時間</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>カーナビ</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>connect.comma.aiで設定</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>マップ読み込み中</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>GPS信号を探索中</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>経路を検索中</translation>
     </message>
 </context>
 <context>
@@ -549,6 +619,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>24時間365日のLTE接続</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>カーナビ機能</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>1年間分のドライブストレージ</translation>
     </message>
@@ -599,6 +673,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>%n日前</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -861,6 +951,10 @@ This may take up to a minute.</source>
         <source>5G</source>
         <translation>5G</translation>
     </message>
+    <message>
+        <source>EXPLORE</source>
+        <translation>探索中</translation>
+    </message>
 </context>
 <context>
     <name>SoftwarePanel</name>
@@ -945,7 +1039,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Warning: This grants SSH access to all public keys in your GitHub settings. Never enter a GitHub username other than your own. A comma employee will NEVER ask you to add their GitHub username.</source>
-        <translation>警告: これは、GitHub の設定にあるすべての公開鍵への SSH アクセスを許可するものです。自分以外の GitHub のユーザー名を入力しないでください。commaのスタッフが GitHub のユーザー名を追加するようお願いすることはありません。</translation>
+        <translation>警告: これはGitHubの設定にあるすべての公開鍵への SSH アクセスを許可するものです。自分以外のGitHubユーザー名を入力しないでください。commaのスタッフがGitHubのユーザー名を追加するようお願いすることはありません。</translation>
     </message>
     <message>
         <source>ADD</source>
@@ -953,7 +1047,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enter your GitHub username</source>
-        <translation>GitHub のユーザー名を入力してください</translation>
+        <translation>GitHubのユーザー名を入力してください</translation>
     </message>
     <message>
         <source>LOADING</source>
@@ -995,18 +1089,18 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Welcome to openpilot</source>
-        <translation type="unfinished"></translation>
+        <translation>openpilotへようこそ</translation>
     </message>
     <message>
         <source>You must accept the Terms and Conditions to use openpilot. Read the latest terms at &lt;span style=&apos;color: #465BEA;&apos;&gt;https://comma.ai/terms&lt;/span&gt; before continuing.</source>
-        <translation type="unfinished"></translation>
+        <translation>openpilotを使用するには利用規約に同意する必要があります。続行する前に最新の規約を以下でご確認ください: &lt;span style=&apos;color: #465BEA;&apos;&gt;https://comma.ai/terms&lt;/span&gt;</translation>
     </message>
 </context>
 <context>
     <name>TogglesPanel</name>
     <message>
         <source>Enable openpilot</source>
-        <translation>openpilot を有効化</translation>
+        <translation>openpilotを有効化</translation>
     </message>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
@@ -1014,7 +1108,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enable Lane Departure Warnings</source>
-        <translation>車線逸脱警報機能の有効化</translation>
+        <translation>車線逸脱警報の有効化</translation>
     </message>
     <message>
         <source>Receive alerts to steer back into the lane when your vehicle drifts over a detected lane line without a turn signal activated while driving over 31 mph (50 km/h).</source>
@@ -1043,6 +1137,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>この機能を有効化すると、openpilotを利用中にアクセルを踏むとopenpilotによる運転サポートを中断します。</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>24時間表示</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>AM/PM の代わりに24時間形式を使用します</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>画面の左側にマップを表示</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>分割画面表示の際、ディスプレイの左側にマップを表示します。</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1111,6 +1221,22 @@ This may take up to a minute.</source>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>openpilotが作動していない場合でも運転者モニタリングを有効にする。</translation>
+    </message>
+    <message>
+        <source>Accel Method</source>
+        <translation>アクセル制御セレクト</translation>
+    </message>
+    <message>
+        <source>Switch Accel Method to Official version or Cydia2020. A reboot is required.</source>
+        <translation>アクセル制御をCydia2020氏の手法と公式から選択します。再起動が必要です。TSSPでは公式は非推奨です。</translation>
+    </message>
+    <message>
+        <source>Always receive GPS signals</source>
+        <translation>GPS信号の常時受信</translation>
+    </message>
+    <message>
+        <source>GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.</source>
+        <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
     </message>
 </context>
 <context>
