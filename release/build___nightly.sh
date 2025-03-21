@@ -11,6 +11,7 @@ fi
 # set git identity
 source $DIR/identity.sh
 
+git lfs update --force
 git lfs install
 git lfs pull
 
