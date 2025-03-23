@@ -315,7 +315,7 @@ void OffroadHome::refresh() {
 
   bool updateAvailable = update_widget->refresh();
   if(updateAvailable){
-    std::system("echo 1 > /data/force_prebuild");
+    std::system("echo 2 > /data/force_prebuild");
   }
   int alerts = alerts_widget->refresh();
 
