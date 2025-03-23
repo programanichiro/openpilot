@@ -5,7 +5,8 @@
 #include "system/hardware/hw.h"
 
 MainWindow::MainWindow(QWidget *parent) : QWidget(parent) {
-  unlink("/data/force_prebuild");
+  //unlink("/data/force_prebuild");
+  rename("/data/force_prebuild","/data/prev_force_prebuild"); //元のforce_prebuildを残す。
   unlink("/data/agnos_update");
 
   main_layout = new QStackedLayout(this);
