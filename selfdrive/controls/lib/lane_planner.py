@@ -24,23 +24,13 @@ CAMERA_OFFSET = 0.04
 
 class LanePlanner:
   def __init__(self, wide_camera=False):
-    self.ll_t = np.zeros((TRAJECTORY_SIZE,))
     self.ll_x = np.zeros((TRAJECTORY_SIZE,))
     self.lll_y = np.zeros((TRAJECTORY_SIZE,))
     self.rll_y = np.zeros((TRAJECTORY_SIZE,))
-    # self.lane_width_estimate = FirstOrderFilter(3.7, 9.95, DT_MDL)
-    # self.lane_width_certainty = FirstOrderFilter(1.0, 0.95, DT_MDL)
-    # self.lane_width = 3.7
 
     self.lll_prob = 0.
     self.rll_prob = 0.
-    # self.d_prob = 0.
 
-    # self.lll_std = 0.
-    # self.rll_std = 0.
-
-    # self.l_lane_change_prob = 0.
-    # self.r_lane_change_prob = 0.
 
     self.camera_offset = -CAMERA_OFFSET if wide_camera else CAMERA_OFFSET
     #self.camera_offset += 0.10 # 車体を10cm右に寄せる
@@ -70,21 +60,12 @@ class LanePlanner:
       return
 
     lane_lines = md.laneLines
-    if len(lane_lines) == 4 and len(lane_lines[0].t) == TRAJECTORY_SIZE:
-      self.ll_t = (np.array(lane_lines[1].t) + np.array(lane_lines[2].t))/2
-      # left and right ll x is the same
+    if len(lane_lines) == 4 and len(lane_lines[0].x) == TRAJECTORY_SIZE:
       self.ll_x = lane_lines[1].x
       self.lll_y = np.array(lane_lines[1].y) + self.camera_offset
       self.rll_y = np.array(lane_lines[2].y) + self.camera_offset
       self.lll_prob = md.laneLineProbs[1]
       self.rll_prob = md.laneLineProbs[2]
-      # self.lll_std = md.laneLineStds[1]
-      # self.rll_std = md.laneLineStds[2]
-
-    # desire_state = md.meta.desireState
-    # if len(desire_state):
-    #   self.l_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeLeft]
-    #   self.r_lane_change_prob = desire_state[log.LateralPlan.Desire.laneChangeRight]
 
   def get_d_path(self, pred_angle , v_ego, path_t, path_xyz):
     # Reduce reliance on lanelines that are too far apart or
@@ -104,13 +85,11 @@ class LanePlanner:
     path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.2*lane_speed_margin #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
     path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.2*lane_speed_margin
 
-    # self.d_prob = l_prob + r_prob - l_prob * r_prob # (*1)でここが0.25減で最大94%未満(0.75+0.75-0.75*0.75)になるよう調整される。
-    safe_idxs = np.isfinite(self.ll_t)
     new_lane_collision = 0 #bit0:left , bit1:right
     lane_d = 0
-    if safe_idxs[0]:
-      lane_path_y_interp_left = np.interp(path_t, self.ll_t[safe_idxs], path_from_left_lane[safe_idxs])
-      lane_path_y_interp_right = np.interp(path_t, self.ll_t[safe_idxs], path_from_right_lane[safe_idxs])
+    if self.lta_mode:
+      lane_path_y_interp_left = path_from_left_lane
+      lane_path_y_interp_right = path_from_right_lane
       # with open('/tmp/debug_out_o','w') as fp:
       #   fp.write('L:%.2f , e:%.2f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , path_from_right_lane[0]))
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
