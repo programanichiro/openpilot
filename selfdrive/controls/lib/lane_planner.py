@@ -67,7 +67,7 @@ class LanePlanner:
       self.lll_prob = md.laneLineProbs[1]
       self.rll_prob = md.laneLineProbs[2]
 
-  def get_d_path(self, pred_angle , v_ego, path_t, path_xyz):
+  def get_d_path(self, pred_angle , v_ego, path_xyz):
     # Reduce reliance on lanelines that are too far apart or
     # will be in a few seconds
     path_xyz[:, 1] += self.path_offset
