@@ -563,7 +563,11 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
     </message>
     <message>
         <source>Press Resume to Exit Standstill</source>
-        <translation>停止中。発進するにはアクセルを踏む</translation>
+        <translation>停止中。発進にはアクセルを踏みます</translation>
+    </message>
+    <message>
+        <source>Release Brake to Engage</source>
+        <translation>発進するためにはブレーキを放します</translation>
     </message>
 </context>
 <context>
