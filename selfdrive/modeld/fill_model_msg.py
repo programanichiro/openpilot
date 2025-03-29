@@ -133,7 +133,6 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
     position = modelV2.position
     path_xyz = np.column_stack([position.x, position.y, position.z])
-    t_idxs = np.array(position.t)
 
     path_y = path_xyz[:,1]
     max_yp = 0
@@ -166,11 +165,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     lane_d = 0
     if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
       pred_angle = (-max_yp / 2.5)
-      lane_d = LP.get_d_path(pred_angle , v_ego, t_idxs, path_xyz) #self.path_xyzは戻り値から外した。
-      # if len(position.x) == TRAJECTORY_SIZE and len(velocity.x) == TRAJECTORY_SIZE:
-      #   k = np.interp(abs(pred_angle), [0, 7], [1, 1]) #旋回中は多めに戻す。->やめる
-      #   # x_sol[:,2] += lane_d * 0.015 * k #yaw（ハンドル制御の元値）をレーンの反対へ戻す
-      #   # action.desiredCurvature += lane_d * 0.015 * k #ハンドル制御の曲率をレーンの反対へ戻す
+      lane_d = LP.get_d_path(pred_angle , v_ego, path_xyz) #self.path_xyzは戻り値から外した。
     if lane_d != g_lane_d:
       g_lane_d = lane_d
       with open('/dev/shm/lane_d_info.txt','w') as fp:
