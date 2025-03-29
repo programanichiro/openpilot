@@ -75,6 +75,7 @@ void HudRenderer::updateState(const UIState &s) {
   //set_speed = car_state.getVCruiseCluster() == 0.0 ? controls_state.getVCruiseDEPRECATED() : car_state.getVCruiseCluster();
   set_speed = cs_alive ? v_cruise : SET_SPEED_NA;
   is_cruise_set = set_speed > 0 && set_speed != SET_SPEED_NA;
+  is_cruise_available = set_speed != -1;
 
   if (is_cruise_set && !is_metric) {
     set_speed *= KM_TO_MILE;
@@ -135,7 +136,9 @@ void HudRenderer::draw(QPainter &p, const QRect &surface_rect) {
   p.fillRect(0, 0, surface_rect.width(), UI_HEADER_HEIGHT, bg);
 
 
-  drawSetSpeed(p, surface_rect);
+  if (is_cruise_available) {
+    drawSetSpeed(p, surface_rect);
+  }
   drawCurrentSpeed(p, surface_rect);
 
   p.restore();

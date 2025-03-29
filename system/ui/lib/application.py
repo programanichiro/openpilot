@@ -15,6 +15,7 @@ DEBUG_FPS = os.getenv("DEBUG_FPS") == '1'
 STRICT_MODE = os.getenv("STRICT_MODE") == '1'
 
 DEFAULT_TEXT_SIZE = 60
+DEFAULT_TEXT_COLOR = rl.Color(200, 200, 200, 255)
 FONT_DIR = os.path.join(BASEDIR, "selfdrive/assets/fonts")
 
 
@@ -63,11 +64,16 @@ class GuiApplication:
     return texture
 
   def close(self):
+    if not rl.is_window_ready():
+      return
+
     for texture in self._textures:
       rl.unload_texture(texture)
+    self._textures = []
 
     for font in self._fonts.values():
       rl.unload_font(font)
+    self._fonts = []
 
     rl.close_window()
 
@@ -118,8 +124,7 @@ class GuiApplication:
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.BORDER_WIDTH, 0)
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiDefaultProperty.TEXT_SIZE, DEFAULT_TEXT_SIZE)
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiDefaultProperty.BACKGROUND_COLOR, rl.color_to_int(rl.BLACK))
-    rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.TEXT_COLOR_NORMAL, rl.color_to_int(rl.Color(200, 200, 200, 255)))
-    rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiDefaultProperty.BACKGROUND_COLOR, rl.color_to_int(rl.Color(30, 30, 30, 255)))
+    rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.TEXT_COLOR_NORMAL, rl.color_to_int(DEFAULT_TEXT_COLOR))
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.BASE_COLOR_NORMAL, rl.color_to_int(rl.Color(50, 50, 50, 255)))
 
   def _monitor_fps(self):
