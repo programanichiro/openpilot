@@ -561,6 +561,10 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
         <source>System Unresponsive</source>
         <translation>システムが応答しません</translation>
     </message>
+    <message>
+        <source>Press Resume to Exit Standstill</source>
+        <translation>停止中。発進するにはアクセルを踏む</translation>
+    </message>
 </context>
 <context>
     <name>PairingPopup</name>
