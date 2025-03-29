@@ -173,6 +173,8 @@ class LongitudinalPlanner:
 
     self.dexp_mode_min = 20/3.6
     self.dexp_mode_max = 23/3.6
+    self.hasLead_1s = False
+    self.hasLead_1s_frame = 0
 
     if self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value): #47700はTSS2相当の操舵範囲
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
@@ -219,20 +221,29 @@ class LongitudinalPlanner:
       pass
 
     hasLead = sm['radarState'].leadOne.status
+    # hasLeadの短時間切り替えによるカメラのバタつきを抑える。
+    if self.hasLead_1s != hasLead:
+      if self.hasLead_1s_frame >= 15: #30カウントくらいで1秒
+        self.hasLead_1s = hasLead
+      else:
+        self.hasLead_1s_frame += 1
+    else:
+      self.hasLead_1s_frame = 0
+
     if dexp_mode:
       if self.mpc.mode == 'acc':
         with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
-          if hasLead:
+          if self.hasLead_1s:
             fp.write('%d' % (1)) #前走車がいるからイチロウロング無効
           else:
             fp.write('%d' % (0)) #前走車がいないからイチロウロング有効
 
-        if (hasLead == False and v_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (sm['carState'].leftBlinker or sm['carState'].rightBlinker):
+        if (self.hasLead_1s == False and v_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (sm['carState'].leftBlinker or sm['carState'].rightBlinker):
           params.put_bool("ExperimentalMode", True) # blended
           with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (1)) #イチロウロング無効
       else:
-        if (hasLead == True or v_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False):
+        if (self.hasLead_1s == True or v_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False):
           params.put_bool("ExperimentalMode", False) # acc
 
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
