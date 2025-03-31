@@ -82,16 +82,14 @@ class LanePlanner:
     r_prob *= mod
 
     lane_speed_margin = np.interp(v_ego*3.6 , [30,100] , [1,0]) #時速60キロで1.5倍弱になるよう調整。走行モデル向上によってオーバーしにくくなったのか、効果を弱める。
-    path_from_left_lane = self.lll_y + 1.8 / 2.0 + 0.2*lane_speed_margin #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
-    path_from_right_lane = self.rll_y - 1.8 / 2.0 - 0.2*lane_speed_margin
+    lane_path_y_interp_left = self.lll_y + 1.8 / 2.0 + 0.2*lane_speed_margin #プリウスの車幅だけ補正して、左端〜右端の間はe2eの推論選択に任せる。
+    lane_path_y_interp_right = self.rll_y - 1.8 / 2.0 - 0.2*lane_speed_margin
 
     new_lane_collision = 0 #bit0:left , bit1:right
     lane_d = 0
     if self.lta_mode:
-      lane_path_y_interp_left = path_from_left_lane
-      lane_path_y_interp_right = path_from_right_lane
       # with open('/tmp/debug_out_o','w') as fp:
-      #   fp.write('L:%.2f , e:%.2f , R:%.2f' % (path_from_left_lane[0] , path_xyz[:,1][0] , path_from_right_lane[0]))
+      #   fp.write('L:%.2f , e:%.2f , R:%.2f' % (lane_path_y_interp_left[0] , path_xyz[:,1][0] , lane_path_y_interp_right[0]))
       #以下、各要素がレーンの左右をはみ出さないように。はみ出てなければe2eLatに従う。
       diff_mul = 1.02 #押し戻すための倍率
       diff_add = 0.05 * lane_speed_margin #さらに押し戻す距離[m]
