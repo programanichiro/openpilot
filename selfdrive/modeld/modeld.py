@@ -308,7 +308,7 @@ def main(demo=False):
       posenet_send = messaging.new_message('cameraOdometry')
       fill_model_msg(drivingdata_send, modelv2_send, model_output, v_ego, steer_delay,
                      publish_state, meta_main.frame_id, meta_extra.frame_id, frame_id,
-                     frame_drop_ratio, meta_main.timestamp_eof, model_execution_time, live_calib_seen)
+                     frame_drop_ratio, meta_main.timestamp_eof, model_execution_time, live_calib_seen, sm['carState'].steeringAngleDeg, DH)
 
       desire_state = modelv2_send.modelV2.meta.desireState
       l_lane_change_prob = desire_state[log.Desire.laneChangeLeft]
