@@ -18,6 +18,7 @@ function agnos_init {
 
   # Check if AGNOS update is required
   if [ $(< /VERSION) != "$AGNOS_VERSION" ]; then
+    echo 1 > $DIR/../agnos_update
     AGNOS_PY="$DIR/system/hardware/tici/agnos.py"
     MANIFEST="$DIR/system/hardware/tici/agnos.json"
     if $AGNOS_PY --verify $MANIFEST; then
@@ -77,9 +78,13 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  if [ ! -f $DIR/common/params_pyx.so ]; then
+    echo 1 > $DIR/../force_prebuild
+  fi
+
   # start manager
   cd system/manager
-  if [ ! -f $DIR/prebuilt ]; then
+  if [ -f $DIR/../agnos_update ] || [ ! -f $DIR/prebuilt ] && [ -f $DIR/../force_prebuild ]; then
     ./build.py
   fi
   ./manager.py
