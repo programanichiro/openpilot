@@ -19,7 +19,6 @@ from openpilot.selfdrive.car.car_specific import CarSpecificEvents
 from openpilot.selfdrive.selfdrived.events import Events, ET
 from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
-from openpilot.selfdrive.controls.lib.latcontrol import MIN_LATERAL_CONTROL_SPEED
 
 from openpilot.system.version import get_build_metadata
 
@@ -270,11 +269,12 @@ class SelfdriveD:
     if not REPLAY and self.rk.lagging:
       self.events.add(EventName.selfdrivedLagging)
     if not self.sm.valid['radarState']:
-      if self.sm['radarState'].radarErrors.radarUnavailableTemporary:
+      if self.sm['radarState'].radarErrors.canError:
+        self.events.add(EventName.canError)
+      elif self.sm['radarState'].radarErrors.radarUnavailableTemporary:
         self.events.add(EventName.radarTempUnavailable)
       else:
         self.events.add(EventName.radarFault)
-      self.events.add(EventName.radarFault)
     if not self.sm.valid['pandaStates']:
       self.events.add(EventName.usbError)
     if CS.canTimeout:
@@ -330,7 +330,7 @@ class SelfdriveD:
     controlstate = self.sm['controlsState']
     lac = getattr(controlstate.lateralControlState, controlstate.lateralControlState.which())
     if lac.active and not recent_steer_pressed and not self.CP.notCar:
-      clipped_speed = max(CS.vEgo, MIN_LATERAL_CONTROL_SPEED)
+      clipped_speed = max(CS.vEgo, 0.3)
       actual_lateral_accel = controlstate.curvature * (clipped_speed**2)
       desired_lateral_accel = self.sm['modelV2'].action.desiredCurvature * (clipped_speed**2)
       undershooting = abs(desired_lateral_accel) / abs(1e-3 + actual_lateral_accel) > 1.2

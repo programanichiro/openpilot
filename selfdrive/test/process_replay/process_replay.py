@@ -2,7 +2,6 @@
 import os
 import time
 import copy
-import json
 import heapq
 import signal
 from collections import Counter, OrderedDict
@@ -543,8 +542,8 @@ CONFIGS = [
   ),
   ProcessConfig(
     proc_name="paramsd",
-    pubs=["livePose", "liveCalibration", "carState"],
-    subs=["liveParameters"],
+    pubs=["livePose", "liveCalibration", "carState", "carControl", "controlsState"],
+    subs=["liveParameters", "liveDelay"],
     ignore=["logMonoTime"],
     init_callback=get_car_params_callback,
     should_recv_callback=FrequencyBasedRcvCallback("livePose"),
@@ -628,9 +627,7 @@ def get_custom_params_from_lr(lr: LogIterable, initial_state: str = "first") -> 
   if len(live_calibration) > 0:
     custom_params["CalibrationParams"] = live_calibration[msg_index].as_builder().to_bytes()
   if len(live_parameters) > 0:
-    lp_dict = live_parameters[msg_index].to_dict()
-    lp_dict["carFingerprint"] = CP.carFingerprint
-    custom_params["LiveParameters"] = json.dumps(lp_dict)
+    custom_params["LiveParameters"] = live_parameters[msg_index].as_builder().to_bytes()
   if len(live_torque_parameters) > 0:
     custom_params["LiveTorqueParameters"] = live_torque_parameters[msg_index].as_builder().to_bytes()
 
