@@ -214,6 +214,11 @@ class TiciFanController(BaseFanController):
           diff_bear = 360 - abs_bear if abs_bear > 180 else abs_bear
           return diff_bear < 10 or diff_bear >= 170
 
+  def check_angle_match2(self,road_bear , car_bear): #条件が20度前後
+          abs_bear = math.fabs(road_bear - car_bear)
+          diff_bear = 360 - abs_bear if abs_bear > 180 else abs_bear
+          return diff_bear < 20 or diff_bear >= 160
+
   def osm_fetch(self):
     try:
       self.th_id += 1
@@ -332,6 +337,39 @@ class TiciFanController(BaseFanController):
                 speed_limit_num = int(speed_limit)
                 if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
                   min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
+
+        if len(road_info_list2) == 0: #全くマッチしなかったら、check_angle_matchを緩めてもう一回。
+          for road_info in road_info_list:
+            road_name = road_info["road_name"]
+            speed_limit = road_info["speed_limit"]
+            coords = road_info["coords"]
+            bears = road_info["bears"]
+            idx = self.find_nearest_coordinate(now_latitude,now_longitude,coords)
+            if self.check_angle_match2(bears[idx],self.bearing): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
+              dup = False
+              if True:
+                if speed_limit == "0":
+                  for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
+                    if road_info_tmp["road_name"] == road_name:
+                      dup = True
+                      break
+                else:
+                  road_info_list_ct = 0
+                  for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
+                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
+                      dup = True #速度と名前が同じでも弾く。
+                      break
+                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
+                      del road_info_list2[road_info_list_ct]
+                      break
+                    road_info_list_ct += 1
+              if dup == False:
+                road_info_list2.append(road_info)
+                if speed_limit != "0":
+                  speed_limit_num = int(speed_limit)
+                  if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
+                    min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
+
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
