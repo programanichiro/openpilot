@@ -127,7 +127,7 @@ class TestOptim(unittest.TestCase):
     old_state = Tensor.training
     t.sum().backward()
     Tensor.training = False
-    self.assertRaises(RuntimeError, optimizer.step)
+    self.assertRaises(AssertionError, optimizer.step)
     Tensor.training = True
     optimizer.step()
     Tensor.training = old_state

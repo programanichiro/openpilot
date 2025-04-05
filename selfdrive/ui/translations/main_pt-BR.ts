@@ -145,6 +145,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>Casa</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>Trabalho</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>Nenhum destino definido</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>Endereço de %1 não definido</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>casa</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>trabalho</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -328,6 +355,10 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
         <translation>ATIVO</translation>
     </message>
     <message>
+        <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to unmetered network</source>
+        <translation>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INATIVO&lt;/span&gt;: conecte-se a uma rede sem restrição &lt;br&gt; de dados</translation>
+    </message>
+    <message>
         <source>For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.&lt;br&gt;&lt;br&gt;Firehose Mode can also work while you&apos;re driving if connected to a hotspot or unlimited SIM card.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Frequently Asked Questions&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter how or where I drive?&lt;/i&gt; Nope, just drive as you normally would.&lt;br&gt;&lt;br&gt;&lt;i&gt;Do all of my segments get pulled in Firehose Mode?&lt;/i&gt; No, we selectively pull a subset of your segments.&lt;br&gt;&lt;br&gt;&lt;i&gt;What&apos;s a good USB-C adapter?&lt;/i&gt; Any fast phone or laptop charger should be fine.&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter which software I run?&lt;/i&gt; Yes, only upstream openpilot (and particular forks) are able to be used for training.</source>
         <translation>Para maior eficácia, leve seu dispositivo para dentro de casa e conecte-o a um bom adaptador USB-C e Wi-Fi semanalmente.&lt;br&gt;&lt;br&gt;O Modo Firehose também pode funcionar enquanto você dirige, se estiver conectado a um hotspot ou a um chip SIM com dados ilimitados.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Perguntas Frequentes&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Importa como ou onde eu dirijo?&lt;/i&gt; Não, basta dirigir normalmente.&lt;br&gt;&lt;br&gt;&lt;i&gt;Todos os meus segmentos são enviados no Modo Firehose?&lt;/i&gt; Não, selecionamos apenas um subconjunto dos seus segmentos.&lt;br&gt;&lt;br&gt;&lt;i&gt;Qual é um bom adaptador USB-C?&lt;/i&gt; Qualquer carregador rápido de telefone ou laptop deve ser suficiente.&lt;br&gt;&lt;br&gt;&lt;i&gt;Importa qual software eu uso?&lt;/i&gt; Sim, apenas o openpilot oficial (e alguns forks específicos) podem ser usados para treinamento.</translation>
     </message>
@@ -337,10 +368,6 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
             <numerusform>&lt;b&gt;%n segmento&lt;/b&gt; da sua direção está no conjunto de dados de treinamento até agora.</numerusform>
             <numerusform>&lt;b&gt;%n segmentos&lt;/b&gt; da sua direção estão no conjunto de dados de treinamento até agora.</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to an unmetered network</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -377,6 +404,47 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
     <message>
         <source>Installing...</source>
         <translation>Instalando...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>eta</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>min</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>hr</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>NAVEGAÇÃO</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>Gerencie em connect.comma.ai</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>Carregando Mapa</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>Aguardando GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>Aguardando rota</translation>
     </message>
 </context>
 <context>
@@ -553,6 +621,10 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
         <translation>Conectividade LTE (só nos EUA)</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>Navegação passo a passo</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>1 ano de dados em nuvem</translation>
     </message>
@@ -606,6 +678,22 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
             <numerusform>há %n dia</numerusform>
             <numerusform>há %n dias</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>milha</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>pés</translation>
     </message>
     <message>
         <source>now</source>
@@ -1050,6 +1138,22 @@ Isso pode levar até um minuto.</translation>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>Quando ativado, pressionar o pedal do acelerador desacionará o openpilot.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>Mostrar ETA em Formato 24h</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>Use o formato 24h em vez de am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>Exibir Mapa no Lado Esquerdo</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>Exibir mapa do lado esquerdo quando a tela for dividida.</translation>
     </message>
     <message>
         <source>Experimental Mode</source>

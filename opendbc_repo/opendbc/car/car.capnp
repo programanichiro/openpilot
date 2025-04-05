@@ -377,6 +377,10 @@ struct CarControl {
     torqueOutputCan @8: Float32;   # value sent over can to the car
     speed @6: Float32;  # m/s
 
+    debug @9: Float32;
+    debug2 @10: Float32;
+    debug3 @11: Float32;
+
     enum LongControlState @0xe40f3a917d908282{
       off @0;
       pid @1;
@@ -470,11 +474,10 @@ struct CarParams {
 
   minEnableSpeed @7 :Float32;
   minSteerSpeed @8 :Float32;
-  steerAtStandstill @77 :Bool;  # is steering available at standstill? just check if it faults
   safetyConfigs @62 :List(SafetyConfig);
   alternativeExperience @65 :Int16;      # panda flag for features like no disengage on gas
 
-  # Car docs fields, not used for control
+  # Car docs fields
   maxLateralAccel @68 :Float32;
   autoResumeSng @69 :Bool;               # describes whether car can resume from a stop automatically
 

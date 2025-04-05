@@ -6,7 +6,7 @@ class TestDeviceSpeed(unittest.TestCase):
   @classmethod
   def setUpClass(cls):
     cls.dev = Device[Device.DEFAULT]
-    cls.empty = Device[Device.DEFAULT].renderer.render([])
+    cls.empty = Device[Device.DEFAULT].renderer.render("test", [])
 
   def test_empty_compile(self):
     with Timing("compiler "):

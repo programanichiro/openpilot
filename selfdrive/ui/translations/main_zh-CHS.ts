@@ -145,6 +145,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>住家</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>工作</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>尚未设置目的地</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>尚未设置 %1 的位置</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>住家</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>工作</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -328,6 +355,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>激活中</translation>
     </message>
     <message>
+        <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to unmetered network</source>
+        <translation>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;未激活&lt;/span&gt;：请连接至不限流量的网络</translation>
+    </message>
+    <message>
         <source>For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.&lt;br&gt;&lt;br&gt;Firehose Mode can also work while you&apos;re driving if connected to a hotspot or unlimited SIM card.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Frequently Asked Questions&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter how or where I drive?&lt;/i&gt; Nope, just drive as you normally would.&lt;br&gt;&lt;br&gt;&lt;i&gt;Do all of my segments get pulled in Firehose Mode?&lt;/i&gt; No, we selectively pull a subset of your segments.&lt;br&gt;&lt;br&gt;&lt;i&gt;What&apos;s a good USB-C adapter?&lt;/i&gt; Any fast phone or laptop charger should be fine.&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter which software I run?&lt;/i&gt; Yes, only upstream openpilot (and particular forks) are able to be used for training.</source>
         <translation>为了达到最佳效果，请每周将您的设备带回室内，并连接到优质的 USB-C 充电器和 Wi-Fi。&lt;br&gt;&lt;br&gt;Firehose 模式在行驶时也能运行，但需连接到移动热点或使用不限流量的 SIM 卡。&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;常见问题&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;我开车的方式或地点有影响吗？&lt;/i&gt;不会，请像平常一样驾驶即可。&lt;br&gt;&lt;br&gt;&lt;i&gt;Firehose 模式会上传所有的驾驶片段吗？&lt;/i&gt;不会，我们会选择性地上传部分片段。&lt;br&gt;&lt;br&gt;&lt;i&gt;什么是好的 USB-C 充电器？&lt;/i&gt;任何快速手机或笔记本电脑充电器都应该适用。&lt;br&gt;&lt;br&gt;&lt;i&gt;我使用的软件版本有影响吗？&lt;/i&gt;有的，只有官方 openpilot（以及特定的分支）可以用于训练。</translation>
     </message>
@@ -336,10 +367,6 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>&lt;b&gt;目前已有 %n 段&lt;/b&gt; 您的驾驶数据被纳入训练数据集。</numerusform>
         </translation>
-    </message>
-    <message>
-        <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to an unmetered network</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -375,6 +402,47 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>Installing...</source>
         <translation>正在安装……</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>抵达</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>分钟</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>小时</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>导航</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>请在 connect.comma.ai 上管理</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>地图加载中</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>等待 GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>等待路线</translation>
     </message>
 </context>
 <context>
@@ -551,6 +619,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>全天候 LTE 连接</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>领航功能</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>一年的行驶记录储存空间</translation>
     </message>
@@ -601,6 +673,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>%n 天前</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -1045,6 +1133,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>启用后，踩下油门踏板将取消openpilot。</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>以24小时格式显示预计到达时间</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>使用24小时制代替am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>在介面左侧显示地图</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>在分屏模式中，将地图置于屏幕左侧。</translation>
     </message>
     <message>
         <source>Experimental Mode</source>

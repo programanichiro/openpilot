@@ -33,7 +33,6 @@ extern const int MAX_WRONG_COUNTERS;
 #define MAX_SAMPLE_VALS 6
 // used to represent floating point vehicle speed in a sample_t
 #define VEHICLE_SPEED_FACTOR 1000.0
-#define MAX_TORQUE_RT_INTERVAL 250000U
 
 
 // sample struct that keeps 6 samples in memory
@@ -63,13 +62,11 @@ typedef enum {
 
 typedef struct {
   // torque cmd limits
-  const int max_torque;  // this upper limit is always enforced
-  const bool dynamic_max_torque;  // use max_torque_lookup to apply torque limit based on speed
-  const struct lookup_t max_torque_lookup;
-
+  const int max_steer;
   const int max_rate_up;
   const int max_rate_down;
-  const int max_rt_delta;  // max change in torque per 250ms interval (MAX_TORQUE_RT_INTERVAL)
+  const int max_rt_delta;
+  const uint32_t max_rt_interval;
 
   const SteeringControlType type;
 
@@ -206,6 +203,9 @@ void pcm_cruise_check(bool cruise_engaged);
 void safety_tick(const safety_config *safety_config);
 
 // This can be set by the safety hooks
+extern bool lateral_controls_allowed;
+extern bool set_me_prev;
+
 extern bool controls_allowed;
 extern bool relay_malfunction;
 extern bool gas_pressed;

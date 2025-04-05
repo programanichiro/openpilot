@@ -68,6 +68,9 @@ uint32_t GET_BYTES(const CANPacket_t *msg, int start, int len) {
 
 const int MAX_WRONG_COUNTERS = 5;
 
+bool lateral_controls_allowed = false;
+bool set_me_prev = false;
+
 // This can be set by the safety hooks
 bool controls_allowed = false;
 bool relay_malfunction = false;
@@ -642,22 +645,14 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueStee
   bool violation = false;
   uint32_t ts = microsecond_timer_get();
 
-  if (controls_allowed) {
-    // Some safety models support variable torque limit based on vehicle speed
-    int max_torque = limits.max_torque;
-    if (limits.dynamic_max_torque) {
-      const float fudged_speed = (vehicle_speed.min / VEHICLE_SPEED_FACTOR) - 1.;
-      max_torque = interpolate(limits.max_torque_lookup, fudged_speed) + 1;
-      max_torque = CLAMP(max_torque, -limits.max_torque, limits.max_torque);
-    }
-
+  if (controls_allowed || lateral_controls_allowed) {
     // *** global torque limit check ***
-    violation |= max_limit_check(desired_torque, max_torque, -max_torque);
+    violation |= max_limit_check(desired_torque, limits.max_steer, -limits.max_steer);
 
     // *** torque rate limit check ***
     if (limits.type == TorqueDriverLimited) {
       violation |= driver_limit_check(desired_torque, desired_torque_last, &torque_driver,
-                                      max_torque, limits.max_rate_up, limits.max_rate_down,
+                                      limits.max_steer, limits.max_rate_up, limits.max_rate_down,
                                       limits.driver_torque_allowance, limits.driver_torque_multiplier);
     } else {
       violation |= dist_to_meas_check(desired_torque, desired_torque_last, &torque_meas,
@@ -670,14 +665,14 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueStee
 
     // every RT_INTERVAL set the new limits
     uint32_t ts_elapsed = get_ts_elapsed(ts, ts_torque_check_last);
-    if (ts_elapsed > MAX_TORQUE_RT_INTERVAL) {
+    if (ts_elapsed > limits.max_rt_interval) {
       rt_torque_last = desired_torque;
       ts_torque_check_last = ts;
     }
   }
 
   // no torque if controls is not allowed
-  if (!controls_allowed && (desired_torque != 0)) {
+  if (!(controls_allowed || lateral_controls_allowed) && (desired_torque != 0)) {
     violation = true;
   }
 
@@ -719,7 +714,7 @@ bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueStee
   }
 
   // reset to 0 if either controls is not allowed or there's a violation
-  if (violation || !controls_allowed) {
+  if (violation || !(controls_allowed || lateral_controls_allowed)) {
     valid_steer_req_count = 0;
     invalid_steer_req_count = 0;
     desired_torque_last = 0;

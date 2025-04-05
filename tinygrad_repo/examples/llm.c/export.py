@@ -2,9 +2,10 @@
 import os
 if "NOOPT" not in os.environ: os.environ["NOOPT"] = "1"
 from tinygrad import Device, nn, Tensor, dtypes, Variable
-Device.DEFAULT = "CPU"
+Device.DEFAULT = "CLANG"
 from train_gpt2 import GPT, GPTConfig
 from tinygrad.helpers import dedup, to_function_name, flatten, getenv, GlobalCounters, ansilen, to_function_name
+from tinygrad.engine.schedule import create_schedule
 from tinygrad.engine.realize import get_kernel, run_schedule
 from tinygrad.engine.memory import memory_planner
 from tinygrad.ops import Ops
@@ -36,16 +37,16 @@ if __name__ == "__main__":
       tensors = optimizer.schedule_step()
     else:
       tensors = []
-    sched = loss.schedule(*tensors)
+    sched = create_schedule([loss.lazydata] + [x.lazydata for x in tensors])
     print(f"calls {i}:", len(sched))
     #run_schedule(sched[:])
   sched = memory_planner(sched)
   ast_dedup = dedup([si.ast for si in sched if si.ast.op is Ops.SINK])
   srcs = {}
   for ast in ast_dedup:
-    k = get_kernel(Device["CPU"].renderer, ast)
+    k = get_kernel(Device["CLANG"].renderer, ast)
     k.linearize()
-    src = Device["CPU"].renderer.render(to_function_name(k.name), k.uops)
+    src = Device["CLANG"].renderer.render(to_function_name(k.name), k.uops)
     srcs[ast] = (k.name, src)
   print("functions:", len(srcs))
   used_buffers = dedup(flatten([si.bufs for si in sched]))

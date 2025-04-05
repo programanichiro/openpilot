@@ -4,8 +4,10 @@
 #include <QPainter>
 #include <algorithm>
 #include <cmath>
+#include <sstream>
 
 #include "common/swaglog.h"
+#include "selfdrive/ui/qt/maps/map_helpers.h"
 #include "selfdrive/ui/qt/util.h"
 
 // Window that shows camera view and variety of info drawn on top
@@ -14,17 +16,53 @@ AnnotatedCameraWidget::AnnotatedCameraWidget(VisionStreamType type, QWidget *par
   pm = std::make_unique<PubMaster>(std::vector<const char*>{"uiDebug"});
 
   main_layout = new QVBoxLayout(this);
+/*
   main_layout->setMargin(UI_BORDER_SIZE);
   main_layout->setSpacing(0);
 
   experimental_btn = new ExperimentalButton(this);
   main_layout->addWidget(experimental_btn, 0, Qt::AlignTop | Qt::AlignRight);
+
+  map_settings_btn = new MapSettingsButton(this);
+  main_layout->addWidget(map_settings_btn, 0, Qt::AlignBottom | Qt::AlignRight);
+*/
+  map_settings_btn = new MapSettingsButton(this);
+
+  buttons = new ButtonsWindow(this , map_settings_btn); //ここならばexperimental_btnとイベントの両立ができ、マップの右画面のスクロール操作ができる。->ExperimentalButtonをLayoutで囲むとイベントが先に登録勝ちになってしまう。
+  QObject::connect(uiState(), &UIState::uiUpdate, buttons, &ButtonsWindow::updateState);
+  main_layout->addWidget(buttons);
 }
 
+extern float handle_center;
+extern int handle_calibct;
+extern float distance_traveled;
+extern float global_angle_steer0;
+extern float clipped_brightness0; //初回ファイルアクセスさせるため、わざと101
+extern float global_fps;
+bool global_engageable;
+float vc_speed;
+int tss_type = 0;
+float maxspeed_org;
+std::string road_info_txt;
+bool g_rightHandDM;
+int ACC_speed;
+extern void setButtonEnabled0(const char*fn , bool flag);
+extern void setButtonInt(const char*fn , int num);
+extern int getButtonInt(const char*fn , int defaultNum);
 void AnnotatedCameraWidget::updateState(const UIState &s) {
   // update engageability/experimental mode button
-  experimental_btn->updateState(s);
+//  experimental_btn->updateState(s);
   dmon.updateState(s);
+  buttons->psn_update();
+  const auto ss = (*s.sm)["selfdriveState"].getSelfdriveState();
+  global_engageable = (ss.getEngageable() || ss.getEnabled());
+
+  // hide map settings button for alerts and flip for right hand DM
+  // if (map_settings_btn->isEnabled()) {
+  //   map_settings_btn->setVisible(!hideBottomIcons);
+  //   main_layout->setAlignment(map_settings_btn, (rightHandDM ? Qt::AlignLeft : Qt::AlignRight) | Qt::AlignBottom);
+  // }
+  map_settings_btn->setVisible(true); //他のボタンの位置へ影響するので、出しっぱなしにする。
 }
 
 void AnnotatedCameraWidget::initializeGL() {
@@ -38,6 +76,7 @@ void AnnotatedCameraWidget::initializeGL() {
   setBackgroundColor(bg_colors[STATUS_DISENGAGED]);
 }
 
+bool g_wide_cam;
 mat4 AnnotatedCameraWidget::calcFrameMatrix() {
   // Project point at "infinity" to compute x and y offsets
   // to ensure this ends up in the middle of the screen
@@ -47,6 +86,7 @@ mat4 AnnotatedCameraWidget::calcFrameMatrix() {
   // Select intrinsic matrix and calibration based on camera type
   auto *s = uiState();
   bool wide_cam = active_stream_type == VISION_STREAM_WIDE_ROAD;
+  g_wide_cam = wide_cam;
   const auto &intrinsic_matrix = wide_cam ? ECAM_INTRINSIC_MATRIX : FCAM_INTRINSIC_MATRIX;
   const auto &calibration = wide_cam ? s->scene.view_from_wide_calib : s->scene.view_from_calib;
 
@@ -87,6 +127,11 @@ mat4 AnnotatedCameraWidget::calcFrameMatrix() {
   }};
 }
 
+bool all_brake_light = false;
+float global_a_rel;
+float global_a_rel_col;
+extern bool mapVisible;
+bool g_wide_cam_requested;
 void AnnotatedCameraWidget::paintGL() {
   UIState *s = uiState();
   SubMaster &sm = *(s->sm);
@@ -119,6 +164,7 @@ void AnnotatedCameraWidget::paintGL() {
         wide_cam_requested = false;
       }
       wide_cam_requested = wide_cam_requested && sm["selfdriveState"].getSelfdriveState().getExperimentalMode();
+      g_wide_cam_requested = wide_cam_requested;
     }
     CameraWidget::setStreamType(wide_cam_requested ? VISION_STREAM_WIDE_ROAD : VISION_STREAM_ROAD);
     CameraWidget::setFrameId(sm["modelV2"].getModelV2().getFrameId());
@@ -137,10 +183,12 @@ void AnnotatedCameraWidget::paintGL() {
   double cur_draw_t = millis_since_boot();
   double dt = cur_draw_t - prev_draw_t;
   double fps = fps_filter.update(1. / dt * 1000);
+  global_fps = (float)fps;
   if (fps < 15) {
     LOGW("slow frame rate: %.2f fps", fps);
   }
   prev_draw_t = cur_draw_t;
+  distance_traveled += (*s->sm)["carState"].getCarState().getVEgo() * dt / 1000;
 
   // publish debug msg
   MessageBuilder msg;
@@ -154,4 +202,33 @@ void AnnotatedCameraWidget::showEvent(QShowEvent *event) {
 
   ui_update_params(uiState());
   prev_draw_t = millis_since_boot();
+}
+
+int AnnotatedCameraWidget::drawTextLeft(QPainter &p, int x, int y, const QString &text, int alpha , bool brakeLight , int red, int blu, int grn , int bk_red, int bk_blu, int bk_grn, int bk_alp, int bk_yofs, int bk_corner_r , int bk_add_w, int bk_xofs, int bk_add_h) {
+  QRect real_rect = p.fontMetrics().boundingRect(text);
+  real_rect.moveCenter({x + real_rect.width() / 2, y - real_rect.height() / 2});
+
+  if(bk_alp > 0){
+    //バックを塗る。
+    p.setBrush(QColor(bk_red, bk_blu, bk_grn, bk_alp));
+    if(bk_corner_r == 0){
+      p.drawRect(real_rect.x()+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height() + bk_add_h);
+    } else {
+      QRect rc(real_rect.x()+bk_xofs,real_rect.y() + bk_yofs , real_rect.width()+bk_add_w , real_rect.height() + bk_add_h);
+      p.drawRoundedRect(rc, bk_corner_r, bk_corner_r);
+    }
+  }
+
+  if(brakeLight == false){
+    p.setPen(QColor(red, blu, grn, alpha));
+  } else {
+    alpha += 100;
+    if(alpha > 255){
+      alpha = 255;
+    }
+    p.setPen(QColor(0xff, 0, 0, alpha));
+  }
+  p.drawText(real_rect.x(), real_rect.bottom(), text);
+
+  return x + real_rect.width(); //続けて並べるxposを返す。
 }

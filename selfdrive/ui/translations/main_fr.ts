@@ -145,6 +145,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>Domicile</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>Travail</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>Aucune destination définie</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>domicile</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>travail</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>Aucun lieu %1 défini</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -326,6 +353,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to unmetered network</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.&lt;br&gt;&lt;br&gt;Firehose Mode can also work while you&apos;re driving if connected to a hotspot or unlimited SIM card.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Frequently Asked Questions&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter how or where I drive?&lt;/i&gt; Nope, just drive as you normally would.&lt;br&gt;&lt;br&gt;&lt;i&gt;Do all of my segments get pulled in Firehose Mode?&lt;/i&gt; No, we selectively pull a subset of your segments.&lt;br&gt;&lt;br&gt;&lt;i&gt;What&apos;s a good USB-C adapter?&lt;/i&gt; Any fast phone or laptop charger should be fine.&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter which software I run?&lt;/i&gt; Yes, only upstream openpilot (and particular forks) are able to be used for training.</source>
         <translation type="unfinished"></translation>
     </message>
@@ -335,10 +366,6 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
             <numerusform></numerusform>
             <numerusform></numerusform>
         </translation>
-    </message>
-    <message>
-        <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to an unmetered network</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -375,6 +402,47 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>Installing...</source>
         <translation>Installation...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>eta</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>min</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>h</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>NAVIGATION</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>Gérer sur connect.comma.ai</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>Chargement de la carte</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>En attente du GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>En attente d&apos;un trajet</translation>
     </message>
 </context>
 <context>
@@ -555,6 +623,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>1 an de stockage de trajets</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>Navigation étape par étape</translation>
+    </message>
+    <message>
         <source>Remote snapshots</source>
         <translation>Captures à distance</translation>
     </message>
@@ -604,6 +676,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
             <numerusform>il y a %n jour</numerusform>
             <numerusform>il y a %n jours</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -1052,6 +1140,22 @@ Cela peut prendre jusqu&apos;à une minute.</translation>
     <message>
         <source>Display speed in km/h instead of mph.</source>
         <translation>Afficher la vitesse en km/h au lieu de mph.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>Afficher l&apos;heure d&apos;arrivée en format 24h</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>Utiliser le format 24h plutôt que am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>Afficher la carte à gauche de l&apos;interface</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>Afficher la carte à gauche en mode écran scindé.</translation>
     </message>
     <message>
         <source>Aggressive</source>

@@ -38,15 +38,15 @@ class CarControllerParams:
     if CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
       self.ACCEL_MAX = 2.0
     else:
-      self.ACCEL_MAX = 1.5  # m/s2, lower than allowed 2.0 m/s^2 for tuning reasons
+      self.ACCEL_MAX = 2.0  #1.5では発進が鈍る？ # m/s2, lower than allowed 2.0 m/s^2 for tuning reasons
     self.ACCEL_MIN = -3.5  # m/s2
 
     if CP.lateralTuning.which() == 'torque':
       self.STEER_DELTA_UP = 15       # 1.0s time to peak torque
-      self.STEER_DELTA_DOWN = 25     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
+      self.STEER_DELTA_DOWN = 25     # カスタム50を戻す always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
     else:
       self.STEER_DELTA_UP = 10       # 1.5s time to peak torque
-      self.STEER_DELTA_DOWN = 25     # always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
+      self.STEER_DELTA_DOWN = 25     # カスタム50を戻す always lower than 45 otherwise the Rav4 faults (Prius seems ok with 50)
 
 
 class ToyotaSafetyFlags(IntFlag):
@@ -60,6 +60,7 @@ class ToyotaSafetyFlags(IntFlag):
 class ToyotaFlags(IntFlag):
   # Detected flags
   HYBRID = 1
+  SMART_DSU = 2
   DISABLE_RADAR = 4
 
   # Static flags
@@ -70,11 +71,15 @@ class ToyotaFlags(IntFlag):
   # these cars use the Lane Tracing Assist (LTA) message for lateral control
   ANGLE_CONTROL = 128
   NO_STOP_TIMER = 256
-  # these cars are speculated to allow stop and go when the DSU is unplugged
+  # these cars are speculated to allow stop and go when the DSU is unplugged or disabled with sDSU
   SNG_WITHOUT_DSU = 512
   # these cars can utilize 2.0 m/s^2
   RAISED_ACCEL_LIMIT = 1024
   SECOC = 2048
+
+  POWER_STEERING_TSS2 = 8192 #onroad/hud.ccのcp.getFlags()ビットテストを合わせること。
+  # Irene's flags
+  DSU_BYPASS = 4096
 
 class Footnote(Enum):
   CAMRY = CarFootnote(
@@ -271,7 +276,7 @@ class CAR(Platforms):
   )
   TOYOTA_RAV4_TSS2_2023 = ToyotaTSS2PlatformConfig(
     [
-      ToyotaCarDocs("Toyota RAV4 2023-25"),
+      ToyotaCarDocs("Toyota RAV4 2023-24"),
       ToyotaCarDocs("Toyota RAV4 Hybrid 2023-25", video_link="https://youtu.be/4eIsEq4L4Ng"),
     ],
     TOYOTA_RAV4_TSS2.specs,
@@ -280,11 +285,6 @@ class CAR(Platforms):
   TOYOTA_RAV4_PRIME = ToyotaSecOCPlatformConfig(
     [ToyotaCarDocs("Toyota RAV4 Prime 2021-23", min_enable_speed=MIN_ACC_SPEED)],
     CarSpecs(mass=4372. * CV.LB_TO_KG, wheelbase=2.68, steerRatio=16.88, tireStiffnessFactor=0.5533),
-  )
-  TOYOTA_YARIS = ToyotaSecOCPlatformConfig(
-    [ToyotaCarDocs("Toyota Yaris 2023 (Non-US only)", min_enable_speed=MIN_ACC_SPEED)],
-    CarSpecs(mass=1170, wheelbase=2.55, steerRatio=14.80, tireStiffnessFactor=0.5533),
-    flags=ToyotaFlags.RADAR_ACC,
   )
   TOYOTA_MIRAI = ToyotaTSS2PlatformConfig( # TSS 2.5
     [ToyotaCarDocs("Toyota Mirai 2021")],

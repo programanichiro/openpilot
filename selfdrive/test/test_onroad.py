@@ -62,6 +62,7 @@ PROCS = {
   "system.micd": 5.0,
   "system.timed": 0,
   "selfdrive.pandad.pandad": 0,
+  "selfdrive.navd.navd": 0.4,
   "system.statsd": 1.0,
   "system.loggerd.uploader": 15.0,
   "system.loggerd.deleter": 1.0,
@@ -95,7 +96,6 @@ TIMINGS = {
   "modelV2": [2.5, 0.35],
   "driverStateV2": [2.5, 0.40],
   "livePose": [2.5, 0.35],
-  "liveParameters": [2.5, 0.35],
   "wideRoadCameraState": [1.5, 0.35],
 }
 
@@ -392,12 +392,8 @@ class TestOnroad:
     result += "----------------- Model Timing -----------------\n"
     result += "------------------------------------------------\n"
     cfgs = [
-      # since multiple processes use the GPU and can preempt each other,
-      # these numbers are not fully self-contained.
-      ("modelV2", 0.06, 0.040),
-
-      # can miss cycles here and there, just important the avg frequency is 20Hz
-      ("driverStateV2", 0.2, 0.05),
+      ("modelV2", 0.045, 0.040),  # TODO: this should be stricter but it's hard to measure exactly
+      ("driverStateV2", 0.045, 0.035),
     ]
     for (s, instant_max, avg_max) in cfgs:
       ts = [getattr(m, s).modelExecutionTime for m in self.msgs[s]]

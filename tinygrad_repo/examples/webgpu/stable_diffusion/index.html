@@ -322,9 +322,7 @@
             requiredLimits.maxBufferSize = maxBufferSizeInSDModel;
             
             return await adapter.requestDevice({
-                requiredLimits,
-                requiredFeatures: ["shader-f16"],
-                powerPreference: "high-performance"
+                requiredLimits
             });
         };
 

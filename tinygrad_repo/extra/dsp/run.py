@@ -1,4 +1,3 @@
-# mypy: ignore-errors
 #!/usr/bin/env python3
 import os, ctypes, ctypes.util, struct, platform, time
 from tinygrad.runtime.autogen import libc, qcom_dsp
@@ -112,7 +111,7 @@ def install_hook(c_function, python_function):
   return orig_func
 
 libc = ctypes.CDLL(ctypes.util.find_library("libc"))
-#install_hook(libc.ioctl, ioctl)
+install_hook(libc.ioctl, ioctl)
 adsp = ctypes.CDLL(ctypes.util.find_library("adsprpc"))
 
 def send_rpc_invoke(filename):
