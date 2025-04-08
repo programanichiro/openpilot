@@ -113,6 +113,8 @@ static float width_rate = -1;
 MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_settings(settings), m_panel(panel), velocity_filter(0, 10, 0.05, false) {
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
 
+  zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
+
   map_overlay = new QWidget (this);
   map_overlay->setAttribute(Qt::WA_TranslucentBackground, true);
   QVBoxLayout *overlay_layout = new QVBoxLayout(map_overlay);
@@ -756,7 +758,6 @@ void MapWindow::resizeGL(int w, int h) {
 void MapWindow::initializeGL() {
   m_map.reset(new QMapLibre::Map(this, m_settings, size(), 1));
 
-  zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
   //不要north_up = getButtonInt("/data/mb_north_up.txt",0);
 
   if (last_position) {
