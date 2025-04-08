@@ -114,7 +114,7 @@ MapWindow::MapWindow(const QMapLibre::Settings &settings, QFrame *panel) : m_set
   QObject::connect(uiState(), &UIState::uiUpdate, this, &MapWindow::updateState);
 
   zoom_offset = (float)((double)getButtonInt("/data/mb_zoom_offset.txt",0) / 1000);
-  velocity_filter.update(std::max(10/3.6, 0)); //GPS待ちしていると10/3.6が反映されない。
+  velocity_filter.update(std::max(10/3.6, 0.0)); //GPS待ちしていると10/3.6が反映されない。
 
   map_overlay = new QWidget (this);
   map_overlay->setAttribute(Qt::WA_TranslucentBackground, true);
