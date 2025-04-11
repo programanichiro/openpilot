@@ -538,6 +538,10 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
         <source> ALERT</source>
         <translation> 警告</translation>
     </message>
+    <message>
+        <source>Power Off</source>
+        <translation>パワーオフ</translation>
+    </message>
 </context>
 <context>
     <name>OnroadAlerts</name>
