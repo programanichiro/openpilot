@@ -193,6 +193,7 @@ class LongitudinalPlanner:
 
     v_ego = sm['modelV2'].velocity.x[0]
     # v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
+    vk_ego = sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
     dexp_mode = False
     try:
@@ -222,12 +223,12 @@ class LongitudinalPlanner:
           else:
             fp.write('%d' % (0)) #前走車がいないからイチロウロング有効
 
-        if (self.hasLead_1s == False and v_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (v_ego > 0.1/3.6 and (sm['carState'].leftBlinker or sm['carState'].rightBlinker)):
+        if (self.hasLead_1s == False and vk_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (vk_ego > 0.1/3.6 and (sm['carState'].leftBlinker or sm['carState'].rightBlinker)):
           params.put_bool("ExperimentalMode", True) # blended
           with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (1)) #イチロウロング無効
       else:
-        if (self.hasLead_1s == True or v_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (v_ego <= 0.1/3.6 or (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False)):
+        if (self.hasLead_1s == True or vk_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (vk_ego <= 0.1/3.6 or (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False)):
           params.put_bool("ExperimentalMode", False) # acc
 
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
@@ -260,7 +261,7 @@ class LongitudinalPlanner:
       pass
     one_pedal = False
     on_accel0 = False #押した瞬間
-    if v_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
+    if vk_ego <= 3/3.6 or (OP_ACCEL_PUSH == False and sm['carState'].gasPressed):
       if accel_engaged_str:
         if int(accel_engaged_str) >= 3: #ワンペダルモード
           one_pedal = True
@@ -273,7 +274,7 @@ class LongitudinalPlanner:
         if sm['carState'].gas < 0.32: #アクセルが弱いかチョン押しなら
           on_accel0 = True #ワンペダルに変更
         on_onepedal_ct = -1 #アクセル判定消去
-    if on_accel0 and v_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
+    if on_accel0 and vk_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
       if sm['selfdriveState'].enabled and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6):
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
@@ -283,7 +284,7 @@ class LongitudinalPlanner:
       one_pedal_chenge_restrict_time = 20
     if one_pedal_chenge_restrict_time > 0:
       one_pedal_chenge_restrict_time -= 1
-    if one_pedal == True and v_ego < 0.1/3.6 and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False:
+    if one_pedal == True and vk_ego < 0.1/3.6 and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False:
       force_one_pedal_set = False
       try:
         with open('/dev/shm/force_one_pedal.txt','r') as fp:
@@ -306,22 +307,26 @@ class LongitudinalPlanner:
       # if sm['carState'].gasPressed and sm['selfdriveState'].enabled: #アクセル踏んでエンゲージ中なら
       if sm['selfdriveState'].enabled: #アクセル踏む条件を無視してみる。
         sm_longControlState = LongCtrlState.pid #0.8.14からアクセルONでLongCtrlState.offとなるため、従来動作をシミュレート
-    if OP_ENABLE_PREV == False and sm_longControlState != LongCtrlState.off and (((one_pedal or v_ego > 3/3.6) and v_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
+    if OP_ENABLE_PREV == False and sm_longControlState != LongCtrlState.off and (((one_pedal or vk_ego > 3/3.6) and vk_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
        #速度が時速３km以上かつ31km未満かつsm['carState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
       #アクセル踏みながらのOP有効化の瞬間
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       if one_pedal_chenge_restrict_time == 0:
-        OP_ENABLE_gas_speed = v_ego
+        OP_ENABLE_gas_speed = vk_ego
       if accel_engaged_str:
         if int(accel_engaged_str) >= 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
           OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
+    if OP_ENABLE_ACCEL_RELEASE == True and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego > 16/3.6 and vk_ego < min_acc_speed/3.6:
+      OP_ENABLE_ACCEL_RELEASE = False #ワンペダル中の低速操作で常にアクセル操作をMAXに伝える。アクセルを放しても減速しなくなる。
+      with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
+        fp.write('%d' % (1)) #MAXが上昇するのでprompt.wavを鳴らす。
     if sm_longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         if one_pedal_chenge_restrict_time == 0:
-          OP_ENABLE_gas_speed = v_ego
+          OP_ENABLE_gas_speed = vk_ego
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
@@ -333,10 +338,10 @@ class LongitudinalPlanner:
 
     md = sm['modelV2']
     # hasLead = sm['radarState'].leadOne.status
-    #distLead_near = sm['radarState'].leadOne.dRel < np.interp(v_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
-    distLead_near = hasLead #and sm['radarState'].leadOne.dRel < np.interp(v_ego*3.6 , [30,80] , [60,130]) #前走車が近ければTrue,最近前走者が遠くてもワンペダル遷移してしまうので、ちょっと調整。
+    #distLead_near = sm['radarState'].leadOne.dRel < np.interp(vk_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
+    distLead_near = hasLead #and sm['radarState'].leadOne.dRel < np.interp(vk_ego*3.6 , [30,80] , [60,130]) #前走車が近ければTrue,最近前走者が遠くてもワンペダル遷移してしまうので、ちょっと調整。
     global signal_scan_ct,path_x_old_signal,path_x_old_signal_check , red_signal_scan_flag
-    if v_ego <= 0.1/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
+    if vk_ego <= 0.1/3.6 and (OP_ENABLE_v_cruise_kph > 0 or one_pedal == False or (OP_ENABLE_v_cruise_kph == 0 and (hasLead == False or distLead_near == False))) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False: #and (hasLead == False or (sm['radarState'].leadOne.dRel > 40 and sm['radarState'].leadOne.modelProb > 0.5)):
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
       # 停止時の青信号発進抑制、一時的に緩和、15->50度
@@ -344,7 +349,7 @@ class LongitudinalPlanner:
         #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
         path_x = md.position.x #path_xyz[:,0]
         # with open('/tmp/debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
-        #   fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[TRAJECTORY_SIZE -1],signal_scan_ct,path_x_old_signal_check,v_ego))
+        #   fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[TRAJECTORY_SIZE -1],signal_scan_ct,path_x_old_signal_check,vk_ego))
         #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
         #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
         with open('/dev/shm/blue_signal_chk.txt','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
@@ -384,13 +389,13 @@ class LongitudinalPlanner:
     if path_x_old_signal < 20:
       path_x_old_signal_check = 0
 
-    if a_ego > 0 and v_ego > 24/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ。30キロ(min_acc_speed)以上から24キロ以上へ変更
+    if a_ego > 0 and vk_ego > 24/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled and sm['carState'].gas > 0.32: #アクセル強押しでワンペダルからオートパイロットへ。30キロ(min_acc_speed)以上から24キロ以上へ変更
       OP_ENABLE_v_cruise_kph = 0 #エクストラエンゲージ解除
       signal_scan_ct = 200 #このあと信号スタート判定されてprompt.wavが鳴るのを防止する。
       with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #engage.wavを鳴らす。
 
-    # if CVS_FRAME % 10 == 0 and v_ego >= 1/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled:
+    # if CVS_FRAME % 10 == 0 and vk_ego >= 1/3.6 and OP_ENABLE_v_cruise_kph > 0 and sm['selfdriveState'].enabled:
     #   try: #首ジェスチャーでエクストラエンゲージ解除をやろうと思ったが、誤作動懸念で保留。アクセル踏み込みとレバーアップがあるし
     #     with open('/dev/shm/gesture_onpe2AP.txt','r') as fp:
     #       gesture_onpe2AP_str = fp.read()
@@ -413,7 +418,7 @@ class LongitudinalPlanner:
       path_x = md.position.x #path_xyz[:,0]
       red_signal_v_ego = 4/3.6 #この速度超で赤信号認識。
       if (hasLead == False or distLead_near == False) and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego):
-        if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
+        if red_signal_scan_flag_1 != 3 and vk_ego > red_signal_v_ego:
           red_signal_scan_flag_1 = 1 #赤信号センシング
 
       # path_x[TRAJECTORY_SIZE -1]が増加方向の時は弾きたい。
@@ -421,7 +426,7 @@ class LongitudinalPlanner:
       self.red_signal_path_xs = np.delete(self.red_signal_path_xs , [0])
       sum_red_signal_path_xs = np.sum(self.red_signal_path_xs)
 
-      if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < np.interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
+      if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
         red_signal = "●"
         self.red_signals = np.append(self.red_signals,1)
       else:
@@ -431,14 +436,14 @@ class LongitudinalPlanner:
       red_signals_sum = np.sum(self.red_signals)
       if red_signals_sum > self.red_signals.size * 0.7:
         red_signals_mark = "■"
-        if red_signal_scan_flag_1 != 3 and v_ego > red_signal_v_ego:
+        if red_signal_scan_flag_1 != 3 and vk_ego > red_signal_v_ego:
           if red_signal_scan_flag < 2:
             red_signal_scan_ct_2 = 0
           red_signal_scan_ct_2 += 1 #red_signal_scan_flagが2になった瞬間から加算し始める。
           red_signal_scan_flag_1 = 2 #赤信号検出
           #この信号認識状態 and sum_red_signal_path_xs < self.old_red_signal_path_xsなら速度を落とし始めてもいい？ 473行のv_cruiseを1割落とすとか
-          if v_ego > 20/3.6 and sum_red_signal_path_xs < self.old_red_signal_path_xs:
-            red_signal_speed_down = np.interp(v_ego*3.6 , [10,20,30,40,50,55,60] , [0.97,0.96,0.95,0.94,0.93,0.92,0.91])
+          if vk_ego > 20/3.6 and sum_red_signal_path_xs < self.old_red_signal_path_xs:
+            red_signal_speed_down = np.interp(vk_ego*3.6 , [10,20,30,40,50,55,60] , [0.97,0.96,0.95,0.94,0.93,0.92,0.91])
             red_signal_scan_ct_2_rate = 200 if red_signal_scan_ct_2 > 200 else red_signal_scan_ct_2 #最大200
             red_signal_speed_down -= red_signal_scan_ct_2_rate * 0.3 / 200 #徐々にブレーキが強くなる
             red_signal_speed_down_before = red_signal_speed_down
@@ -448,7 +453,7 @@ class LongitudinalPlanner:
       else:
         red_signals_mark = "□"
 
-      desired_path_x_by_speed = np.interp(v_ego*3.6,desired_path_x_speeds,desired_path_x_by_speeds)
+      desired_path_x_by_speed = np.interp(vk_ego*3.6,desired_path_x_speeds,desired_path_x_by_speeds)
       desired_path_x_rate = 0 if desired_path_x_by_speed <= 0.01 else path_x[TRAJECTORY_SIZE -1]/desired_path_x_by_speed
       self.desired_path_x_rates = np.append(self.desired_path_x_rates,desired_path_x_rate)
       self.desired_path_x_rates = np.delete(self.desired_path_x_rates , [0])
@@ -462,12 +467,12 @@ class LongitudinalPlanner:
       #   if hasLead == False or distLead_near == False:
       #     lead_mark = "△"
       # #   #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
-      # #   #fp.write('@@@%f,%f,%f' % (v_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
+      # #   #fp.write('@@@%f,%f,%f' % (vk_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
       # #   #fp.write('***%.2f,[%.2f],%d' % (np.sum(self.desired_path_x_rates),desired_path_x_rate,self.desired_path_x_rates.size))
-      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
-      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
-      #   fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
-      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (v_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
+      #   fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
       red_signal_scan_ct += 1 #音を鳴らした後の緩衝処理になっているだけで、信号検出のあと徐々に加算されるロジックではないようだ。
 
       self.night_time_refresh_ct += 1
@@ -482,23 +487,23 @@ class LongitudinalPlanner:
       red_stop_immediately = False
       if long_speeddown_flag == False and self.mode == 'acc': #公式ロングではelseへ強制遷移する追加条件
         if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
-          stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
+          stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
         else: #夜
-          stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
+          stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
         if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
           red_stop_immediately = True #停止せよ。
       else:
         if True: #self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
-          stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50,60] , [15,20,23,28,43,57,66]) #事前減速で40km/h以下になることを期待している。昼
+          stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,60] , [15,20,23,28,43,57,66]) #事前減速で40km/h以下になることを期待している。昼
         # else: #夜
-        #   stop_threshold = np.interp(v_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
+        #   stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
         if path_x[TRAJECTORY_SIZE -1] < stop_threshold or desired_path_x_rate < 0.11:
           red_stop_immediately = True #停止せよ。
-        # stop_threshold_r = np.interp(v_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
+        # stop_threshold_r = np.interp(vk_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
         #                                     , [0.25,0.30,0.33,0.35,0.38,0.41,0.43]) #さらに減速度の強さa_egoを加味。弱ければより小さくできる？
         # if desired_path_x_rate < stop_threshold_r: #0.4:
         #   red_stop_immediately = True #停止せよ。
-      if sum_red_signal_path_xs < self.old_red_signal_path_xs and v_ego > red_signal_v_ego and red_signals_mark == "■" and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
+      if sum_red_signal_path_xs < self.old_red_signal_path_xs and vk_ego > red_signal_v_ego and red_signals_mark == "■" and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego) and red_stop_immediately == True:
         #赤信号検出でワンペダル発動
         if red_signal_scan_ct < 10000:
           red_signal_scan_ct = 10000
@@ -535,7 +540,7 @@ class LongitudinalPlanner:
       self.old_red_signal_path_xs = sum_red_signal_path_xs
 
     lever_up_down = 0
-    # if (hasLead == True and distLead_near == True) or v_ego > 24/3.6: #ここではlimitspeed_setは判定できないand limitspeed_set == True:
+    # if (hasLead == True and distLead_near == True) or vk_ego > 24/3.6: #ここではlimitspeed_setは判定できないand limitspeed_set == True:
     if hasLead == True:
       if before_v_cruise_kph_max_1 > 0 and before_v_cruise_kph_max_1 < 200:
         if v_cruise_kph < before_v_cruise_kph_max_1:
@@ -543,14 +548,14 @@ class LongitudinalPlanner:
         elif v_cruise_kph > before_v_cruise_kph_max_1:
           lever_up_down = 1
 
-    if (hasLead == True and sm['radarState'].leadOne.dRel < 10) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+    if (hasLead == True and sm['radarState'].leadOne.dRel < 10) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or vk_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         if self.red_signal_eP_iP_flag != 0:
           self.red_signal_eP_iP_flag = 0
           with open('/dev/shm/red_signal_eP_iP_set.txt','w') as fp:
             fp.write('%d' % (0))
 
-    if (hasLead == True and distLead_near == True) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or v_ego < 0.1/3.6:
+    if (hasLead == True and distLead_near == True) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or vk_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         red_signal_scan_flag_1 = 0
 
@@ -565,14 +570,14 @@ class LongitudinalPlanner:
       with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
         fp.write('%d' % (rssf))
 
-    if hasLead == False and one_pedal == True and v_ego < 0.1/3.6: #速度ゼロでIPモード時にレバー下に入れたら
+    if hasLead == False and one_pedal == True and vk_ego < 0.1/3.6: #速度ゼロでIPモード時にレバー下に入れたら
       if v_cruise_kph < before_v_cruise_kph_max_1 and before_v_cruise_kph_max_1 < 200: #200km/h以下の場合のみ。初回の誤設定を弾く。
         if OP_ENABLE_v_cruise_kph == 0:
           with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
             fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = 1.0 / 3.6
-    if v_ego > 3/3.6 and v_ego <= 30/3.6:
+    if vk_ego > 3/3.6 and vk_ego <= 30/3.6:
       force_low_engage_set = False #MAX!=1でタッチすると低速(スピードが3〜30km/h)でエンゲージ。
       try:
         with open('/dev/shm/force_low_engage.txt','r') as fp:
@@ -580,7 +585,7 @@ class LongitudinalPlanner:
           if force_low_engage_str:
             if int(force_low_engage_str) == 1:
               OP_ENABLE_v_cruise_kph = v_cruise_kph
-              OP_ENABLE_gas_speed = v_ego
+              OP_ENABLE_gas_speed = vk_ego
               force_low_engage_set = True
               if sm['carState'].gasPressed:
                 OP_ENABLE_ACCEL_RELEASE = False #このあとのアクセルコントロールを許可する
@@ -591,10 +596,10 @@ class LongitudinalPlanner:
           fp.write('%d' % (0))
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
-    if v_ego > 3/3.6 and v_ego <= 30/3.6 and sm['carState'].gasPressed and sm['selfdriveState'].enabled: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
+    if vk_ego > 3/3.6 and vk_ego <= 30/3.6 and sm['carState'].gasPressed and sm['selfdriveState'].enabled: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
       if before_v_cruise_kph_max_1 <= 37 and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
         OP_ENABLE_v_cruise_kph = v_cruise_kph
-        OP_ENABLE_gas_speed = v_ego
+        OP_ENABLE_gas_speed = vk_ego
         OP_ENABLE_ACCEL_RELEASE = False #このあとのアクセルコントロールを許可する
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
@@ -644,7 +649,7 @@ class LongitudinalPlanner:
               self.limitspeed_point = target
 
           if limitspeed_flag != 999:
-            self.limitspeed_point = v_ego * 3.6
+            self.limitspeed_point = vk_ego * 3.6
 
           self.limitspeed_point_dim.append(self.limitspeed_point)
           if len(self.limitspeed_point_dim) > 50:
@@ -660,7 +665,7 @@ class LongitudinalPlanner:
                   # v_cruise_kph = self.limitspeed_point
                   limitspeed_set = True
     except Exception as e:
-      self.limitspeed_point = v_ego * 3.6
+      self.limitspeed_point = vk_ego * 3.6
       pass
 
     if lever_up_down != 0 and limitspeed_set == True:
@@ -705,7 +710,7 @@ class LongitudinalPlanner:
       leadOne = sm['radarState'].leadOne
       d_rel = leadOne.dRel #前走者までの距離
       #a_rel = leadOne.aRel #前走者の加速？　離れていっている時はプラス,常にゼロ？UIで使ってるgetAEgoと違うようだ。
-      v_abs0 = leadOne.vRel + v_ego #前走者の速度。vRelは相対速度のもよう。
+      v_abs0 = leadOne.vRel + vk_ego #前走者の速度。vRelは相対速度のもよう。
 
       self.lead_v_abs.append(v_abs0)
       if len(self.lead_v_abs) > 20:
@@ -714,11 +719,11 @@ class LongitudinalPlanner:
 
       # with open('/tmp/debug_out_x','w') as fp:
       #   fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
-      if v_ego * 3.6 * 0.6 < d_rel and v_cruise_kph < v_abs * 3.6 + 7: #例、時速50kmの時前走車までの距離が30m(50x0.6)以上離れている。&&MAX(v_cruise_kph)より相手+7が速い。
+      if vk_ego * 3.6 * 0.6 < d_rel and v_cruise_kph < v_abs * 3.6 + 7: #例、時速50kmの時前走車までの距離が30m(50x0.6)以上離れている。&&MAX(v_cruise_kph)より相手+7が速い。
         self.v_cruise_kph_1_15 = v_abs * 3.6 + 7
         if self.v_cruise_kph_1_15 > v_cruise_kph + 11:
           self.v_cruise_kph_1_15 = v_cruise_kph + 11 #MAXを最大11は超えない
-        if v_ego * 3.6 >= v_cruise_kph * 0.90: #ACC設定速度がすでに出ている。
+        if vk_ego * 3.6 >= v_cruise_kph * 0.90: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
           if self.ac_vc_time < 1.0:
@@ -736,7 +741,7 @@ class LongitudinalPlanner:
       if self.ac_vc_time > 0:
         self.ac_vc_time -= 0.003 #解除はセット(0.02)の何倍も時間をかける
         test_v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-        if v_ego <= 1*3.6 or int(test_v_cruise_kph) <= int(v_cruise_kph):
+        if vk_ego <= 1*3.6 or int(test_v_cruise_kph) <= int(v_cruise_kph):
           self.ac_vc_time -= 0.02 #停車時では早く終わらせる。数字が元の速度と同じ時も同様。
         if OP_ENABLE_v_cruise_kph != 0:
           self.ac_vc_time = 0 #ワンペダル操作では直に終わらせる。
@@ -776,7 +781,7 @@ class LongitudinalPlanner:
       limit_vc = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_B else LIMIT_VC_A / (abs(steerAng) - LIMIT_VC_B) + LIMIT_VC_C
       limit_vc_h = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_BH else LIMIT_VC_AH / (abs(steerAng) - LIMIT_VC_BH) + LIMIT_VC_CH
       #前方カーブ機械学習用ファイルデータ生成処理。ひとまず保留
-      #if CVS_FRAME % 10 == 0 and v_ego * 3.6 > 20: # over 20km/h
+      #if CVS_FRAME % 10 == 0 and vk_ego * 3.6 > 20: # over 20km/h
       #  ml_csv = '%0.2f,' % v_cruise_kph
       #  for i in path_y:
       #    ml_csv += '%0.2f,' % i
@@ -823,7 +828,7 @@ class LongitudinalPlanner:
               fp.write(';%d' % (vo))
             else:
               fp.write('%d' % (vo))
-    #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and v_ego * 3.6 > 20: # over 20km/h
+    #if CVS_FRAME % 10 == 0 and limit_vc < V_CRUISE_MAX and vk_ego * 3.6 > 20: # over 20km/h
     #  with open('./ml_data.csv','a') as fp:
     #    fp.write('%s%0.2f\n' % (ml_csv , limit_vc))
     CVS_FRAME += 1
@@ -861,17 +866,17 @@ class LongitudinalPlanner:
       if ePedal == False or sm['carState'].cruiseState.standstill or self.red_signal_eP_iP_flag == 1:
         #クリープ中にここを通してはいけない。AI判断でやたら停止してしまう。self.red_signal_eP_iP_flag == 1なら一時的iPモード。
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
-        self.v_cruise_onep_k = np.interp(v_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
+        self.v_cruise_onep_k = np.interp(vk_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
       else:
         t_v = 9/3.6  #m/s完全停止しない。クリープ速度。
         v_cruise = t_v
-        if v_ego < t_v and self.a_desired > 0: #クリープ発進を滑らかに。
-          creep_a_mul = np.interp(v_ego*3.6
+        if vk_ego < t_v and self.a_desired > 0: #クリープ発進を滑らかに。
+          creep_a_mul = np.interp(vk_ego*3.6
                                ,[0  ,1  ,2  ,3  ,6  ,7  ,8  ,9  ]
                                ,[1.0,1.0,0.7,0.6,0.5,0.7,0.9,1.0])
         self.v_cruise_onep_k = 1.0
-      #v_cruise = np.interp(v_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
-      # self.v_cruise_onep_k = np.interp(v_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
+      #v_cruise = np.interp(vk_ego*3.6,[0,5,8,15,60],[0,0,3,5,20]) / 3.6 #速度が大きい時は1/3を目指す ->冬タイヤで停止距離が伸び伸びに。
+      # self.v_cruise_onep_k = np.interp(vk_ego*3.6,[0,5,8,15,60],[1.0,0.75,0.666,0.333,0.333])
     else:
       self.v_cruise_onep_k = 1.0
 
@@ -931,7 +936,7 @@ class LongitudinalPlanner:
     if hasLead == True and sm['radarState'].leadOne.modelProb > 0.5: #前走者がいる,信頼度が高い
       leadOne = sm['radarState'].leadOne
       to_lead_distance = 35 #35m以上空いている
-      add_lead_distance = v_ego * 3.6 #速度km/hを車間距離(m)と見做す
+      add_lead_distance = vk_ego * 3.6 #速度km/hを車間距離(m)と見做す
       add_lead_distance = 0 if add_lead_distance < 50 else add_lead_distance - 50
       to_lead_distance += add_lead_distance #時速50km/h以上ならto_lead_distanceをのばす。時速100km/hでは85mになる。
       if leadOne.dRel > to_lead_distance:
@@ -940,7 +945,7 @@ class LongitudinalPlanner:
         lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
         if lcd > 1:
           lcd = 1
-    if (hasLead == False or lcd > 0) and self.a_desired > 0 and v_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+    if (hasLead == False or lcd > 0) and self.a_desired > 0 and vk_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
       if hasLead == False:
         lcd = 1.0 #前走車がいなければlcd=1扱い。
       vl = v_cruise
@@ -948,14 +953,14 @@ class LongitudinalPlanner:
         vl = 100/3.6
       #vl *= 0.60 #加速は目標速度の半分程度でおしまい。そうしないと増速しすぎる
       vl = np.interp(vl, START_DASH_SPEEDS, START_DASH_CUT) #定数倍ではなく、表で考えてみる。
-      vd = v_ego
+      vd = vk_ego
       if vd > vl:
         vd = vl #vdの最大値はvl
       if vl > 0 and vd < vl:
         vd /= vl #0〜1
         vd = 1 - vd #1〜0
         vd = math.sqrt(vd) #sqrt(vd)
-        add_k = np.interp(v_ego,[0,10/3.6],[0.12,0.25]) #0.2固定だと雨の日ホイールスピンする
+        add_k = np.interp(vk_ego,[0,10/3.6],[0.12,0.25]) #0.2固定だと雨の日ホイールスピンする
         self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
         try:
           with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
@@ -967,7 +972,7 @@ class LongitudinalPlanner:
         except Exception as e:
           self.a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
 
-    if self.a_desired_mul == 1.0 or v_ego < 1/3.6:
+    if self.a_desired_mul == 1.0 or vk_ego < 1/3.6:
       cruise_info_power_up = False
     else:
       cruise_info_power_up = True
@@ -980,7 +985,7 @@ class LongitudinalPlanner:
         self.a_desired = 0 #アクセル離して加速ならゼロに。
       if self.a_desired < 0 and ePedal == False:
         #ワンペダル停止の減速を強めてみる。
-        self.a_desired_mul = np.interp(v_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
+        self.a_desired_mul = np.interp(vk_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
     self.a_desired_mul *= creep_a_mul #クリープダッシュを緩和してみる。
     if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
