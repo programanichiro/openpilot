@@ -46,6 +46,7 @@ desired_path_x_by_speeds = [0,15,55  ,60  ,70-5,85-5,125-8,150-9,170-9,190-10,22
 #desired_path_x_by_speeds =[0,15,60-5,65-5,75-5,95-5,125-5,150-5,170-5,190-5,220-5,240-5,255-5] #オリジナル
 long_speeddown_flag = False
 before_v_cruise_kph_max_1 = 0
+OnePedal_Low_speed_auto_engage = True # Falseでこれまで通り低速自動制御なしに戻る
 
 def calc_limit_vc(X1,X2,X3 , Y1,Y2,Y3):
   Z1 = (X2-X1)/(Y1-Y2) - (X3-X2)/(Y2-Y3)
@@ -323,7 +324,6 @@ class LongitudinalPlanner:
           OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
 
-    OnePedal_Low_speed_auto_engage = True # Falseでこれまで通り低速自動制御なしに戻る
     if OnePedal_Low_speed_auto_engage and self.weak_one_pedal == False and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego >= 16/3.6 and vk_ego < min_acc_speed/3.6 and OP_ENABLE_gas_speed == 1.0/3.6 and a_ego > 0:
       with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #MAXが上昇するのでengage.wavを鳴らす。
