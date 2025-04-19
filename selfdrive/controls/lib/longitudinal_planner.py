@@ -323,7 +323,8 @@ class LongitudinalPlanner:
           OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
 
-    if self.weak_one_pedal == False and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego >= 16/3.6 and vk_ego < min_acc_speed/3.6 and OP_ENABLE_gas_speed == 1.0/3.6 and a_ego > 0:
+    OnePedal_Low_speed_auto_engage = True # Falseでこれまで通り低速自動制御なしに戻る
+    if OnePedal_Low_speed_auto_engage and self.weak_one_pedal == False and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego >= 16/3.6 and vk_ego < min_acc_speed/3.6 and OP_ENABLE_gas_speed == 1.0/3.6 and a_ego > 0:
       with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (2)) #MAXが上昇するのでengage.wavを鳴らす。
       self.max_one_pedal = True
@@ -334,9 +335,9 @@ class LongitudinalPlanner:
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         if one_pedal_chenge_restrict_time == 0:
           OP_ENABLE_gas_speed = vk_ego
-          if vk_ego >= min_acc_speed/3.6 and a_ego > 0 and self.weak_one_pedal == False:
+          if OnePedal_Low_speed_auto_engage and vk_ego >= min_acc_speed/3.6 and a_ego > 0 and self.weak_one_pedal == False:
             OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
-      else:
+      elif OnePedal_Low_speed_auto_engage:
         if sm['carState'].gasPressed and vk_ego >= min_acc_speed/3.6 and a_ego > 0 and OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_gas_speed == 1.0/3.6 and self.weak_one_pedal == False:
           with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
             fp.write('%d' % (2)) #MAXが上昇するのでengage.wavを鳴らす。
