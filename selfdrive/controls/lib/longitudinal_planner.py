@@ -334,10 +334,10 @@ class LongitudinalPlanner:
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         if one_pedal_chenge_restrict_time == 0:
           OP_ENABLE_gas_speed = vk_ego
-          if vk_ego >= min_acc_speed/3.6 and a_ego > 0:
+          if vk_ego >= min_acc_speed/3.6 and a_ego > 0 and self.weak_one_pedal == False:
             OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
       else:
-        if vk_ego >= min_acc_speed/3.6 and a_ego > 0 and OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_gas_speed == 1.0/3.6:
+        if vk_ego >= min_acc_speed/3.6 and a_ego > 0 and OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_gas_speed == 1.0/3.6 and self.weak_one_pedal == False:
           OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
     else:
       OP_ENABLE_PREV = False
