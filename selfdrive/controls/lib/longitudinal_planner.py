@@ -338,6 +338,8 @@ class LongitudinalPlanner:
             OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
       else:
         if sm['carState'].gasPressed and vk_ego >= min_acc_speed/3.6 and a_ego > 0 and OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_gas_speed == 1.0/3.6 and self.weak_one_pedal == False:
+          with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
+            fp.write('%d' % (2)) #MAXが上昇するのでengage.wavを鳴らす。
           OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
           self.max_one_pedal = True #再度ワンペダルに落ちるのを抑制。
     else:
