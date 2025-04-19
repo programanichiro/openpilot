@@ -158,6 +158,7 @@ class LongitudinalPlanner:
     self.dexp_mode_max = 23/3.6
     self.hasLead_1s = False
     self.hasLead_1s_frame = 0
+    self.weak_one_pedal = False #True:チョン押し後の16オーバー判定無効
 
     if self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value): #47700はTSS2相当の操舵範囲
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
@@ -282,6 +283,7 @@ class LongitudinalPlanner:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       OP_ENABLE_gas_speed = 1.0 / 3.6
       one_pedal_chenge_restrict_time = 20
+      self.weak_one_pedal = True
     if one_pedal_chenge_restrict_time > 0:
       one_pedal_chenge_restrict_time -= 1
     if one_pedal == True and vk_ego < 0.1/3.6 and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6) and sm['selfdriveState'].enabled and sm['carState'].gasPressed == False:
@@ -318,7 +320,7 @@ class LongitudinalPlanner:
         if int(accel_engaged_str) >= 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
           OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
-    if OP_ENABLE_ACCEL_RELEASE == True and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego > 16/3.6 and vk_ego < min_acc_speed/3.6:
+    if self.weak_one_pedal == False and OP_ENABLE_ACCEL_RELEASE == True and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego > 16/3.6 and vk_ego < min_acc_speed/3.6:
       OP_ENABLE_ACCEL_RELEASE = False #ワンペダル中の低速操作で常にアクセル操作をMAXに伝える。アクセルを放しても減速しなくなる。
       with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
         fp.write('%d' % (1)) #MAXが上昇するのでprompt.wavを鳴らす。
@@ -333,6 +335,7 @@ class LongitudinalPlanner:
     if sm['carState'].gasPressed == False: #一旦アクセルを離したら、クルーズ速度は変更しない。変更を許すと、ACC速度とMAX速度の乖離が大きくなり過ぎる可能性があるから。
       OP_ENABLE_ACCEL_RELEASE = True
       OP_ACCEL_PUSH = False #アクセル離した
+      self.weak_one_pedal = False
     else:
       OP_ACCEL_PUSH = True #アクセル押した
 
