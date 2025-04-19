@@ -323,7 +323,7 @@ class LongitudinalPlanner:
     if self.weak_one_pedal == False and OP_ENABLE_ACCEL_RELEASE == True and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego > 16/3.6 and vk_ego < min_acc_speed/3.6:
       OP_ENABLE_ACCEL_RELEASE = False #ワンペダル中の低速操作で常にアクセル操作をMAXに伝える。アクセルを放しても減速しなくなる。
       with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
-        fp.write('%d' % (1)) #MAXが上昇するのでprompt.wavを鳴らす。
+        fp.write('%d' % (2)) #MAXが上昇するのでengage.wavを鳴らす。
     if sm_longControlState != LongCtrlState.off:
       OP_ENABLE_PREV = True
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
