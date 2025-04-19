@@ -323,7 +323,7 @@ class LongitudinalPlanner:
         if int(accel_engaged_str) >= 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
           OP_ENABLE_gas_speed = 1.0 / 3.6
       OP_ENABLE_ACCEL_RELEASE = False
-    if self.weak_one_pedal == False and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego > 16/3.6 and vk_ego < min_acc_speed/3.6:
+    if self.weak_one_pedal == False and OP_ENABLE_v_cruise_kph != 0 and one_pedal_chenge_restrict_time == 0 and sm['carState'].gasPressed and vk_ego > 16/3.6 and vk_ego < min_acc_speed/3.6 and OP_ENABLE_gas_speed == 1.0/3.6:
       if OP_ENABLE_ACCEL_RELEASE == True:
         self.max_one_pedal = True
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
