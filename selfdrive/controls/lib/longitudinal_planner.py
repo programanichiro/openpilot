@@ -348,6 +348,10 @@ class LongitudinalPlanner:
     else:
       OP_ACCEL_PUSH = True #アクセル押した
 
+    if OP_ENABLE_v_cruise_kph == 0:
+      self.weak_one_pedal = False
+      self.max_one_pedal = False
+
     md = sm['modelV2']
     # hasLead = sm['radarState'].leadOne.status
     #distLead_near = sm['radarState'].leadOne.dRel < np.interp(vk_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
