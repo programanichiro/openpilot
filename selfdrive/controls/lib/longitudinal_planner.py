@@ -278,6 +278,7 @@ class LongitudinalPlanner:
     if on_accel0 and vk_ego > 1/3.6 : #オートパイロット中にアクセルを弱めに操作したらワンペダルモード有効。ただし先頭スタートは除く。
       if sm['selfdriveState'].enabled and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > 1.0 / 3.6):
         self.weak_one_pedal = True
+        OP_ENABLE_ACCEL_RELEASE = True #アクセルコントロールを許可しない
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
           #しばらくやってもなかなか出ない？fp.write('%d' % (3)) #デバッグでpo.wav音を鳴らす。
