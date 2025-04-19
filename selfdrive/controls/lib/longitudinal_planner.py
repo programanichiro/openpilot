@@ -337,8 +337,9 @@ class LongitudinalPlanner:
           if vk_ego >= min_acc_speed/3.6 and a_ego > 0 and self.weak_one_pedal == False:
             OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
       else:
-        if vk_ego >= min_acc_speed/3.6 and a_ego > 0 and OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_gas_speed == 1.0/3.6 and self.weak_one_pedal == False:
+        if sm['carState'].gasPressed and vk_ego >= min_acc_speed/3.6 and a_ego > 0 and OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_gas_speed == 1.0/3.6 and self.weak_one_pedal == False:
           OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
+          self.max_one_pedal = True #再度ワンペダルに落ちるのを抑制。
     else:
       OP_ENABLE_PREV = False
       OP_ENABLE_v_cruise_kph = 0
