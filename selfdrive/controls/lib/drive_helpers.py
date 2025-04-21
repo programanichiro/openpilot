@@ -22,8 +22,6 @@ k_vs_org_47700 = [0  , 0.01, 0.02, 0.035, 0.05, 0.075] #ツインウェイブ終
 with open('/dev/shm/curvature_info.txt','w') as fp:
   fp.write('%.9f/%.3f' % (0 , 1.0))
 
-skip_curvature_info = False
-
 MAX_LATERAL_JERK = 5.0  # m/s^3
 MAX_LATERAL_ACCEL_NO_ROLL = 3.0  # m/s^2
 

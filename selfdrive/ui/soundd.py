@@ -77,7 +77,6 @@ class Soundd:
         # assert wavefile.getnchannels() == 1 #追加サウンドがassertに引っかかる。
         # assert wavefile.getsampwidth() == 2
         # assert wavefile.getframerate() == SAMPLE_RATE
-
         length = wavefile.getnframes()
         self.loaded_sounds[sound] = np.frombuffer(wavefile.readframes(length), dtype=np.int16).astype(np.float32) / (2**16/2)
 

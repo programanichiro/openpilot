@@ -1031,6 +1031,7 @@ class LongitudinalPlanner:
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
+    #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if g_tss_type < 2:
       self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), 119/3.6) #全要素を119km/h以下にする
     else:
