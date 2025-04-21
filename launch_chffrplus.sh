@@ -41,6 +41,10 @@ function launch {
   # 2. The FINALIZED consistent file has to exist, indicating there's an update
   #    that completed successfully and synced to disk.
 
+  if [ ! -f $DIR/../force_prebuild ]; then
+    rm ${DIR}/.overlay_init
+  fi
+
   if [ -f "${DIR}/.overlay_init" ]; then
     find ${DIR}/.git -newer ${DIR}/.overlay_init | grep -q '.' 2> /dev/null
     if [ $? -eq 0 ]; then
