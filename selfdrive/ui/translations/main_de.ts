@@ -643,14 +643,6 @@ Der Firehose-Modus ermöglicht es dir, deine Trainingsdaten-Uploads zu maximiere
 <context>
     <name>QObject</name>
     <message>
-        <source>Reboot</source>
-        <translation>Neustart</translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation>Verlassen</translation>
-    </message>
-    <message>
         <source>openpilot</source>
         <translation>openpilot</translation>
     </message>

@@ -645,14 +645,6 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
 <context>
     <name>QObject</name>
     <message>
-        <source>Reboot</source>
-        <translation>Redémarrer</translation>
-    </message>
-    <message>
-        <source>Exit</source>
-        <translation>Quitter</translation>
-    </message>
-    <message>
         <source>openpilot</source>
         <translation>openpilot</translation>
     </message>
