@@ -524,18 +524,6 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
 //以下オリジナル表示要素
   //温度を表示(この画面は更新が飛び飛びになる。ハンドル回したりとか何か変化が必要)
   auto deviceState = (*s->sm)["deviceState"].getDeviceState();
-  //int temp = (int)deviceState.getAmbientTempC();
-  int temp = 0; //温度が取れなくなったので目安。
-  auto ts = deviceState.getThermalStatus();
-  if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
-    //tempStatus = {{tr("TEMP"), tr("GOOD")}, good_color};
-    temp = 55; //色変化のための参照値
-  } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
-    //tempStatus = {{tr("TEMP"), tr("OK")}, warning_color};
-    temp = 65; //色変化のための参照値
-  } else {
-    temp = 75; //色変化のための参照値
-  }
   int max_temp = (int)deviceState.getMaxTempC(); //表示はこれを使う。
 
 #if 0
@@ -616,28 +604,21 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   }
 #endif
   p.setFont(InterFont(44, QFont::DemiBold));
-
-  int th_tmp1 = 47;
-  int th_tmp2 = 55;
-  if(Hardware::TICI()){
-    th_tmp1 = 62; //ここから黄色
-    th_tmp2 = 71; //ここから赤
-  }
-
   QRect temp_rc(surface_rect.left()+65-27, surface_rect.top()+110+6, 233+27*2-5, 54);
   p.setPen(Qt::NoPen);
-  if(temp < th_tmp1){ //警告色の変化はサイドバーと違う。もっと早く警告される。
+  auto ts = deviceState.getThermalStatus();
+  if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
     p.setBrush(bg_colors[status]);
-  } else if(temp < th_tmp2){
+  } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
     p.setBrush(QColor(240, 240, 0, 200));
   } else {
     p.setBrush(QColor(240, 0, 0, 200));
   }
   p.drawRoundedRect(temp_rc, 30, 30);
 
-  if(temp < th_tmp1){ //警告色の変化はサイドバーと違う。もっと早く警告される。
+  if (ts == cereal::DeviceState::ThermalStatus::GREEN) {
     p.setPen(QColor(0xff, 0xff, 0xff , 200));
-  } else if(temp < th_tmp2){
+  } else if (ts == cereal::DeviceState::ThermalStatus::YELLOW) {
     //p.setPen(QColor(0xff, 0xff, 0 , 255));
     p.setPen(QColor(10, 10, 10 , 255));
   } else {
