@@ -798,6 +798,20 @@ void ModelRenderer::drawLead(QPainter &painter, const cereal::RadarState::LeadDa
       painter.setPen(QColor(245, 0, 0, 255));
     }
     painter.drawText(QRect(x-lock_indicator_dx-str_w2-2, y-50, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
+#if 1 //lane_widthを表示
+    std::string lane_width_txt = util::read_file("/dev/shm/lane_width.txt");
+    if(lane_width_txt.empty() == false){
+      float lane_width = std::stof(lane_width_txt);
+      if(lane_width > -99){
+        QString lane_w = QString::number(lane_width,'f',2) + "w";
+
+        painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
+        painter.drawText(QRect(x+2, y + sz + homebase_h + g_yo + 10+6+2, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+        painter.setPen(QColor(0xff, 0xff, 0xff));
+        painter.drawText(QRect(x, y + sz + homebase_h + g_yo + 10+6, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+      }
+    }
+#endif
     painter.setPen(Qt::NoPen);
   }
 }
