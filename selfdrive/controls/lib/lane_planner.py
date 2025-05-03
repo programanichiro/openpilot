@@ -57,6 +57,8 @@ class LanePlanner:
 
     self.frame_ct += 1
     if self.lta_mode == False:
+      with open('/dev/shm/lane_width.txt','w') as fp:
+        fp.write('%.2f' % (-99))
       return
 
     lane_lines = md.laneLines
@@ -163,8 +165,6 @@ class LanePlanner:
 
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
-      with open('/dev/shm/lane_width.txt','w') as fp:
-        fp.write('%.2f' % (-99))
       pass
     if self.lane_collision != new_lane_collision:
       # if new_lane_collision == 1 or new_lane_collision == 2:

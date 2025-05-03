@@ -68,6 +68,32 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     if (lead_two.getStatus() && (std::abs(lead_one.getDRel() - lead_two.getDRel()) > 3.0)) {
       drawLead(painter, lead_two, lead_vertices[1], surface_rect , 1);
     }
+
+#if 1 //lane_widthを表示
+    std::string lane_width_txt = util::read_file("/dev/shm/lane_width.txt");
+    if(lane_width_txt.empty() == false){
+      float lane_width = std::stof(lane_width_txt);
+      if(lane_width > -99){
+        QString lane_w = QString("lane width:") + QString::number(lane_width,'f',2) + "[m]";
+#if 0
+        painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
+        painter.drawText(QRect(x+2-str_w2/2, y + sz + homebase_h + g_yo + 10+6+2, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+        painter.setPen(QColor(0xff, 0xff, 0xff));
+        painter.drawText(QRect(x-str_w2/2, y + sz + homebase_h + g_yo + 10+6, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+#else
+        int scr_x = surface_rect.width()/2;
+        int scr_y = surface_rect.height() - 150;
+        int str_wl = 800;
+        painter.setFont(InterFont(44, QFont::Normal));
+        painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
+        painter.drawText(QRect(scr_x+2-str_wl/2, scr_y+2, str_wl, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+        painter.setPen(QColor(0xff, 0xff, 0xff));
+        painter.drawText(QRect(scr_x-str_wl/2, scr_y, str_wl, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+#endif
+        painter.setPen(Qt::NoPen);
+      }
+    }
+#endif
   }
 
   painter.restore();
@@ -798,20 +824,6 @@ void ModelRenderer::drawLead(QPainter &painter, const cereal::RadarState::LeadDa
       painter.setPen(QColor(245, 0, 0, 255));
     }
     painter.drawText(QRect(x-lock_indicator_dx-str_w2-2, y-50, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
-#if 1 //lane_widthを表示
-    std::string lane_width_txt = util::read_file("/dev/shm/lane_width.txt");
-    if(lane_width_txt.empty() == false){
-      float lane_width = std::stof(lane_width_txt);
-      if(lane_width > -99){
-        QString lane_w = QString::number(lane_width,'f',2) + "w";
-
-        painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
-        painter.drawText(QRect(x+2, y + sz + homebase_h + g_yo + 10+6+2, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
-        painter.setPen(QColor(0xff, 0xff, 0xff));
-        painter.drawText(QRect(x, y + sz + homebase_h + g_yo + 10+6, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
-      }
-    }
-#endif
     painter.setPen(Qt::NoPen);
   }
 }
