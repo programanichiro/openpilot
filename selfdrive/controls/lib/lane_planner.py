@@ -53,10 +53,12 @@ class LanePlanner:
               lta_enable_sw = True
       except Exception as e:
         pass
-      self.lta_mode = (v_ego_car > 16/3.6 or chill_enable) and lta_enable_sw
+      self.lta_mode = (v_ego_car > 16/3.6 or chill_enable) and lta_enable_sw #時速16キロ以下ではlta_modeが切れる
 
     self.frame_ct += 1
     if self.lta_mode == False:
+      with open('/dev/shm/lane_width.txt','w') as fp:
+        fp.write('%.2f' % (-99))
       return
 
     lane_lines = md.laneLines
@@ -154,11 +156,12 @@ class LanePlanner:
         if r_prob < prob_max:
           lane_r *= r_prob/prob_max
         lane_w = lane_r - lane_l #これでメートル的なイメージになる？
-        if lane_w <= 1.9:
+        if lane_w <= 1.9: #幅が1.9m以下はレーンは見出しを判定しない、つもりなのだが、バス停止エリアで横に飛ばされることがある。
           lane_d = 0 #操舵しない
           new_lane_collision |= 4 #無視状態をUIに表示
-      # with open('/tmp/debug_out_o','w') as fp:
-      #   fp.write('%.1fm' % (lane_w))
+
+      with open('/dev/shm/lane_width.txt','w') as fp:
+        fp.write('%.2f' % (lane_w))
 
     else:
       # cloudlog.warning("Lateral mpc - NaNs in laneline times, ignoring")
