@@ -167,7 +167,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
       pred_angle = (-max_yp / 2.5)
       lane_d0 = LP.get_d_path(pred_angle , v_ego, path_xyz) #self.path_xyzは戻り値から外した。
       g_lane_d_dim.append(lane_d0)
-      if len(g_lane_d_dim) > 10:
+      if len(g_lane_d_dim) > 20: #20Hz->1秒の平均
         g_lane_d_dim.pop(0)
       lane_d = sum(g_lane_d_dim) / len(g_lane_d_dim)
     if lane_d != g_lane_d:
