@@ -18,6 +18,7 @@ except Exception as e:
   pass
 LP = LanePlanner(False) #widw_cameraが推論に使われていない模様。常にONではなくOFFとしてみる。2024/5/9
 g_lane_d = -999
+g_lane_d_dim = []
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
@@ -147,7 +148,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     else:
       value_STEERING_CENTER_calibration = 0
     #handle_center = 0 #STEERING_CENTER,もうhandle_center_info.txtもいらないか。
-    global STEERING_CENTER_calibration_update_count,g_lane_d
+    global STEERING_CENTER_calibration_update_count,g_lane_d,g_lane_d_dim
     STEERING_CENTER_calibration_update_count += 1
     if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
       #handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
@@ -164,7 +165,11 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     lane_d = 0
     if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
       pred_angle = (-max_yp / 2.5)
-      lane_d = LP.get_d_path(pred_angle , v_ego, path_xyz) #self.path_xyzは戻り値から外した。
+      lane_d0 = LP.get_d_path(pred_angle , v_ego, path_xyz) #self.path_xyzは戻り値から外した。
+      g_lane_d_dim.append(lane_d0)
+      if len(g_lane_d_dim) > 10:
+        g_lane_d_dim.pop(0)
+      lane_d = sum(g_lane_d_dim) / len(g_lane_d_dim)
     if lane_d != g_lane_d:
       g_lane_d = lane_d
       with open('/dev/shm/lane_d_info.txt','w') as fp:
