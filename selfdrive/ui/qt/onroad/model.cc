@@ -73,7 +73,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
     std::string lane_width_txt = util::read_file("/dev/shm/lane_width.txt");
     if(lane_width_txt.empty() == false){
       float lane_width = std::stof(lane_width_txt);
-      if(true || lane_width > -99){
+      if(lane_width > -99){
         QString lane_w = QString("lane:") + QString::number(lane_width,'f',2) + "m";
 #if 0
         painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
@@ -82,7 +82,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
         painter.drawText(QRect(x-str_w2/2, y + sz + homebase_h + g_yo + 10+6, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
 #else
         int scr_x = surface_rect.width()/2;
-        int scr_y = surface_rect.height() - 125;
+        int scr_y = surface_rect.height() - 132;
         int str_wl = 800;
         painter.setFont(InterFont(44, QFont::Normal));
         painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
