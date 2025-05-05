@@ -420,7 +420,7 @@ void MapWindow::updateState(const UIState &s) {
       velocity_filter.update(std::max(10/3.6, locationd_velocity));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
-        if (!m_map->layerExists("traffic")) { //渋滞情報を点滅。
+        if (m_map->layerExists("traffic")) { //渋滞情報を点滅。
           static unsigned int traffic_blink_ct;
           static unsigned int traffic_blink;
           if(traffic_blink_ct % 20 == 0){
