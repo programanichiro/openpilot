@@ -749,8 +749,8 @@ class LongitudinalPlanner:
           self.ac_vc_time = np.clip(self.ac_vc_time,0.0,1.0)
           # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
           v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-          if v_cruise_kph > 110:
-            v_cruise_kph = 110 #危ないのでひとまず時速115kmまで。->110に。105+10ですでに116以上で走っていると、強制リミットダウン操作が繰り返される。レバーを上げても105より上がらないから。
+          if v_cruise_kph > 115:
+            v_cruise_kph = 115 #危ないのでひとまず時速115kmまで。
             if v_cruise_kph < org_v_cruise_kph:
               v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
               self.ac_vc_time = 0
