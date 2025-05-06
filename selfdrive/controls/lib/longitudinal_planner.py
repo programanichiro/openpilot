@@ -226,12 +226,12 @@ class LongitudinalPlanner:
           else:
             fp.write('%d' % (0)) #前走車がいないからイチロウロング有効
 
-        if (self.hasLead_1s == False and vk_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (vk_ego > 0.1/3.6 and (sm['carState'].leftBlinker or sm['carState'].rightBlinker)):
+        if (self.hasLead_1s == False and vk_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (vk_ego > 0.1/3.6 and vk_ego <= 45/3.6 and (sm['carState'].leftBlinker or sm['carState'].rightBlinker)):
           params.put_bool("ExperimentalMode", True) # blended
           with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (1)) #イチロウロング無効
       else:
-        if (self.hasLead_1s == True or vk_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (vk_ego <= 0.1/3.6 or (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False)):
+        if (self.hasLead_1s == True or vk_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (vk_ego <= 0.1/3.6 or vk_ego > 45/3.6 or (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False)):
           params.put_bool("ExperimentalMode", False) # acc
 
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
