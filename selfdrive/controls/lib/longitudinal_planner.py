@@ -226,12 +226,12 @@ class LongitudinalPlanner:
           else:
             fp.write('%d' % (0)) #前走車がいないからイチロウロング有効
 
-        if (self.hasLead_1s == False and vk_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (vk_ego > 0.1/3.6 and (sm['carState'].leftBlinker or sm['carState'].rightBlinker)):
+        if (self.hasLead_1s == False and vk_ego <= self.dexp_mode_min and sm['carState'].gasPressed == False) or (vk_ego > 0.1/3.6 and vk_ego <= 45/3.6 and (sm['carState'].leftBlinker or sm['carState'].rightBlinker)):
           params.put_bool("ExperimentalMode", True) # blended
           with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
             fp.write('%d' % (1)) #イチロウロング無効
       else:
-        if (self.hasLead_1s == True or vk_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (vk_ego <= 0.1/3.6 or (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False)):
+        if (self.hasLead_1s == True or vk_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (vk_ego <= 0.1/3.6 or vk_ego > 45/3.6 or (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False)):
           params.put_bool("ExperimentalMode", False) # acc
 
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
@@ -749,8 +749,8 @@ class LongitudinalPlanner:
           self.ac_vc_time = np.clip(self.ac_vc_time,0.0,1.0)
           # v_cruise_kph *= 1.15 #ACC設定速度を1.5割増速
           v_cruise_kph = self.v_cruise_kph_1_15 * self.ac_vc_time + v_cruise_kph * (1-self.ac_vc_time)
-          if v_cruise_kph > 110:
-            v_cruise_kph = 110 #危ないのでひとまず時速115kmまで。->110に。105+10ですでに116以上で走っていると、強制リミットダウン操作が繰り返される。レバーを上げても105より上がらないから。
+          if v_cruise_kph > 115:
+            v_cruise_kph = 115 #危ないのでひとまず時速115kmまで。
             if v_cruise_kph < org_v_cruise_kph:
               v_cruise_kph = org_v_cruise_kph #計算前の速度より遅くなったら、追従加速をやめる。
               self.ac_vc_time = 0
@@ -1013,6 +1013,9 @@ class LongitudinalPlanner:
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     v_cruise = v_cruise if (v_cruise < 118/3.6 or tss_type >= 2) else 118/3.6 #TSSPではACC118を超えないようにする。
+    v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
+    v_cruise_car_limit += 10/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
+    v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
     #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,force_slow_decel))
