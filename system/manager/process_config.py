@@ -28,7 +28,7 @@ def ublox(started: bool, params: Params, CP: car.CarParams) -> bool:
   use_ublox = ublox_available()
   if use_ublox != params.get_bool("UbloxAvailable"):
     params.put_bool("UbloxAvailable", use_ublox)
-  return started and use_ublox
+  return (started or params.get_bool("GpsAlwaysSwitch")) and use_ublox #startedをGpsAlwaysSwitchで常に有効に。
 
 def joystick(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and params.get_bool("JoystickDebugMode")
@@ -92,6 +92,7 @@ procs = [
   PythonProcess("deleter", "system.loggerd.deleter", always_run),
   PythonProcess("dmonitoringd", "selfdrive.monitoring.dmonitoringd", driverview, enabled=(WEBCAM or not PC)),
   PythonProcess("qcomgpsd", "system.qcomgpsd.qcomgpsd", qcomgps, enabled=TICI),
+  PythonProcess("navd", "selfdrive.navd.navd", only_onroad),
   PythonProcess("pandad", "selfdrive.pandad.pandad", always_run),
   PythonProcess("paramsd", "selfdrive.locationd.paramsd", only_onroad),
   PythonProcess("lagd", "selfdrive.locationd.lagd", only_onroad),
