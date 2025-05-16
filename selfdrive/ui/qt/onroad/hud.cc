@@ -17,8 +17,8 @@ extern int ACC_speed;
 extern void setButtonInt(const char*fn , int num);
 
 HudRenderer::HudRenderer() {
-  engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
-  experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size - 5, img_size - 5});
+  engage_img = loadPixmap("../assets/icons/chffr_wheel.png", {img_size, img_size});
+  experimental_img = loadPixmap("../assets/icons/experimental.svg", {img_size - 5, img_size - 5});
 }
 
 void HudRenderer::updateState(const UIState &s) {
