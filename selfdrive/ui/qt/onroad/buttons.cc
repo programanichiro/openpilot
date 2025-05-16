@@ -794,8 +794,8 @@ void ButtonsWindow::psn_update(){
 ExperimentalButton::ExperimentalButton(QWidget *parent) : experimental_mode(false), engageable(false), QPushButton(parent) {
   setFixedSize(btn_size, btn_size);
 
-  engage_img = loadPixmap("../assets/img_chffr_wheel.png", {img_size, img_size});
-  experimental_img = loadPixmap("../assets/img_experimental.svg", {img_size, img_size});
+  engage_img = loadPixmap("../assets/icons/chffr_wheel.png", {img_size, img_size});
+  experimental_img = loadPixmap("../assets/icons/experimental.svg", {img_size, img_size});
   QObject::connect(this, &QPushButton::clicked, this, &ExperimentalButton::changeMode);
 }
 
