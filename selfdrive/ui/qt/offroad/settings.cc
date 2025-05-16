@@ -66,13 +66,13 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "NavSettingTime24h",
       tr("Show ETA in 24h Format"),
       tr("Use 24h format instead of am/pm"),
-      "../assets/offroad/icon_metric.png",
+      "../assets/icons/metric.png",
     },
     {
       "NavSettingLeftSide",
       tr("Show Map on Left Side of UI"),
       tr("Show map on left side when in split screen view."),
-      "../assets/offroad/icon_road.png",
+      "../assets/icons/road.png",
     },
     {
       "GpsAlwaysSwitch",
@@ -95,7 +95,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
   std::vector<QString> accel_method_button_texts{tr("Cydia2020"), tr("Official")};
   accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
                                           tr("Switch Accel Method to Official version or Cydia2020. A reboot is required."),
-                                          "../assets/offroad/icon_calibration.png",
+                                          "../assets/icons/calibration.png",
                                           accel_method_button_texts);
 
   // set up uiState update for personality setting
