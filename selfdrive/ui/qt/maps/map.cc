@@ -428,6 +428,15 @@ void MapWindow::updateState(const UIState &s) {
           m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "icon-image", "oneway-white-large");
         }
       }
+      if (m_map->layerExists("bridge-oneway-arrow-white-navigation")) { //高速一方通行矢印をカラーチェンジ
+        if(traffic_blink_ct % 40 == 30){
+          m_map->setLayoutProperty("road-oneway-arrow-white-navigation", "icon-image", "oneway-large");
+          m_map->setLayoutProperty("bridge-oneway-arrow-white-navigation", "icon-image", "oneway-white-large");
+        } else if(traffic_blink_ct % 20 == 10){
+          m_map->setLayoutProperty("road-oneway-arrow-white-navigation", "icon-image", "oneway-white-large");
+          m_map->setLayoutProperty("bridge-oneway-arrow-white-navigation", "icon-image", "oneway-large");
+        }
+      }
       traffic_blink_ct++;
     }
 
