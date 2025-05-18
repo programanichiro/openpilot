@@ -412,6 +412,26 @@ void MapWindow::updateState(const UIState &s) {
     //   locationd_valid = pos_accurate_enough;
     // }
 
+    if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
+      if (m_map->layerExists("traffic")) { //渋滞情報を点滅。
+        static unsigned int traffic_blink_ct;
+        static unsigned int traffic_blink;
+        if(traffic_blink_ct % 20 == 0){
+          if(traffic_blink == 0){
+            traffic_blink = 1;
+            m_map->setLayoutProperty("traffic", "visibility", "none");
+          } else {
+            traffic_blink = 0;
+            m_map->setLayoutProperty("traffic", "visibility", "visible");
+          }
+          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "image", "oneway-large"); //一方通行矢印をカラーチェンジ
+        } else {
+          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "image", "oneway-white-large");
+        }
+        traffic_blink_ct++;
+      }
+    }
+
     if (locationd_valid) {
       if (already_vego_over_8 == true) {
         last_position = QMapLibre::Coordinate(locationd_pos[0], locationd_pos[1]);
@@ -420,23 +440,6 @@ void MapWindow::updateState(const UIState &s) {
       velocity_filter.update(std::max(10/3.6, locationd_velocity));
 
       if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
-        if (m_map->layerExists("traffic")) { //渋滞情報を点滅。
-          static unsigned int traffic_blink_ct;
-          static unsigned int traffic_blink;
-          if(traffic_blink_ct % 20 == 0){
-            if(traffic_blink == 0){
-              traffic_blink = 1;
-              m_map->setLayoutProperty("traffic", "visibility", "none");
-            } else {
-              traffic_blink = 0;
-              m_map->setLayoutProperty("traffic", "visibility", "visible");
-            }
-            m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "image", "oneway-large"); //一方通行矢印をカラーチェンジ
-          } else {
-            m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "image", "oneway-white-large");
-          }
-          traffic_blink_ct++;
-        }
         if(false && map_pitch_up){
           map_pitch_up = false;
           void soundButton(int onOff);
