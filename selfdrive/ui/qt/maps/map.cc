@@ -415,9 +415,9 @@ void MapWindow::updateState(const UIState &s) {
     if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
       static unsigned int traffic_blink_ct;
       if (m_map->layerExists("traffic")) { //渋滞情報を点滅。
-        if(traffic_blink_ct % 15 == 10){
+        if(traffic_blink_ct % 30 == 20){
           m_map->setLayoutProperty("traffic", "visibility", "none");
-        } else if(traffic_blink_ct % 15 == 0){
+        } else if(traffic_blink_ct % 30 == 0){
           m_map->setLayoutProperty("traffic", "visibility", "visible");
         }
       }
