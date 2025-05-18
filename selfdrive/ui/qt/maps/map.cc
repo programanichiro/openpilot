@@ -424,9 +424,9 @@ void MapWindow::updateState(const UIState &s) {
             traffic_blink = 0;
             m_map->setLayoutProperty("traffic", "visibility", "visible");
           }
-          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "image", "oneway-large"); //一方通行矢印をカラーチェンジ
+          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "icon-image", "oneway-large"); //一方通行矢印をカラーチェンジ
         } else if(traffic_blink_ct % 10 == 0){
-          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "image", "oneway-white-large");
+          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "icon-image", "oneway-white-large");
         }
         traffic_blink_ct++;
       }
