@@ -413,23 +413,22 @@ void MapWindow::updateState(const UIState &s) {
     // }
 
     if (loaded_once || (m_map && !m_map.isNull() && m_map->isFullyLoaded())) {
+      static unsigned int traffic_blink_ct;
       if (m_map->layerExists("traffic")) { //渋滞情報を点滅。
-        static unsigned int traffic_blink_ct;
-        static unsigned int traffic_blink;
-        if(traffic_blink_ct % 20 == 0){
-          if(traffic_blink == 0){
-            traffic_blink = 1;
-            m_map->setLayoutProperty("traffic", "visibility", "none");
-          } else {
-            traffic_blink = 0;
-            m_map->setLayoutProperty("traffic", "visibility", "visible");
-          }
-          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "icon-image", "oneway-large"); //一方通行矢印をカラーチェンジ
-        } else if(traffic_blink_ct % 10 == 0){
+        if(traffic_blink_ct % 15 == 10){
+          m_map->setLayoutProperty("traffic", "visibility", "none");
+        } else if(traffic_blink_ct % 15 == 0){
+          m_map->setLayoutProperty("traffic", "visibility", "visible");
+        }
+      }
+      if (m_map->layerExists("road-oneway-arrow-blue-navigation-blink")) { //一方通行矢印をカラーチェンジ
+        if(traffic_blink_ct % 40 == 0){
+          m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "icon-image", "oneway-large");
+        } else if(traffic_blink_ct % 20 == 0){
           m_map->setLayoutProperty("road-oneway-arrow-blue-navigation-blink", "icon-image", "oneway-white-large");
         }
-        traffic_blink_ct++;
       }
+      traffic_blink_ct++;
     }
 
     if (locationd_valid) {
