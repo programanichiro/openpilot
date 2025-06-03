@@ -353,7 +353,6 @@ SConscript([
 ])
 if arch != "Darwin":
   SConscript([
-    'system/sensord/SConscript',
     'system/logcatd/SConscript',
   ])
 
