@@ -102,6 +102,12 @@ std::pair<std::string, kj::Array<capnp::word>> UbloxMsgParser::gen_msg() {
   ubx_t ubx_message(&stream);
   auto body = ubx_message.body();
 
+  FILE *fp = fopen("/dev/shm/gps_type.txt","w");
+  if(fp){
+    fprintf(fp,"%03x",ubx_message.msg_type());
+    fclose(fp);
+  }
+
   switch (ubx_message.msg_type()) {
   case 0x0107:
     return {"gpsLocationExternal", gen_nav_pvt(static_cast<ubx_t::nav_pvt_t*>(body))};
