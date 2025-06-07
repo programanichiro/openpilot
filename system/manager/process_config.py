@@ -43,7 +43,7 @@ def not_long_maneuver(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and not params.get_bool("LongitudinalManeuverMode")
 
 def qcomgps(started: bool, params: Params, CP: car.CarParams) -> bool:
-  return started and not ublox_available()
+  return (started or params.get_bool("GpsAlwaysSwitch")) and not ublox_available()
 
 def always_run(started: bool, params: Params, CP: car.CarParams) -> bool:
   return True
