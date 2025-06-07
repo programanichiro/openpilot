@@ -45,7 +45,6 @@ static void cuatro_set_bootkick(BootState state) {
 
 static void cuatro_set_amp_enabled(bool enabled){
   set_gpio_output(GPIOA, 5, enabled);
-  set_gpio_output(GPIOB, 0, enabled);
 }
 
 static void cuatro_init(void) {
@@ -85,6 +84,11 @@ static void cuatro_init(void) {
   // fan setup
   set_gpio_alternate(GPIOC, 8, GPIO_AF2_TIM3);
   register_set_bits(&(GPIOC->OTYPER), GPIO_OTYPER_OT8); // open drain
+
+  // Initialize IR PWM and set to 0%
+  set_gpio_alternate(GPIOC, 9, GPIO_AF2_TIM3);
+  pwm_init(TIM3, 4);
+  tres_set_ir_power(0U);
 
   // Clock source
   clock_source_init(true);
@@ -129,7 +133,6 @@ board board_cuatro = {
   .enable_can_transceiver = cuatro_enable_can_transceiver,
   .led_GPIO = {GPIOC, GPIOC, GPIOC},
   .led_pin = {6, 7, 9},
-  .led_pwm_channels = {1, 2, 4},
   .set_can_mode = tres_set_can_mode,
   .check_ignition = red_check_ignition,
   .read_voltage_mV = cuatro_read_voltage_mV,

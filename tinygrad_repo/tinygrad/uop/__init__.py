@@ -1,1 +1,0 @@
-from tinygrad.uop.ops import UOp, Ops  # noqa: F401

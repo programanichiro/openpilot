@@ -63,6 +63,10 @@
         <translation>Plano de Dados Limitado</translation>
     </message>
     <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation>Evite grandes uploads de dados quando estiver em uma conexão limitada</translation>
+    </message>
+    <message>
         <source>Hidden Network</source>
         <translation>Rede Oculta</translation>
     </message>
@@ -81,30 +85,6 @@
     <message>
         <source>for &quot;%1&quot;</source>
         <translation>para &quot;%1&quot;</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation>Previna o envio de grandes volumes de dados em conexões de celular com franquia de limite de dados</translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation>padrão</translation>
-    </message>
-    <message>
-        <source>metered</source>
-        <translation>limitada</translation>
-    </message>
-    <message>
-        <source>unmetered</source>
-        <translation>ilimitada</translation>
-    </message>
-    <message>
-        <source>Wi-Fi Network Metered</source>
-        <translation>Rede Wi-Fi com Franquia</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation>Previna o envio de grandes volumes de dados em conexões Wi-Fi com franquia de limite de dados</translation>
     </message>
 </context>
 <context>
@@ -162,6 +142,33 @@
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
         <translation>ADB (Android Debug Bridge) permite conectar ao seu dispositivo por meio do USB ou através da rede. Veja https://docs.comma.ai/how-to/connect-to-comma para maiores informações.</translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>Casa</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>Trabalho</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>Nenhum destino definido</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>Endereço de %1 não definido</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>casa</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>trabalho</translation>
     </message>
 </context>
 <context>
@@ -306,14 +313,6 @@
         <source>PAIR</source>
         <translation>PAREAR</translation>
     </message>
-    <message>
-        <source>Disengage to Reset Calibration</source>
-        <translation>Desacione para Resetar a Calibração</translation>
-    </message>
-    <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation> Resetar a calibração fará com que o openpilot reinicie se o carro estiver ligado.</translation>
-    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -398,6 +397,54 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
             <numerusform>Necessita no mínimo %n caractere!</numerusform>
             <numerusform>Necessita no mínimo %n caracteres!</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>Instalando...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>eta</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>min</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>hr</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>NAVEGAÇÃO</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>Gerencie em connect.comma.ai</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>Carregando Mapa</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>Aguardando GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>Aguardando rota</translation>
     </message>
 </context>
 <context>
@@ -574,6 +621,10 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
         <translation>Conectividade LTE (só nos EUA)</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>Navegação passo a passo</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>1 ano de dados em nuvem</translation>
     </message>
@@ -619,6 +670,22 @@ O Modo Firehose permite maximizar o envio de dados de treinamento para melhorar 
             <numerusform>há %n dia</numerusform>
             <numerusform>há %n dias</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>milha</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>pés</translation>
     </message>
     <message>
         <source>now</source>
@@ -1029,6 +1096,10 @@ Isso pode levar até um minuto.</translation>
         <translation>Ativar openpilot</translation>
     </message>
     <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation>Use o sistema openpilot para controle de cruzeiro adaptativo e assistência ao motorista de manutenção de faixa. Sua atenção é necessária o tempo todo para usar esse recurso. A alteração desta configuração tem efeito quando o carro é desligado.</translation>
+    </message>
+    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>Ativar Avisos de Saída de Faixa</translation>
     </message>
@@ -1059,6 +1130,22 @@ Isso pode levar até um minuto.</translation>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>Quando ativado, pressionar o pedal do acelerador desacionará o openpilot.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>Mostrar ETA em Formato 24h</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>Use o formato 24h em vez de am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>Exibir Mapa no Lado Esquerdo</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>Exibir mapa do lado esquerdo quando a tela for dividida.</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1127,14 +1214,6 @@ Isso pode levar até um minuto.</translation>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>Habilite o monitoramento do motorista mesmo quando o openpilot não estiver acionado.</translation>
-    </message>
-    <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation>Use o sistema openpilot para controle de cruzeiro adaptativo e assistência ao motorista de manutenção de faixa. Sua atenção é necessária o tempo todo para usar esse recurso.</translation>
-    </message>
-    <message>
-        <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation> Alterar esta configuração fará com que o openpilot reinicie se o carro estiver ligado.</translation>
     </message>
 </context>
 <context>

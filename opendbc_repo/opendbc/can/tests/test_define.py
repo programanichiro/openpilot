@@ -2,7 +2,7 @@ from opendbc.can.can_define import CANDefine
 from opendbc.can.tests import ALL_DBCS
 
 
-class TestCANDefine:
+class TestCADNDefine:
   def test_civic(self):
 
     dbc_file = "honda_civic_touring_2016_can_generated"

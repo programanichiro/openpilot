@@ -1,14 +1,12 @@
 import pyray as rl
 
-from openpilot.system.ui.lib.application import Widget
 from openpilot.system.ui.lib.button import gui_button, ButtonStyle, TextAlignment
 from openpilot.system.ui.lib.label import gui_label
 from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 
 
-class MultiOptionDialog(Widget):
+class MultiOptionDialog:
   def __init__(self, title, options, current=""):
-    super().__init__()
     self._title = title
     self._options = options
     self._current = current if current in options else ""
@@ -21,7 +19,7 @@ class MultiOptionDialog(Widget):
   def selection(self):
     return self._selection
 
-  def _render(self, rect):
+  def render(self, rect):
     title_rect = rl.Rectangle(rect.x + self._padding, rect.y + self._padding, rect.width - 2 * self._padding, 70)
     gui_label(title_rect, self._title, 70)
 
@@ -78,6 +76,6 @@ if __name__ == "__main__":
 
   for _ in gui_app.render():
     result = dialog.render(rl.Rectangle(100, 100, 1024, 800))
-    if isinstance(result, int) and result >= 0:
+    if result >= 0:
       print(f"Selected: {dialog.selection}" if result > 0 else "Canceled")
       break

@@ -63,6 +63,10 @@
         <translation>محدود بالاتصال الخلوي</translation>
     </message>
     <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation>منع تحميل البيانات الكبيرة عندما يكون الاتصال محدوداً</translation>
+    </message>
+    <message>
         <source>Hidden Network</source>
         <translation>شبكة مخفية</translation>
     </message>
@@ -81,30 +85,6 @@
     <message>
         <source>for &quot;%1&quot;</source>
         <translation>من أجل &quot;%1&quot;</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>unmetered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wi-Fi Network Metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -162,6 +142,33 @@
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
         <translation>أداة ADB (Android Debug Bridge) تسمح بالاتصال بجهازك عبر USB أو عبر الشبكة. راجع هذا الرابط: https://docs.comma.ai/how-to/connect-to-comma لمزيد من المعلومات.</translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>المنزل</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>العمل</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>لم يتم ضبط الوجهة</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>المنزل</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>العمل</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>لم يتم ضبط %1 موقع</translation>
     </message>
 </context>
 <context>
@@ -306,14 +313,6 @@
         <source>PAIR</source>
         <translation>إقران</translation>
     </message>
-    <message>
-        <source>Disengage to Reset Calibration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -406,6 +405,54 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
             <numerusform>تحتاج إلى %n أحرف على الأقل!</numerusform>
             <numerusform>تحتاج إلى %n حرف على الأقل!</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>جارٍ التثبيت...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>الوصول</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>د</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>س</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>التنقل</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>الإدارة في connect.comma.ai</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>تحميل الخريطة</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>بانتظار GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>بانتظار الطريق</translation>
     </message>
 </context>
 <context>
@@ -586,6 +633,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>سنة واحدة من تخزين القرص</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>التنقل خطوة بخطوة</translation>
+    </message>
+    <message>
         <source>Remote snapshots</source>
         <translation>لقطات عن بُعد</translation>
     </message>
@@ -639,6 +690,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
             <numerusform>منذ %n أيام</numerusform>
             <numerusform>منذ %n يوم</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>كم</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>م</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>ميل</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>قدم</translation>
     </message>
     <message>
         <source>now</source>
@@ -1049,6 +1116,10 @@ This may take up to a minute.</source>
         <translation>تمكين openpilot</translation>
     </message>
     <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation>استخدم نظام openpilot من أجل الضبط التكيفي للسرعة والحفاظ على مساعدة السائق للبقاء في المسار. انتباهك مطلوب في جميع الأوقات مع استخدام هذه الميزة. يعمل هذا التغيير في الإعدادات عند إيقاف تشغيل السيارة.</translation>
+    </message>
+    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>قم بتمكين تحذيرات مغادرة المسار</translation>
     </message>
@@ -1079,6 +1150,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>عند تمكين هذه الميزة، فإن الضغط على دواسة الوقود سيؤدي إلى فك ارتباط openpilot.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>إظهار الوقت المقدر للوصول بصيغة 24 ساعة</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>استخدام صيغة 24 ساعة بدلاً من صباحاً/مساء</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>عرض الخريطة على الجانب الأيسر من واجهة المستخدم</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>عرض الخريطة عل الجانب الأيسر عندما تكون وضعية العرض بطريقة الشاشة المنقسمة.</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1147,14 +1234,6 @@ This may take up to a minute.</source>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>تمكين مراقبة السائق حتى عندما لا يكون نظام OpenPilot مُفعّلاً.</translation>
-    </message>
-    <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

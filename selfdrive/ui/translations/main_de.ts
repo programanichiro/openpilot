@@ -63,6 +63,10 @@
         <translation>Getaktete Verbindung</translation>
     </message>
     <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation>Hochladen großer Dateien über getaktete Verbindungen unterbinden</translation>
+    </message>
+    <message>
         <source>Hidden Network</source>
         <translation>Verborgenes Netzwerk</translation>
     </message>
@@ -81,30 +85,6 @@
     <message>
         <source>for &quot;%1&quot;</source>
         <translation>für &quot;%1&quot;</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>unmetered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wi-Fi Network Metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -162,6 +142,33 @@
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
         <translation>ADB (Android Debug Bridge) ermöglicht die Verbindung zu deinem Gerät über USB oder Netzwerk. Siehe https://docs.comma.ai/how-to/connect-to-comma für weitere Informationen.</translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -306,14 +313,6 @@
         <source>PAIR</source>
         <translation>KOPPELN</translation>
     </message>
-    <message>
-        <source>Disengage to Reset Calibration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -398,6 +397,54 @@ Der Firehose-Modus ermöglicht es dir, deine Trainingsdaten-Uploads zu maximiere
             <numerusform>Mindestens %n Buchstabe benötigt!</numerusform>
             <numerusform>Mindestens %n Buchstaben benötigt!</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>Installiere...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>Ankunft</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>min</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>std</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>Karte wird geladen</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>Warten auf GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1031,6 +1078,10 @@ Dies kann bis zu einer Minute dauern.</translation>
         <translation>Openpilot aktivieren</translation>
     </message>
     <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation>Benutze das Openpilot System als adaptiven Tempomaten und Spurhalteassistenten. Deine Aufmerksamkeit ist jederzeit erforderlich, um diese Funktion zu nutzen. Diese Einstellung wird übernommen, wenn das Auto aus ist.</translation>
+    </message>
+    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>Spurverlassenswarnungen aktivieren</translation>
     </message>
@@ -1057,6 +1108,24 @@ Dies kann bis zu einer Minute dauern.</translation>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>Wenn aktiviert, deaktiviert sich Openpilot sobald das Gaspedal betätigt wird.</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>Benutze das 24Stunden Format anstatt am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translatorcomment>Too long for UI</translatorcomment>
+        <translation>Zeige die Karte auf der linken Seite</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>Zeige die Karte auf der linken Seite der Benutzeroberfläche bei geteilten Bildschirm.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translatorcomment>Too long for UI</translatorcomment>
+        <translation>Zeige die Ankunftszeit im 24 Stunden Format</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1129,14 +1198,6 @@ Dies kann bis zu einer Minute dauern.</translation>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>Fahrerüberwachung auch aktivieren, wenn openpilot nicht aktiv ist.</translation>
-    </message>
-    <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>

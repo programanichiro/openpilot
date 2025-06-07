@@ -60,7 +60,11 @@
     </message>
     <message>
         <source>Cellular Metered</source>
-        <translation>모바일 데이터 종량제</translation>
+        <translation>데이터 요금제</translation>
+    </message>
+    <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation>데이터 요금제 연결 시 대용량 데이터 업로드를 방지합니다</translation>
     </message>
     <message>
         <source>Hidden Network</source>
@@ -81,30 +85,6 @@
     <message>
         <source>for &quot;%1&quot;</source>
         <translation>&quot;%1&quot;에 접속하려면 비밀번호가 필요합니다</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation>모바일 데이터 종량제 사용 시 대용량 데이터 업로드 방지</translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation>기본</translation>
-    </message>
-    <message>
-        <source>metered</source>
-        <translation>종량제</translation>
-    </message>
-    <message>
-        <source>unmetered</source>
-        <translation>무제한</translation>
-    </message>
-    <message>
-        <source>Wi-Fi Network Metered</source>
-        <translation>제한된 Wi-Fi 네트워크</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation>제한된 Wi-Fi 사용 시 대용량 데이터 업로드 방지</translation>
     </message>
 </context>
 <context>
@@ -162,6 +142,33 @@
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
         <translation>ADB (안드로이드 디버그 브릿지) USB 또는 네트워크를 통해 장치에 연결할 수 있습니다. 자세한 내용은 https://docs.comma.ai/how-to/connect-to-comma를 참조하세요.</translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>집</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>회사</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>목적지가 설정되지 않았습니다</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>%1 위치가 설정되지 않았습니다</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>집</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>회사</translation>
     </message>
 </context>
 <context>
@@ -248,7 +255,7 @@
     </message>
     <message>
         <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down. openpilot is continuously calibrating, resetting is rarely required.</source>
-        <translation>오픈파일럿 장치는 좌우 4°, 위로 5°, 아래로 9° 이내의 각도로 장착되어야 합니다. 오픈파일럿은 지속적으로 자동 보정되며 재설정은 거의 필요하지 않습니다.</translation>
+        <translation>오픈파일럿 장치는 좌우 4°, 위로 5°, 아래로 9° 이내 각도로 장착되어야 합니다. 오픈파일럿은 지속적으로 자동 보정되며 재설정은 거의 필요하지 않습니다.</translation>
     </message>
     <message>
         <source> Your device is pointed %1° %2 and %3° %4.</source>
@@ -305,14 +312,6 @@
     <message>
         <source>PAIR</source>
         <translation>동기화</translation>
-    </message>
-    <message>
-        <source>Disengage to Reset Calibration</source>
-        <translation>캘리브레이션을 재설정하려면 해제하세요</translation>
-    </message>
-    <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation> 차량이 전원이 켜진 경우 캘리브레이션 재설정이 오픈파일럿을 재시작합니다.</translation>
     </message>
 </context>
 <context>
@@ -396,6 +395,54 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>최소 %n자 이상이어야 합니다!</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>설치 중...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>도착</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>분</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>시간</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>내비게이션</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>connect.comma.ai에서 관리하세요</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>지도 로딩 중</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>GPS 수신 중</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>경로를 기다리는 중</translation>
     </message>
 </context>
 <context>
@@ -572,6 +619,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>항상 LTE 연결</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>내비게이션 경로안내</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>1년간 주행 로그 저장</translation>
     </message>
@@ -614,6 +665,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>%n 일 전</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -1024,6 +1091,10 @@ This may take up to a minute.</source>
         <translation>오픈파일럿 사용</translation>
     </message>
     <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation>오픈파일럿 시스템을 사용하여 어댑티브 크루즈 컨트롤과 차로 유지 보조 기능을 활용하십시오. 이 기능을 사용할 때에는 항상 주의를 기울여야 합니다. 설정 변경은 차량을 재시동해야 적용됩니다.</translation>
+    </message>
+    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>차선 이탈 경고 활성화</translation>
     </message>
@@ -1054,6 +1125,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>활성화된 경우 가속 페달을 밟으면 오픈파일럿이 해제됩니다.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>24시간 형식으로 도착 예정 시간 표시</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>오전/오후 대신 24시간 형식 사용</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>UI 왼쪽에 지도 표시</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>분할 화면 보기에서 지도를 왼쪽에 표시합니다.</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1122,14 +1209,6 @@ This may take up to a minute.</source>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>오픈파일럿이 활성화되지 않은 경우에도 드라이버 모니터링을 활성화합니다.</translation>
-    </message>
-    <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation>ACC 및 차선 유지 지원을 위해 오픈파일럿 시스템을 사용하십시오. 이 기능을 사용하려면 항상주의를 기울여야합니다.</translation>
-    </message>
-    <message>
-        <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation> 이 설정을 변경하면 차량이 재가동된후 오픈파일럿이 시작됩니다.</translation>
     </message>
 </context>
 <context>

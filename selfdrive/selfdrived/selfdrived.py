@@ -8,6 +8,7 @@ import cereal.messaging as messaging
 from cereal import car, log
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
@@ -15,7 +16,7 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.common.gps import get_gps_location_service
 
 from openpilot.selfdrive.car.car_specific import CarSpecificEvents
-from openpilot.selfdrive.selfdrived.events import Events, ET
+from openpilot.selfdrive.selfdrived.events import Events, ET, EmptyAlert
 from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 
@@ -38,6 +39,8 @@ SafetyModel = car.CarParams.SafetyModel
 
 IGNORED_SAFETY_MODES = (SafetyModel.silent, SafetyModel.noOutput)
 
+ACCEL_PUSH_COUNT = 0
+accel_engaged_str = '0'
 
 class SelfdriveD:
   def __init__(self, CP=None):
@@ -117,12 +120,11 @@ class SelfdriveD:
     # some comma three with NVMe experience NVMe dropouts mid-drive that
     # cause loggerd to crash on write, so ignore it only on that platform
     self.ignored_processes = set()
-    nvme_expected = os.path.exists('/dev/nvme0n1') or (not os.path.isfile("/persist/comma/living-in-the-moment"))
-    if HARDWARE.get_device_type() == 'tici' and nvme_expected:
+    if HARDWARE.get_device_type() == 'tici' and os.path.exists('/dev/nvme0'):
       self.ignored_processes = {'loggerd', }
 
     # Determine startup event
-    self.startup_event = EventName.startup if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
+    self.startup_event = EventName.startup #if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
     if not car_recognized:
       self.startup_event = EventName.startupNoCar
     elif car_recognized and self.CP.passive:
@@ -186,8 +188,33 @@ class SelfdriveD:
           # body always wants to enable
           self.events.add(EventName.pcmEnable)
 
+      global ACCEL_PUSH_COUNT,accel_engaged_str
+      engage_disable = False
+      if CS.gasPressed:
+        accel_engaged = False
+        if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
+          try:
+            with open('/dev/shm/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
+              accel_engaged_str = fp.read()
+          except Exception as e:
+            pass
+        if accel_engaged_str:
+          if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+            accel_engaged = True
+          if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+            accel_engaged = True
+            ACCEL_PUSH_COUNT = 100
+        if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
+          engage_disable = True
+        ACCEL_PUSH_COUNT += 1
+      else:
+        if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+          engage_disable = True
+        ACCEL_PUSH_COUNT = 0
+
       # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-      if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+      #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+      if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
         (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
         (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
         self.events.add(EventName.pedalPressed)
@@ -197,7 +224,7 @@ class SelfdriveD:
       self.events.add(EventName.overheat)
     if self.sm['deviceState'].freeSpacePercent < 7 and not SIMULATION:
       self.events.add(EventName.outOfSpace)
-    if self.sm['deviceState'].memoryUsagePercent > 90 and not SIMULATION:
+    if self.sm['deviceState'].memoryUsagePercent > 94 and not SIMULATION:
       self.events.add(EventName.lowMemory)
 
     # Alert if fan isn't spinning for 5 seconds
@@ -360,7 +387,7 @@ class SelfdriveD:
     if not SIMULATION or REPLAY:
       # Not show in first 1.5 km to allow for driving out of garage. This event shows after 5 minutes
       gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
-      if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
+      if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID and not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500 and self.distance_traveled < 3000):
         self.events.add(EventName.noGps)
       if gps_ok:
         self.distance_traveled = 0
@@ -374,7 +401,7 @@ class SelfdriveD:
       if any(not be.pressed and be.type == ButtonType.gapAdjustCruise for be in CS.buttonEvents):
         self.personality = (self.personality - 1) % 3
         self.params.put_nonblocking('LongitudinalPersonality', str(self.personality))
-        self.events.add(EventName.personalityChanged)
+        # self.events.add(EventName.personalityChanged)イチロウパイロットでは要らない。
 
   def data_sample(self):
     car_state = messaging.recv_one(self.car_state_sock)
@@ -448,6 +475,7 @@ class SelfdriveD:
     ss.experimentalMode = self.experimental_mode
     ss.personality = self.personality
 
+    # if self.AM.current_alert != EmptyAlert:
     ss.alertText1 = self.AM.current_alert.alert_text_1
     ss.alertText2 = self.AM.current_alert.alert_text_2
     ss.alertSize = self.AM.current_alert.alert_size
@@ -486,7 +514,6 @@ class SelfdriveD:
   def params_thread(self, evt):
     while not evt.is_set():
       self.is_metric = self.params.get_bool("IsMetric")
-      self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
       self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
       self.experimental_mode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
       self.personality = self.read_personality_param()

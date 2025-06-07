@@ -7,7 +7,6 @@ from pathlib import Path
 from datetime import datetime, timedelta, UTC
 from openpilot.common.api import api_get
 from openpilot.common.params import Params
-from openpilot.common.spinner import Spinner
 from openpilot.selfdrive.selfdrived.alertmanager import set_offroad_alert
 from openpilot.system.hardware import HARDWARE, PC
 from openpilot.system.hardware.hw import Paths
@@ -45,6 +44,7 @@ def register(show_spinner=False) -> str | None:
     cloudlog.warning(f"missing public key: {pubkey}")
   elif dongle_id is None:
     if show_spinner:
+      from openpilot.system.ui.spinner import Spinner
       spinner = Spinner()
       spinner.update("registering device")
 
@@ -92,11 +92,17 @@ def register(show_spinner=False) -> str | None:
       if time.monotonic() - start_time > 60 and show_spinner:
         spinner.update(f"registering device - serial: {serial}, IMEI: ({imei1}, {imei2})")
 
+      if time.monotonic() - start_time > 70 and show_spinner:
+        dongle_id = UNREGISTERED_DONGLE_ID #互換機でException無限ループした場合の対処
+        break
+
     if show_spinner:
       spinner.close()
 
   if dongle_id:
     params.put("DongleId", dongle_id)
+
+  if dongle_id and dongle_id != UNREGISTERED_DONGLE_ID:
     set_offroad_alert("Offroad_UnofficialHardware", (dongle_id == UNREGISTERED_DONGLE_ID) and not PC)
   return dongle_id
 

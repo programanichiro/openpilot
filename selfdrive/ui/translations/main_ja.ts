@@ -63,6 +63,10 @@
         <translation>従量制通信設定</translation>
     </message>
     <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation>大量のデータのアップロードを防止する</translation>
+    </message>
+    <message>
         <source>Hidden Network</source>
         <translation>ネットワーク非表示</translation>
     </message>
@@ -81,30 +85,6 @@
     <message>
         <source>for &quot;%1&quot;</source>
         <translation>[%1]</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation>モバイルデータ回線を使用しているときは大容量データをアップロードしません</translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation>標準設定</translation>
-    </message>
-    <message>
-        <source>metered</source>
-        <translation>従量制</translation>
-    </message>
-    <message>
-        <source>unmetered</source>
-        <translation>定額制</translation>
-    </message>
-    <message>
-        <source>Wi-Fi Network Metered</source>
-        <translation>従量制のWi-Fiネットワーク</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation>通信制限のあるWi-Fi接続では大容量データをアップロードしません</translation>
     </message>
 </context>
 <context>
@@ -162,6 +142,33 @@
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
         <translation>ADB（Android Debug Bridge）により、USBまたはネットワーク経由でデバイスに接続できます。詳細は、https://docs.comma.ai/how-to/connect-to-comma を参照してください。</translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>仕事</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>目的地が設定されていません</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>%1の地点が設定されていません</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>仕事</translation>
     </message>
 </context>
 <context>
@@ -306,14 +313,6 @@
         <source>PAIR</source>
         <translation>OK</translation>
     </message>
-    <message>
-        <source>Disengage to Reset Calibration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -396,6 +395,54 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
         <translation>
             <numerusform>%n文字以上にして下さい！</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>インストール中...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>到着予定</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>分</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>時間</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>カーナビ</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>connect.comma.aiで設定</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>マップ読み込み中</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>GPS信号を探索中</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>経路を検索中</translation>
     </message>
 </context>
 <context>
@@ -491,6 +538,10 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
         <source> ALERT</source>
         <translation> 警告</translation>
     </message>
+    <message>
+        <source>Power Off</source>
+        <translation>パワーオフ</translation>
+    </message>
 </context>
 <context>
     <name>OnroadAlerts</name>
@@ -513,6 +564,14 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
     <message>
         <source>System Unresponsive</source>
         <translation>システムが応答しません</translation>
+    </message>
+    <message>
+        <source>Press Resume to Exit Standstill</source>
+        <translation>停車中です。アクセルで発進</translation>
+    </message>
+    <message>
+        <source>Release Brake to Engage</source>
+        <translation>ブレーキを踏んでいます</translation>
     </message>
 </context>
 <context>
@@ -572,6 +631,10 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
         <translation>24時間365日のLTE接続</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>カーナビ機能</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>1年間分のドライブストレージ</translation>
     </message>
@@ -614,6 +677,22 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
         <translation>
             <numerusform>%n日前</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -876,6 +955,10 @@ This may take up to a minute.</source>
         <source>5G</source>
         <translation>5G</translation>
     </message>
+    <message>
+        <source>EXPLORE</source>
+        <translation>探索中</translation>
+    </message>
 </context>
 <context>
     <name>SoftwarePanel</name>
@@ -1024,6 +1107,10 @@ This may take up to a minute.</source>
         <translation>openpilotを有効化</translation>
     </message>
     <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation>openpilotによるアダプティブクルーズコントロールとレーンキープアシストを利用します。この機能を利用する際は常に前方への注意が必要です。この設定を変更は車の電源が必要です。</translation>
+    </message>
+    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>車線逸脱警報の有効化</translation>
     </message>
@@ -1054,6 +1141,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>この機能を有効化すると、openpilotを利用中にアクセルを踏むとopenpilotによる運転サポートを中断します。</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>24時間表示</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>AM/PM の代わりに24時間形式を使用します</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>画面の左側にマップを表示</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>分割画面表示の際、ディスプレイの左側にマップを表示します。</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1124,12 +1227,20 @@ This may take up to a minute.</source>
         <translation>openpilotが作動していない場合でも運転者モニタリングを有効にする。</translation>
     </message>
     <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation type="unfinished"></translation>
+        <source>Accel Method</source>
+        <translation>アクセル制御セレクト</translation>
     </message>
     <message>
-        <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
+        <source>Switch Accel Method to Official version or Cydia2020. A reboot is required.</source>
+        <translation>アクセル制御をCydia2020氏の手法と公式から選択します。再起動が必要です。TSSPでは公式は非推奨です。</translation>
+    </message>
+    <message>
+        <source>Always receive GPS signals</source>
+        <translation>GPS信号の常時受信</translation>
+    </message>
+    <message>
+        <source>GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.</source>
+        <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
     </message>
 </context>
 <context>

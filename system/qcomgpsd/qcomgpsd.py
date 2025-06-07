@@ -264,6 +264,9 @@ def main() -> NoReturn:
 
   pm = messaging.PubMaster(['qcomGnss', 'gpsLocation'])
 
+  with open('/dev/shm/gps_axs_data.txt','w') as fp:
+    fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (0,0,0,0,0,0))
+
   while 1:
     if os.path.exists(ASSIST_DATA_FILE) and want_assistance:
       setup_quectel(diag)
@@ -362,6 +365,10 @@ def main() -> NoReturn:
         want_assistance = False
         stop_download_event.set()
       pm.send('gpsLocation', msg)
+
+      with open('/dev/shm/gps_axs_data.txt','w') as fp:
+        #fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,avr_bear/*(double)sum_bear/BEAR_BUF_MAX*/,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+        fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (gps.latitude,gps.longitude,gps.bearingDeg,gps.speed,gps.unixTimestampMillis,1))
 
     elif log_type == LOG_GNSS_OEMDRE_SVPOLY_REPORT:
       msg = messaging.new_message('qcomGnss', valid=True)

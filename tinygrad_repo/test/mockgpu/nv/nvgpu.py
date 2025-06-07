@@ -182,7 +182,6 @@ class GPFIFO:
 class NVGPU(VirtGPU):
   def __init__(self, gpuid):
     super().__init__(gpuid)
-    self.regs = {}
     self.mapped_ranges = set()
     self.queues = []
 

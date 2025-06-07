@@ -8,7 +8,6 @@ PLATFORM=$(uname -s)
 
 echo "installing dependencies"
 if [[ $PLATFORM == "Darwin" ]]; then
-  export HOMEBREW_NO_AUTO_UPDATE=1
   brew install --cask gcc-arm-embedded
   brew install python3 gcc@13
 elif [[ $PLATFORM == "Linux" ]]; then
@@ -24,11 +23,7 @@ fi
 if ! command -v uv &>/dev/null; then
   echo "'uv' is not installed. Installing 'uv'..."
   curl -LsSf https://astral.sh/uv/install.sh | sh
-
-  # doesn't require sourcing on all platforms
-  set +e
-  source $HOME/.local/bin/env
-  set -e
+  source $HOME/.local/bin/env || true
 fi
 
 export UV_PROJECT_ENVIRONMENT="$DIR/.venv"

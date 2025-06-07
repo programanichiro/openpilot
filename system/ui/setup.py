@@ -9,7 +9,7 @@ import pyray as rl
 
 from cereal import log
 from openpilot.system.hardware import HARDWARE
-from openpilot.system.ui.lib.application import gui_app, FontWeight, Widget
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.button import gui_button, ButtonStyle
 from openpilot.system.ui.lib.label import gui_label, gui_text_box
 from openpilot.system.ui.widgets.network import WifiManagerUI, WifiManagerWrapper
@@ -39,9 +39,8 @@ class SetupState(IntEnum):
   DOWNLOAD_FAILED = 6
 
 
-class Setup(Widget):
+class Setup:
   def __init__(self):
-    super().__init__()
     self.state = SetupState.GETTING_STARTED
     self.network_check_thread = None
     self.network_connected = threading.Event()
@@ -68,7 +67,7 @@ class Setup(Widget):
     except (FileNotFoundError, ValueError):
       self.state = SetupState.LOW_VOLTAGE
 
-  def _render(self, rect: rl.Rectangle):
+  def render(self, rect: rl.Rectangle):
     if self.state == SetupState.LOW_VOLTAGE:
       self.render_low_voltage(rect)
     elif self.state == SetupState.GETTING_STARTED:
@@ -117,6 +116,7 @@ class Setup(Widget):
 
     if ret:
       self.state = SetupState.NETWORK_SETUP
+      self.wifi_manager.request_scan()
       self.start_network_check()
 
   def check_network_connectivity(self):
@@ -144,6 +144,10 @@ class Setup(Widget):
       self.network_check_thread.join()
 
   def render_network_setup(self, rect: rl.Rectangle):
+    if self.wifi_ui.require_full_screen:
+      self.wifi_ui.render(rect)
+      return
+
     title_rect = rl.Rectangle(rect.x + MARGIN, rect.y + MARGIN, rect.width - MARGIN * 2, TITLE_FONT_SIZE)
     gui_label(title_rect, "Connect to Wi-Fi", TITLE_FONT_SIZE, font_weight=FontWeight.MEDIUM)
 
@@ -252,20 +256,18 @@ class Setup(Widget):
       self.state = SetupState.GETTING_STARTED
 
   def render_custom_url(self):
-    def handle_keyboard_result(result):
-      # Enter pressed
-      if result == 1:
-        url = self.keyboard.text
-        self.keyboard.clear()
-        if url:
-          self.download(url)
+    result = self.keyboard.render("Enter URL", "for Custom Software")
 
-      # Cancel pressed
-      elif result == 0:
-        self.state = SetupState.SOFTWARE_SELECTION
+    # Enter pressed
+    if result == 1:
+      url = self.keyboard.text
+      self.keyboard.clear()
+      if url:
+        self.download(url)
 
-    self.keyboard.set_title("Enter URL", "for Custom Software")
-    gui_app.set_modal_overlay(self.keyboard, callback=handle_keyboard_result)
+    # Cancel pressed
+    elif result == 0:
+      self.state = SetupState.SOFTWARE_SELECTION
 
   def download(self, url: str):
     # autocomplete incomplete URLs

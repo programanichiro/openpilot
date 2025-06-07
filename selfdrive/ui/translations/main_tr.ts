@@ -63,6 +63,10 @@
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Hidden Network</source>
         <translation type="unfinished"></translation>
     </message>
@@ -81,30 +85,6 @@
     <message>
         <source>for &quot;%1&quot;</source>
         <translation type="unfinished">için &quot;%1&quot;</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>unmetered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wi-Fi Network Metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -161,6 +141,33 @@
     </message>
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
         <translation type="unfinished"></translation>
     </message>
 </context>
@@ -306,14 +313,6 @@
         <source>PAIR</source>
         <translation type="unfinished"></translation>
     </message>
-    <message>
-        <source>Disengage to Reset Calibration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -394,6 +393,54 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>En az %n karakter gerekli!</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>Yükleniyor...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>tahmini varış süresi</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>dk</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>saat</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>Harita yükleniyor</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>GPS verisi bekleniyor...</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -573,6 +620,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation type="unfinished"></translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation type="unfinished"></translation>
+    </message>
+    <message>
         <source>Remote snapshots</source>
         <translation type="unfinished"></translation>
     </message>
@@ -611,6 +662,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>%n gün önce</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mil</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -1020,6 +1087,10 @@ This may take up to a minute.</source>
         <translation>openpilot&apos;u aktifleştir</translation>
     </message>
     <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation>Ayarlanabilir hız sabitleyici ve şeritte kalma yardımı için openpilot sistemini kullanın. Bu özelliği kullanırken her zaman dikkatli olmanız gerekiyor. Bu ayarın değiştirilmesi için araç kapatılıp açılması gerekiyor.</translation>
+    </message>
+    <message>
         <source>Enable Lane Departure Warnings</source>
         <translation>Şerit ihlali uyarı alın</translation>
     </message>
@@ -1046,6 +1117,22 @@ This may take up to a minute.</source>
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>Aktifleştirilirse eğer gaz pedalına basınca openpilot devre dışı kalır.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>Tahmini varış süresini 24 saat formatı şeklinde göster</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>24 saat formatını kullan</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>Haritayı arayüzün sol tarafında göster</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>Bölünmüş ekran görünümündeyken haritayı sol tarafta göster.</translation>
     </message>
     <message>
         <source>Experimental Mode</source>
@@ -1117,14 +1204,6 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Changing this setting will restart openpilot if the car is powered on.</source>
         <translation type="unfinished"></translation>
     </message>
 </context>

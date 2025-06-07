@@ -63,6 +63,10 @@
         <translation>Connexion cellulaire limitée</translation>
     </message>
     <message>
+        <source>Prevent large data uploads when on a metered connection</source>
+        <translation>Éviter les transferts de données importants sur une connexion limitée</translation>
+    </message>
+    <message>
         <source>Hidden Network</source>
         <translation>Réseau Caché</translation>
     </message>
@@ -81,30 +85,6 @@
     <message>
         <source>for &quot;%1&quot;</source>
         <translation>pour &quot;%1&quot;</translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>default</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>unmetered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Wi-Fi Network Metered</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -162,6 +142,33 @@
     <message>
         <source>ADB (Android Debug Bridge) allows connecting to your device over USB or over the network. See https://docs.comma.ai/how-to/connect-to-comma for more info.</source>
         <translation type="unfinished"></translation>
+    </message>
+</context>
+<context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>Domicile</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>Travail</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>Aucune destination définie</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>domicile</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>travail</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>Aucun lieu %1 défini</translation>
     </message>
 </context>
 <context>
@@ -306,14 +313,6 @@
         <source>PAIR</source>
         <translation>ASSOCIER</translation>
     </message>
-    <message>
-        <source>Disengage to Reset Calibration</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
-    </message>
 </context>
 <context>
     <name>DriverViewWindow</name>
@@ -396,6 +395,54 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
             <numerusform>Besoin d&apos;au moins %n caractère !</numerusform>
             <numerusform>Besoin d&apos;au moins %n caractères !</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>Installation...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>eta</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>min</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>h</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>NAVIGATION</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>Gérer sur connect.comma.ai</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>Chargement de la carte</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>En attente du GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>En attente d&apos;un trajet</translation>
     </message>
 </context>
 <context>
@@ -576,6 +623,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>1 an de stockage de trajets</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>Navigation étape par étape</translation>
+    </message>
+    <message>
         <source>Remote snapshots</source>
         <translation>Captures à distance</translation>
     </message>
@@ -617,6 +668,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
             <numerusform>il y a %n jour</numerusform>
             <numerusform>il y a %n jours</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -1027,6 +1094,10 @@ Cela peut prendre jusqu&apos;à une minute.</translation>
         <translation>Activer openpilot</translation>
     </message>
     <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature. Changing this setting takes effect when the car is powered off.</source>
+        <translation>Utilisez le système openpilot pour le régulateur de vitesse adaptatif et l&apos;assistance au maintien de voie. Votre attention est requise en permanence pour utiliser cette fonctionnalité. La modification de ce paramètre prend effet lorsque la voiture est éteinte.</translation>
+    </message>
+    <message>
         <source>Experimental Mode</source>
         <translation>Mode expérimental</translation>
     </message>
@@ -1061,6 +1132,22 @@ Cela peut prendre jusqu&apos;à une minute.</translation>
     <message>
         <source>Display speed in km/h instead of mph.</source>
         <translation>Afficher la vitesse en km/h au lieu de mph.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>Afficher l&apos;heure d&apos;arrivée en format 24h</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>Utiliser le format 24h plutôt que am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>Afficher la carte à gauche de l&apos;interface</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>Afficher la carte à gauche en mode écran scindé.</translation>
     </message>
     <message>
         <source>Aggressive</source>
@@ -1125,14 +1212,6 @@ Cela peut prendre jusqu&apos;à une minute.</translation>
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>Activer la surveillance conducteur lorsque openpilot n&apos;est pas actif.</translation>
-    </message>
-    <message>
-        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation type="unfinished"></translation>
-    </message>
-    <message>
-        <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
