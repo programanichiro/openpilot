@@ -1025,13 +1025,13 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   }
 }
 
+quint64 move_event_time;
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
-  FILE *fp = fopen("/dev/shm/map_mouseDoubleClickEvent.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
-  if(fp != NULL){
-    fprintf(fp,"%d",interaction_counter);
-    fclose(fp);
-  }
-  if(false && interaction_counter > (int)(INTERACTION_TIMEOUT * 0.9)){
+  //c3XではupdateStateが常に走らない？
+  quint64 now = QDateTime::currentMSecsSinceEpoch();
+  if(//interaction_counter > (int)(INTERACTION_TIMEOUT * 0.9)
+    now - move_event_time < 500 //0.5秒
+    ){
     //移動直後の0.5秒以内のダブルクリックはリセット動作をしない。
     return;
   }
@@ -1077,6 +1077,8 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
+  move_event_time = QDateTime::currentMSecsSinceEpoch();
+
   QPointF f_delta = ev->localPos() - firstPos;
   if(f_delta.x()*f_delta.x() + f_delta.y()*f_delta.y() > 10*10){ //最初の位置から10ドット以上動いたらmouse_pressedTimeを長押し無判定ロジックに。
     mouse_pressedTime = QDateTime::currentMSecsSinceEpoch() + 1000*1000; //動かしたら長押し判定されないように1000秒後を設定する。
