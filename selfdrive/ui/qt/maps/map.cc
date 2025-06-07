@@ -1148,7 +1148,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     m_map->moveBy(delta / MAP_SCALE);
 
     static qreal dist;
-    dist += = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
+    dist += std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
     if(dist > 300){
       move_event_time = QDateTime::currentMSecsSinceEpoch();
       dist = 0;
