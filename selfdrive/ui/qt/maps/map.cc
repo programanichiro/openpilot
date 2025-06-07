@@ -1031,7 +1031,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   //c3XではupdateStateが常に走らない？
   quint64 now = QDateTime::currentMSecsSinceEpoch();
   if(//interaction_counter > (int)(INTERACTION_TIMEOUT * 0.9)
-    now - move_event_time < 500 //0.5秒
+    now - move_event_time < 1000 //1秒
     ){
     //移動直後の0.5秒以内のダブルクリックはリセット動作をしない。
     return;
@@ -1150,7 +1150,7 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     m_map->moveBy(delta / MAP_SCALE);
 
     move_dist += std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
-    if(move_dist > 300){
+    if(move_dist > 200){
       move_event_time = QDateTime::currentMSecsSinceEpoch();
       move_dist = 0;
     }
