@@ -1025,6 +1025,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
   }
 }
 
+qreal move_dist;
 quint64 move_event_time;
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   //c3XではupdateStateが常に走らない？
@@ -1035,6 +1036,7 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
     //移動直後の0.5秒以内のダブルクリックはリセット動作をしない。
     return;
   }
+  move_dist = 0;
 
   if(m_lastPos.y() < 1080 - 200 && start_window_resize == true){ //ボタンの位置は避ける。
     bool clear_width_rate = false;
@@ -1147,11 +1149,10 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
     interaction_counter = INTERACTION_TIMEOUT;
     m_map->moveBy(delta / MAP_SCALE);
 
-    static qreal dist;
-    dist += std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
-    if(dist > 300){
+    move_dist += std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
+    if(move_dist > 300){
       move_event_time = QDateTime::currentMSecsSinceEpoch();
-      dist = 0;
+      move_dist = 0;
     }
     update();
   }
