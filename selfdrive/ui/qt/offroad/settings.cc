@@ -74,18 +74,21 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Show ETA in 24h Format"),
       tr("Use 24h format instead of am/pm"),
       "../assets/icons/metric.png",
+      true,
     },
     {
       "NavSettingLeftSide",
       tr("Show Map on Left Side of UI"),
       tr("Show map on left side when in split screen view."),
       "../assets/icons/road.png",
+      true,
     },
     {
       "GpsAlwaysSwitch",
       tr("Always receive GPS signals"),
       tr("GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary."),
       "../assets/offroad/icon_gps_car.png",
+      true,
     },
 #endif
   };
