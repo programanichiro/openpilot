@@ -1212,6 +1212,15 @@ void MapWindow::offroadTransition(bool offroad) {
     clearRoute();
     routing_problem = false;
 
+    if (last_position){
+      double lat = last_position->first;
+      double lon = last_position->second;
+
+      std::string lastGPSPosJSON = util::string_format(
+        "{\"latitude\": %.15f, \"longitude\": %.15f, \"altitude\": %.15f}", lat, lon, 0/*dummyの高さ*/);
+      params.put("LastGPSPosition", lastGPSPosJSON);
+    }
+
     if (last_bearing) setButtonInt("/data/mb_last_bearing_info.txt",(int)(*last_bearing * 1000)); //"%.2f"の代わり。
     //不要setButtonInt("/data/mb_north_up.txt",north_up);
     setButtonInt("/data/mb_zoom_offset.txt",(int)(zoom_offset * 1000));
