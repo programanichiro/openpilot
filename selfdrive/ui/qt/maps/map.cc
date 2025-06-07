@@ -272,10 +272,9 @@ void MapWindow::initLayers() {
   }
   if (!m_map->layerExists("carPosLayer")) {
     qDebug() << "Initializing carPosLayer";
-    if(false && my_mapbox_triangle.empty() == false){
+    if(my_mapbox_triangle.empty() == false){
       m_map->addImage("label-arrow", QImage("/data/mb_triangle.svg"));
     } else {
-      //m_map->addImage("label-arrow", QImage("../assets/images/triangle.svg"));
       m_map->addImage("label-arrow", QImage("../assets/images/triangle_green.svg_"));
     }
 
@@ -1027,7 +1026,7 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
-  if(false && interaction_counter > INTERACTION_TIMEOUT * 0.9){
+  if(interaction_counter > INTERACTION_TIMEOUT * 0.9){
     //移動直後の0.5秒以内のダブルクリックはリセット動作をしない。
     return;
   }
