@@ -443,7 +443,22 @@ void MapWindow::updateState(const UIState &s) {
     if (locationd_valid) {
       if (already_vego_over_8 == true) {
         last_position = QMapLibre::Coordinate(locationd_pos[0], locationd_pos[1]);
-        last_bearing = locationd_orientation;;
+        //last_bearing = locationd_orientation;
+        //角度が一気に回転しないよう宣言。1frame最大5度程度
+        double d_bearing = locationd_orientation - *last_bearing;
+        if(d_bearing < 0){
+          d_bearing += 360;
+        }
+        if(d_bearing > 180){
+          d_bearing -= 360
+        }
+        if(d_bearing > 5){
+          d_bearing = 5;
+        }
+        else if(d_bearing < -5){
+          d_bearing = -5;
+        }
+        last_bearing = *last_bearing + d_bearing;
       }
       velocity_filter.update(std::max(10/3.6, locationd_velocity));
 
