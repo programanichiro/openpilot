@@ -9,6 +9,8 @@
 #include "selfdrive/ui/qt/window.h"
 
 int main(int argc, char *argv[]) {
+  qputenv("QT_QPA_EVDEV_TOUCHSCREEN_PARAMETERS", QByteArray("/dev/input/event0:rotate=0:move_threshold=50")); //Moveイベントのピクセル閾値を設定。
+
   setpriority(PRIO_PROCESS, 0, -20);
 
   qInstallMessageHandler(swagLogMessageHandler);
