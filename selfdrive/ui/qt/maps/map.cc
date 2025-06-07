@@ -1026,12 +1026,17 @@ void MapWindow::mouseReleaseEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
-  if(interaction_counter > INTERACTION_TIMEOUT * 0.9){
+  FILE *fp = fopen("/dev/shm/map_mouseDoubleClickEvent.txt","w"); //write_fileだと書き込めないが、こちらは書き込めた。
+  if(fp != NULL){
+    fprintf(fp,"%d",interaction_counter);
+    fclose(fp);
+  }
+  if(false && interaction_counter > (int)(INTERACTION_TIMEOUT * 0.9)){
     //移動直後の0.5秒以内のダブルクリックはリセット動作をしない。
     return;
   }
 
-  if(false && m_lastPos.y() < 1080 - 200 && start_window_resize == true){ //ボタンの位置は避ける。
+  if(m_lastPos.y() < 1080 - 200 && start_window_resize == true){ //ボタンの位置は避ける。
     bool clear_width_rate = false;
     if(uiState()->scene.map_on_left){
       if(m_lastPos.x() > this->width() - 150){
@@ -1058,13 +1063,11 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
   }
 
   if (last_position) m_map->setCoordinate(*last_position);
-  update();
   if(north_up == 0){
     if (last_bearing) m_map->setBearing(*last_bearing+bearing_ofs(velocity_filter.x()));
   } else {
     if (last_bearing) m_map->setBearing(0);
   }
-  update();
   m_map->setZoom(util::map_val<float>(velocity_filter.x(), 0, 30, MAX_ZOOM, MIN_ZOOM));
   update();
 
