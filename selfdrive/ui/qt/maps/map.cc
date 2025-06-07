@@ -446,19 +446,28 @@ void MapWindow::updateState(const UIState &s) {
         //last_bearing = locationd_orientation;
         //角度が一気に回転しないよう宣言。1frame最大5度程度
         double d_bearing = locationd_orientation - *last_bearing;
-        if(d_bearing < 0){
-          d_bearing += 360;
+        if(d_bearing > 360){
+          while(d_bearing > 360){
+            d_bearing -= 360;
+          }
+        } else if(d_bearing < 0){
+          while(d_bearing < 0){
+            d_bearing += 360;
+          }
         }
         if(d_bearing > 180){
           d_bearing -= 360;
         }
-        if(d_bearing > 5){
-          d_bearing = 5;
+        if(d_bearing > 1){
+          d_bearing = 1;
         }
-        else if(d_bearing < -5){
-          d_bearing = -5;
+        else if(d_bearing < -1){
+          d_bearing = -1;
         }
         last_bearing = *last_bearing + d_bearing;
+        if(*last_bearing < 0){
+          *last_bearing += 360;
+        }
       }
       velocity_filter.update(std::max(10/3.6, locationd_velocity));
 
