@@ -1077,8 +1077,6 @@ void MapWindow::mouseDoubleClickEvent(QMouseEvent *ev) {
 }
 
 void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
-  move_event_time = QDateTime::currentMSecsSinceEpoch();
-
   QPointF f_delta = ev->localPos() - firstPos;
   if(f_delta.x()*f_delta.x() + f_delta.y()*f_delta.y() > 10*10){ //最初の位置から10ドット以上動いたらmouse_pressedTimeを長押し無判定ロジックに。
     mouse_pressedTime = QDateTime::currentMSecsSinceEpoch() + 1000*1000; //動かしたら長押し判定されないように1000秒後を設定する。
@@ -1148,6 +1146,13 @@ void MapWindow::mouseMoveEvent(QMouseEvent *ev) {
   if (!delta.isNull()) {
     interaction_counter = INTERACTION_TIMEOUT;
     m_map->moveBy(delta / MAP_SCALE);
+
+    static qreal dist;
+    dist += = std::sqrt(delta.x() * delta.x() + delta.y() * delta.y());
+    if(dist > 300){
+      move_event_time = QDateTime::currentMSecsSinceEpoch();
+      dist = 0;
+    }
     update();
   }
 
