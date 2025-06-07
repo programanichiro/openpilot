@@ -450,7 +450,7 @@ void MapWindow::updateState(const UIState &s) {
           d_bearing += 360;
         }
         if(d_bearing > 180){
-          d_bearing -= 360
+          d_bearing -= 360;
         }
         if(d_bearing > 5){
           d_bearing = 5;
