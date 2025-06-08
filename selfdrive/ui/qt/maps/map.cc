@@ -458,11 +458,12 @@ void MapWindow::updateState(const UIState &s) {
         if(d_bearing > 180){
           d_bearing -= 360;
         }
-        if(d_bearing > 1){
-          d_bearing = 1;
+        const double max_ang_speed = 2.0;
+        if(d_bearing > max_ang_speed){
+          d_bearing = max_ang_speed;
         }
-        else if(d_bearing < -1){
-          d_bearing = -1;
+        else if(d_bearing < -max_ang_speed){
+          d_bearing = -max_ang_speed;
         }
         last_bearing = *last_bearing + d_bearing;
         if(*last_bearing < 0){
