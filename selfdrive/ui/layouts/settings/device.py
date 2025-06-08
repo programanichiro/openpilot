@@ -1,3 +1,4 @@
+from openpilot.system.ui.lib.application import Widget
 from openpilot.system.ui.lib.list_view import ListView, text_item, button_item
 from openpilot.common.params import Params
 from openpilot.system.hardware import TICI
@@ -14,8 +15,9 @@ DESCRIPTIONS = {
 }
 
 
-class DeviceLayout:
+class DeviceLayout(Widget):
   def __init__(self):
+    super().__init__()
     params = Params()
     dongle_id = params.get("DongleId", encoding="utf-8") or "N/A"
     serial = params.get("HardwareSerial") or "N/A"
@@ -36,7 +38,7 @@ class DeviceLayout:
 
     self._list_widget = ListView(items)
 
-  def render(self, rect):
+  def _render(self, rect):
     self._list_widget.render(rect)
 
   def _on_pair_device(self): pass
