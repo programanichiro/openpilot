@@ -66,7 +66,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Use Metric System"),
       tr("Display speed in km/h instead of mph."),
       "../assets/icons/metric.png",
-      false,
+      true,
     },
 #ifdef ENABLE_MAPS
     {
