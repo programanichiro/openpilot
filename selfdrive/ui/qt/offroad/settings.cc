@@ -66,13 +66,14 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Use Metric System"),
       tr("Display speed in km/h instead of mph."),
       "../assets/icons/metric.png",
-      false,
+      true,
     },
     {
       "GpsAlwaysSwitch",
       tr("Always receive GPS signals"),
       tr("GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary."),
       "../assets/offroad/icon_gps_car.png",
+      true,
     },
   };
 
