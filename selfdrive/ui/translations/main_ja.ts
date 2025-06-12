@@ -1152,6 +1152,14 @@ This may take up to a minute.</source>
         <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
     </message>
     <message>
+        <source>Force recognition as a hybrid vehicle</source>
+        <translation>ハイブリッド車として強制認識</translation>
+    </message>
+    <message>
+        <source>Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash.</source>
+        <translation>ハイブリッド車なのにガス車として認識する場合はこのスイッチをオンにして下さい。ガス車でONにするとクラッシュします。</translation>
+    </message>
+    <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
         <translation>openpilotシステムを使用してアダプティブクルーズコントロールおよび車線維持支援を行います。システム使用中は常にドライバーが事故を起こさないように注意を払ってください。</translation>
     </message>
