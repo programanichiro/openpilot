@@ -2,16 +2,20 @@ import pyray as rl
 from openpilot.selfdrive.ui.lib.prime_state import PrimeType
 from openpilot.selfdrive.ui.widgets.pairing_dialog import PairingDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
-from openpilot.system.ui.lib.application import gui_app, Widget, FontWeight
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.button import gui_button, ButtonStyle
 from openpilot.system.ui.lib.wrap_text import wrap_text
+from openpilot.system.ui.lib.widget import Widget
 
 
 class SetupWidget(Widget):
   def __init__(self):
     super().__init__()
-
+    self._open_settings_callback = None
     self._pairing_dialog: PairingDialog | None = None
+
+  def set_open_settings_callback(self, callback):
+    self._open_settings_callback = callback
 
   def _render(self, rect: rl.Rectangle):
     if ui_state.prime_state.get_type() == PrimeType.UNPAIRED:
@@ -77,15 +81,13 @@ class SetupWidget(Widget):
     button_height = 48 + 64  # font size + padding
     button_rect = rl.Rectangle(x, y, w, button_height)
     if gui_button(button_rect, "Open", button_style=ButtonStyle.PRIMARY):
-      self._open_firehose_settings()
+      if self._open_settings_callback:
+        self._open_settings_callback()
 
   def _show_pairing(self):
     if not self._pairing_dialog:
       self._pairing_dialog = PairingDialog()
     gui_app.set_modal_overlay(self._pairing_dialog, lambda result: setattr(self, '_pairing_dialog', None))
-
-  def _open_firehose_settings(self):
-    pass
 
   def __del__(self):
     if self._pairing_dialog:
