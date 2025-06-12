@@ -91,6 +91,13 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       false,
     },
 #endif
+    {
+      "ForceHybridVehicle",
+      tr("Force recognition as a hybrid vehicle"),
+      tr("Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash."),
+      "../assets/offroad/disengage_on_accelerator.svg",
+      true,
+    },
   };
 
 

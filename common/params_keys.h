@@ -81,6 +81,7 @@ inline static std::unordered_map<std::string, uint32_t> keys = {
     {"LongitudinalPersonality", PERSISTENT},
     {"AccelMethodSwitch", PERSISTENT},
     {"GpsAlwaysSwitch", PERSISTENT},
+    {"ForceHybridVehicle", PERSISTENT},
     {"NavDestination", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"NavDestinationWaypoints", CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION},
     {"NavPastDestinations", PERSISTENT},
