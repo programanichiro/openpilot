@@ -67,8 +67,6 @@ class HomeLayout(Widget):
     self.current_state = state
 
   def _render(self, rect: rl.Rectangle):
-    self._update_layout_rects(rect)
-
     current_time = time.time()
     if current_time - self.last_refresh >= REFRESH_INTERVAL:
       self._refresh()
@@ -85,16 +83,16 @@ class HomeLayout(Widget):
     elif self.current_state == HomeLayoutState.ALERTS:
       self._render_alerts_view()
 
-  def _update_layout_rects(self, rect: rl.Rectangle):
+  def _update_layout_rects(self):
     self.header_rect = rl.Rectangle(
-      rect.x + CONTENT_MARGIN, rect.y + CONTENT_MARGIN, rect.width - 2 * CONTENT_MARGIN, HEADER_HEIGHT
+      self._rect.x + CONTENT_MARGIN, self._rect.y + CONTENT_MARGIN, self._rect.width - 2 * CONTENT_MARGIN, HEADER_HEIGHT
     )
 
-    content_y = rect.y + CONTENT_MARGIN + HEADER_HEIGHT + SPACING
-    content_height = rect.height - CONTENT_MARGIN - HEADER_HEIGHT - SPACING - CONTENT_MARGIN
+    content_y = self._rect.y + CONTENT_MARGIN + HEADER_HEIGHT + SPACING
+    content_height = self._rect.height - CONTENT_MARGIN - HEADER_HEIGHT - SPACING - CONTENT_MARGIN
 
     self.content_rect = rl.Rectangle(
-      rect.x + CONTENT_MARGIN, content_y, rect.width - 2 * CONTENT_MARGIN, content_height
+      self._rect.x + CONTENT_MARGIN, content_y, self._rect.width - 2 * CONTENT_MARGIN, content_height
     )
 
     left_width = self.content_rect.width - RIGHT_COLUMN_WIDTH - SPACING
@@ -195,6 +193,7 @@ class HomeLayout(Widget):
     self._setup_widget.render(setup_rect)
 
   def _refresh(self):
+    # TODO: implement _update_state with a timer
     self.update_available = self.update_alert.refresh()
     self.alert_count = self.offroad_alert.refresh()
     self._update_state_priority(self.update_available, self.alert_count > 0)
