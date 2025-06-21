@@ -12,6 +12,7 @@ import datetime
 from multiprocessing import Process, Event
 from typing import NoReturn
 from struct import unpack_from, calcsize, pack
+from opendbc.car import structs
 
 from cereal import log
 import cereal.messaging as messaging
@@ -263,9 +264,12 @@ def main() -> NoReturn:
   gpio_set(GPIO.GNSS_PWR_EN, True)
 
   pm = messaging.PubMaster(['qcomGnss', 'gpsLocation'])
+  sm = messaging.SubMaster(['carState'])
 
   with open('/dev/shm/gps_axs_data.txt','w') as fp:
     fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (0,0,0,0,0,0))
+
+  reverse_bearingDeg = 0 #バックに入れてスピード出たら180度にセット。
 
   while 1:
     if os.path.exists(ASSIST_DATA_FILE) and want_assistance:
@@ -348,6 +352,18 @@ def main() -> NoReturn:
       gps.altitude = report["q_FltFinalPosAlt"]
       gps.speed = math.sqrt(sum([x**2 for x in vNED]))
       gps.bearingDeg = report["q_FltHeadingRad"] * 180/math.pi
+
+      if sm['carState'].gearShifter == structs.CarState.GearShifter.reverse:
+        if sm['carState'].vEgo > 1.0/3.6:
+          reverse_bearingDeg = 180
+      else:
+        if sm['carState'].vEgo > 1.0/3.6:
+          reverse_bearingDeg = 0
+
+      if reverse_bearingDeg > 0:
+        gps.bearingDeg += reverse_bearingDeg
+        if gps.bearingDeg >= 360:
+          gps.bearingDeg -= 360
 
       # TODO needs update if there is another leap second, after june 2024?
       dt_timestamp = (datetime.datetime(1980, 1, 6, 0, 0, 0, 0, datetime.UTC) +
