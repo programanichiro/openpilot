@@ -356,7 +356,7 @@ def main() -> NoReturn:
       sm.update()
       with open('/tmp/debug_out_v','w') as fp:
         # fp.write("vEgo<%d>:%f" % (int(sm['carState'].gearShifter),sm['carState'].vEgo/3.6))
-        fp.write("%.1f" % (sm['carState'].vEgo/3.6))
+        fp.write("%.1f" % (sm['carState'].vEgo*3.6))
 
       if sm['carState'].gearShifter == structs.CarState.GearShifter.reverse:
         if sm['carState'].vEgo > 1.0/3.6:
