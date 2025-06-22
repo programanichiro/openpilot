@@ -353,6 +353,10 @@ def main() -> NoReturn:
       gps.speed = math.sqrt(sum([x**2 for x in vNED]))
       gps.bearingDeg = report["q_FltHeadingRad"] * 180/math.pi
 
+      with open('/tmp/debug_out_v','w') as fp:
+        # fp.write("vEgo<%d>:%f" % (int(sm['carState'].gearShifter),sm['carState'].vEgo/3.6))
+        fp.write("%.1f" % (sm['carState'].vEgo/3.6))
+
       if sm['carState'].gearShifter == structs.CarState.GearShifter.reverse:
         if sm['carState'].vEgo > 1.0/3.6:
           reverse_bearingDeg = 180
