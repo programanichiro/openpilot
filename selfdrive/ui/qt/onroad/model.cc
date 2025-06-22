@@ -71,7 +71,7 @@ void ModelRenderer::draw(QPainter &painter, const QRect &surface_rect) {
 
 #if 1 //lane_widthを表示
     //std::string lane_width_txt = util::read_file("/dev/shm/lane_width.txt");
-    std::string lane_width_txt = util::read_file("/tmp/debug_out_v.txt");
+    std::string lane_width_txt = util::read_file("/tmp/debug_out_v");
     if(lane_width_txt.empty() == false){
       float lane_width = std::stof(lane_width_txt);
       if(lane_width > -99){
