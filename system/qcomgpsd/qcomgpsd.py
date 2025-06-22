@@ -353,6 +353,7 @@ def main() -> NoReturn:
       gps.speed = math.sqrt(sum([x**2 for x in vNED]))
       gps.bearingDeg = report["q_FltHeadingRad"] * 180/math.pi
 
+      sm.update()
       with open('/tmp/debug_out_v','w') as fp:
         # fp.write("vEgo<%d>:%f" % (int(sm['carState'].gearShifter),sm['carState'].vEgo/3.6))
         fp.write("%.1f" % (sm['carState'].vEgo/3.6))
