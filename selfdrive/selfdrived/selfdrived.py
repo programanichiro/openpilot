@@ -116,6 +116,7 @@ class SelfdriveD:
     self.recalibrating_seen = False
     self.state_machine = StateMachine()
     self.rk = Ratekeeper(100, print_delay_threshold=None)
+    self.accel_engage_counter = 0
 
     # some comma three with NVMe experience NVMe dropouts mid-drive that
     # cause loggerd to crash on write, so ignore it only on that platform
@@ -220,8 +221,12 @@ class SelfdriveD:
         (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
         self.events.add(EventName.pedalPressed)
 
-      if CS.cruiseState.enabled == False and CS.vEgo * 3.6 > (1 if int(accel_engaged_str) >= 3 else 30) and CS.gasPressed:
+      if self.accel_engage_counter == 0 and CS.cruiseState.enabled == False and CS.vEgo * 3.6 > (1 if int(accel_engaged_str) >= 3 else 30) and CS.gasPressed:
+        self.accel_engage_counter = int(1.0 / DT_CTRL)
         self.events.add(EventName.pcmEnable) #速度が出たら自動エンゲージできる？
+
+      if self.accel_engage_counter > 0:
+        self.accel_engage_counter -= 1
 
     # Create events for temperature, disk space, and memory
     if self.sm['deviceState'].thermalStatus >= ThermalStatus.red:
