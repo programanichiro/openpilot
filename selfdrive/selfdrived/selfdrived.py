@@ -220,6 +220,9 @@ class SelfdriveD:
         (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
         self.events.add(EventName.pedalPressed)
 
+      if CS.cruiseState.enabled == False and CS.vEgo * 3.6 > (1 if int(accel_engaged_str) >= 3 else 30) and CS.gasPressed:
+        self.events.add(EventName.pcmEnable) #速度が出たら自動エンゲージできる？
+
     # Create events for temperature, disk space, and memory
     if self.sm['deviceState'].thermalStatus >= ThermalStatus.red:
       self.events.add(EventName.overheat)
