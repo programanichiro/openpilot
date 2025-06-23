@@ -221,12 +221,19 @@ class SelfdriveD:
         (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
         self.events.add(EventName.pedalPressed)
 
-      if self.accel_engage_counter == 0 and CS.cruiseState.enabled == False and CS.vEgo * 3.6 > (1 if int(accel_engaged_str) >= 3 else 30) and CS.gasPressed:
-        self.accel_engage_counter = int(1.0 / DT_CTRL)
-        self.events.add(EventName.pcmEnable) #速度が出たら自動エンゲージできる？
+      # if self.accel_engage_counter == 0 and CS.cruiseState.enabled == False and CS.vEgo * 3.6 > (1 if int(accel_engaged_str) >= 3 else 30) and CS.gasPressed:
+      #   self.accel_engage_counter = int(1.0 / DT_CTRL)
+      #   self.events.add(EventName.pcmEnable) #速度が出たら自動エンゲージ。これだけではSETが点灯しない
 
-      if self.accel_engage_counter > 0:
-        self.accel_engage_counter -= 1
+      # if self.accel_engage_counter > 0:
+      #   self.accel_engage_counter -= 1
+
+      # def create_acc_set_command(packer): //これは可能か？(opendbc/car/toyota/toyotacan.pyに定義)
+      #   values = {
+      #     "CRUISE_ACTIVE": 1,
+      #   }
+      #   return packer.make_can_msg("PCM_CRUISE", 0, values)
+
 
     # Create events for temperature, disk space, and memory
     if self.sm['deviceState'].thermalStatus >= ThermalStatus.red:
