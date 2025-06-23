@@ -248,10 +248,8 @@ class CarSpecificEvents:
     # enabling can optionally be blocked by the car interface
     if pcm_enable:
       if CS.cruiseState.enabled and not CS_prev.cruiseState.enabled and not CS.blockPcmEnable:
-        # events.add(EventName.pcmEnable)
-        pass
+        events.add(EventName.pcmEnable)
       elif not CS.cruiseState.enabled:
-        # events.add(EventName.pcmDisable)
-        pass
+        events.add(EventName.pcmDisable)
 
     return events
