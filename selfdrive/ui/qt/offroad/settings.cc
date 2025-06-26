@@ -68,6 +68,36 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/icons/metric.png",
       false,
     },
+#ifdef ENABLE_MAPS
+    {
+      "NavSettingTime24h",
+      tr("Show ETA in 24h Format"),
+      tr("Use 24h format instead of am/pm"),
+      "../assets/icons/metric.png",
+      false,
+    },
+    {
+      "NavSettingLeftSide",
+      tr("Show Map on Left Side of UI"),
+      tr("Show map on left side when in split screen view."),
+      "../assets/icons/road.png",
+      false,
+    },
+    {
+      "GpsAlwaysSwitch",
+      tr("Always receive GPS signals"),
+      tr("GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary."),
+      "../assets/offroad/icon_gps_car.png",
+      false,
+    },
+#endif
+    {
+      "ForceHybridVehicle",
+      tr("Force recognition as a hybrid vehicle"),
+      tr("Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash."),
+      "../assets/icons/disengage_on_accelerator.svg",
+      true,
+    },
   };
 
 
@@ -78,6 +108,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
                                              "your steering wheel distance button."),
                                           "../assets/icons/speed_limit.png",
                                           longi_button_texts);
+
+  std::vector<QString> accel_method_button_texts{tr("Cydia2020"), tr("Official")};
+  accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
+                                          tr("Switch Accel Method to Official version or Cydia2020. A reboot is required."),
+                                          "../assets/icons/calibration.png",
+                                          accel_method_button_texts);
 
   // set up uiState update for personality setting
   QObject::connect(uiState(), &UIState::uiUpdate, this, &TogglesPanel::updateState);
@@ -106,6 +142,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
     // insert longitudinal personality after NDOG toggle
     if (param == "DisengageOnAccelerator") {
       addItem(long_personality_setting);
+      addItem(accel_method_setting);
     }
   }
 
@@ -161,10 +198,12 @@ void TogglesPanel::updateToggles() {
       experimental_mode_toggle->setEnabled(true);
       experimental_mode_toggle->setDescription(e2e_description);
       long_personality_setting->setEnabled(true);
+      accel_method_setting->setEnabled(true);
     } else {
       // no long for now
       experimental_mode_toggle->setEnabled(false);
       long_personality_setting->setEnabled(false);
+      accel_method_setting->setEnabled(false);
       params.remove("ExperimentalMode");
 
       const QString unavailable = tr("Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control.");
