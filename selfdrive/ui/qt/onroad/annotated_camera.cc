@@ -196,7 +196,7 @@ void AnnotatedCameraWidget::paintGL() {
   m.setDrawTimeMillis(cur_draw_t - start_draw_t);
   pm->send("uiDebug", msg);
 
-  extern int Limit_speed_mode
+  extern int Limit_speed_mode;
   if (sm.updated("heyComma")) {
     if(Limit_speed_mode == 0){
       Limit_speed_mode = 1;
