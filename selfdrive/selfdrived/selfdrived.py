@@ -164,7 +164,7 @@ class SelfdriveD:
       return
 
     # Check for user flag (bookmark) press
-    if self.sm.updated['userFlag'] or self.sm.updated['heyComma']:
+    if self.sm.updated['userFlag']: # or self.sm.updated['heyComma']:
       self.events.add(EventName.userFlag)
 
     # Don't add any more events while in dashcam mode

@@ -195,6 +195,15 @@ void AnnotatedCameraWidget::paintGL() {
   auto m = msg.initEvent().initUiDebug();
   m.setDrawTimeMillis(cur_draw_t - start_draw_t);
   pm->send("uiDebug", msg);
+
+  extern int Limit_speed_mode
+  if (sm.updated("heyComma")) {
+    if(Limit_speed_mode == 0){
+      Limit_speed_mode = 1;
+    } else {
+      Limit_speed_mode = 0; //2にはならない。
+    }
+  }
 }
 
 void AnnotatedCameraWidget::showEvent(QShowEvent *event) {
