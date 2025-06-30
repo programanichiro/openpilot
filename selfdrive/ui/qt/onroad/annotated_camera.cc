@@ -203,7 +203,6 @@ void AnnotatedCameraWidget::paintGL() {
     } else {
       Limit_speed_mode = 0; //2にはならない。
     }
-    sm.update(0);
   }
 }
 

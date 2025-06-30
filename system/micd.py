@@ -120,7 +120,7 @@ class Mic:
     self.ww_melspectrogram_buffer = np.ones((76, 32), dtype=np.float32)
     self.ww_feature_buffer = np.zeros((16, 96), dtype=np.float32)
     self.last_ww_detection_time = 0
-    self.debounce_period = 3.0  # seconds
+    self.debounce_period = 1.5  # seconds
     self.consecutive_detections = 0
 
     self.vad_state = np.zeros((2, 1, 128), dtype=np.float32)
