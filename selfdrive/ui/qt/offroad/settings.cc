@@ -74,7 +74,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       tr("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
       "../assets/icons/microphone.png",
       true,
-    }
+    },
 #ifdef ENABLE_MAPS
     {
       "NavSettingTime24h",
