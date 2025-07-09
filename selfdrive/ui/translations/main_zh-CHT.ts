@@ -60,7 +60,7 @@
     </message>
     <message>
         <source>Cellular Metered</source>
-        <translation>行動網路</translation>
+        <translation>計費的行動網路</translation>
     </message>
     <message>
         <source>Hidden Network</source>
@@ -84,27 +84,27 @@
     </message>
     <message>
         <source>Prevent large data uploads when on a metered cellular connection</source>
-        <translation type="unfinished"></translation>
+        <translation>在使用計費行動網路時，防止上傳大量數據</translation>
     </message>
     <message>
         <source>default</source>
-        <translation type="unfinished"></translation>
+        <translation>預設</translation>
     </message>
     <message>
         <source>metered</source>
-        <translation type="unfinished"></translation>
+        <translation>計費</translation>
     </message>
     <message>
         <source>unmetered</source>
-        <translation type="unfinished"></translation>
+        <translation>非計費</translation>
     </message>
     <message>
         <source>Wi-Fi Network Metered</source>
-        <translation type="unfinished"></translation>
+        <translation>計費 Wi-Fi 網路</translation>
     </message>
     <message>
         <source>Prevent large data uploads when on a metered Wi-Fi connection</source>
-        <translation type="unfinished"></translation>
+        <translation>在使用計費 Wi-Fi 網路時，防止上傳大量數據</translation>
     </message>
 </context>
 <context>
@@ -247,10 +247,6 @@
         <translation>關機</translation>
     </message>
     <message>
-        <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down. openpilot is continuously calibrating, resetting is rarely required.</source>
-        <translation>openpilot 需要將裝置固定在左右偏差 4° 以內，朝上偏差 5° 以內或朝下偏差 9° 以內。鏡頭在後台會持續自動校準，很少有需要重置的情況。</translation>
-    </message>
-    <message>
         <source> Your device is pointed %1° %2 and %3° %4.</source>
         <translation> 你的裝置目前朝%2 %1° 以及朝%4 %3° 。</translation>
     </message>
@@ -308,11 +304,39 @@
     </message>
     <message>
         <source>Disengage to Reset Calibration</source>
-        <translation type="unfinished"></translation>
+        <translation>解除以重設校準</translation>
     </message>
     <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
+        <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down.</source>
+        <translation>openpilot 要求裝置的安裝角度，左右偏移須在 4° 以內，上下角度則須介於仰角 5° 至俯角 9° 之間。</translation>
+    </message>
+    <message>
+        <source>openpilot is continuously calibrating, resetting is rarely required. Resetting calibration will restart openpilot if the car is powered on.</source>
+        <translation>openpilot 會持續進行校準，因此很少需要重設。若車輛電源開啟，重設校準將會重新啟動 openpilot。</translation>
+    </message>
+    <message>
+        <source>
+
+Steering lag calibration is %1% complete.</source>
+        <translation>
+
+轉向延遲校準已完成 %1%。</translation>
+    </message>
+    <message>
+        <source>
+
+Steering lag calibration is complete.</source>
+        <translation>
+
+轉向延遲校準已完成。</translation>
+    </message>
+    <message>
+        <source> Steering torque response calibration is %1% complete.</source>
+        <translation> 轉向扭矩反應校準已完成 %1%。</translation>
+    </message>
+    <message>
+        <source> Steering torque response calibration is complete.</source>
+        <translation> 轉向扭矩反應校準已完成。</translation>
     </message>
 </context>
 <context>
@@ -336,20 +360,16 @@
 <context>
     <name>FirehosePanel</name>
     <message>
-        <source>🔥 Firehose Mode 🔥</source>
-        <translation>🔥 訓練資料上傳模式 🔥</translation>
-    </message>
-    <message>
         <source>openpilot learns to drive by watching humans, like you, drive.
 
 Firehose Mode allows you to maximize your training data uploads to improve openpilot&apos;s driving models. More data means bigger models, which means better Experimental Mode.</source>
         <translation>openpilot 透過觀察人類駕駛（包括您）來學習如何駕駛。
 
-「訓練資料上傳模式」可讓您最大化上傳訓練數據，以改進 openpilot 的駕駛模型。更多數據代表更強大的模型，也就意味著更優秀的「實驗模式」。</translation>
+「Firehose 模式」可讓您最大化上傳訓練數據，以改進 openpilot 的駕駛模型。更多數據代表更強大的模型，也就意味著更優秀的「實驗模式」。</translation>
     </message>
     <message>
         <source>Firehose Mode: ACTIVE</source>
-        <translation>訓練資料上傳模式：啟用中</translation>
+        <translation>Firehose 模式：啟用中</translation>
     </message>
     <message>
         <source>ACTIVE</source>
@@ -357,7 +377,7 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
     <message>
         <source>For maximum effectiveness, bring your device inside and connect to a good USB-C adapter and Wi-Fi weekly.&lt;br&gt;&lt;br&gt;Firehose Mode can also work while you&apos;re driving if connected to a hotspot or unlimited SIM card.&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;Frequently Asked Questions&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter how or where I drive?&lt;/i&gt; Nope, just drive as you normally would.&lt;br&gt;&lt;br&gt;&lt;i&gt;Do all of my segments get pulled in Firehose Mode?&lt;/i&gt; No, we selectively pull a subset of your segments.&lt;br&gt;&lt;br&gt;&lt;i&gt;What&apos;s a good USB-C adapter?&lt;/i&gt; Any fast phone or laptop charger should be fine.&lt;br&gt;&lt;br&gt;&lt;i&gt;Does it matter which software I run?&lt;/i&gt; Yes, only upstream openpilot (and particular forks) are able to be used for training.</source>
-        <translation>為了達到最佳效果，請每週將您的裝置帶回室內，並連接至優質的 USB-C 充電器與 Wi-Fi。&lt;br&gt;&lt;br&gt;訓練資料上傳模式在行駛時也能運作，但需連接至行動熱點或使用不限流量的 SIM 卡。&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;常見問題&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;我開車的方式或地點有影響嗎？&lt;/i&gt; 不會，請像平常一樣駕駛即可。&lt;br&gt;&lt;br&gt;&lt;i&gt;訓練資料上傳模式會上傳所有的駕駛片段嗎？&lt;/i&gt;不會，我們會選擇性地上傳部分片段。&lt;br&gt;&lt;br&gt;&lt;i&gt;什麼是好的 USB-C 充電器？&lt;/i&gt;任何快速手機或筆電充電器都應該適用。&lt;br&gt;&lt;br&gt;&lt;i&gt;我使用的軟體版本有影響嗎？&lt;/i&gt;有的，只有官方 openpilot（以及特定的分支）可以用於訓練。</translation>
+        <translation>為了達到最佳效果，請每週將您的裝置帶回室內，並連接至優質的 USB-C 充電器與 Wi-Fi。&lt;br&gt;&lt;br&gt;訓練資料上傳模式在行駛時也能運作，但需連接至行動熱點或使用不限流量的 SIM 卡。&lt;br&gt;&lt;br&gt;&lt;br&gt;&lt;b&gt;常見問題&lt;/b&gt;&lt;br&gt;&lt;br&gt;&lt;i&gt;我開車的方式或地點有影響嗎？&lt;/i&gt; 不會，請像平常一樣駕駛即可。&lt;br&gt;&lt;br&gt;&lt;i&gt;Firehose 模式會上傳所有的駕駛片段嗎？&lt;/i&gt;不會，我們會選擇性地上傳部分片段。&lt;br&gt;&lt;br&gt;&lt;i&gt;什麼是好的 USB-C 充電器？&lt;/i&gt;任何快速手機或筆電充電器都應該適用。&lt;br&gt;&lt;br&gt;&lt;i&gt;我使用的軟體版本有影響嗎？&lt;/i&gt;有的，只有官方 openpilot（以及特定的分支）可以用於訓練。</translation>
     </message>
     <message numerus="yes">
         <source>&lt;b&gt;%n segment(s)&lt;/b&gt; of your driving is in the training dataset so far.</source>
@@ -367,7 +387,11 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
     <message>
         <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to an unmetered network</source>
-        <translation type="unfinished">&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;閒置中&lt;/span&gt;：請連接到不按流量計費的網絡</translation>
+        <translation>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;閒置中&lt;/span&gt;：請連接到不按流量計費的網絡</translation>
+    </message>
+    <message>
+        <source>Firehose Mode</source>
+        <translation>Firehose 模式</translation>
     </message>
 </context>
 <context>
@@ -689,7 +713,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Firehose</source>
-        <translation>訓練上傳</translation>
+        <translation>Firehose</translation>
     </message>
 </context>
 <context>
@@ -785,6 +809,18 @@ This may take up to a minute.</source>
     <message>
         <source>Custom Software</source>
         <translation>自訂軟體</translation>
+    </message>
+    <message>
+        <source>WARNING: Custom Software</source>
+        <translation>警告：自訂軟體</translation>
+    </message>
+    <message>
+        <source>Use caution when installing third-party software. Third-party software has not been tested by comma, and may cause damage to your device and/or vehicle.
+
+If you&apos;d like to proceed, use https://flash.comma.ai to restore your device to a factory state later.</source>
+        <translation>請謹慎安裝第三方軟體。第三方軟體未經 comma 測試，可能會損壞您的裝置及車輛。
+
+若您仍要繼續，日後可使用 https://flash.comma.ai 將您的裝置恢復至出廠狀態。</translation>
     </message>
 </context>
 <context>
@@ -1125,11 +1161,19 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation type="unfinished"></translation>
+        <translation>openpilot 系統提供「主動式巡航」與「車道維持」等駕駛輔助功能。使用這些功能時，您必須隨時保持專注。</translation>
     </message>
     <message>
         <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
+        <translation> 若車輛電源為開啟狀態，變更此設定將會重新啟動 openpilot。</translation>
+    </message>
+    <message>
+        <source>Record and Upload Microphone Audio</source>
+        <translation>錄製並上傳麥克風音訊</translation>
+    </message>
+    <message>
+        <source>Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.</source>
+        <translation>在駕駛時錄製並儲存麥克風音訊。此音訊將會收錄在 comma connect 的行車記錄器影片中。</translation>
     </message>
 </context>
 <context>
@@ -1179,7 +1223,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; Firehose Mode &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</source>
-        <translation>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; 訓練資料上傳模式 &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</translation>
+        <translation>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; Firehose 模式 &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</translation>
     </message>
 </context>
 <context>

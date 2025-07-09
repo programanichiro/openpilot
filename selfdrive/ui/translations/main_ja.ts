@@ -247,10 +247,6 @@
         <translation>パワーオフ</translation>
     </message>
     <message>
-        <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down. openpilot is continuously calibrating, resetting is rarely required.</source>
-        <translation>openpilotの本体は左右4°以内、上5°下9°以内の角度で取付ける必要があります。常にキャリブレーションされておりリセットはほとんど必要ありません。</translation>
-    </message>
-    <message>
         <source> Your device is pointed %1° %2 and %3° %4.</source>
         <translation> このデバイスは%2 %1°、%4 %3°の向きに設置されています。</translation>
     </message>
@@ -308,11 +304,39 @@
     </message>
     <message>
         <source>Disengage to Reset Calibration</source>
-        <translation type="unfinished"></translation>
+        <translation>キャリブレーションをリセットするには運転支援を解除して下さい。</translation>
     </message>
     <message>
-        <source> Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
+        <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down.</source>
+        <translation>openpilotの本体は左右4°以内、上5°下9°以内の角度で取付ける必要があります。</translation>
+    </message>
+    <message>
+        <source>openpilot is continuously calibrating, resetting is rarely required. Resetting calibration will restart openpilot if the car is powered on.</source>
+        <translation>openpilot は継続的にキャリブレーションを行っており、リセットが必要になることはほとんどありません。キャリブレーションをリセットすると、車の電源が入っている場合はopenpilotが再起動します。</translation>
+    </message>
+    <message>
+        <source>
+
+Steering lag calibration is %1% complete.</source>
+        <translation>
+
+ステアリング遅延のキャリブレーションが%1％完了。</translation>
+    </message>
+    <message>
+        <source>
+
+Steering lag calibration is complete.</source>
+<translation>
+
+ステアリング遅延のキャリブレーション完了。</translation>
+    </message>
+    <message>
+        <source> Steering torque response calibration is %1% complete.</source>
+        <translation>ステアリングトルク応答のキャリブレーションが%1％完了。</translation>
+    </message>
+    <message>
+        <source> Steering torque response calibration is complete.</source>
+        <translation>ステアリングトルク応答のキャリブレーション完了。</translation>
     </message>
 </context>
 <context>
@@ -336,16 +360,12 @@
 <context>
     <name>FirehosePanel</name>
     <message>
-        <source>🔥 Firehose Mode 🔥</source>
-        <translation>🔥 Firehoseモード 🔥</translation>
-    </message>
-    <message>
         <source>openpilot learns to drive by watching humans, like you, drive.
 
 Firehose Mode allows you to maximize your training data uploads to improve openpilot&apos;s driving models. More data means bigger models, which means better Experimental Mode.</source>
         <translation>openpilotは人間であるあなたの運転から学び、AI学習します。
 
-Firehoseモードを有効にすると、学習データを最大限アップロードし、openpilotの運転モデルを向上させることができます。より多くのデータはより大きなモデルとなり、Experimentalモードの精度を向上させます。</translation>
+Firehoseモードを有効にすると学習データを最大限アップロードし、openpilotの運転モデルを改善することができます。より多くのデータはより大きなモデルとなり、Experimentalモードの精度を向上させます。</translation>
     </message>
     <message>
         <source>Firehose Mode: ACTIVE</source>
@@ -368,6 +388,10 @@ Firehoseモードを有効にすると、学習データを最大限アップロ
     <message>
         <source>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;INACTIVE&lt;/span&gt;: connect to an unmetered network</source>
         <translation>&lt;span stylesheet=&apos;font-size: 60px; font-weight: bold; color: #e74c3c;&apos;&gt;動作停止&lt;/span&gt;: 大容量のネットワークに接続してください</translation>
+    </message>
+    <message>
+        <source>Firehose Mode</source>
+        <translation>Firehoseモード</translation>
     </message>
 </context>
 <context>
@@ -786,6 +810,18 @@ This may take up to a minute.</source>
         <source>Custom Software</source>
         <translation>カスタムソフトウェア</translation>
     </message>
+    <message>
+        <source>WARNING: Custom Software</source>
+        <translation>警告: カスタムソフトウェア</translation>
+    </message>
+    <message>
+        <source>Use caution when installing third-party software. Third-party software has not been tested by comma, and may cause damage to your device and/or vehicle.
+
+If you&apos;d like to proceed, use https://flash.comma.ai to restore your device to a factory state later.</source>
+        <translation>サードパーティ製ソフトウェアをインストールする際は注意してください。サードパーティ製ソフトウェアはcommaによってテストされておらず、あなたのデバイスや車両に損害を与える可能性があります。
+
+続行したい場合は、後でデバイスを工場出荷時の状態に戻すために https://flash.comma.ai を使用してください。</translation>
+    </message>
 </context>
 <context>
     <name>SetupWidget</name>
@@ -1125,11 +1161,19 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
-        <translation type="unfinished"></translation>
+        <translation>openpilotシステムを使用してアダプティブクルーズコントロールおよび車線維持支援を行います。システム使用中は常にドライバーが事故を起こさないように注意を払ってください。</translation>
     </message>
     <message>
         <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation type="unfinished"></translation>
+        <translation>この設定を変更すると車の電源が入っている場合はopenpilotが再起動します。</translation>
+    </message>
+    <message>
+        <source>Record and Upload Microphone Audio</source>
+        <translation>マイク音声の録音とアップロード</translation>
+    </message>
+    <message>
+        <source>Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.</source>
+        <translation>運転中にマイク音声を録音・保存します。音声は comma connect のドライブレコーダー映像に含まれます。</translation>
     </message>
 </context>
 <context>
