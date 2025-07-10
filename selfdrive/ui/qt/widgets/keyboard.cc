@@ -101,7 +101,7 @@ KeyboardLayout::KeyboardLayout(QWidget* parent, const std::vector<QVector<QStrin
   )").arg(key_spacing_vertical / 2).arg(key_spacing_horizontal / 2));
 }
 
-Keyboard::Keyboard(QWidget *parent) : QFrame(parent) {
+Keyboard::Keyboard(QWidget *parent, int index) : QFrame(parent) {
   main_layout = new QStackedLayout(this);
   main_layout->setMargin(0);
 
@@ -141,7 +141,7 @@ Keyboard::Keyboard(QWidget *parent) : QFrame(parent) {
   };
   main_layout->addWidget(new KeyboardLayout(this, specials));
 
-  main_layout->setCurrentIndex(0);
+  main_layout->setCurrentIndex(index);
 }
 
 void Keyboard::handleCapsPress() {

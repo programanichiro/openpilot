@@ -152,7 +152,12 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
   main_layout->addWidget(textbox_widget, 0, Qt::AlignBottom);
   main_layout->addSpacing(25);
 
-  k = new Keyboard(this);
+  int key_layout = 0;
+  if(title == tr("Auto door lock by speed") || title == tr("Vehicle weight")){
+    key_layout = 2; //k->main_layout->setCurrentIndex(2);
+  }
+
+  k = new Keyboard(this, key_layout);
   QObject::connect(k, &Keyboard::emitEnter, this, &InputDialog::handleEnter);
   QObject::connect(k, &Keyboard::emitBackspace, this, [=]() {
     line->backspace();

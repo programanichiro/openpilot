@@ -152,6 +152,46 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       addItem(accel_method_setting);
 
       // Vehicle weight
+      ButtonControl *editAutomaticDoorLockSpeedButton = new ButtonControl(tr("Auto door lock by speed (Reset if changed)"), tr("EDIT"));
+      std::string my_lock_speed = util::read_file("/data/run_auto_lock.txt");
+      if(my_lock_speed.empty() == false){
+        int lock_speed = std::stoi(my_lock_speed);
+        if(lock_speed > 0){
+          QString cur_speed = QString::fromStdString(my_lock_speed) + " [km/h]";
+          editAutomaticDoorLockSpeedButton->setValue(cur_speed);
+        }
+      }
+      connect(editAutomaticDoorLockSpeedButton, &ButtonControl::clicked, [=]() {
+        std::string my_lock_speed = util::read_file("/data/run_auto_lock.txt");
+        my_lock_speed.erase(std::remove(my_lock_speed.begin(), my_lock_speed.end(), '\n'), my_lock_speed.end());
+        my_lock_speed.erase(std::remove(my_lock_speed.begin(), my_lock_speed.end(), '\r'), my_lock_speed.end());
+        QString cur_speed;
+        if(my_lock_speed.empty() == false){
+          if(my_lock_speed != "0"){
+            cur_speed = QString::fromStdString(my_lock_speed);
+          }
+        }
+        QString lck_speed = InputDialog::getText(tr("Auto door lock by speed"), this, tr("Enter Lock speed (km/h). 0 = default. Numbers only."), false, -1, cur_speed).trimmed();
+
+        if (lck_speed.isEmpty() == false) {
+          FILE *fp = fopen("/data/run_auto_lock.txt","w");
+          if(fp != NULL){
+            fprintf(fp,"%s",lck_speed.toUtf8().constData());
+            fclose(fp);
+          }
+          if(lck_speed == "0"){
+            editAutomaticDoorLockSpeedButton->setValue("");
+          } else {
+            editAutomaticDoorLockSpeedButton->setValue(lck_speed + " [km/h]");
+          }
+        } else {
+          //キャンセルと空文字OKの区別がつかない。0なら何もしないというルールにするか。
+          //editAutomaticDoorLockSpeedButton->setValue("canceled...");
+        }
+      });
+      addItem(editAutomaticDoorLockSpeedButton);
+
+      // Vehicle weight
       ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight (Reset if changed)"), tr("EDIT"));
       std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
       if(my_vehicle_mass.empty() == false){
