@@ -150,6 +150,46 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
     if (param == "DisengageOnAccelerator") {
       addItem(long_personality_setting);
       addItem(accel_method_setting);
+
+      // Vehicle weight
+      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight"), tr("EDIT"));
+      std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
+      if(my_vehicle_mass.empty() == false){
+        int vehicle_mass = std::stoi(my_vehicle_mass);
+        if(vehicle_mass > 0){
+          QString cur_mass = QString::fromStdString(my_vehicle_mass) + " [kg]";
+          editVehicleMassButton->setValue(cur_mass);
+        }
+      }
+      connect(editVehicleMassButton, &ButtonControl::clicked, [=]() {
+        std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
+        my_vehicle_mass.erase(std::remove(my_vehicle_mass.begin(), my_vehicle_mass.end(), '\n'), my_vehicle_mass.end());
+        my_vehicle_mass.erase(std::remove(my_vehicle_mass.begin(), my_vehicle_mass.end(), '\r'), my_vehicle_mass.end());
+        QString cur_mass;
+        if(my_vehicle_mass.empty() == false){
+          if(my_vehicle_mass != "0"){
+            cur_mass = QString::fromStdString(my_vehicle_mass);
+          }
+        }
+        QString vcl_mass = InputDialog::getText(tr("Vehicle weight"), this, tr("Enter Vehicle weight (kg). 0 = default. Numbers only."), false, -1, cur_mass).trimmed();
+
+        if (vcl_mass.isEmpty() == false) {
+          FILE *fp = fopen("/data/vehicle_mass.txt","w");
+          if(fp != NULL){
+            fprintf(fp,"%s",vcl_mass.toUtf8().constData());
+            fclose(fp);
+          }
+          if(vcl_mass == "0"){
+            editVehicleMassButton->setValue("");
+          } else {
+            editVehicleMassButton->setValue(vcl_mass + " [kg]");
+          }
+        } else {
+          //キャンセルと空文字OKの区別がつかない。0なら何もしないというルールにするか。
+          //editVehicleMassButton->setValue("canceled...");
+        }
+      });
+      addItem(editVehicleMassButton);
     }
   }
 
