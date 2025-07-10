@@ -165,6 +165,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>住家</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>工作</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>尚未设置目的地</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>尚未设置 %1 的位置</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>住家</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>工作</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -308,35 +335,31 @@
     </message>
     <message>
         <source>openpilot requires the device to be mounted within 4° left or right and within 5° up or 9° down.</source>
-        <translation>openpilot 要求设备的安装角度：左右偏移需在 4° 以内，上下俯仰角度需在向上 5° 至向下 9° 的范围内。</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>openpilot is continuously calibrating, resetting is rarely required. Resetting calibration will restart openpilot if the car is powered on.</source>
-        <translation>openpilot 会持续进行校准，因此很少需要重置。如果车辆电源已开启，重置校准会重新启动 openpilot。</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>
 
 Steering lag calibration is %1% complete.</source>
-        <translation>
-
-转向延迟校准已完成 %1%。</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>
 
 Steering lag calibration is complete.</source>
-        <translation>
-
-转向延迟校准已完成。</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source> Steering torque response calibration is %1% complete.</source>
-        <translation> 转向扭矩响应校准已完成 %1%。</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source> Steering torque response calibration is complete.</source>
-        <translation> 转向扭矩响应校准已完成。</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -365,11 +388,11 @@ Steering lag calibration is complete.</source>
 Firehose Mode allows you to maximize your training data uploads to improve openpilot&apos;s driving models. More data means bigger models, which means better Experimental Mode.</source>
         <translation>openpilot 通过观察人类驾驶（包括您）来学习如何驾驶。
 
-“Firehose 模式”允许您最大化上传训练数据，以改进 openpilot 的驾驶模型。更多数据意味着更强大的模型，也就意味着更优秀的“实验模式”。</translation>
+“训练数据上传模式”允许您最大化上传训练数据，以改进 openpilot 的驾驶模型。更多数据意味着更强大的模型，也就意味着更优秀的“实验模式”。</translation>
     </message>
     <message>
         <source>Firehose Mode: ACTIVE</source>
-        <translation>Firehose 模式：激活中</translation>
+        <translation>训练数据上传模式：激活中</translation>
     </message>
     <message>
         <source>ACTIVE</source>
@@ -391,7 +414,7 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
     <message>
         <source>Firehose Mode</source>
-        <translation>Firehose 模式</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -420,6 +443,54 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>至少需要 %n 个字符！</numerusform>
         </translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>正在安装……</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>抵达</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>分钟</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>小时</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>导航</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>请在 connect.comma.ai 上管理</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>地图加载中</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>等待 GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>等待路线</translation>
     </message>
 </context>
 <context>
@@ -596,6 +667,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>全天候 LTE 连接</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>领航功能</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>一年的行驶记录储存空间</translation>
     </message>
@@ -638,6 +713,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>
             <numerusform>%n 天前</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -713,7 +804,7 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>Firehose</source>
-        <translation>Firehose</translation>
+        <translation>训练上传</translation>
     </message>
 </context>
 <context>
@@ -812,15 +903,13 @@ This may take up to a minute.</source>
     </message>
     <message>
         <source>WARNING: Custom Software</source>
-        <translation>警告：自定义软件</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Use caution when installing third-party software. Third-party software has not been tested by comma, and may cause damage to your device and/or vehicle.
 
 If you&apos;d like to proceed, use https://flash.comma.ai to restore your device to a factory state later.</source>
-        <translation>请谨慎安装第三方软件。第三方软件未经 comma 测试，可能会损害您的设备和车辆。
-
-如果您决定继续，后续可通过 https://flash.comma.ai 将设备恢复到出厂状态。</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1092,6 +1181,22 @@ If you&apos;d like to proceed, use https://flash.comma.ai to restore your device
         <translation>启用后，踩下油门踏板将取消openpilot。</translation>
     </message>
     <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>以24小时格式显示预计到达时间</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>使用24小时制代替am/pm</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>在介面左侧显示地图</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>在分屏模式中，将地图置于屏幕左侧。</translation>
+    </message>
+    <message>
         <source>Experimental Mode</source>
         <translation>测试模式</translation>
     </message>
@@ -1165,15 +1270,15 @@ If you&apos;d like to proceed, use https://flash.comma.ai to restore your device
     </message>
     <message>
         <source> Changing this setting will restart openpilot if the car is powered on.</source>
-        <translation> 如果车辆已通电，更改此设置将会重新启动 openpilot。</translation>
+        <translation>如果车辆已通电，更改此设置将会重新启动 openpilot。</translation>
     </message>
     <message>
         <source>Record and Upload Microphone Audio</source>
-        <translation>录制并上传麦克风音频</translation>
+        <translation type="unfinished"></translation>
     </message>
     <message>
         <source>Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.</source>
-        <translation>在驾驶时录制并存储麦克风音频。该音频将会包含在 comma connect 的行车记录仪视频中。</translation>
+        <translation type="unfinished"></translation>
     </message>
 </context>
 <context>
@@ -1223,7 +1328,7 @@ If you&apos;d like to proceed, use https://flash.comma.ai to restore your device
     </message>
     <message>
         <source>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; Firehose Mode &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</source>
-        <translation>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; Firehose 模式 &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</translation>
+        <translation>&lt;span style=&apos;font-family: &quot;Noto Color Emoji&quot;;&apos;&gt;🔥&lt;/span&gt; 训练数据上传模式 &lt;span style=&apos;font-family: Noto Color Emoji;&apos;&gt;🔥&lt;/span&gt;</translation>
     </message>
 </context>
 <context>
