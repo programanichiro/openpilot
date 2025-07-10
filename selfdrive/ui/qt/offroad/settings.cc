@@ -152,7 +152,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       addItem(accel_method_setting);
 
       // Vehicle weight
-      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight"), tr("EDIT"));
+      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight (Reset if changed)"), tr("EDIT"));
       std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
       if(my_vehicle_mass.empty() == false){
         int vehicle_mass = std::stoi(my_vehicle_mass);
