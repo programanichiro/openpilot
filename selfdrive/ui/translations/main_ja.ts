@@ -1180,6 +1180,22 @@ If you&apos;d like to proceed, use https://flash.comma.ai to restore your device
         <translation>アクセル制御をCydia2020氏の手法と公式から選択します。再起動が必要です。TSSPでは公式は非推奨です。</translation>
     </message>
     <message>
+        <source>Auto door lock by speed</source>
+        <translation>車速ドアロック</translation>
+    </message>
+    <message>
+        <source>Enter Lock speed (km/h). 0 = default. Reset if changed.</source>
+        <translation>ドアロックする速度をkm/hで指定(0で解除)。変更で要リセットです。</translation>
+    </message>
+    <message>
+        <source>Vehicle weight</source>
+        <translation>車両重量</translation>
+    </message>
+    <message>
+        <source>Enter Vehicle weight (kg). 0 = default. Reset if changed.</source>
+        <translation>車両重量をgで指定します(0で解除)。変更で要リセットです。</translation>
+    </message>
+    <message>
         <source>Always receive GPS signals</source>
         <translation>GPS信号の常時受信</translation>
     </message>
