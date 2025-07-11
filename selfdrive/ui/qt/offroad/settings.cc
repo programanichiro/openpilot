@@ -152,7 +152,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       addItem(accel_method_setting);
 
       // Vehicle weight
-      ButtonControl *editAutomaticDoorLockSpeedButton = new ButtonControl(tr("Auto door lock by speed (Reset if changed)"), tr("EDIT"));
+      ButtonControl *editAutomaticDoorLockSpeedButton = new ButtonControl(tr("Auto door lock by speed"), tr("EDIT"));
       std::string my_lock_speed = util::read_file("/data/run_auto_lock.txt");
       if(my_lock_speed.empty() == false){
         int lock_speed = std::stoi(my_lock_speed);
@@ -171,7 +171,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
             cur_speed = QString::fromStdString(my_lock_speed);
           }
         }
-        QString lck_speed = InputDialog::getText(tr("Auto door lock by speed"), this, tr("Enter Lock speed (km/h). 0 = default. Numbers only."), false, -1, cur_speed).trimmed();
+        QString lck_speed = InputDialog::getText(tr("Auto door lock by speed"), this, tr("Enter Lock speed (km/h). 0 = default. Reset if changed."), false, -1, cur_speed).trimmed();
 
         if (lck_speed.isEmpty() == false) {
           FILE *fp = fopen("/data/run_auto_lock.txt","w");
@@ -192,7 +192,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       addItem(editAutomaticDoorLockSpeedButton);
 
       // Vehicle weight
-      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight (Reset if changed)"), tr("EDIT"));
+      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight"), tr("EDIT"));
       std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
       if(my_vehicle_mass.empty() == false){
         int vehicle_mass = std::stoi(my_vehicle_mass);
@@ -211,7 +211,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
             cur_mass = QString::fromStdString(my_vehicle_mass);
           }
         }
-        QString vcl_mass = InputDialog::getText(tr("Vehicle weight"), this, tr("Enter Vehicle weight (kg). 0 = default. Numbers only."), false, -1, cur_mass).trimmed();
+        QString vcl_mass = InputDialog::getText(tr("Vehicle weight"), this, tr("Enter Vehicle weight (kg). 0 = default. Reset if changed."), false, -1, cur_mass).trimmed();
 
         if (vcl_mass.isEmpty() == false) {
           FILE *fp = fopen("/data/vehicle_mass.txt","w");
