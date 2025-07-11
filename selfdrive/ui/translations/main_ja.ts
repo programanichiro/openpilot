@@ -421,6 +421,14 @@ Firehoseモードを有効にすると学習データを最大限アップロー
             <numerusform>%n文字以上にして下さい！</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Auto door lock by speed</source>
+        <translation>車速ドアロック</translation>
+    </message>
+    <message>
+        <source>Vehicle weight</source>
+        <translation>車両重量</translation>
+    </message>
 </context>
 <context>
     <name>MultiOptionDialog</name>
