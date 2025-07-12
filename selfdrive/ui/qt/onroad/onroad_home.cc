@@ -101,7 +101,25 @@ void OnroadWindow::updateState(const UIState &s) {
 
 }
 
+int head_gesture_enable = 1;
 void OnroadWindow::mousePressEvent(QMouseEvent* e) {
+  // ウィジェットサイズ取得
+  QSize winSize = size(); // this->size() と同等
+  // クリック位置を取得（ウィジェット内座標）
+  QPoint pos = e->pos();
+  // 左下200x200の範囲を定義
+  const int btn_size = 200;
+  QRect bottomLeftRect(0, winSize.height() - btn_size, btn_size, btn_size);
+  if (bottomLeftRect.contains(pos)) {
+    //画面の左下200x200の中をプレス
+    head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
+    head_gesture_enable = (head_gesture_enable + 1) % 2; //0->1->0
+    void soundButton(int onOff);
+    soundButton(head_gesture_enable);
+    QWidget::mousePressEvent(e);
+    return;
+  }
+
 #ifdef ENABLE_MAPS
   if (map != nullptr) {
     bool sidebarVisible = geometry().x() > 0;

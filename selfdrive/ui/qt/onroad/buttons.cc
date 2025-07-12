@@ -444,7 +444,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0)));
   }
 
-  { //DMステルスボタン
+  {
+#if 0
+    //DMステルスボタン,これは構造的にうまくいかない
     uiState()->scene.mUseHeadGestureButton = mUseHeadGestureButton = getButtonInt("/data/head_gesture_enable.txt" , 1);
     useHeadGestureButton = new QPushButton("HG"); //ヘッドジェスチャー
     QObject::connect(useHeadGestureButton, &QPushButton::pressed, [=]() {
@@ -455,6 +457,10 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     btns_layoutLL->addSpacing(15);
     btns_layoutLL->addWidget(useHeadGestureButton);
     useHeadGestureButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseHeadGestureButton > 0)));
+#else
+    extern int head_gesture_enable;
+    head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
+#endif
   }
 
   QWidget *btns_wrapper0U = new QWidget;
