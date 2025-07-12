@@ -116,6 +116,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
     extern int getButtonInt(const char*fn , int defaultNum);
     head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
     head_gesture_enable = (head_gesture_enable + 1) % 2; //0->1->0
+    extern void setButtonInt(const char*fn , int num);
     setButtonInt("/data/head_gesture_enable.txt" , head_gesture_enable);
     void soundButton(int onOff);
     soundButton(head_gesture_enable);
