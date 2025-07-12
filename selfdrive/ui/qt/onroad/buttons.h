@@ -46,6 +46,9 @@ private:
   int mUseDynmicExpButton = 0;  // triggers initialization
   int mUseHeadGestureButton = 0;  // triggers initialization
 
+protected:
+  void mousePressEvent(QMouseEvent* e) override;
+
 public slots:
   void updateState(const UIState &s);
 };
