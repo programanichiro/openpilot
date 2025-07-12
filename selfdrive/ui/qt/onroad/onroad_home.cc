@@ -2,6 +2,7 @@
 
 #include <QPainter>
 #include <QStackedLayout>
+#include <QMouseEvent>
 
 #ifdef ENABLE_MAPS
 #include "selfdrive/ui/qt/maps/map_helpers.h"
@@ -108,8 +109,8 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   // クリック位置を取得（ウィジェット内座標）
   QPoint pos = e->pos();
   // 左下200x200の範囲を定義
-  const int btn_size = 200;
-  QRect bottomLeftRect(0, winSize.height() - btn_size, btn_size, btn_size);
+  const int dm_btn_size = 200;
+  QRect bottomLeftRect(0, winSize.height() - dm_btn_size, dm_btn_size, dm_btn_size);
   if (bottomLeftRect.contains(pos)) {
     //画面の左下200x200の中をプレス
     head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
