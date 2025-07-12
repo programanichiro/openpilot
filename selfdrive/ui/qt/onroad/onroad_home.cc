@@ -2,7 +2,6 @@
 
 #include <QPainter>
 #include <QStackedLayout>
-#include <QMouseEvent>
 
 #ifdef ENABLE_MAPS
 #include "selfdrive/ui/qt/maps/map_helpers.h"

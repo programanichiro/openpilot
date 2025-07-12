@@ -2,6 +2,7 @@
 
 #include <QPainter>
 #include <QVBoxLayout>
+#include <QMouseEvent>
 
 #include "selfdrive/ui/qt/util.h"
 
