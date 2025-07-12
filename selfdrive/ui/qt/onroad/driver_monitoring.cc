@@ -130,6 +130,13 @@ void DriverMonitorRenderer::draw(QPainter &painter, const QRect &surface_rect) {
   painter.setPen(QPen(arc_color, arc_t_default + arc_t_extend * std::min(1.0, driver_pose_diff[0] * 5.0), Qt::SolidLine, Qt::RoundCap));
   painter.drawArc(QRectF(x - arc_l / 2, std::min(y + delta_y, y), arc_l, std::abs(delta_y)), (driver_pose_sins[0] > 0 ? 0 : 180) * 16, 180 * 16);
 
+  extern int head_gesture_enable;
+  if(head_gesture_enable == 0){
+    //ヘッドジェスチャー停止。
+    painter.restore();
+    return;
+  }
+
   //顔が向いてる方を上下左右かしげで表示する。
   float delta_r = driver_pose_sins[2]; //首のかしげ角度のsin
   static unsigned int key_n_ct = 0; //キーが入った順番

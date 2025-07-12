@@ -43,6 +43,9 @@ private:
   bool mStartAccelPowerUpButton = false;  // triggers initialization
   int mUseDynmicExpButton = 0;  // triggers initialization
 
+protected:
+  void mousePressEvent(QMouseEvent* e) override;
+
 public slots:
   void updateState(const UIState &s);
 };
