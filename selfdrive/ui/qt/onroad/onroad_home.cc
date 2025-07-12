@@ -113,6 +113,7 @@ void OnroadWindow::mousePressEvent(QMouseEvent* e) {
   QRect bottomLeftRect(0, winSize.height() - dm_btn_size, dm_btn_size, dm_btn_size);
   if (bottomLeftRect.contains(pos)) {
     //画面の左下200x200の中をプレス
+    extern int getButtonInt(const char*fn , int defaultNum);
     head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
     head_gesture_enable = (head_gesture_enable + 1) % 2; //0->1->0
     void soundButton(int onOff);
