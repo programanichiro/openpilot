@@ -190,6 +190,7 @@ bool cruise_available = false;
 int Knight_scanner = 7;
 int DrivingPsn = 0; //運転傾向
 int Limit_speed_mode = 0; //標識
+int head_gesture_enable = 1;
 ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_btn) : QWidget(parent) {
   QVBoxLayout *main_layout  = new QVBoxLayout(this);
   main_layout->setContentsMargins(0, 0, 0, 0);
@@ -445,23 +446,9 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0)));
   }
 
+  //DMステルスボタン
   {
-#if 0
-    //DMステルスボタン,これは構造的にうまくいかない
-    uiState()->scene.mUseHeadGestureButton = mUseHeadGestureButton = getButtonInt("/data/head_gesture_enable.txt" , 1);
-    useHeadGestureButton = new QPushButton("HG"); //ヘッドジェスチャー
-    QObject::connect(useHeadGestureButton, &QPushButton::pressed, [=]() {
-      uiState()->scene.mUseHeadGestureButton = (mUseHeadGestureButton + 1) % 2; //0->1->0
-    });
-    useHeadGestureButton->setFixedWidth(BTN_W_NORMAL);
-    useHeadGestureButton->setFixedHeight(BTN_W_NORMAL*1.4);
-    btns_layoutLL->addSpacing(15);
-    btns_layoutLL->addWidget(useHeadGestureButton);
-    useHeadGestureButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseHeadGestureButton > 0)));
-#else
-    extern int head_gesture_enable;
     head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
-#endif
   }
 
   QWidget *btns_wrapper0U = new QWidget;
@@ -745,24 +732,8 @@ void ButtonsWindow::updateState(const UIState &s) {
       //ここで"/dev/shm/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
     }
   }
-
-  if (mUseHeadGestureButton != s.scene.mUseHeadGestureButton) {  // update mUseHeadGestureButton
-    mUseHeadGestureButton = s.scene.mUseHeadGestureButton;
-    useHeadGestureButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseHeadGestureButton > 0 && fp_error==false)));
-    if(mUseHeadGestureButton >= 1){
-      useHeadGestureButton->setText("HG");
-    } else {
-      useHeadGestureButton->setText("NG");
-    }
-    setButtonInt("/data/head_gesture_enable.txt" , mUseHeadGestureButton);
-    soundButton(mUseHeadGestureButton);
-    // if(mUseHeadGestureButton == 0){
-    //   //ここで"/dev/shm/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
-    // }
-  }
 }
 
-int head_gesture_enable = 1;
 void ButtonsWindow::mousePressEvent(QMouseEvent* e) {
   // ウィジェットサイズ取得
   QSize winSize = size(); // this->size() と同等
@@ -772,13 +743,10 @@ void ButtonsWindow::mousePressEvent(QMouseEvent* e) {
   const int dm_btn_size = 200;
   QRect bottomLeftRect(0, winSize.height() - dm_btn_size, dm_btn_size, dm_btn_size);
   if (bottomLeftRect.contains(pos)) {
-    //画面の左下200x200の中をプレス
-    extern int getButtonInt(const char*fn , int defaultNum);
+    //画面の左下200x200の中をプレス,DMアイコンタップとみなす。
     head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
     head_gesture_enable = (head_gesture_enable + 1) % 2; //0->1->0
-    extern void setButtonInt(const char*fn , int num);
     setButtonInt("/data/head_gesture_enable.txt" , head_gesture_enable);
-    void soundButton(int onOff);
     soundButton(head_gesture_enable);
     //QWidget::mousePressEvent(e); //下へ通さない。
     return;

@@ -26,7 +26,6 @@ private:
   QPushButton *useDynmicExpButton;
   QPushButton *T1_Button; //⚫︎⚪︎⬇︎
   QPushButton *T3_Button; //⬆︎⬆︎⬆︎
-  QPushButton *useHeadGestureButton;
 
   // int dfStatus = -1;  // always initialize style sheet and send msg
   // const QStringList dfButtonColors = {"#044389", "#24a8bc", "#fcff4b", "#37b868"};
@@ -44,7 +43,6 @@ private:
   int mLTA_EnableButton = 0;  // triggers initialization
   bool mStartAccelPowerUpButton = false;  // triggers initialization
   int mUseDynmicExpButton = 0;  // triggers initialization
-  int mUseHeadGestureButton = 0;  // triggers initialization
 
 protected:
   void mousePressEvent(QMouseEvent* e) override;
