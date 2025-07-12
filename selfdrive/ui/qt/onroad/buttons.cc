@@ -761,6 +761,30 @@ void ButtonsWindow::updateState(const UIState &s) {
   }
 }
 
+int head_gesture_enable = 1;
+void ButtonsWindow::mousePressEvent(QMouseEvent* e) {
+  // ウィジェットサイズ取得
+  QSize winSize = size(); // this->size() と同等
+  // クリック位置を取得（ウィジェット内座標）
+  QPoint pos = e->pos();
+  // 左下200x200の範囲を定義
+  const int dm_btn_size = 200;
+  QRect bottomLeftRect(0, winSize.height() - dm_btn_size, dm_btn_size, dm_btn_size);
+  if (bottomLeftRect.contains(pos)) {
+    //画面の左下200x200の中をプレス
+    extern int getButtonInt(const char*fn , int defaultNum);
+    head_gesture_enable = getButtonInt("/data/head_gesture_enable.txt" , 1);
+    head_gesture_enable = (head_gesture_enable + 1) % 2; //0->1->0
+    extern void setButtonInt(const char*fn , int num);
+    setButtonInt("/data/head_gesture_enable.txt" , head_gesture_enable);
+    void soundButton(int onOff);
+    soundButton(head_gesture_enable);
+    //QWidget::mousePressEvent(e); //下へ通さない。
+    return;
+  }
+  QWidget::mousePressEvent(e);
+}
+
 void ButtonsWindow::MAX_touch(){
   Limit_speed_mode = (Limit_speed_mode + 1) % 3;
   setButtonInt("/data/limitspeed_sw.txt" , Limit_speed_mode);
