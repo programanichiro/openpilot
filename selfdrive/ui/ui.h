@@ -69,6 +69,7 @@ typedef struct UIScene {
   int mLTA_EnableButton = 0;
   bool mStartAccelPowerUpButton = false;
   int mUseDynmicExpButton = 0;
+  int mUseHeadGestureButton = 0;
 
 } UIScene;
 

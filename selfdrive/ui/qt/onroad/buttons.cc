@@ -444,6 +444,19 @@ ButtonsWindow::ButtonsWindow(QWidget *parent , MapSettingsButton *map_settings_b
     useDynmicExpButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseDynmicExpButton > 0)));
   }
 
+  { //DMステルスボタン
+    uiState()->scene.mUseHeadGestureButton = mUseHeadGestureButton = getButtonInt("/data/head_gesture_enable.txt" , 1);
+    useHeadGestureButton = new QPushButton("HG"); //ヘッドジェスチャー
+    QObject::connect(useHeadGestureButton, &QPushButton::pressed, [=]() {
+      uiState()->scene.mUseHeadGestureButton = (mUseHeadGestureButton + 1) % 2; //0->1->0
+    });
+    useHeadGestureButton->setFixedWidth(BTN_W_NORMAL);
+    useHeadGestureButton->setFixedHeight(BTN_W_NORMAL*1.4);
+    btns_layoutLL->addSpacing(15);
+    btns_layoutLL->addWidget(useHeadGestureButton);
+    useHeadGestureButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseHeadGestureButton > 0)));
+  }
+
   QWidget *btns_wrapper0U = new QWidget;
   QVBoxLayout *btns_layout0U  = new QVBoxLayout(btns_wrapper0U);
   btns_layout0U->setSpacing(0);
@@ -726,6 +739,20 @@ void ButtonsWindow::updateState(const UIState &s) {
     }
   }
 
+  if (mUseHeadGestureButton != s.scene.mUseHeadGestureButton) {  // update mUseHeadGestureButton
+    mUseHeadGestureButton = s.scene.mUseHeadGestureButton;
+    useHeadGestureButton->setStyleSheet(QString(btn_style).arg(mButtonColors.at(mUseHeadGestureButton > 0 && fp_error==false)));
+    if(mUseHeadGestureButton >= 1){
+      useHeadGestureButton->setText("HG");
+    } else {
+      useHeadGestureButton->setText("NG");
+    }
+    setButtonInt("/data/head_gesture_enable.txt" , mUseHeadGestureButton);
+    soundButton(mUseHeadGestureButton);
+    // if(mUseHeadGestureButton == 0){
+    //   //ここで"/dev/shm/long_speeddown_disable.txt"を"/data/long_speeddown_disable.txt"にコピーしないと、dXを切ったあとのイチロウロング切り替えボタン操作で不整合が起きる。そんなに重要じゃないので放置中。
+    // }
+  }
 }
 
 void ButtonsWindow::MAX_touch(){
