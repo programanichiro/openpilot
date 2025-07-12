@@ -740,7 +740,7 @@ void ButtonsWindow::mousePressEvent(QMouseEvent* e) {
   // クリック位置を取得（ウィジェット内座標）
   QPoint pos = e->pos();
   // 左下200x200の範囲を定義
-  const int dm_btn_size = 200;
+  const int dm_btn_size = 250;
   QRect bottomLeftRect(0, winSize.height() - dm_btn_size, dm_btn_size, dm_btn_size);
   if (bottomLeftRect.contains(pos)) {
     //画面の左下200x200の中をプレス,DMアイコンタップとみなす。
