@@ -1316,7 +1316,7 @@ If you&apos;d like to proceed, use https://flash.comma.ai to restore your device
     </message>
     <message>
         <source>Enter Vehicle weight (kg). 0 = default. Reset if changed.</source>
-        <translation>車両重量をgで指定します(0で解除)。変更で要リセットです。</translation>
+        <translation>車両重量をkgで指定します(0で解除)。変更で要リセットです。</translation>
     </message>
     <message>
         <source>Always receive GPS signals</source>
