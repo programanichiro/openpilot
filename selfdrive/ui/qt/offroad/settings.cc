@@ -152,7 +152,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       addItem(accel_method_setting);
 
       // Vehicle weight
-      ButtonControl *editAutomaticDoorLockSpeedButton = new ButtonControl(tr("Auto door lock by speed"), tr("EDIT"));
+      ButtonControl *editAutomaticDoorLockSpeedButton = new ButtonControl(tr("Auto door lock by speed"), tr("EDIT"), "", nullptr, "../assets/offroad/icon_car_weight.png");
       std::string my_lock_speed = util::read_file("/data/run_auto_lock.txt");
       if(my_lock_speed.empty() == false){
         int lock_speed = std::stoi(my_lock_speed);
@@ -192,7 +192,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       addItem(editAutomaticDoorLockSpeedButton);
 
       // Vehicle weight
-      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight"), tr("EDIT"));
+      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight"), tr("EDIT"), "", nullptr, "../assets/offroad/icon_car_key.png");
       std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
       if(my_vehicle_mass.empty() == false){
         int vehicle_mass = std::stoi(my_vehicle_mass);
