@@ -19,7 +19,7 @@ from cereal import log as capnp_log
 from openpilot.common.swaglog import cloudlog
 from openpilot.tools.lib.comma_car_segments import get_url as get_comma_segments_url
 from openpilot.tools.lib.openpilotci import get_url
-from openpilot.tools.lib.filereader import FileReader, file_exists, internal_source_available
+from openpilot.tools.lib.filereader import DATA_ENDPOINT, FileReader, file_exists, internal_source_available
 from openpilot.tools.lib.route import Route, SegmentRange
 from openpilot.tools.lib.log_time_series import msgs_to_time_series
 
@@ -157,12 +157,13 @@ def comma_api_source(sr: SegmentRange, mode: ReadMode) -> list[LogPath]:
   return apply_strategy(mode, rlog_paths, qlog_paths, valid_file=valid_file)
 
 
-def internal_source(sr: SegmentRange, mode: ReadMode, file_ext: str = "bz2") -> list[LogPath]:
-  if not internal_source_available():
+def internal_source(sr: SegmentRange, mode: ReadMode, file_ext: str = "bz2",
+                    endpoint_url: str = DATA_ENDPOINT) -> list[LogPath]:
+  if not internal_source_available(endpoint_url):
     raise InternalUnavailableException
 
   def get_internal_url(sr: SegmentRange, seg, file):
-    return f"cd:/{sr.dongle_id}/{sr.log_id}/{seg}/{file}.{file_ext}"
+    return f"{endpoint_url.rstrip('/')}/{sr.dongle_id}/{sr.log_id}/{seg}/{file}.{file_ext}"
 
   # TODO: list instead of using static URLs to support routes with multiple file extensions
   rlog_paths = [get_internal_url(sr, seg, "rlog") for seg in sr.seg_idxs]
@@ -171,8 +172,9 @@ def internal_source(sr: SegmentRange, mode: ReadMode, file_ext: str = "bz2") -> 
   return apply_strategy(mode, rlog_paths, qlog_paths)
 
 
-def internal_source_zst(sr: SegmentRange, mode: ReadMode, file_ext: str = "zst") -> list[LogPath]:
-  return internal_source(sr, mode, file_ext)
+def internal_source_zst(sr: SegmentRange, mode: ReadMode, file_ext: str = "zst",
+                        endpoint_url: str = DATA_ENDPOINT) -> list[LogPath]:
+  return internal_source(sr, mode, file_ext, endpoint_url)
 
 
 def openpilotci_source(sr: SegmentRange, mode: ReadMode, file_ext: str = "bz2") -> list[LogPath]:
@@ -186,7 +188,7 @@ def openpilotci_source_zst(sr: SegmentRange, mode: ReadMode) -> list[LogPath]:
   return openpilotci_source(sr, mode, "zst")
 
 
-def comma_car_segments_source(sr: SegmentRange, mode=ReadMode.RLOG) -> list[LogPath]:
+def comma_car_segments_source(sr: SegmentRange, mode: ReadMode = ReadMode.RLOG) -> list[LogPath]:
   return [get_comma_segments_url(sr.route_name, seg) for seg in sr.seg_idxs]
 
 
@@ -213,13 +215,10 @@ def check_source(source: Source, *args) -> list[LogPath]:
   return files
 
 
-def auto_source(sr: SegmentRange, mode=ReadMode.RLOG, sources: list[Source] = None) -> list[LogPath]:
+def auto_source(sr: SegmentRange, sources: list[Source], mode: ReadMode = ReadMode.RLOG) -> list[LogPath]:
   if mode == ReadMode.SANITIZED:
     return comma_car_segments_source(sr, mode)
 
-  if sources is None:
-    sources = [internal_source, internal_source_zst, openpilotci_source, openpilotci_source_zst,
-               comma_api_source, comma_car_segments_source, testing_closet_source]
   exceptions = {}
 
   # for automatic fallback modes, auto_source needs to first check if rlogs exist for any source
@@ -267,7 +266,7 @@ class LogReader:
     sr = SegmentRange(identifier)
     mode = self.default_mode if sr.selector is None else ReadMode(sr.selector)
 
-    identifiers = self.source(sr, mode)
+    identifiers = auto_source(sr, self.sources, mode)
 
     invalid_count = len(list(get_invalid_files(identifiers)))
     assert invalid_count == 0, (f"{invalid_count}/{len(identifiers)} invalid log(s) found, please ensure all logs " +
@@ -275,9 +274,13 @@ class LogReader:
     return identifiers
 
   def __init__(self, identifier: str | list[str], default_mode: ReadMode = ReadMode.RLOG,
-               source: Source = auto_source, sort_by_time=False, only_union_types=False):
+               sources: list[Source] = None, sort_by_time=False, only_union_types=False):
+    if sources is None:
+      sources = [internal_source, internal_source_zst, openpilotci_source, openpilotci_source_zst,
+                 comma_api_source, comma_car_segments_source, testing_closet_source]
+
     self.default_mode = default_mode
-    self.source = source
+    self.sources = sources
     self.identifier = identifier
     if isinstance(identifier, str):
       self.identifier = [identifier]
