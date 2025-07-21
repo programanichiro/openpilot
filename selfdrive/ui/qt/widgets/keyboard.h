@@ -25,7 +25,7 @@ class Keyboard : public QFrame {
   Q_OBJECT
 
 public:
-  explicit Keyboard(QWidget *parent = 0);
+  explicit Keyboard(QWidget *parent = 0, int index = 0);
 
 private:
   QStackedLayout* main_layout;
