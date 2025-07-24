@@ -121,7 +121,7 @@ class TiciFanController(BaseFanController):
     self.frame_net_off = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
-    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_url = "http://overpass.openstreetmap.fr/api/interpreter"
     query = f"""
     [out:json];
     way({lat_min},{lon_min},{lat_max},{lon_max})["highway"];
@@ -136,7 +136,7 @@ class TiciFanController(BaseFanController):
     Overpass APIを使用して、指定されたノードIDの座標を取得する関数
     """
     # Overpass APIのエンドポイントURL
-    overpass_url = "http://overpass-api.de/api/interpreter"
+    overpass_url = "http://overpass.openstreetmap.fr/api/interpreter"
 
     # ノードIDをunionで結合して文字列に変換。うまくいった？
     union_query = "".join(f"node({node_id});" for node_id in node_ids)
