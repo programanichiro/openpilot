@@ -28,10 +28,10 @@ class RouteEngine:
     self.pm = pm
 
     self.params = Params()
-    return
 
     # Get last gps position from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
+    return
     self.last_bearing = None
 
     self.gps_ok = False
