@@ -10,7 +10,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"AdbEnabled", {PERSISTENT, BOOL}},
     {"AlwaysOnDM", {PERSISTENT, BOOL}},
     {"ApiCache_Device", {PERSISTENT, STRING}},
-    {"ApiCache_NavDestinations", {PERSISTENT, JSON}},
+    {"ApiCache_NavDestinations", {PERSISTENT, STRING}},
     {"ApiCache_FirehoseStats", {PERSISTENT, JSON}},
     {"AssistNowToken", {PERSISTENT, STRING}},
     {"AthenadPid", {PERSISTENT, STRING}},
