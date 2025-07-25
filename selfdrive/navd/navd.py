@@ -31,7 +31,6 @@ class RouteEngine:
 
     # Get last gps position from params
     self.last_position = coordinate_from_param("LastGPSPosition", self.params)
-    return
     self.last_bearing = None
 
     self.gps_ok = False
@@ -56,7 +55,7 @@ class RouteEngine:
       self.mapbox_token = os.environ["MAPBOX_TOKEN"]
       self.mapbox_host = "https://api.mapbox.com"
     else:
-      self.api = Api(self.params.get("DongleId", encoding='utf8'))
+      self.api = Api(self.params.get("DongleId"))
       self.mapbox_host = "https://maps.comma.ai"
 
     try:
@@ -155,7 +154,7 @@ class RouteEngine:
     cloudlog.warning(f"Calculating route {self.last_position} -> {destination}")
     self.nav_destination = destination
 
-    lang = self.params.get('LanguageSetting', encoding='utf8')
+    lang = self.params.get('LanguageSetting')
     try: #Map Language設定優先
       with open('/data/mb_navi_lang.txt','r') as fp:
         lang = fp.read().rstrip()
@@ -194,7 +193,7 @@ class RouteEngine:
       params['exclude'] = 'ferry' #フェリーだけ除外する。
 
     # TODO: move waypoints into NavDestination param?
-    waypoints = self.params.get('NavDestinationWaypoints', encoding='utf8')
+    waypoints = self.params.get('NavDestinationWaypoints')
     waypoint_coords = []
     if waypoints is not None and len(waypoints) > 0:
       waypoint_coords = json.loads(waypoints)
