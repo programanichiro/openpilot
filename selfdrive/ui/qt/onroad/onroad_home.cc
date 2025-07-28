@@ -53,6 +53,24 @@ void OnroadWindow::updateState(const UIState &s) {
   // mapVisible = isMapVisible();
 
   QColor bgColor = bg_colors[s.status];
+  static bool hazard = false;
+  static unsigned int hazard_ct = 0;
+  if((hazard_ct++ % 7) == 0){
+    std::string hazard_light_str = util::read_file("/tmp/hazard_light.txt");
+    if(hazard_light_str.empty() == false){
+      int hazard_light = std::stoi(hazard_light_str);
+      if(hazard_light > 0){
+        //bgColorをオレンジに点滅
+        hazard = !hazard;
+      } else if(hazard_light == 0){
+        hazard = false;
+      }
+    }
+  }
+  if(hazard == true){
+    //bgColorをオレンジに点滅
+    bgColor = QColor(192*13/10, 102*13/10, 0, 255); //ウインカーと同じ色
+  }
   if (bg != bgColor) {
     // repaint border
     bg = bgColor;
