@@ -85,7 +85,7 @@ void OnroadWindow::updateState(const UIState &s) {
   }
   if(hazard == true){
     //bgColorをオレンジに点滅
-    bgColor = QColor(192, 102, 0, 255); //ウインカーと同じ色
+    bgColor = QColor(192*13/10, 102*13/10, 0, 255); //ウインカーと同じ色
   }
   if (bg != bgColor) {
     // repaint border
