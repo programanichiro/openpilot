@@ -581,7 +581,7 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     </message>
     <message>
         <source>Snooze Update</source>
-        <translation>更新の一時停止</translation>
+        <translation>また後で更新する</translation>
     </message>
     <message>
         <source>openpilot has detected excessive %1 actuation. This may be due to a software bug. Please contact support at https://comma.ai/support.</source>
