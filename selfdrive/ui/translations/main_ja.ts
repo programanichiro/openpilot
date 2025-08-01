@@ -1299,7 +1299,7 @@ If you&apos;d like to proceed, use https://flash.comma.ai to restore your device
     </message>
     <message>
         <source>Ignore DSU bypass harness for TSSP</source>
-        <translation>TSSP車のリルートハーネス制御を無視</translation>
+        <translation>TSSP車のリルートハーネス制御を無効化</translation>
     </message>
     <message>
         <source>Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed.</source>
