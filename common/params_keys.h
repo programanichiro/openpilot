@@ -84,6 +84,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"AccelMethodSwitch", {PERSISTENT, BOOL}},
     {"GpsAlwaysSwitch", {PERSISTENT, BOOL}},
     {"ForceHybridVehicle", {PERSISTENT, BOOL}},
+    {"IgnoreRerouteHarness", {PERSISTENT, BOOL}},
     {"NetworkMetered", {PERSISTENT, BOOL}},
     {"ObdMultiplexingChanged", {CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION, BOOL}},
     {"ObdMultiplexingEnabled", {CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION, BOOL}},

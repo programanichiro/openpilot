@@ -1183,6 +1183,14 @@ If you&apos;d like to proceed, use https://flash.comma.ai to restore your device
         <translation>ハイブリッド車なのにガス車として認識する場合はこのスイッチをオンにして下さい。ガス車でONにするとクラッシュします。</translation>
     </message>
     <message>
+        <source>Ignore DSU bypass harness for TSSP</source>
+        <translation>TSSP車のリルートハーネス制御を無視</translation>
+    </message>
+    <message>
+        <source>Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed.</source>
+        <translation>DSU bypass harnessもsmartDSUもつけていない車でCANエラーが出るのを修正します。</translation>
+    </message>
+    <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
         <translation>openpilotシステムを使用してアダプティブクルーズコントロールおよび車線維持支援を行います。システム使用中は常にドライバーが事故を起こさないように注意を払ってください。</translation>
     </message>
