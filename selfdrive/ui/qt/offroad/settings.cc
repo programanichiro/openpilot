@@ -109,7 +109,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "IgnoreRerouteHarness",
       tr("Ignore DSU bypass harness for TSSP"),
       tr("Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed."),
-      "../assets/icons/disengage_on_accelerator.svg", //アクセル制御に関するアイコン。
+      "../assets/icons/calibration.png", //アクセル制御に関するアイコン。
       true,
     },
   };
