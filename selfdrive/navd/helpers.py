@@ -5,7 +5,7 @@ import math
 import numpy as np
 from typing import Any, cast
 
-from openpilot.common.conversions import Conversions
+from openpilot.common.constants import CV
 from openpilot.common.params import Params
 
 DIRECTIONS = ('left', 'right', 'straight')
@@ -13,8 +13,8 @@ MODIFIABLE_DIRECTIONS = ('left', 'right')
 
 EARTH_MEAN_RADIUS = 6371007.2
 SPEED_CONVERSIONS = {
-    'km/h': Conversions.KPH_TO_MS,
-    'mph': Conversions.MPH_TO_MS,
+    'km/h': CV.KPH_TO_MS,
+    'mph': CV.MPH_TO_MS,
   }
 
 
