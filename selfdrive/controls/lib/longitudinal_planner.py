@@ -1012,7 +1012,7 @@ class LongitudinalPlanner:
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     v_cruise = v_cruise if (v_cruise < 118/3.6 or tss_type >= 2) else 118/3.6 #TSSPではACC118を超えないようにする。
     v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
-    v_cruise_car_limit += 10/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
+    v_cruise_car_limit += 10/3.6 if v_cruise_car_limit < 70/3.6 else 9/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
