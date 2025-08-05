@@ -251,6 +251,8 @@ OffroadHome::OffroadHome(QWidget* parent) : QFrame(parent) {
     left_widget->addWidget(new PrimeAdWidget);
     left_widget->setStyleSheet("border-radius: 10px;");
 
+    left_widget->setCurrentIndex(1); //使われないMapSettingsが一瞬だけ表示されるから、index=1を先にセットしておく。
+
     connect(uiState()->prime_state, &PrimeState::changed, [left_widget]() {
       left_widget->setCurrentIndex(uiState()->prime_state->isSubscribed() ? 0 : 1);
     });
