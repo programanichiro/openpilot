@@ -1,6 +1,5 @@
 import os
 import re
-import enum
 import requests
 from functools import cache
 from urllib.parse import urlparse
@@ -12,8 +11,7 @@ from openpilot.tools.lib.api import APIError, CommaApi
 from openpilot.tools.lib.helpers import RE
 
 
-class FileName(enum.Enum):
-  #TODO use the ones from route.py
+class FileName:
   RLOG = ("rlog.zst", "rlog.bz2")
   QLOG = ("qlog.zst", "qlog.bz2")
   QCAMERA = ('qcamera.ts',)
@@ -21,6 +19,7 @@ class FileName(enum.Enum):
   ECAMERA = ('ecamera.hevc',)
   DCAMERA = ('dcamera.hevc',)
   BOOTLOG = ('bootlog.zst', 'bootlog.bz2')
+
 
 class Route:
   def __init__(self, name, data_dir=None):

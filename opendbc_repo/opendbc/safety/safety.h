@@ -41,6 +41,9 @@ uint32_t GET_BYTES(const CANPacket_t *msg, int start, int len) {
 
 const int MAX_WRONG_COUNTERS = 5;
 
+bool lateral_controls_allowed = false;
+bool set_me_prev = false;
+
 // This can be set by the safety hooks
 bool controls_allowed = false;
 bool relay_malfunction = false;
