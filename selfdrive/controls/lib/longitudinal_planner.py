@@ -1034,9 +1034,10 @@ class LongitudinalPlanner:
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if g_tss_type < 2:
-      self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), 119/3.6) #全要素を119km/h以下にする
+      v_desired_trajectory_min = np.minimum(v_cruise_car_limit, 118/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
-      self.v_desired_trajectory = (self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul))
+      v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
+    self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
 
     action_t =  self.CP.longitudinalActuatorDelay + DT_MDL
     output_a_target_mpc, output_should_stop_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
