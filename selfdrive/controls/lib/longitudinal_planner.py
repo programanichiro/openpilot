@@ -242,7 +242,15 @@ class LongitudinalPlanner:
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
     # v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 3 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph #最大119
     # v_cruise_kph = (107 + ((v_cruise_kph+6) - 107) * 2 - 6) if v_cruise_kph > (107 - 6) else v_cruise_kph #最大119 -> 114 -> 117に。
-      v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
+    # v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
+      v_cruise_kph = (109 + ((v_cruise_kph+6) - 109) * 2 - 6) if v_cruise_kph > (109 - 6) else v_cruise_kph #最大115に。
+
+#100,101,102,103,104,105,106,107,108,109
+#100,101,102,103,105,107,109,111,113,115 ;407
+#100,101,102,104,106,108,110,112,114,116
+#100,101,103,105,107,109,111,113,115,117 ;409
+#100,102,104,106,108,110,112,114,116,118 ;410
+
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
           fp.write('%d' % (1))
@@ -739,8 +747,8 @@ class LongitudinalPlanner:
       #   fp.write('%.0f[m],%.1f[k],%.2f[a]' % (leadOne.dRel , v_abs*3.6 , leadOne.aRel))
       if vk_ego * 3.6 * 0.6 < d_rel and v_cruise_kph < v_abs * 3.6 + 7: #例、時速50kmの時前走車までの距離が30m(50x0.6)以上離れている。&&MAX(v_cruise_kph)より相手+7が速い。
         self.v_cruise_kph_1_15 = v_abs * 3.6 + 7
-        if self.v_cruise_kph_1_15 > v_cruise_kph + 11:
-          self.v_cruise_kph_1_15 = v_cruise_kph + 11 #MAXを最大11は超えない
+        if self.v_cruise_kph_1_15 > v_cruise_kph + 9:
+          self.v_cruise_kph_1_15 = v_cruise_kph + 9 #MAXを最大９は超えない
         if vk_ego * 3.6 >= v_cruise_kph * 0.90: #ACC設定速度がすでに出ている。
           add_v_by_lead = True #前走車に追いつくための増速処理が有効
           org_v_cruise_kph = v_cruise_kph
@@ -1007,12 +1015,13 @@ class LongitudinalPlanner:
     if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
+    # v_cruise2 = v_cruise
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    v_cruise = v_cruise if (v_cruise < 118/3.6 or tss_type >= 2) else 118/3.6 #TSSPではACC118を超えないようにする。
+    v_cruise = v_cruise if (v_cruise < 117/3.6 or tss_type >= 2) else 117/3.6 #TSSPではACC118を超えないようにする。
     v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
-    v_cruise_car_limit += 10/3.6 if v_cruise_car_limit < 70/3.6 else 9/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
+    v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
@@ -1034,9 +1043,12 @@ class LongitudinalPlanner:
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if g_tss_type < 2:
-      self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), 119/3.6) #全要素を119km/h以下にする
+      v_desired_trajectory_min = np.minimum(v_cruise_car_limit, 117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
-      self.v_desired_trajectory = (self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul))
+      v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
+    self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
+    # if v_cruise2 > v_desired_trajectory_min: #加速禁止
+    #   self.a_desired_trajectory = np.minimum(self.a_desired_trajectory, 0)
 
     action_t =  self.CP.longitudinalActuatorDelay + DT_MDL
     output_a_target_mpc, output_should_stop_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
