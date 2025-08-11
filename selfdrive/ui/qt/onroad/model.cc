@@ -646,7 +646,7 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
     p.setPen(Qt::NoPen);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("↓") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 11 , 0 , -5) + 11;
     QString debug_disp = QString::number(cv,'f',0);
-    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 140 , false , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 13 , 5 , 11 , 0 , -5);
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 140 , false , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 13 , 5 , 11 , 0 , -5)+3;
   }
   {
     //自立運転距離の割合
