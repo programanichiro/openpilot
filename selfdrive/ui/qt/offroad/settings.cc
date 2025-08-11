@@ -130,9 +130,9 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
                                           "../assets/icons/speed_limit.png",
                                           longi_button_texts);
 
-  std::vector<QString> accel_method_button_texts{tr("Cydia2020"), tr("Official")};
+  std::vector<QString> accel_method_button_texts{tr("TSSP"), tr("Official")};
   accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
-                                          tr("Switch Accel Method to Official version or Cydia2020. A reboot is required."),
+                                          tr("Switch Accel Method to Official version or TSSP custom. A reboot is required."),
                                           "../assets/icons/calibration.png",
                                           accel_method_button_texts);
 
