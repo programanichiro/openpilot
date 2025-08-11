@@ -692,17 +692,17 @@ void ModelRenderer::knightScanner(QPainter &p, int height, int width) {
     p.setPen(Qt::NoPen);
     debug_disp_xpos = drawTextLeft(p , debug_disp_xpos+6 , rect_h - 10 , QString("Trip") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 10 , -3 , -5) + 5;
     QString debug_disp = QString::number(distance_traveled / 1000,'f',1) + QString("km");
-    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 140 , false , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 13 , 5 , 10 , -2 , -5) + 2;
+    debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 140 , false , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 13 , 5 , 8 , -2 , -5) + 3;
     //p.drawText(QRect(0+20 + 130 + 210, rect_h - 46, 290, 46), Qt::AlignBottom | Qt::AlignLeft, debug_disp);
   }
   if(fabs(vc_speed) < 0.1/3.6){
     std::string blue_signal_chk_txt = util::read_file("/dev/shm/blue_signal_chk.txt");
     if(blue_signal_chk_txt.empty() == false){
       p.setPen(Qt::NoPen);
-      debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("⚫︎") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 13 , 0 , -5) + 11;
+      debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , QString("⚫︎") , 200 , false , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 13 , 0 , -5) + 12;
       int blue_signal_chk = std::stoi(blue_signal_chk_txt);
       QString debug_disp = QString::number(blue_signal_chk);
-      debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 140 , false , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 13 , 5 , 13 , 1 , -5);
+      debug_disp_xpos = drawTextLeft(p , debug_disp_xpos , rect_h - 10 , debug_disp , 140 , false , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 13 , 4 , 13 , 1 , -5);
     }
   }
   if(0){
