@@ -1010,9 +1010,9 @@ class LongitudinalPlanner:
 
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    v_cruise = v_cruise if (v_cruise < 118/3.6 or tss_type >= 2) else 118/3.6 #TSSPではACC118を超えないようにする。
+    v_cruise = v_cruise if (v_cruise < 117/3.6 or tss_type >= 2) else 117/3.6 #TSSPではACC118を超えないようにする。
     v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
-    v_cruise_car_limit += 10/3.6 if v_cruise_car_limit < 70/3.6 else 9/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
+    v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
@@ -1034,7 +1034,7 @@ class LongitudinalPlanner:
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if g_tss_type < 2:
-      v_desired_trajectory_min = np.minimum(v_cruise_car_limit, 118/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
+      v_desired_trajectory_min = np.minimum(v_cruise_car_limit, 117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
       v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
     self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
