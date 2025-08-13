@@ -242,7 +242,15 @@ class LongitudinalPlanner:
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
     # v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 3 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph #最大119
     # v_cruise_kph = (107 + ((v_cruise_kph+6) - 107) * 2 - 6) if v_cruise_kph > (107 - 6) else v_cruise_kph #最大119 -> 114 -> 117に。
-      v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
+    # v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
+      v_cruise_kph = (109 + ((v_cruise_kph+6) - 109) * 2 - 6) if v_cruise_kph > (109 - 6) else v_cruise_kph #最大115に。
+
+#100,101,102,103,104,105,106,107,108,109
+#100,101,102,103,105,107,109,111,113,115 ;407
+#100,101,102,104,106,108,110,112,114,116
+#100,101,103,105,107,109,111,113,115,117 ;409
+#100,102,104,106,108,110,112,114,116,118 ;410
+
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
           fp.write('%d' % (1))

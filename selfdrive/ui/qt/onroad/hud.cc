@@ -22,7 +22,7 @@ HudRenderer::HudRenderer() {
 }
 
 void HudRenderer::updateState(const UIState &s) {
-  int SET_SPEED_NA = 410; ///409; //406; //557; //255; ,
+  int SET_SPEED_NA = 407; //410(118); //409(117); //406; //557(119); //255; ,
   const SubMaster &sm = *(s.sm);
 
   const bool cs_alive = sm.alive("carState");
@@ -55,7 +55,8 @@ void HudRenderer::updateState(const UIState &s) {
     v_cruise = v_cruise < (55 - 4) ? (55 - (55 - (v_cruise+4)) * 2 - 4) : v_cruise;
   //v_cruise = v_cruise > (110 - 6) ? (110 + ((v_cruise+6) - 110) * 3 - 6) : v_cruise; //最大119
   //v_cruise = v_cruise > (107 - 6) ? (107 + ((v_cruise+6) - 107) * 2 - 6) : v_cruise; //最大119 -> 114 -> 117に。
-    v_cruise = v_cruise > (106 - 6) ? (106 + ((v_cruise+6) - 106) * 2 - 6) : v_cruise; //最大118に。
+  //v_cruise = v_cruise > (106 - 6) ? (106 + ((v_cruise+6) - 106) * 2 - 6) : v_cruise; //最大118に。255->410
+    v_cruise = v_cruise > (109 - 6) ? (109 + ((v_cruise+6) - 109) * 2 - 6) : v_cruise; //最大115に。255->407
   } else if(PI0_DEBUG == true || tss_type == 2){
     SET_SPEED_NA = 255; //TSS2では戻す。
   }
