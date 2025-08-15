@@ -863,12 +863,12 @@ class LongitudinalPlanner:
     v_cruise_old = v_cruise
 
     if True: # v_cruise_kph >= 105: # and v_cruise_kph < 200: #sm['selfdriveState'].personality aggressiveで+1, relaxedで-1
-      # personality = sm['selfdriveState'].personality
-      # if personality==log.LongitudinalPersonality.relaxed:
-      #   v_cruise_kph -= 1
-      # elif personality==log.LongitudinalPersonality.aggressive:
-      #   v_cruise_kph += 1
-      v_cruise_kph += (1 - sm['selfdriveState'].personality)
+      personality = sm['selfdriveState'].personality
+      if personality==log.LongitudinalPersonality.relaxed and v_cruise_kph > 1:
+        v_cruise_kph -= 1
+      elif personality==log.LongitudinalPersonality.aggressive:
+        v_cruise_kph += 1
+      # v_cruise_kph += (1 - sm['selfdriveState'].personality) #これではダメだ。数値じゃない？
 
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
