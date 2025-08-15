@@ -862,8 +862,8 @@ class LongitudinalPlanner:
     global v_cruise , v_cruise_old
     v_cruise_old = v_cruise
 
-    if True: # v_cruise_kph >= 105: # and v_cruise_kph < 200: #sm['selfdriveState'].personality aggressiveで+1, relaxedで-1
-      personality = sm['selfdriveState'].personality
+    if tss_type < 2 and v_cruise_kph >= 105: # TSSPで105km/h以上の設定なら
+      personality = sm['selfdriveState'].personality #aggressiveで+1, relaxedで-1
       if personality==log.LongitudinalPersonality.relaxed and v_cruise_kph > 1:
         v_cruise_kph -= 1
       elif personality==log.LongitudinalPersonality.aggressive:
