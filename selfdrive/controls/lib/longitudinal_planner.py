@@ -948,8 +948,8 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
-    # if tss_type < 2 and self.v_desired_filter.x > 117.0 / 3.6:
-    #   self.v_desired_filter.x = 117.0 / 3.6
+    if tss_type < 2 and self.v_desired_filter.x > 117.0 / 3.6:
+      self.v_desired_filter.x = 117.0 / 3.6
     x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'])
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
@@ -1026,12 +1026,13 @@ class LongitudinalPlanner:
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     # v_cruise2 = v_cruise
 
-    self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
-    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     v_cruise = v_cruise if (v_cruise < 117/3.6 or tss_type >= 2) else 117/3.6 #TSSPではACC118を超えないようにする。
     v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
     v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
+    self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
+    self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
+    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
     # with open('/tmp/debug_out_v','w') as fp:
     #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,force_slow_decel))
