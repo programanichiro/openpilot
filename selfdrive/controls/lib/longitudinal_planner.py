@@ -246,7 +246,7 @@ class LongitudinalPlanner:
       v_cruise_kph = (109 + ((v_cruise_kph+6) - 109) * 2 - 6) if v_cruise_kph > (109 - 6) else v_cruise_kph #最大115に。
 
 #100,101,102,103,104,105,106,107,108,109
-#100,101,102,103,105,107,109,111,113,115 ;407 *今これ
+#100,101,102,103,105,107,109,111,113,115 ;407
 #100,101,102,104,106,108,110,112,114,116
 #100,101,103,105,107,109,111,113,115,117 ;409
 #100,102,104,106,108,110,112,114,116,118 ;410
@@ -861,8 +861,6 @@ class LongitudinalPlanner:
     global v_cruise , v_cruise_old
     v_cruise_old = v_cruise
 
-    if v_cruise_kph >= 105: #sm['selfdriveState'].personality 0で+1, 2で-1
-      v_cruise_kph += (1 - sm['selfdriveState'].personality)
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
     long_speeddown_flag = False
