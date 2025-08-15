@@ -3,6 +3,7 @@ import os
 import math
 import numpy as np
 from openpilot.common.params import Params
+from cereal import log
 
 import cereal.messaging as messaging
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
@@ -246,7 +247,7 @@ class LongitudinalPlanner:
       v_cruise_kph = (109 + ((v_cruise_kph+6) - 109) * 2 - 6) if v_cruise_kph > (109 - 6) else v_cruise_kph #最大115に。
 
 #100,101,102,103,104,105,106,107,108,109
-#100,101,102,103,105,107,109,111,113,115 ;407
+#100,101,102,103,105,107,109,111,113,115 ;407 *今これ
 #100,101,102,104,106,108,110,112,114,116
 #100,101,103,105,107,109,111,113,115,117 ;409
 #100,102,104,106,108,110,112,114,116,118 ;410
@@ -861,6 +862,12 @@ class LongitudinalPlanner:
     global v_cruise , v_cruise_old
     v_cruise_old = v_cruise
 
+    if v_cruise_kph >= 105: # and v_cruise_kph < 200: #sm['selfdriveState'].personality aggressiveで+1, relaxedで-1
+      personality = sm['selfdriveState'].personality
+      if personality==log.LongitudinalPersonality.relaxed:
+        v_cruise_kph -= 1
+      elif personality==log.LongitudinalPersonality.aggressive:
+        v_cruise_kph += 1
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
     v_cruise = v_cruise_kph * CV.KPH_TO_MS # * red_signal_speed_down
     long_speeddown_flag = False
