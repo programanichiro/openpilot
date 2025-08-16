@@ -862,12 +862,15 @@ class LongitudinalPlanner:
     global v_cruise , v_cruise_old
     v_cruise_old = v_cruise
 
+    v_117 = 116
     if tss_type < 2 and v_cruise_kph >= 105: # TSSPで105km/h以上の設定なら
       personality = sm['selfdriveState'].personality #aggressiveで+1, relaxedで-1
       if personality==log.LongitudinalPersonality.relaxed and v_cruise_kph > 1:
         v_cruise_kph -= 1
+        v_117 -= 1
       elif personality==log.LongitudinalPersonality.aggressive:
         v_cruise_kph += 1
+        v_117 += 1
       # v_cruise_kph += (1 - sm['selfdriveState'].personality) #これではダメだ。数値じゃない？
 
     v_cruise_kph = min(v_cruise_kph, V_CRUISE_MAX)
@@ -948,8 +951,8 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
-    if tss_type < 2 and self.v_desired_filter.x > 117.0 / 3.6:
-      self.v_desired_filter.x = 117.0 / 3.6
+    if tss_type < 2 and self.v_desired_filter.x > v_117 / 3.6:
+      self.v_desired_filter.x = v_117 / 3.6
     x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'])
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
@@ -1026,7 +1029,7 @@ class LongitudinalPlanner:
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     # v_cruise2 = v_cruise
 
-    v_cruise = v_cruise if (v_cruise < 117/3.6 or tss_type >= 2) else 117/3.6 #TSSPではACC118を超えないようにする。
+    v_cruise = v_cruise if (v_cruise < v_117/3.6 or tss_type >= 2) else v_117/3.6 #TSSPではACC118を超えないようにする。
     v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
     v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
@@ -1053,7 +1056,7 @@ class LongitudinalPlanner:
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if g_tss_type < 2:
-      v_desired_trajectory_min = np.minimum(v_cruise_car_limit, 117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
+      v_desired_trajectory_min = np.minimum(v_cruise_car_limit, v_117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
       v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
     self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
