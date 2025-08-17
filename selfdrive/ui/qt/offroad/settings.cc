@@ -130,7 +130,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
                                           "../assets/icons/speed_limit.png",
                                           longi_button_texts);
 
-  std::vector<QString> accel_method_button_texts{tr("TSSP"), tr("Official")};
+  std::vector<QString> accel_method_button_texts{tr("Recommend"), tr("Official")};
   accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
                                           tr("Switch Accel Method to Official version or TSSP custom. A reboot is required."),
                                           "../assets/icons/calibration.png",
