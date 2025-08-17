@@ -1156,7 +1156,7 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     </message>
     <message>
         <source>Switch Accel Method to Official version or recommendation. A reboot is required.</source>
-        <translation>アクセル制御を推奨のの手法と公式から選択します。再起動が必要です。TSSPでは推奨を選択してください。</translation>
+        <translation>アクセル制御を推奨の手法と公式から選択します。再起動が必要です。TSSPでは推奨を選択してください。</translation>
     </message>
     <message>
         <source>Recommend</source>
