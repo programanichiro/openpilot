@@ -132,7 +132,7 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
 
   std::vector<QString> accel_method_button_texts{tr("Recommend"), tr("Official")};
   accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
-                                          tr("Switch Accel Method to Official version or TSSP custom. A reboot is required."),
+                                          tr("Switch Accel Method to Official version or recommendation. A reboot is required."),
                                           "../assets/icons/calibration.png",
                                           accel_method_button_texts);
 
