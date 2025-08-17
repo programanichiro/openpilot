@@ -1159,6 +1159,14 @@ Firehoseモードを有効にすると学習データを最大限アップロー
         <translation>アクセル制御をCydia2020氏の手法と公式から選択します。再起動が必要です。TSSPでは公式は非推奨です。</translation>
     </message>
     <message>
+        <source>Recommend</source>
+        <translation>推奨</translation>
+    </message>
+    <message>
+        <source>Official</source>
+        <translation>公式</translation>
+    </message>
+    <message>
         <source>Auto door lock by speed</source>
         <translation>車速ドアロック</translation>
     </message>
