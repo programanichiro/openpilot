@@ -22,7 +22,8 @@ def main():
     sm.update()
     should_send_bookmark = False
 
-    if sm.updated['carState'] and sm['carState'].canValid:
+    # TODO: https://github.com/commaai/openpilot/issues/36015
+    if False and sm.updated['carState'] and sm['carState'].canValid:
       for be in sm['carState'].buttonEvents:
         if False: #be.type == ButtonType.lkas: MADSボタンと衝突
           if be.pressed:
