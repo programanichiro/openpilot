@@ -338,7 +338,8 @@ def hardware_thread(end_event, hw_queue) -> None:
     if TICI and HARDWARE.get_device_type() == "tici":
       if not os.path.isfile("/persist/comma/living-in-the-moment"):
         if not Path("/data/media").is_mount():
-          set_offroad_alert_if_changed("Offroad_StorageMissing", True)
+          #set_offroad_alert_if_changed("Offroad_StorageMissing", True)
+          pass #NVMe無し警告を無効
 
     # Handle offroad/onroad transition
     should_start = all(onroad_conditions.values())
