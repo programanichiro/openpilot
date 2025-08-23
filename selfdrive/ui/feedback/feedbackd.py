@@ -25,7 +25,7 @@ def main():
     # TODO: https://github.com/commaai/openpilot/issues/36015
     if False and sm.updated['carState'] and sm['carState'].canValid:
       for be in sm['carState'].buttonEvents:
-        if be.type == ButtonType.lkas:
+        if False: #be.type == ButtonType.lkas: MADSボタンと衝突
           if be.pressed:
             if not should_record_audio:
               if params.get_bool("RecordAudioFeedback"):  # Start recording on first press if toggle set
