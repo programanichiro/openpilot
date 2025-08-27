@@ -208,12 +208,11 @@ node {
         ])
       },
       'HW + Unit Tests': {
-        deviceStage("tici-hardware", "tici-common", ["UNSAFE=1"], [
+        deviceStage("tizi-hardware", "tizi-common", ["UNSAFE=1"], [
           step("build", "cd system/manager && ./build.py"),
           step("test pandad", "pytest selfdrive/pandad/tests/test_pandad.py", [diffPaths: ["panda", "selfdrive/pandad/"]]),
           step("test power draw", "pytest -s system/hardware/tici/tests/test_power_draw.py"),
           step("test encoder", "LD_LIBRARY_PATH=/usr/local/lib pytest system/loggerd/tests/test_encoder.py", [diffPaths: ["system/loggerd/"]]),
-          step("test pigeond", "pytest system/ubloxd/tests/test_pigeond.py", [diffPaths: ["system/ubloxd/"]]),
           step("test manager", "pytest system/manager/test/test_manager.py"),
         ])
       },
@@ -221,13 +220,6 @@ node {
         deviceStage("loopback", "tici-loopback", ["UNSAFE=1"], [
           step("build openpilot", "cd system/manager && ./build.py"),
           step("test pandad loopback", "pytest selfdrive/pandad/tests/test_pandad_loopback.py"),
-        ])
-      },
-      'camerad AR0231': {
-        deviceStage("AR0231", "tici-ar0231", ["UNSAFE=1"], [
-          step("build", "cd system/manager && ./build.py"),
-          step("test camerad", "pytest system/camerad/test/test_camerad.py", [timeout: 60]),
-          step("test exposure", "pytest system/camerad/test/test_exposure.py"),
         ])
       },
       'camerad OX03C10': {
@@ -245,17 +237,13 @@ node {
         ])
       },
       'sensord': {
-        deviceStage("LSM + MMC", "tici-lsmc", ["UNSAFE=1"], [
-          step("build", "cd system/manager && ./build.py"),
-          step("test sensord", "pytest system/sensord/tests/test_sensord.py"),
-        ])
-        deviceStage("BMX + LSM", "tici-bmx-lsm", ["UNSAFE=1"], [
+        deviceStage("LSM + MMC", "tizi-lsmc", ["UNSAFE=1"], [
           step("build", "cd system/manager && ./build.py"),
           step("test sensord", "pytest system/sensord/tests/test_sensord.py"),
         ])
       },
       'replay': {
-        deviceStage("model-replay", "tici-replay", ["UNSAFE=1"], [
+        deviceStage("model-replay", "tizi-replay", ["UNSAFE=1"], [
           step("build", "cd system/manager && ./build.py", [diffPaths: ["selfdrive/modeld/", "tinygrad_repo", "selfdrive/test/process_replay/model_replay.py"]]),
           step("model replay", "selfdrive/test/process_replay/model_replay.py", [diffPaths: ["selfdrive/modeld/", "tinygrad_repo", "selfdrive/test/process_replay/model_replay.py"]]),
         ])
