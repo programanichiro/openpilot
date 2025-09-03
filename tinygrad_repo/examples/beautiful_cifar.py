@@ -2,6 +2,7 @@ import time
 start_tm = time.perf_counter()
 import math
 from typing import Tuple, cast
+import numpy as np
 from tinygrad import Tensor, nn, GlobalCounters, TinyJit, dtypes, Device
 from tinygrad.helpers import partition, trange, getenv, Context
 from extra.lr_scheduler import OneCycleLR
@@ -149,12 +150,13 @@ if __name__ == "__main__":
       acc.append((out.argmax(-1) == Y).sum() / eval_batchsize)
     return Tensor.stack(*loss).mean() / (batchsize*loss_batchsize_scaler), Tensor.stack(*acc).mean()
 
-  Tensor.manual_seed(1337)
-  num_train_samples = X_train.shape[0]
-
+  np.random.seed(1337)
   for epoch in range(math.ceil(hyp['misc']['train_epochs'])):
+    # TODO: move to tinygrad
     gst = time.perf_counter()
-    tidxs = Tensor.randperm(num_train_samples, dtype='int')[:num_steps_per_epoch*batchsize].reshape(num_steps_per_epoch, batchsize)
+    idxs = np.arange(X_train.shape[0])
+    np.random.shuffle(idxs)
+    tidxs = Tensor(idxs, dtype='int')[:num_steps_per_epoch*batchsize].reshape(num_steps_per_epoch, batchsize)  # NOTE: long doesn't fold
     train_loss:float = 0
     for epoch_step in (t:=trange(num_steps_per_epoch)):
       st = time.perf_counter()
