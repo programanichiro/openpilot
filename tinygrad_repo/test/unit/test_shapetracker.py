@@ -6,7 +6,7 @@ from tinygrad.helpers import prod
 from tinygrad.shape.shapetracker import ShapeTracker, View
 from tinygrad import Variable
 from tinygrad.uop.ops import UOp, Ops, graph_rewrite
-from tinygrad.codegen.late.devectorizer import sym
+from tinygrad.codegen.devectorizer import sym
 from itertools import product
 
 def shapetracker_getitem(st:ShapeTracker, val:int):
@@ -839,22 +839,25 @@ class TestRender(unittest.TestCase):
     self.assertEqual(idx.render(), "((ridx0*3)+ridx1)")
     self.assertEqual(valid.render(), "(ridx0<2)")
 
-class TestVariableShrink(unittest.TestCase):
-  def test_shrink(self):
-    st = ShapeTracker.from_shape((10,))
-    st = st.shrink(((0, Variable("i", 1, 10)),))
+class TestVariableReshape(unittest.TestCase):
+  def test_reshape(self):
+    st = ShapeTracker.from_shape((3,))
+    st = st.reshape((Variable("i", 1, 10),))
     assert len(st.views) == 1
 
-  def test_shrink_bound(self):
-    st = ShapeTracker.from_shape((10,))
-    st = st.shrink(((0, Variable("i", 1, 10).bind(3)),))
+  def test_reshape_stride_0(self):
+    st = ShapeTracker.from_shape((3,), (0,))
+    st = st.reshape((Variable("i", 1, 10).bind(3),))
+    assert len(st.views) == 1, f"multiview {st}"
+
+  def test_reshape_bound(self):
+    st = ShapeTracker.from_shape((3,))
+    st = st.reshape((Variable("i", 1, 10).bind(3),))
     assert len(st.views) == 1
 
-class TestVariableMerge(unittest.TestCase):
-  def test_add_reshape(self):
-    vi = Variable("i", 1, 10)
-    st1 = ShapeTracker.from_shape((vi,))
-    st2 = ShapeTracker.from_shape((1, vi,))
+  def test_add(self):
+    st1 = ShapeTracker.from_shape((3,))
+    st2 = ShapeTracker.from_shape((Variable("i", 1, 10),))
     st = st1+st2
     assert len(st.views) == 1
 
@@ -864,17 +867,15 @@ class TestVariableMerge(unittest.TestCase):
     st = st1+st2
     assert len(st.views) == 1, f"multiview {st}"
 
-  def test_add_reshape_bound(self):
-    vi = Variable("i", 1, 10).bind(3)
-    st1 = ShapeTracker.from_shape((vi,))
-    st2 = ShapeTracker.from_shape((1, vi,))
+  def test_add_bound(self):
+    st1 = ShapeTracker.from_shape((3,))
+    st2 = ShapeTracker.from_shape((Variable("i", 1, 10).bind(3),))
     st = st1+st2
     assert len(st.views) == 1
 
   def test_simplify(self):
-    vi = Variable("i", 1, 10).bind(3)
-    st1 = ShapeTracker.from_shape((vi,))
-    st2 = ShapeTracker.from_shape((1, vi,))
+    st1 = ShapeTracker.from_shape((3,))
+    st2 = ShapeTracker.from_shape((Variable("i", 1, 10).bind(3),))
     st = ShapeTracker((st1.views[0], st2.views[0]))
     st = st.simplify()
     assert len(st.views) == 1

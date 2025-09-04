@@ -16,7 +16,11 @@
 
 #include "board/drivers/can_common.h"
 
-#include "board/drivers/fdcan.h"
+#ifdef STM32H7
+  #include "board/drivers/fdcan.h"
+#else
+  #include "board/drivers/bxcan.h"
+#endif
 
 #include "board/power_saving.h"
 
@@ -160,7 +164,7 @@ static void tick_handler(void) {
       #endif
 
       // set green LED to be controls allowed
-      led_set(LED_GREEN, controls_allowed);
+      led_set(LED_GREEN, controls_allowed | green_led_enabled);
 
       // turn off the blue LED, turned on by CAN
       // unless we are in power saving mode

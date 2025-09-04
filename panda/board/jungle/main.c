@@ -84,6 +84,8 @@ void tick_handler(void) {
       uptime_cnt += 1U;
     }
 
+    led_set(LED_GREEN, green_led_enabled);
+
     // Check on button
     bool current_button_status = current_board->get_button();
 

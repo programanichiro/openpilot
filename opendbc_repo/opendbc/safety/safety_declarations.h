@@ -230,7 +230,9 @@ void update_sample(struct sample_t *sample, int sample_new);
 bool get_longitudinal_allowed(void);
 int ROUND(float val);
 void gen_crc_lookup_table_8(uint8_t poly, uint8_t crc_lut[]);
+#ifdef CANFD
 void gen_crc_lookup_table_16(uint16_t poly, uint16_t crc_lut[]);
+#endif
 bool steer_torque_cmd_checks(int desired_torque, int steer_req, const TorqueSteeringLimits limits);
 bool steer_angle_cmd_checks(int desired_angle, bool steer_control_enabled, const AngleSteeringLimits limits);
 bool steer_angle_cmd_checks_vm(int desired_angle, bool steer_control_enabled, const AngleSteeringLimits limits,
@@ -246,6 +248,9 @@ void speed_mismatch_check(const float speed_2);
 void safety_tick(const safety_config *safety_config);
 
 // This can be set by the safety hooks
+extern bool lateral_controls_allowed;
+extern bool set_me_prev;
+
 extern bool controls_allowed;
 extern bool relay_malfunction;
 extern bool gas_pressed;

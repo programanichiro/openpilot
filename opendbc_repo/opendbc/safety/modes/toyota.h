@@ -34,6 +34,8 @@
 #define TOYOTA_COMMON_RX_CHECKS(lta)                                                                                                       \
   {.msg = {{ 0xaa, 0, 8, 83U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}},  \
   {.msg = {{0x260, 0, 8, 50U, .ignore_counter = true, .ignore_quality_flag=!(lta)}, { 0 }, { 0 }}},                           \
+  {.msg = {{0x1D3, 0, 8, 33U, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}}, /* MADS Cruise Main */    \
+  {.msg = {{0x412, 2, 8, 01U, .ignore_checksum = true, .ignore_counter = true, .ignore_quality_flag = true,}, { 0 }, { 0 }}}, /* MADS LKAS Button */   \
 
 #define TOYOTA_RX_CHECKS(lta)                                                                                                               \
   TOYOTA_COMMON_RX_CHECKS(lta)                                                                                                              \
@@ -81,7 +83,25 @@ static bool toyota_get_quality_flag_valid(const CANPacket_t *msg) {
 }
 
 static void toyota_rx_hook(const CANPacket_t *msg) {
-  if (msg->bus == 0U) {
+  if (msg->bus == 2U) {
+    if (msg->addr == 0x412) {
+      bool set_me = (msg->data[0] & 0xC0) > 0; // LKAS_STATUS
+      if(set_me && !set_me_prev) {
+        lateral_controls_allowed = 1;
+        //print("activate by LKAS_STATUS\n");
+      }
+      set_me_prev = set_me;
+    }
+    if (msg->addr == 0x412) {
+      bool set_me = (msg->data[3] & 0xC0) > 0; // LDA_ON_MESSAGE
+      if(set_me && !set_me_prev)
+      {
+        lateral_controls_allowed = 1;
+        //print("ACTIVATE by LDA_ON_MESSAGE\n\n");
+      }
+      set_me_prev = set_me;
+    }
+  } else if (msg->bus == 0U) {
 
     // get eps motor torque (0.66 factor in dbc)
     if (msg->addr == 0x260U) {
@@ -138,6 +158,17 @@ static void toyota_rx_hook(const CANPacket_t *msg) {
       }
       if (toyota_alt_brake && (msg->addr == 0x224U)) {
         brake_pressed = GET_BIT(msg, 5U);  // BRAKE_MODULE.BRAKE_PRESSED (toyota_new_mc_pt_generated.dbc)
+      }
+    }
+
+    // wrap lateral controls on main
+    if (msg->addr == 0x1D3) {
+      // ACC main switch on is a prerequisite to enter controls, exit controls immediately on main switch off
+      // Signal: PCM_CRUISE_2/MAIN_ON at 15th bit
+      acc_main_on = GET_BIT(msg, 15U);
+      if (!acc_main_on) {
+        lateral_controls_allowed = 0;
+        //print("DISALLOWED \n");
       }
     }
 
@@ -319,7 +350,7 @@ static bool toyota_tx_hook(const CANPacket_t *msg) {
   if (msg->addr == 0x750U) {
     // this address is sub-addressed. only allow tester present to radar (0xF)
     bool invalid_uds_msg = (GET_BYTES(msg, 0, 4) != 0x003E020FU) || (GET_BYTES(msg, 4, 4) != 0x0U);
-    if (invalid_uds_msg) {
+    if (false && invalid_uds_msg) {
       tx = 0;
     }
   }

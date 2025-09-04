@@ -116,22 +116,25 @@ class Panda:
   HW_TYPE_UNKNOWN = b'\x00'
   HW_TYPE_WHITE = b'\x01'
   HW_TYPE_BLACK = b'\x03'
+  HW_TYPE_DOS = b'\x06'
   HW_TYPE_RED_PANDA = b'\x07'
   HW_TYPE_TRES = b'\x09'
   HW_TYPE_CUATRO = b'\x0a'
 
   CAN_PACKET_VERSION = 4
-  HEALTH_PACKET_VERSION = 17
+  HEALTH_PACKET_VERSION = 16
   CAN_HEALTH_PACKET_VERSION = 5
-  HEALTH_STRUCT = struct.Struct("<IIIIIIIIBBBBBHBBBHfBBHHHB")
+  HEALTH_STRUCT = struct.Struct("<IIIIIIIIBBBBBHBBBHfBBHBHHB")
   CAN_HEALTH_STRUCT = struct.Struct("<BIBBBBBBBBIIIIIIIHHBBBIIII")
 
+  F4_DEVICES = [HW_TYPE_WHITE, HW_TYPE_BLACK, HW_TYPE_DOS, ]
   H7_DEVICES = [HW_TYPE_RED_PANDA, HW_TYPE_TRES, HW_TYPE_CUATRO]
-  SUPPORTED_DEVICES = H7_DEVICES
 
-  INTERNAL_DEVICES = (HW_TYPE_TRES, HW_TYPE_CUATRO)
+  INTERNAL_DEVICES = (HW_TYPE_DOS, HW_TYPE_TRES, HW_TYPE_CUATRO)
+  DEPRECATED_DEVICES = (HW_TYPE_WHITE, HW_TYPE_BLACK)
 
   MAX_FAN_RPMs = {
+    HW_TYPE_DOS: 6500,
     HW_TYPE_TRES: 6600,
     HW_TYPE_CUATRO: 12500,
   }
@@ -207,6 +210,23 @@ class Panda:
     if self._handle is None:
       raise Exception("failed to connect to panda")
 
+    # Some fallback logic to determine panda and MCU type for old bootstubs,
+    # since we now support multiple MCUs and need to know which fw to flash.
+    # Three cases to consider:
+    # A) oldest bootstubs don't have any way to distinguish
+    #    MCU or panda type
+    # B) slightly newer (~2 weeks after first C3's built) bootstubs
+    #    have the panda type set in the USB bcdDevice
+    # C) latest bootstubs also implement the endpoint for panda type
+    self._bcd_hw_type = None
+    ret = self._handle.controlRead(Panda.REQUEST_IN, 0xc1, 0, 0, 0x40)
+    missing_hw_type_endpoint = self.bootstub and ret.startswith(b'\xff\x00\xc1\x3e\xde\xad\xd0\x0d')
+    if missing_hw_type_endpoint and bcd is not None:
+      self._bcd_hw_type = bcd
+
+    # For case A, we assume F4 MCU type, since all H7 pandas should be case B at worst
+    self._assume_f4_mcu = (self._bcd_hw_type is None) and missing_hw_type_endpoint
+
     self._serial = serial
     self._connect_serial = serial
     self._handle_open = True
@@ -215,7 +235,7 @@ class Panda:
     logger.debug("connected")
 
     hw_type = self.get_type()
-    if hw_type not in self.SUPPORTED_DEVICES:
+    if hw_type in Panda.DEPRECATED_DEVICES:
       print("WARNING: Using deprecated HW")
 
     # disable openpilot's heartbeat checks
@@ -431,7 +451,7 @@ class Panda:
       handle.controlWrite(Panda.REQUEST_IN, 0xb2, i, 0, b'')
 
     # flash over EP2
-    STEP = 0x200
+    STEP = 0x10
     logger.info("flash: flashing")
     for i in range(0, len(code), STEP):
       handle.bulkWrite(2, code[i:i + STEP])
@@ -449,7 +469,7 @@ class Panda:
       return
 
     hw_type = self.get_type()
-    if hw_type not in self.SUPPORTED_DEVICES:
+    if hw_type in Panda.DEPRECATED_DEVICES:
       raise RuntimeError(f"HW type {hw_type.hex()} is deprecated and can no longer be flashed.")
 
     if not fn:
@@ -555,9 +575,10 @@ class Panda:
       "fan_power": a[19],
       "safety_rx_checks_invalid": a[20],
       "spi_error_count": a[21],
-      "sbu1_voltage_mV": a[22],
-      "sbu2_voltage_mV": a[23],
-      "som_reset_triggered": a[24],
+      "fan_stall_count": a[22],
+      "sbu1_voltage_mV": a[23],
+      "sbu2_voltage_mV": a[24],
+      "som_reset_triggered": a[25],
     }
 
   @ensure_can_health_packet_version
@@ -620,7 +641,13 @@ class Panda:
     return bytes(part_1 + part_2)
 
   def get_type(self):
-    return self._handle.controlRead(Panda.REQUEST_IN, 0xc1, 0, 0, 0x40)
+    ret = self._handle.controlRead(Panda.REQUEST_IN, 0xc1, 0, 0, 0x40)
+
+    # old bootstubs don't implement this endpoint, see comment in Panda.device
+    if self._bcd_hw_type is not None and (ret is None or len(ret) != 1):
+      ret = self._bcd_hw_type
+
+    return ret
 
   # Returns tuple with health packet version and CAN packet/USB packet version
   def get_packets_versions(self):
@@ -633,8 +660,15 @@ class Panda:
 
   def get_mcu_type(self) -> McuType:
     hw_type = self.get_type()
-    if hw_type in Panda.H7_DEVICES:
+    if hw_type in Panda.F4_DEVICES:
+      return McuType.F4
+    elif hw_type in Panda.H7_DEVICES:
       return McuType.H7
+    else:
+      # have to assume F4, see comment in Panda.connect
+      if self._assume_f4_mcu:
+        return McuType.F4
+
     raise ValueError(f"unknown HW type: {hw_type}")
 
   def is_internal(self):
@@ -812,6 +846,8 @@ class Panda:
     self._handle.controlWrite(Panda.REQUEST_OUT, 0xf6, int(enabled), 0, b'')
 
   # ****************** Debug *****************
+  def set_green_led(self, enabled):
+    self._handle.controlWrite(Panda.REQUEST_OUT, 0xf7, int(enabled), 0, b'')
 
   # arr: timer period
   # ccrN: channel N pulse length

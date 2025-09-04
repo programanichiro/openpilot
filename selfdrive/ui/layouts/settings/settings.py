@@ -2,6 +2,7 @@ import pyray as rl
 from dataclasses import dataclass
 from enum import IntEnum
 from collections.abc import Callable
+from openpilot.selfdrive.ui.layouts.network import NetworkLayout
 from openpilot.selfdrive.ui.layouts.settings.developer import DeveloperLayout
 from openpilot.selfdrive.ui.layouts.settings.device import DeviceLayout
 from openpilot.selfdrive.ui.layouts.settings.firehose import FirehoseLayout
@@ -9,9 +10,7 @@ from openpilot.selfdrive.ui.layouts.settings.software import SoftwareLayout
 from openpilot.selfdrive.ui.layouts.settings.toggles import TogglesLayout
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.system.ui.lib.text_measure import measure_text_cached
-from openpilot.system.ui.lib.wifi_manager import WifiManager
 from openpilot.system.ui.widgets import Widget
-from openpilot.system.ui.widgets.network import WifiManagerUI
 
 # Settings close button
 SETTINGS_CLOSE_TEXT = "×"
@@ -44,7 +43,7 @@ class PanelType(IntEnum):
 @dataclass
 class PanelInfo:
   name: str
-  instance: Widget
+  instance: object
   button_rect: rl.Rectangle = rl.Rectangle(0, 0, 0, 0)
 
 
@@ -54,12 +53,9 @@ class SettingsLayout(Widget):
     self._current_panel = PanelType.DEVICE
 
     # Panel configuration
-    wifi_manager = WifiManager()
-    wifi_manager.set_active(False)
-
     self._panels = {
       PanelType.DEVICE: PanelInfo("Device", DeviceLayout()),
-      PanelType.NETWORK: PanelInfo("Network", WifiManagerUI(wifi_manager)),
+      PanelType.NETWORK: PanelInfo("Network", NetworkLayout()),
       PanelType.TOGGLES: PanelInfo("Toggles", TogglesLayout()),
       PanelType.SOFTWARE: PanelInfo("Software", SoftwareLayout()),
       PanelType.FIREHOSE: PanelInfo("Firehose", FirehoseLayout()),
@@ -153,14 +149,8 @@ class SettingsLayout(Widget):
 
   def set_current_panel(self, panel_type: PanelType):
     if panel_type != self._current_panel:
-      self._panels[self._current_panel].instance.hide_event()
       self._current_panel = panel_type
-      self._panels[self._current_panel].instance.show_event()
 
-  def show_event(self):
-    super().show_event()
-    self._panels[self._current_panel].instance.show_event()
-
-  def hide_event(self):
-    super().hide_event()
-    self._panels[self._current_panel].instance.hide_event()
+  def close_settings(self):
+    if self._close_callback:
+      self._close_callback()

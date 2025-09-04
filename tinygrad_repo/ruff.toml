@@ -35,7 +35,6 @@ lint.select = [
 line-length = 150
 
 exclude = [
-  ".git/",
   "docs/",
   "extra/",
   "tinygrad/runtime/autogen",
