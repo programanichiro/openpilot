@@ -220,6 +220,8 @@ extern bool mapVisible;
 extern void soundButton2(int onOff);
 extern void setButtonEnabled0(const char*fn , bool flag);
 int g_night_mode;
+bool road_info_txt_flag = false;
+int road_info_baering = 0;
 extern bool steer_always;
 extern bool cruise_available;
 void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
@@ -689,8 +691,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
   }
   p.setFont(InterFont(33, QFont::DemiBold));
-  bool road_info_txt_flag = false;
-  int road_info_baering = 0;
+  road_info_txt_flag = false;
   static unsigned int road_info_txt_ct = 0;
   if(road_info_txt_ct++ % 20 == 0){
     road_info_txt = util::read_file("/dev/shm/road_info.txt");
