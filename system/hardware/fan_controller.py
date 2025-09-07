@@ -329,6 +329,7 @@ class TiciFanController(BaseFanController):
                       break
                     road_info_list_ct += 1
               if dup == False:
+                road_info["bearing"] = bears[idx]
                 road_info_list2.append(road_info)
                 if speed_limit != "0":
                   speed_limit_num = int(speed_limit)
@@ -350,12 +351,13 @@ class TiciFanController(BaseFanController):
           if road_info_list_select_ct == self.road_info_list_select:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
-            fp.write('%d,%s,%s' % (self.th_id , speed_limit , road_name))
+            road_bearing = road_info.get("bearing", 9999)
+            fp.write('%d,%s,%s,%d' % (self.th_id , speed_limit , road_name,road_bearing))
             break
           road_info_list_select_ct += 1
         if len(road_info_list) == 0:
           self.min_road_v_kph = 0
-          fp.write('%d,0,--' % (self.th_id))
+          fp.write('%d,0,--,9999' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
       if self.frame_net_off == 0: #通信成功なら
