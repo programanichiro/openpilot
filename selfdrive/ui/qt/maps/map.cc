@@ -21,8 +21,8 @@
 #include "selfdrive/ui/ui.h"
 #include "selfdrive/ui/qt/widgets/input.h"
 
-extern bool road_info_txt_flag = false;
-extern int road_info_baering = 0;
+extern bool road_info_txt_flag;
+extern int road_info_baering;
 
 const int INTERACTION_TIMEOUT = 100;
 #if 0
