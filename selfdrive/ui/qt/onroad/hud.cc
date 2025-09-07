@@ -698,10 +698,12 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     int i = 0; // インデックス
     std::stringstream ss(road_info_txt); // 入力文字列をstringstreamに変換
     std::string kmh; //制限速度
-    std::string token; // 一時的にトークンを格納する変数(最終的に道路名)
+    std::string token; // 一時的にトークンを格納する変数
+    std::string road_name; // 道路名
+    std::string road_bear = "99999"; // 道路方位
     static int road_th_ct_ct = 0;
     static int before_road_th_ct = 0;
-    while (i < 3 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
+    while (i < 4 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
       if(i == 0){
         int road_th_ct = std::stoi(token);
         if(road_th_ct == before_road_th_ct){
@@ -711,8 +713,14 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
         }
         before_road_th_ct = road_th_ct;
       }
-      if(i == 1){
+      else if(i == 1){
         kmh = token;
+      }
+      else if(i == 2){
+        road_name = token;
+      }
+      else if(i == 3){
+        road_bear = token;
       }
       i++; // インデックスを1つ進める
     }
@@ -720,12 +728,13 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     if(velo_for_trans < 0.1){
       road_th_ct_ct_limit = 180; //停止時は3分まで伸ばす。
     }
-    if(token.empty() == true || (token == "--" && kmh == "0") || road_th_ct_ct > road_th_ct_ct_limit * 20){
+    if(road_name.empty() == true || (road_name == "--" && kmh == "0") || road_th_ct_ct > road_th_ct_ct_limit * 20){
       road_info_txt_flag = false;
     } else {
       road_info_txt_flag = true;
       p.setFont(InterFont(33, QFont::Bold));
-      int next_x = drawTextRight(p, surface_rect.right()-10, surface_rect.bottom() - 10 , QString::fromStdString(token), 220);
+      road_name = road_name + "&" + road_bear;
+      int next_x = drawTextRight(p, surface_rect.right()-10, surface_rect.bottom() - 10 , QString::fromStdString(road_name), 220);
       if(kmh != "0"){
         drawTextRight(p, next_x-4, surface_rect.bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0);
       }
