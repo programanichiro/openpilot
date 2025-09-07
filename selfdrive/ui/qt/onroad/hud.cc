@@ -690,6 +690,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   }
   p.setFont(InterFont(33, QFont::DemiBold));
   bool road_info_txt_flag = false;
+  int road_info_baering = 0;
   static unsigned int road_info_txt_ct = 0;
   if(road_info_txt_ct++ % 20 == 0){
     road_info_txt = util::read_file("/dev/shm/road_info.txt");
@@ -734,6 +735,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
       road_info_txt_flag = true;
       p.setFont(InterFont(33, QFont::Bold));
       road_name = road_name + "&" + road_bear;
+      road_info_baering = std::stoi(road_bear);
       int next_x = drawTextRight(p, surface_rect.right()-10, surface_rect.bottom() - 10 , QString::fromStdString(road_name), 220);
       if(kmh != "0"){
         drawTextRight(p, next_x-4, surface_rect.bottom() - 10 , QString::fromStdString(kmh) , 255 , false , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0);
