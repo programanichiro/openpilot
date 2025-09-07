@@ -314,10 +314,18 @@ class TiciFanController(BaseFanController):
               dup = False
               if True:
                 if speed_limit == "0":
+                  road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
                     if road_info_tmp["road_name"] == road_name:
                       dup = True
                       break
+                    if road_info_tmp["road_name"] != "---" and road_name == "---":
+                      dup = True #他に名前のある道があれば---は弾く
+                      break
+                    if road_info_tmp["road_name"] == "---" and road_name != "---":
+                      del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
+                      break
+                    road_info_list_ct += 1
                 else:
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
