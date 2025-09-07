@@ -251,7 +251,7 @@ class TiciFanController(BaseFanController):
                     road_coordinates = [] #"NA"
                 road_name = element.get("tags", {}).get("name", "---")
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
-                if speed_limit != "0" or road_name != "---":
+                if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
