@@ -251,7 +251,7 @@ class TiciFanController(BaseFanController):
                     road_coordinates = [] #"NA"
                 road_name = element.get("tags", {}).get("name", "---")
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
-                if speed_limit != "0" or road_name != "---":
+                if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
@@ -314,10 +314,18 @@ class TiciFanController(BaseFanController):
               dup = False
               if True:
                 if speed_limit == "0":
+                  road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
                     if road_info_tmp["road_name"] == road_name:
                       dup = True
                       break
+                    if road_info_tmp["road_name"] != "---" and road_name == "---":
+                      dup = True #他に名前のある道があれば---は弾く
+                      break
+                    if road_info_tmp["road_name"] == "---" and road_name != "---":
+                      del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
+                      break
+                    road_info_list_ct += 1
                 else:
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
@@ -327,8 +335,15 @@ class TiciFanController(BaseFanController):
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
                       del road_info_list2[road_info_list_ct]
                       break
+                    if road_info_tmp["road_name"] != "---" and road_name == "---":
+                      dup = True #他に名前のある道があれば---は弾く
+                      break
+                    if road_info_tmp["road_name"] == "---" and road_name != "---":
+                      del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
+                      break
                     road_info_list_ct += 1
               if dup == False:
+                road_info["bearing"] = bears[idx]
                 road_info_list2.append(road_info)
                 if speed_limit != "0":
                   speed_limit_num = int(speed_limit)
@@ -350,12 +365,13 @@ class TiciFanController(BaseFanController):
           if road_info_list_select_ct == self.road_info_list_select:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
-            fp.write('%d,%s,%s' % (self.th_id , speed_limit , road_name))
+            road_bearing = road_info.get("bearing", 9999)
+            fp.write('%d,%s,%s,%d' % (self.th_id , speed_limit , road_name,road_bearing))
             break
           road_info_list_select_ct += 1
         if len(road_info_list) == 0:
           self.min_road_v_kph = 0
-          fp.write('%d,0,--' % (self.th_id))
+          fp.write('%d,0,--,9999' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
       if self.frame_net_off == 0: #通信成功なら
