@@ -185,12 +185,6 @@ class UbloxMsgParser:
       utc_tt = 0
     gps.unixTimestampMillis = int(utc_tt * 1e3 + (msg.nano * 1e-6))
 
-    locationd_valid = 1
-    if msg.vel_n * 1e-03 == 0 and msg.vel_e * 1e-03 == 0 and msg.vel_d * 1e-03 == 0:
-      locationd_valid = 0
-    if msg.head_acc * 1e-05 > 60:
-      locationd_valid = 0
-
     # match C++ float32 rounding semantics exactly
     gps.vNED = [
       float(np.float32(msg.vel_n) * np.float32(1e-03)),
@@ -200,6 +194,12 @@ class UbloxMsgParser:
     gps.verticalAccuracy = msg.v_acc * 1e-03
     gps.speedAccuracy = msg.s_acc * 1e-03
     gps.bearingAccuracyDeg = msg.head_acc * 1e-05
+
+    locationd_valid = 1
+    if gps.vNED[0] == 0 and gps.vNED[1] == 0 and gps.vNED[2] == 0:
+      locationd_valid = 0
+    if gps.bearingAccuracyDeg > 60:
+      locationd_valid = 0
 
     with open('/dev/shm/gps_axs_data.txt','w') as fp:
       fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (gps.latitude,gps.longitude,gps.bearingDeg,gps.speed,gps.unixTimestampMillis,locationd_valid))
