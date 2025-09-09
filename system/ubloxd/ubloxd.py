@@ -104,6 +104,9 @@ class UbloxMsgParser:
   }
 
   def __init__(self) -> None:
+    with open('/dev/shm/gps_axs_data.txt','w') as fp:
+      fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (0,0,0,0,0,0))
+
     self.framer = UbxFramer()
     self.caches = EphemerisCaches(
       gps_subframes=defaultdict(dict),
