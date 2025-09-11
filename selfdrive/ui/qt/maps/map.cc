@@ -21,6 +21,8 @@
 #include "selfdrive/ui/ui.h"
 #include "selfdrive/ui/qt/widgets/input.h"
 
+extern bool road_info_txt_flag;
+extern int road_info_baering;
 
 const int INTERACTION_TIMEOUT = 100;
 #if 0
@@ -395,6 +397,32 @@ void MapWindow::updateState(const UIState &s) {
     double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
     //auto locationd_orientation = locationd_location.getCalibratedOrientationNED(); //bearing
     double locationd_orientation = gps_output[2]; //bearing
+    if(road_info_txt_flag == true){
+      int d_ang = road_info_baering - (int)locationd_orientation;
+      //-180〜d_ang〜180
+      if(d_ang > 360){
+        while(d_ang > 360){
+          d_ang -= 360;
+        }
+      } else if(d_ang < 0){
+        while(d_ang < 0){
+          d_ang += 360;
+        }
+      }
+      if(d_ang > 180){
+        d_ang -= 360;
+      }
+
+      //道路方向に向ける。
+      if(abs(d_ang) < 50){
+        locationd_orientation = road_info_baering;
+      } else if(abs(d_ang) > 130){
+        locationd_orientation = road_info_baering + 180;
+        while(locationd_orientation > 360){
+          locationd_orientation -= 360;
+        }
+      }
+    }
     //auto locationd_velocity = locationd_location.getVelocityCalibrated(); //sm_vego？一応gen_nav_pvtの中にはある。
     double locationd_velocity = sm_vego; //gps_output[3]; //VEgo, //速度は車載のを使う。元データも車両スピードに変更。
     //auto locationd_ecef = locationd_location.getPositionECEF(); //gps取得精度、これをどうするか・・・？
