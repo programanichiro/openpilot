@@ -89,8 +89,8 @@ MIN_ALLOW_THROTTLE_SPEED = 2.5
 
 #FCW_IDXS = ModelConstants.T_IDXS < 5.0
 #T_DIFFS = np.diff(T_IDXS, prepend=[0.])
-COMFORT_BRAKE = 2.5
-STOP_DISTANCE = 6.0
+COMFORT_BRAKE = 4.0 #2.5
+STOP_DISTANCE = 4.5 #6.0
 
 
 # Lookup table for turns
@@ -1140,7 +1140,7 @@ class LongitudinalPlanner:
     ego_xv = process_ego(v_ego, sm['carState'].aEgo)
     for key in lead_info.keys():
       lead_xv = process_lead(v_ego, lead_info[key])
-      
+
 
       ## To estimate a safe distance from a moving lead, we calculate how much stopping
       ## distance that lead needs as a minimum. We can add that to the current distance
@@ -1153,7 +1153,7 @@ class LongitudinalPlanner:
       follow_distance_error =  np.sum(error_weights*(lead_xv[:,0] - desired_follow_distance))
 
       follow_distance_cost_signed = (follow_distance_error / (v_ego + 1))**2 * np.sign(follow_distance_error)
-      lead_accel = np.clip(2*follow_distance_cost_signed, ACCEL_MIN, ACCEL_MAX)
+      lead_accel = np.clip(4*follow_distance_cost_signed, ACCEL_MIN, ACCEL_MAX)
       lead_accel = smooth_value(lead_accel, self.output_a_target, 0.5)
 
       out_accels[key] = (lead_accel, False)
@@ -1164,7 +1164,7 @@ class LongitudinalPlanner:
     output_a_target = np.min([x for x, _ in out_accels.values()])
     output_a_target *= self.a_desired_mul #これに掛けていいの？
     self.output_should_stop = np.all([x for _, x in out_accels.values()])
-    self.output_a_target = np.clip(output_a_target, accel_clip[0], accel_clip[1]) 
+    self.output_a_target = np.clip(output_a_target, accel_clip[0], accel_clip[1])
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
