@@ -87,10 +87,8 @@ MIN_ALLOW_THROTTLE_SPEED = 2.5
 
 #FCW_IDXS = ModelConstants.T_IDXS < 5.0
 #T_DIFFS = np.diff(T_IDXS, prepend=[0.])
-#COMFORT_BRAKE = 2.5
-COMFORT_BRAKE = 3.0 #安心？
-#STOP_DISTANCE = 6.0
-STOP_DISTANCE = 4.5
+COMFORT_BRAKE = 2.5
+STOP_DISTANCE = 6.0
 
 
 # Lookup table for turns
@@ -1134,7 +1132,7 @@ class LongitudinalPlanner:
 
     follow_distance_error = true_follow_distance - desired_follow_distance
     follow_distance_cost_signed = (follow_distance_error / (v_ego + 1))**2 * np.sign(follow_distance_error)
-    lead_accel = np.clip(3*follow_distance_cost_signed, -3.5, 2.0)
+    lead_accel = np.clip(2*follow_distance_cost_signed, -3.5, 2.0)
     lead_accel = smooth_value(lead_accel, self.output_a_target, 0.5)
 
     out_accels['lead'] = (lead_accel, False)
