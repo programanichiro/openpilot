@@ -5,6 +5,7 @@ import numpy as np
 from openpilot.common.params import Params
 from cereal import log
 
+from cereal import log
 import cereal.messaging as messaging
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
 from openpilot.common.constants import CV
@@ -12,11 +13,10 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
-from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
-from openpilot.common.swaglog import cloudlog
+#from openpilot.common.swaglog import cloudlog
+from openpilot.selfdrive.controls.radard import _LEAD_ACCEL_TAU
+from openpilot.selfdrive.controls.lib.drive_helpers import smooth_value
 
 from opendbc.car.toyota.values import TSS2_CAR,ToyotaFlags
 TRAJECTORY_SIZE = 33
@@ -77,16 +77,60 @@ one_pedal_chenge_restrict_time = 0
 START_DASH_CUT    = [0, 27/3.6, 35/3.6, 43/3.6, 51/3.6, 60/3.6, 69/3.6, 78/3.6, 86/3.6,  95/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
 
-LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
-CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
+A_CRUISE_MIN_VALS = [-1.2,]
+A_CRUISE_MIN_BP = [0., ]
+
 ALLOW_THROTTLE_THRESHOLD = 0.4
 MIN_ALLOW_THROTTLE_SPEED = 2.5
+
+#FCW_IDXS = ModelConstants.T_IDXS < 5.0
+#T_DIFFS = np.diff(T_IDXS, prepend=[0.])
+COMFORT_BRAKE = 2.5
+STOP_DISTANCE = 6.0
+
 
 # Lookup table for turns
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
+
+T_IDXS = np.array(ModelConstants.T_IDXS)
+FCW_IDXS = T_IDXS < 5.0
+T_DIFFS = np.diff(T_IDXS, prepend=[0.])
+
+
+def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
+  if personality==log.LongitudinalPersonality.relaxed:
+    return 1.0
+  elif personality==log.LongitudinalPersonality.standard:
+    return 1.0
+  elif personality==log.LongitudinalPersonality.aggressive:
+    return 0.5
+  else:
+    raise NotImplementedError("Longitudinal personality not supported")
+
+
+def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
+  if personality==log.LongitudinalPersonality.relaxed:
+    return 1.75
+  elif personality==log.LongitudinalPersonality.standard:
+    return 1.45
+  elif personality==log.LongitudinalPersonality.aggressive:
+    return 1.25
+  else:
+    raise NotImplementedError("Longitudinal personality not supported")
+
+def get_stopped_equivalence_factor(v_lead):
+  return (v_lead**2) / (2 * COMFORT_BRAKE)
+
+def get_safe_obstacle_distance(v_ego, t_follow):
+  return (v_ego**2) / (2 * COMFORT_BRAKE) + t_follow * v_ego + STOP_DISTANCE
+
+def get_desired_follow_distance(v_ego, v_lead, t_follow=None):
+  if t_follow is None:
+    t_follow = get_T_FOLLOW()
+  return get_safe_obstacle_distance(v_ego, t_follow) - get_stopped_equivalence_factor(v_lead)
 
 
 def get_max_accel(v_ego):
@@ -95,6 +139,34 @@ def get_max_accel(v_ego):
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
 
+def extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau):
+  a_lead_traj = a_lead * np.exp(-a_lead_tau * (T_IDXS**2)/2.)
+  v_lead_traj = np.clip(v_lead + np.cumsum(T_DIFFS * a_lead_traj), 0.0, 1e8)
+  x_lead_traj = x_lead + np.cumsum(T_DIFFS * v_lead_traj)
+  lead_xv = np.column_stack((x_lead_traj, v_lead_traj))
+  return lead_xv
+
+def process_lead(v_ego, lead):
+  if lead is not None and lead.status:
+    x_lead = lead.dRel
+    v_lead = lead.vLead
+    a_lead = lead.aLeadK
+    a_lead_tau = lead.aLeadTau
+  else:
+    # Fake a fast lead car, so mpc can keep running in the same mode
+    x_lead = 50.0
+    v_lead = v_ego + 10.0
+    a_lead = 0.0
+    a_lead_tau = _LEAD_ACCEL_TAU
+
+  # MPC will not converge if immediate crash is expected
+  # Clip lead distance to what is still possible to brake for
+  min_x_lead = ((v_ego + v_lead)/2) * (v_ego - v_lead) / (-ACCEL_MIN * 2)
+  x_lead = np.clip(x_lead, min_x_lead, 1e8)
+  v_lead = np.clip(v_lead, 0.0, 1e8)
+  a_lead = np.clip(a_lead, -10., 5.)
+  lead_xv = extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
+  return lead_xv
 
 def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
   """
@@ -113,22 +185,16 @@ def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
 class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
-    self.mpc = LongitudinalMpc(dt=dt)
     # TODO remove mpc modes when TR released
-    self.mpc.mode = 'acc'
     self.fcw = False
     self.dt = dt
     self.allow_throttle = True
 
     self.a_desired = init_a
     self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
-    self.prev_accel_clip = [ACCEL_MIN, ACCEL_MAX]
     self.output_a_target = 0.0
     self.output_should_stop = False
 
-    self.v_desired_trajectory = np.zeros(CONTROL_N)
-    self.a_desired_trajectory = np.zeros(CONTROL_N)
-    self.j_desired_trajectory = np.zeros(CONTROL_N)
     self.solverExecutionTime = 0.0
 
     self.red_signals = np.zeros(10)
@@ -169,23 +235,11 @@ class LongitudinalPlanner:
 
   @staticmethod
   def parse_model(model_msg):
-    if (len(model_msg.position.x) == ModelConstants.IDX_N and
-      len(model_msg.velocity.x) == ModelConstants.IDX_N and
-      len(model_msg.acceleration.x) == ModelConstants.IDX_N):
-      x = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.position.x)
-      v = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.velocity.x)
-      a = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.acceleration.x)
-      j = np.zeros(len(T_IDXS_MPC))
-    else:
-      x = np.zeros(len(T_IDXS_MPC))
-      v = np.zeros(len(T_IDXS_MPC))
-      a = np.zeros(len(T_IDXS_MPC))
-      j = np.zeros(len(T_IDXS_MPC))
     if len(model_msg.meta.disengagePredictions.gasPressProbs) > 1:
       throttle_prob = model_msg.meta.disengagePredictions.gasPressProbs[1]
     else:
       throttle_prob = 1.0
-    return x, v, a, j, throttle_prob
+    return throttle_prob
 
   def update(self, sm):
     mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
@@ -931,7 +985,7 @@ class LongitudinalPlanner:
     reset_state = reset_state or not v_cruise_initialized
 
     # No change cost when user is controlling the speed, or when standstill
-    prev_accel_constraint = not (reset_state or sm['carState'].standstill)
+    #prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
     if mode == 'acc':
       accel_clip = [ACCEL_MIN, get_max_accel(v_ego)]
@@ -943,7 +997,7 @@ class LongitudinalPlanner:
     if reset_state:
       self.v_desired_filter.x = v_ego
       # Clip aEgo to cruise limits to prevent large accelerations when becoming active
-      self.a_desired = np.clip(sm['carState'].aEgo, accel_clip[0], accel_clip[1])
+      self.output_a_target = np.clip(sm['carState'].aEgo, accel_clip[0], accel_clip[1])
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
@@ -953,7 +1007,7 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
     if tss_type < 2 and self.v_desired_filter.x > v_117 / 3.6:
       self.v_desired_filter.x = v_117 / 3.6
-    x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'])
+    throttle_prob = self.parse_model(sm['modelV2'])
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
 
@@ -1034,52 +1088,63 @@ class LongitudinalPlanner:
     v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
-    self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
-    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
-    # with open('/tmp/debug_out_v','w') as fp:
-    #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,force_slow_decel))
-
-    self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
-    self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
-    self.j_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC[:-1], self.mpc.j_solution)
 
     # TODO counter is only needed because radar is glitchy, remove once radar is gone
-    self.fcw = self.mpc.crash_cnt > 2 and not sm['carState'].standstill
-    if self.fcw:
-      cloudlog.info("FCW triggered")
+    #self.fcw = self.mpc.crash_cnt > 2 and not sm['carState'].standstill
+    #if self.fcw:
+    #  cloudlog.info("FCW triggered")
 
     # Interpolate 0.05 seconds and save as starting point for next iteration
-    a_prev = self.a_desired
-    self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
-    self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
+    #a_prev = self.a_desired
+    #self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
+    #self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
-    #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
-    if g_tss_type < 2:
-      v_desired_trajectory_min = np.minimum(v_cruise_car_limit, v_117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
-    else:
-      v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
-    self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
-    # if v_cruise2 > v_desired_trajectory_min: #加速禁止
-    #   self.a_desired_trajectory = np.minimum(self.a_desired_trajectory, 0)
+    #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。→v_desired_trajectoryが無くなった。
+    # if g_tss_type < 2:
+    #   v_desired_trajectory_min = np.minimum(v_cruise_car_limit, v_117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
+    # else:
+    #   v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
+    # self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
+    #self.a_desired_mulの影響を与える場所がなくなる
+    #action_t =  self.CP.longitudinalActuatorDelay + DT_MDL
+    out_accels = {}
+    cruise_min = np.interp(v_ego, A_CRUISE_MIN_BP, A_CRUISE_MIN_VALS)
+    cruise_max = np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
+    cruise_accel = 0.5*(v_cruise - v_ego)
+    cruise_accel = np.clip(cruise_accel, cruise_min, cruise_max)
+    cruise_accel = smooth_value(cruise_accel, self.output_a_target, 1.0)
+    out_accels['cruise'] = (cruise_accel, False)
 
-    action_t =  self.CP.longitudinalActuatorDelay + DT_MDL
-    output_a_target_mpc, output_should_stop_mpc = get_accel_from_plan(self.v_desired_trajectory, self.a_desired_trajectory, CONTROL_N_T_IDX,
-                                                                        action_t=action_t, vEgoStopping=self.CP.vEgoStopping)
-    output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
-    output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    if mode == 'acc':
-      output_a_target = output_a_target_mpc
-      self.output_should_stop = output_should_stop_mpc
-    else:
-      output_a_target = min(output_a_target_mpc, output_a_target_e2e)
-      self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
 
-    for idx in range(2):
-      accel_clip[idx] = np.clip(accel_clip[idx], self.prev_accel_clip[idx] - 0.05, self.prev_accel_clip[idx] + 0.05)
+    lead_xv_0 = process_lead(v_ego, sm['radarState'].leadOne)
+    #lead_xv_1 = process_lead(v_ego, sm['radarState'].leadTwo)
+
+
+    ## To estimate a safe distance from a moving lead, we calculate how much stopping
+    ## distance that lead needs as a minimum. We can add that to the current distance
+    ## and then treat that as a stopped car/obstacle at this new distance.
+    #lead_0_obstacle = lead_xv_0[:,0] + get_stopped_equivalence_factor(lead_xv_0[:,1])
+    #lead_1_obstacle = lead_xv_1[:,0] + get_stopped_equivalence_factor(lead_xv_1[:,1])
+
+    desired_follow_distance = get_desired_follow_distance(v_ego, lead_xv_0[0,1], get_T_FOLLOW(sm['selfdriveState'].personality))
+    true_follow_distance = lead_xv_0[0,0]
+
+    follow_distance_error = true_follow_distance - desired_follow_distance
+    follow_distance_cost_signed = (follow_distance_error / (v_ego + 1))**2 * np.sign(follow_distance_error)
+    lead_accel = np.clip(2*follow_distance_cost_signed, -3.5, 2.0)
+    lead_accel = smooth_value(lead_accel, self.output_a_target, 0.5)
+
+    out_accels['lead'] = (lead_accel, False)
+
+
+    if mode == 'blended':
+      out_accels['model']= (sm['modelV2'].action.desiredAcceleration, sm['modelV2'].action.shouldStop)
+
+    output_a_target = np.min([x for x, _ in out_accels.values()])
+    output_a_target *= self.a_desired_mul #これに掛けていいの？
+    self.output_should_stop = np.all([x for _, x in out_accels.values()])
     self.output_a_target = np.clip(output_a_target, accel_clip[0], accel_clip[1])
-    self.prev_accel_clip = accel_clip
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
@@ -1088,15 +1153,9 @@ class LongitudinalPlanner:
 
     longitudinalPlan = plan_send.longitudinalPlan
     longitudinalPlan.modelMonoTime = sm.logMonoTime['modelV2']
-    longitudinalPlan.processingDelay = (plan_send.logMonoTime / 1e9) - sm.logMonoTime['modelV2']
-    longitudinalPlan.solverExecutionTime = self.mpc.solve_time
-
-    longitudinalPlan.speeds = self.v_desired_trajectory.tolist()
-    longitudinalPlan.accels = self.a_desired_trajectory.tolist()
-    longitudinalPlan.jerks = self.j_desired_trajectory.tolist()
 
     longitudinalPlan.hasLead = sm['radarState'].leadOne.status
-    longitudinalPlan.longitudinalPlanSource = self.mpc.source
+    #longitudinalPlan.longitudinalPlanSource = self.mpc.source
     longitudinalPlan.fcw = self.fcw
 
     longitudinalPlan.aTarget = float(self.output_a_target)
