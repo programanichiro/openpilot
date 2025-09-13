@@ -1131,7 +1131,7 @@ class LongitudinalPlanner:
     true_follow_distance = lead_xv_0[0,0]
 
     follow_distance_error = true_follow_distance - desired_follow_distance
-    follow_distance_cost_signed = (follow_distance_error / (v_ego + 1))**2 * np.sign(follow_distance_error)
+    follow_distance_cost_signed = (follow_distance_error / (v_ego + 1))**1 * np.sign(follow_distance_error)
     lead_accel = np.clip(2*follow_distance_cost_signed, -3.5, 2.0)
     lead_accel = smooth_value(lead_accel, self.output_a_target, 0.5)
 
