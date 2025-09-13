@@ -88,9 +88,9 @@ MIN_ALLOW_THROTTLE_SPEED = 2.5
 #FCW_IDXS = ModelConstants.T_IDXS < 5.0
 #T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 #COMFORT_BRAKE = 2.5
-COMFORT_BRAKE = 3.5 #安心？
+COMFORT_BRAKE = 3.0 #安心？
 #STOP_DISTANCE = 6.0
-STOP_DISTANCE = 4.0
+STOP_DISTANCE = 4.5
 
 
 # Lookup table for turns
