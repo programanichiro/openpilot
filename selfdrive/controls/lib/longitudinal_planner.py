@@ -257,7 +257,7 @@ class LongitudinalPlanner:
           fp.write('%d' % (1))
     else:
       tss_type = 2
-      min_acc_speed = 30
+      min_acc_speed = 26
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
           fp.write('%d' % (2))
@@ -604,8 +604,8 @@ class LongitudinalPlanner:
             fp.write('%d' % (1)) #MAXを1に戻すのでprompt.wavを鳴らす。
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = 1.0 / 3.6
-    if vk_ego > 3/3.6 and vk_ego <= 30/3.6:
-      force_low_engage_set = False #MAX!=1でタッチすると低速(スピードが3〜30km/h)でエンゲージ。
+    if vk_ego > 3/3.6 and vk_ego < min_acc_speed/3.6:
+      force_low_engage_set = False #MAX!=1でタッチすると低速(スピードが3〜31(min_acc_speed)km/h未満)でエンゲージ。
       try:
         with open('/dev/shm/force_low_engage.txt','r') as fp:
           force_low_engage_str = fp.read()
@@ -623,7 +623,7 @@ class LongitudinalPlanner:
           fp.write('%d' % (0))
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
-    if vk_ego > 3/3.6 and vk_ego <= 30/3.6 and sm['carState'].gasPressed and sm['selfdriveState'].enabled: #oneペダル操作中にアクセル踏みながら30km/h以下の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
+    if vk_ego > 3/3.6 and vk_ego < min_acc_speed/3.6 and sm['carState'].gasPressed and sm['selfdriveState'].enabled: #oneペダル操作中にアクセル踏みながら31(min_acc_speed)km/h未満の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
       if before_v_cruise_kph_max_1 <= 37 and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = vk_ego
@@ -853,7 +853,7 @@ class LongitudinalPlanner:
               fp.write('%d;' % (vo))
             elif limitspeed_set == True:
               #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
-              if add_v_by_lead == False and (tss_type >= 2 or vo < 115.0) and vo >= 30:
+              if add_v_by_lead == False and (tss_type >= 2 or vo < 115.0) and vo > min_acc_speed:
                 vo = int(vo / 5) * 5
               fp.write(';%d' % (vo))
             else:
@@ -1027,7 +1027,7 @@ class LongitudinalPlanner:
         self.a_desired_mul = np.interp(vk_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
     self.a_desired_mul *= creep_a_mul #クリープダッシュを緩和してみる。
-    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise >= 30 / 3.6:
+    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise > min_acc_speed / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     # v_cruise2 = v_cruise
