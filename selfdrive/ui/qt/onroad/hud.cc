@@ -300,7 +300,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     bool yellow_flag = false;
     if(Limit_speed_mode == 2){
       p.setBrush(QColor::fromRgbF(0.4, 0.0, 0, 1.0));
-      if(ms.toDouble() >= 30){
+      if(ms.toDouble() >= 30){ //まあここはTSS2の26は考慮しないでいいか。
         db_rec_mode = true;
       }
       yellow_flag = true;
@@ -801,7 +801,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
     if (is_cruise_set){
       float acc_speed = maxSpeed.toFloat();
-      if(acc_speed > 0 && (acc_speed < 31.0 || (acc_speed > 109.0 && tss_type <= 1)) ) {
+      if(acc_speed > 0 && (acc_speed < (tss_type <= 1 ? 31.0 : 26.0) || (acc_speed > 109.0 && tss_type <= 1)) ) {
         a0 = 200;
       }
     }
