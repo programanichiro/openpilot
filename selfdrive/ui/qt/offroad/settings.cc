@@ -83,6 +83,13 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       false,
     },
     {
+      "DisableMaxSpeedModify",
+      tr("Use the vehicle ACC with TSSP over 115 km/h"),
+      tr("ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it."),
+      "../assets/icons/calibration.png",
+      true,
+    },
+    {
       "ForceHybridVehicle",
       tr("Force recognition as a hybrid vehicle"),
       tr("Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash."),

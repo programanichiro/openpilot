@@ -1072,6 +1072,14 @@ Firehoseモードを有効にすると学習データを最大限アップロー
         <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
     </message>
     <message>
+        <source>Use the vehicle ACC with TSSP over 115 km/h</source>
+        <translation>TSSP115キロ超の車体ACCを使用する</translation>
+    </message>
+    <message>
+        <source>ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it.</source>
+        <translation>115キロを超えるACC速度を車体から直に取得します。TSSP 2019 PHV ユーザーは有効化してください。</translation>
+    </message>
+    <message>
         <source>Force recognition as a hybrid vehicle</source>
         <translation>ハイブリッド車として強制認識</translation>
     </message>

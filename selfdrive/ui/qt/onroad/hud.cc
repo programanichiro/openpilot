@@ -10,6 +10,7 @@
 extern bool global_engageable;
 extern float vc_speed;
 extern int tss_type;
+bool phv_2019 = false;
 extern float maxspeed_org;
 extern std::string road_info_txt;
 extern bool g_rightHandDM;
@@ -47,16 +48,22 @@ void HudRenderer::updateState(const UIState &s) {
         tss_type = 2;
       } else if ( tss_type_txt == "1" ){
         tss_type = 1;
+        //phv_2019 = true;
+        phv_2019 = Params().getBool("DisableMaxSpeedModify");
       }
     }
   }
   if(PI0_DEBUG == false && tss_type <= 1){
     //これまでと互換。tss_type_infoがなければTSSP。ここの計算はcruise_info.txtの内容で上書きされる。できればここでの計算は無しにしたい。
     v_cruise = v_cruise < (55 - 4) ? (55 - (55 - (v_cruise+4)) * 2 - 4) : v_cruise;
-  //v_cruise = v_cruise > (110 - 6) ? (110 + ((v_cruise+6) - 110) * 3 - 6) : v_cruise; //最大119
-  //v_cruise = v_cruise > (107 - 6) ? (107 + ((v_cruise+6) - 107) * 2 - 6) : v_cruise; //最大119 -> 114 -> 117に。
-  //v_cruise = v_cruise > (106 - 6) ? (106 + ((v_cruise+6) - 106) * 2 - 6) : v_cruise; //最大118に。255->410
-    v_cruise = v_cruise > (109 - 6) ? (109 + ((v_cruise+6) - 109) * 2 - 6) : v_cruise; //最大115に。255->407
+    if(phv_2019 == false){
+    //v_cruise = v_cruise > (110 - 6) ? (110 + ((v_cruise+6) - 110) * 3 - 6) : v_cruise; //最大119
+    //v_cruise = v_cruise > (107 - 6) ? (107 + ((v_cruise+6) - 107) * 2 - 6) : v_cruise; //最大119 -> 114 -> 117に。
+    //v_cruise = v_cruise > (106 - 6) ? (106 + ((v_cruise+6) - 106) * 2 - 6) : v_cruise; //最大118に。255->410
+      v_cruise = v_cruise > (109 - 6) ? (109 + ((v_cruise+6) - 109) * 2 - 6) : v_cruise; //最大115に。255->407
+    } else {
+      SET_SPEED_NA = 255; //PHV2019では戻す。
+    }
   } else if(PI0_DEBUG == true || tss_type == 2){
     SET_SPEED_NA = 255; //TSS2では戻す。
   }
@@ -801,7 +808,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     }
     if (is_cruise_set){
       float acc_speed = maxSpeed.toFloat();
-      if(acc_speed > 0 && (acc_speed < (tss_type <= 1 ? 31.0 : 26.0) || (acc_speed > 109.0 && tss_type <= 1)) ) {
+      if(acc_speed > 0 && (acc_speed < (tss_type <= 1 ? 31.0 : 26.0) || (acc_speed > 109.0 && phv_2019 == false && tss_type <= 1)) ) {
         a0 = 200;
       }
     }

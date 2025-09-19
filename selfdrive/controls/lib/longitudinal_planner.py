@@ -21,7 +21,7 @@ from openpilot.common.swaglog import cloudlog
 from opendbc.car.toyota.values import TSS2_CAR,ToyotaFlags
 TRAJECTORY_SIZE = 33
 params = Params()
-g_tss_type = 0
+#g_tss_type = 0
 CVS_FRAME = 0
 handle_center = 0 #STEERING_CENTER
 accel_lead_ctrl = True
@@ -88,6 +88,7 @@ MIN_ALLOW_THROTTLE_SPEED = 2.5
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
 
+phv_2019 = params.get_bool("DisableMaxSpeedModify")
 
 def get_max_accel(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
@@ -235,16 +236,17 @@ class LongitudinalPlanner:
         if (self.hasLead_1s == True or vk_ego > self.dexp_mode_max or sm['carState'].gasPressed == True) and (vk_ego <= 0.1/3.6 or vk_ego > 45/3.6 or (sm['carState'].leftBlinker == False and sm['carState'].rightBlinker == False)):
           params.put_bool("ExperimentalMode", False) # acc
 
-    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time , g_tss_type
+    global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time #, g_tss_type
     min_acc_speed = 31
     v_cruise_kph = sm['carState'].vCruise
     if self.CP.carFingerprint not in TSS2_CAR:
       tss_type = 1
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
-    # v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 3 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph #最大119
-    # v_cruise_kph = (107 + ((v_cruise_kph+6) - 107) * 2 - 6) if v_cruise_kph > (107 - 6) else v_cruise_kph #最大119 -> 114 -> 117に。
-    # v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
-      v_cruise_kph = (109 + ((v_cruise_kph+6) - 109) * 2 - 6) if v_cruise_kph > (109 - 6) else v_cruise_kph #最大115に。
+      if phv_2019 == False:
+      # v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 3 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph #最大119
+      # v_cruise_kph = (107 + ((v_cruise_kph+6) - 107) * 2 - 6) if v_cruise_kph > (107 - 6) else v_cruise_kph #最大119 -> 114 -> 117に。
+      # v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
+        v_cruise_kph = (109 + ((v_cruise_kph+6) - 109) * 2 - 6) if v_cruise_kph > (109 - 6) else v_cruise_kph #最大115に。
 
 #100,101,102,103,104,105,106,107,108,109
 #100,101,102,103,105,107,109,111,113,115 ;407 *今これ
@@ -261,7 +263,7 @@ class LongitudinalPlanner:
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
           fp.write('%d' % (2))
-    g_tss_type = tss_type
+    #g_tss_type = tss_type
     if v_cruise_kph < min_acc_speed:
       v_cruise_kph = min_acc_speed #念のため
 
@@ -853,7 +855,7 @@ class LongitudinalPlanner:
               fp.write('%d;' % (vo))
             elif limitspeed_set == True:
               #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
-              if add_v_by_lead == False and (tss_type >= 2 or vo < 115.0) and vo > min_acc_speed:
+              if add_v_by_lead == False and (tss_type >= 2 or phv_2019 or vo < 115.0) and vo > min_acc_speed:
                 vo = int(vo / 5) * 5
               fp.write(';%d' % (vo))
             else:
@@ -866,7 +868,7 @@ class LongitudinalPlanner:
     v_cruise_old = v_cruise
 
     v_117 = 116
-    if tss_type < 2 and v_cruise_kph >= 105: # TSSPで105km/h以上の設定なら
+    if tss_type < 2 and phv_2019 == False and v_cruise_kph >= 105: # TSSPで105km/h以上の設定なら
       personality = sm['selfdriveState'].personality #aggressiveで+1, relaxedで-1
       if personality==log.LongitudinalPersonality.relaxed and v_cruise_kph > 1:
         v_cruise_kph -= 1
@@ -954,7 +956,7 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
-    if tss_type < 2 and self.v_desired_filter.x > v_117 / 3.6:
+    if tss_type < 2 and phv_2019 == False and self.v_desired_filter.x > v_117 / 3.6:
       self.v_desired_filter.x = v_117 / 3.6
     x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'])
     # Don't clip at low speeds since throttle_prob doesn't account for creep
@@ -1027,12 +1029,12 @@ class LongitudinalPlanner:
         self.a_desired_mul = np.interp(vk_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
     self.a_desired_mul *= creep_a_mul #クリープダッシュを緩和してみる。
-    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or v_cruise < 115.0 / 3.6) and v_cruise > min_acc_speed / 3.6:
+    if limitspeed_set == True and (add_v_by_lead == False) and (tss_type >= 2 or phv_2019 or v_cruise < 115.0 / 3.6) and v_cruise > min_acc_speed / 3.6:
       #速度自動セットで、前走車がいないときは速度を5キロ刻みで安定させる
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     # v_cruise2 = v_cruise
 
-    v_cruise = v_cruise if (v_cruise < v_117/3.6 or tss_type >= 2) else v_117/3.6 #TSSPではACC118を超えないようにする。
+    v_cruise = v_cruise if (v_cruise < v_117/3.6 or phv_2019 or tss_type >= 2) else v_117/3.6 #TSSPではACC118を超えないようにする。
     v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
     v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
@@ -1058,7 +1060,7 @@ class LongitudinalPlanner:
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
-    if g_tss_type < 2:
+    if tss_type < 2 and phv_2019 == False:
       v_desired_trajectory_min = np.minimum(v_cruise_car_limit, v_117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
       v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
