@@ -100,8 +100,8 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
 #endif
     {
       "DisableMaxSpeedModify",
-      tr("TSSP 115km/h No touch"),
-      tr("Overspeed processing above ACC 115km/h will not be handled by TSSP. Users with TSSP 2019 PHV should enable it."),
+      tr("Use the vehicle ACC with TSSP over 115 km/h"),
+      tr("ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it."),
       "../assets/icons/calibration.png",
       true,
     },
