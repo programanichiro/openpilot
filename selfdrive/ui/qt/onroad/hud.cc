@@ -49,7 +49,7 @@ void HudRenderer::updateState(const UIState &s) {
       } else if ( tss_type_txt == "1" ){
         tss_type = 1;
         //phv_2019 = true;
-        phv_2019 = Params().get("DisableMaxSpeedModify");
+        phv_2019 = Params().getBool("DisableMaxSpeedModify");
       }
     }
   }
