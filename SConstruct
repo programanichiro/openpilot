@@ -93,7 +93,6 @@ if arch == "larch64":
   ]
 
   libpath = [
-    f"#third_party/ffmpeg/{arch}/lib",
     "/usr/local/lib",
     "/system/vendor/lib64",
     f"#third_party/acados/{arch}/lib",
@@ -117,9 +116,9 @@ else:
     libpath = [
       f"#third_party/libyuv/{arch}/lib",
       f"#third_party/acados/{arch}/lib",
-      f"#third_party/ffmpeg/{arch}/lib",
       f"{brew_prefix}/lib",
       f"{brew_prefix}/opt/openssl@3.0/lib",
+      f"{brew_prefix}/opt/llvm/lib/c++",
       "/System/Library/Frameworks/OpenGL.framework/Libraries",
     ]
 
@@ -134,7 +133,6 @@ else:
     libpath = [
       f"#third_party/acados/{arch}/lib",
       f"#third_party/libyuv/{arch}/lib",
-      f"#third_party/ffmpeg/{arch}/lib",
       "/usr/lib",
       "/usr/local/lib",
     ]
@@ -182,7 +180,6 @@ env = Environment(
     "#third_party/libyuv/include",
     "#third_party/json11",
     "#third_party/linux/include",
-    "#third_party/ffmpeg/include",
     "#third_party",
     "#msgq",
     "#third_party/maplibre-native-qt/include",
