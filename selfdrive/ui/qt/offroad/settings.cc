@@ -99,6 +99,13 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
     },
 #endif
     {
+      "DisableMaxSpeedModify",
+      tr("TSSP 115km/h No touch"),
+      tr("Overspeed processing above ACC 115km/h will not be handled by TSSP. Users with TSSP 2019 PHV should enable it."),
+      "../assets/offroad/calibration.png",
+      false,
+    },
+    {
       "ForceHybridVehicle",
       tr("Force recognition as a hybrid vehicle"),
       tr("Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash."),

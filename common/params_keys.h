@@ -86,6 +86,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"LongitudinalPersonality", {PERSISTENT, INT, std::to_string(static_cast<int>(cereal::LongitudinalPersonality::STANDARD))}},
     {"AccelMethodSwitch", {PERSISTENT, BOOL}},
     {"GpsAlwaysSwitch", {PERSISTENT, BOOL}},
+    {"DisableMaxSpeedModify", {PERSISTENT, BOOL}},
     {"ForceHybridVehicle", {PERSISTENT, BOOL}},
     {"IgnoreRerouteHarness", {PERSISTENT, BOOL}},
     {"NavDestination", {CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION, STRING}},
