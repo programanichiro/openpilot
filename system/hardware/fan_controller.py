@@ -99,7 +99,7 @@ class TiciFanController(BaseFanController):
     self.db_none = 0
     self.db_del = 0
     self.min_distance_old = 0
-    self.tss_type = 0
+    #self.tss_type = 0
 
     # # カーソルと接続を閉じる
     # self.cur.close()
@@ -404,17 +404,17 @@ class TiciFanController(BaseFanController):
 
     self.last_ignition = ignition
 
-    if self.tss_type == 0:
-      try:
-        with open('../../../tss_type_info.txt','r') as fp:
-          tss_type_str = fp.read()
-          if tss_type_str:
-            if int(tss_type_str) == 2: #TSS2
-              self.tss_type = 2
-            elif int(tss_type_str) == 1: #TSSP
-              self.tss_type = 1
-      except Exception as e:
-        pass
+    # if self.tss_type == 0:
+    #   try:
+    #     with open('../../../tss_type_info.txt','r') as fp:
+    #       tss_type_str = fp.read()
+    #       if tss_type_str:
+    #         if int(tss_type_str) == 2: #TSS2
+    #           self.tss_type = 2
+    #         elif int(tss_type_str) == 1: #TSSP
+    #           self.tss_type = 1
+    #   except Exception as e:
+    #     pass
 
     rec_mode = False
     rec_speed = 0
@@ -447,8 +447,8 @@ class TiciFanController(BaseFanController):
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
           if rec_mode == True and rec_speed >= 30 and self.velocity >= limitspeed_min:
             self.velocity = rec_speed
-          if self.tss_type < 2 and self.velocity > 119:
-            self.velocity = 119 #TSSPでは最高119(メーター125)km/h
+          # if self.tss_type < 2 and self.velocity > 119:
+          #   self.velocity = 119 #TSSPでは最高119(メーター125)km/h ->やらなくていい？
           limit_m = self.velocity/3.6
           if limit_m < 10:
             limit_m = 10 #10m以内の範囲には登録しない。
@@ -515,7 +515,7 @@ class TiciFanController(BaseFanController):
         velo_ave_ct = 0
         self.min_distance_old = 0
 
-        if self.velocity < 110 or self.tss_type == 2: #TSSPで120km/h高速対応にするため、こちらは110超では通さない。,TSS2なら使って良い。
+        if True: #self.velocity < 110 or self.tss_type == 2: #TSSPで120km/h高速対応にするため、こちらは110超では通さない。,TSS2なら使って良い。
           velo_70 = (velo_max - limitspeed_min) * 0.7 + limitspeed_min #まず70〜90を検査する。
           velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
           for row in rows: #rowsは何度でも使える。
