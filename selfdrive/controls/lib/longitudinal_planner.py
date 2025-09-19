@@ -88,6 +88,7 @@ MIN_ALLOW_THROTTLE_SPEED = 2.5
 _A_TOTAL_MAX_V = [1.7, 3.2]
 _A_TOTAL_MAX_BP = [20., 40.]
 
+phv_2019 = params.get_bool("DisableMaxSpeedModify")
 
 def get_max_accel(v_ego):
   return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
@@ -238,7 +239,6 @@ class LongitudinalPlanner:
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time #, g_tss_type
     min_acc_speed = 31
     v_cruise_kph = sm['carState'].vCruise
-    phv_2019 = False
     if self.CP.carFingerprint not in TSS2_CAR:
       tss_type = 1
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
