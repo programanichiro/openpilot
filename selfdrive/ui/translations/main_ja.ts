@@ -161,6 +161,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>仕事</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>目的地が設定されていません</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>%1の地点が設定されていません</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>ホーム</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>仕事</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -417,6 +444,62 @@ Firehoseモードを有効にすると学習データを最大限アップロー
             <numerusform>%n文字以上にして下さい！</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Auto door lock by speed</source>
+        <translation>車速ドアロック</translation>
+    </message>
+    <message>
+        <source>Vehicle weight</source>
+        <translation>車両重量</translation>
+    </message>
+</context>
+<context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>インストール中...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>到着予定</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>分</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>時間</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>カーナビ</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>connect.comma.aiで設定</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>マップ読み込み中</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>GPS信号を探索中</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>経路を検索中</translation>
+    </message>
 </context>
 <context>
     <name>MultiOptionDialog</name>
@@ -515,6 +598,10 @@ Firehoseモードを有効にすると学習データを最大限アップロー
         <source> ALERT</source>
         <translation> 警告</translation>
     </message>
+    <message>
+        <source>Power Off</source>
+        <translation>パワーオフ</translation>
+    </message>
 </context>
 <context>
     <name>OnroadAlerts</name>
@@ -537,6 +624,14 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     <message>
         <source>System Unresponsive</source>
         <translation>システムが応答しません</translation>
+    </message>
+    <message>
+        <source>Press Resume to Exit Standstill</source>
+        <translation>停車中です。アクセルで発進</translation>
+    </message>
+    <message>
+        <source>Release Brake to Engage</source>
+        <translation>ブレーキを踏んでいます</translation>
     </message>
 </context>
 <context>
@@ -596,6 +691,10 @@ Firehoseモードを有効にすると学習データを最大限アップロー
         <translation>24時間365日のLTE接続</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>カーナビ機能</translation>
+    </message>
+    <message>
         <source>1 year of drive storage</source>
         <translation>1年間分のドライブストレージ</translation>
     </message>
@@ -638,6 +737,22 @@ Firehoseモードを有効にすると学習データを最大限アップロー
         <translation>
             <numerusform>%n日前</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>km</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>m</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>mi</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>ft</translation>
     </message>
     <message>
         <source>now</source>
@@ -763,6 +878,10 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     <message>
         <source>5G</source>
         <translation>5G</translation>
+    </message>
+    <message>
+        <source>EXPLORE</source>
+        <translation>探索中</translation>
     </message>
 </context>
 <context>
@@ -944,6 +1063,22 @@ Firehoseモードを有効にすると学習データを最大限アップロー
         <translation>この機能を有効化すると、openpilotを利用中にアクセルを踏むとopenpilotによる運転サポートを中断します。</translation>
     </message>
     <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>24時間表示</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>AM/PM の代わりに24時間形式を使用します</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>画面の左側にマップを表示</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>分割画面表示の際、ディスプレイの左側にマップを表示します。</translation>
+    </message>
+    <message>
         <source>Experimental Mode</source>
         <translation>Experimentalモード</translation>
     </message>
@@ -1010,6 +1145,78 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>openpilotが作動していない場合でも運転者モニタリングを有効にする。</translation>
+    </message>
+    <message>
+        <source>Accel Method</source>
+        <translation>アクセル制御セレクト</translation>
+    </message>
+    <message>
+        <source>Switch Accel Method to Official version or recommendation. A reboot is required.</source>
+        <translation>アクセル制御を推奨の手法と公式から選択します。再起動が必要です。TSSPでは推奨を選択してください。</translation>
+    </message>
+    <message>
+        <source>Recommend</source>
+        <translation>推奨</translation>
+    </message>
+    <message>
+        <source>Official</source>
+        <translation>公式</translation>
+    </message>
+    <message>
+        <source>Auto door lock by speed</source>
+        <translation>車速ドアロック</translation>
+    </message>
+    <message>
+        <source>Enter Lock speed (km/h). 0 = default. Reset if changed.</source>
+        <translation>ドアロックする速度をkm/hで指定(0で解除)。変更で要リセットです。</translation>
+    </message>
+    <message>
+        <source>Vehicle weight</source>
+        <translation>車両重量</translation>
+    </message>
+    <message>
+        <source>Enter Vehicle weight (kg). 0 = default. Reset if changed.</source>
+        <translation>車両重量をkgで指定します(0で解除)。変更で要リセットです。</translation>
+    </message>
+    <message>
+        <source>Always receive GPS signals</source>
+        <translation>GPS信号の常時受信</translation>
+    </message>
+    <message>
+        <source>GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.</source>
+        <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
+    </message>
+    <message>
+        <source>Use the vehicle ACC with TSSP over 115 km/h</source>
+        <translation>TSSP115キロ超の車体ACCを使用する</translation>
+    </message>
+    <message>
+        <source>ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it.</source>
+        <translation>115キロを超えるACC速度を車体から直に取得します。TSSP 2019 PHV ユーザーは有効化してください。</translation>
+    </message>
+    <message>
+        <source>Force recognition as a hybrid vehicle</source>
+        <translation>ハイブリッド車として強制認識</translation>
+    </message>
+    <message>
+        <source>Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash.</source>
+        <translation>ハイブリッド車なのにガス車として認識する場合はこのスイッチをオンにして下さい。ガス車でONにするとクラッシュします。</translation>
+    </message>
+    <message>
+        <source>Ignore DSU bypass harness for TSSP</source>
+        <translation>TSSP車のリルートハーネス制御を無効化</translation>
+    </message>
+    <message>
+        <source>Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed.</source>
+        <translation>DSU bypass harnessもsmartDSUもつけていない車でCANエラーが出るのを修正します。</translation>
+    </message>
+    <message>
+        <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
+        <translation>openpilotシステムを使用してアダプティブクルーズコントロールおよび車線維持支援を行います。システム使用中は常にドライバーが事故を起こさないように注意を払ってください。</translation>
+    </message>
+    <message>
+        <source> Changing this setting will restart openpilot if the car is powered on.</source>
+        <translation>この設定を変更すると車の電源が入っている場合はopenpilotが再起動します。</translation>
     </message>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>
