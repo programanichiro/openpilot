@@ -1531,12 +1531,12 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
 
   std::string limitspeed_data_txt = util::read_file("/dev/shm/limitspeed_data.txt");
   if(limitspeed_data_txt.empty() == false){
-    float output[3]; // float型の配列
+    float output[4]; // float型の配列
     int i = 0; // インデックス
 
     std::stringstream ss(limitspeed_data_txt); // 入力文字列をstringstreamに変換
     std::string token; // 一時的にトークンを格納する変数
-    while (std::getline(ss, token, ',') && i < 3) { // カンマで分割し、一つずつ処理する
+    while (std::getline(ss, token, ',') && i < 4) { // カンマで分割し、一つずつ処理する
       output[i] = std::stof(token); // 分割された文字列をfloat型に変換して配列に格納
       i++; // インデックスを1つ進める
     }
@@ -1548,6 +1548,12 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
     } else {
       speed->setText(QString::number(limit_speed_num));
       limit_speed_auto_detect = 1;
+    }
+    if((int)output[3] != 9999){
+      //sql_bearing取得、0〜360度の走行記録由来の進行方向。
+      if(road_info_txt_flag == false){
+        road_info_baering = (int)output[3]; //道情報の通信がない時、走行記録の仮想道路角度を車の進行方向とする。
+      }
     }
   }
 #if 0

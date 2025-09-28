@@ -963,6 +963,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
           limit_speed_num = (int)output[0];
           limit_speed_auto_detect = 1;
         }
+        //ここではoutput[3](sql_bearing)までは要らないので取得していない。
       }
     }
 
