@@ -469,6 +469,7 @@ class TiciFanController(BaseFanController):
       pass
     #speedsから距離と方位が近いデータを100個読み、100m以内で速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
     get_limitspeed = 0
+    sql_bearing = 9999 #SQLからの角度取得は無効
     if limitspeed_info_ok or (self.latitude != 0 or self.longitude != 0):
       #self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp
       query = '''
@@ -525,6 +526,7 @@ class TiciFanController(BaseFanController):
               velo_ave += velocity
               distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
               if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
+                sql_bearing = bearing #limitspeed_info.txt由来で、0〜360度の小数値のはず。
                 self.min_distance_old = distance #最も近い距離のポイント
 
         del_speed_max = 0
@@ -618,13 +620,13 @@ class TiciFanController(BaseFanController):
       if get_limitspeed < self.min_road_v_kph:
         get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
       with open('/dev/shm/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
+        fp.write('%d,%.2f,999,%.2f,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , sql_bearing , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
     elif self.min_road_v_kph > 0:
       with open('/dev/shm/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,999,%d,%.1fm,=%d,-%d' % (int(self.min_road_v_kph/10) * 10 , self.min_road_v_kph , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
+        fp.write('%d,%.2f,999,%.2f,%d,%.1fm,=%d,-%d' % (int(self.min_road_v_kph/10) * 10 , self.min_road_v_kph , sql_bearing , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
     else:
       with open('/dev/shm/limitspeed_data.txt','w') as fp:
-        fp.write('%d,%.2f,111,%d,%.1fm,=%d,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
+        fp.write('%d,%.2f,111,%.2f,%d,%.1fm,=%d,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , sql_bearing , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
 
     # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
     # # 変更を保存
