@@ -23,6 +23,7 @@
 
 extern bool road_info_txt_flag;
 extern int road_info_baering;
+bool road_info_sql_flag;
 
 const int INTERACTION_TIMEOUT = 100;
 #if 0
@@ -397,7 +398,7 @@ void MapWindow::updateState(const UIState &s) {
     double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
     //auto locationd_orientation = locationd_location.getCalibratedOrientationNED(); //bearing
     double locationd_orientation = gps_output[2]; //bearing
-    if(road_info_txt_flag == true){
+    if(road_info_txt_flag == true || road_info_sql_flag == true){
       int d_ang = road_info_baering - (int)locationd_orientation;
       //-180〜d_ang〜180
       if(d_ang > 360){
@@ -1552,9 +1553,14 @@ void MapLimitspeed::updateLimitspeed(int map_width) {
     if((int)output[3] != 9999){
       //sql_bearing取得、0〜360度の走行記録由来の進行方向。
       if(road_info_txt_flag == false){
+        road_info_sql_flag = true;
         road_info_baering = (int)output[3]; //道情報の通信がない時、走行記録の仮想道路角度を車の進行方向とする。
       }
+    } else {
+        road_info_sql_flag = false;
     }
+  } else {
+    road_info_sql_flag = false;
   }
 #if 0
   std::string stand_still_txt = util::read_file("/dev/shm/stand_still.txt");
