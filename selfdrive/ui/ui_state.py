@@ -9,8 +9,8 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.params import Params, UnknownKeyName
 from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.ui.lib.prime_state import PrimeState
-from openpilot.system.hardware import HARDWARE
 from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.hardware import HARDWARE
 
 UI_BORDER_SIZE = 30
 BACKLIGHT_OFFROAD = 50
@@ -50,6 +50,7 @@ class UIState:
         "managerState",
         "selfdriveState",
         "longitudinalPlan",
+        "rawAudioData",
       ]
     )
 
@@ -189,7 +190,6 @@ class Device:
 
       clipped_brightness = float(np.clip(100 * clipped_brightness, 10, 100))
 
-    self._brightness_filter.update_dt(1 / gui_app.target_fps)
     brightness = round(self._brightness_filter.update(clipped_brightness))
     if not self._awake:
       brightness = 0
