@@ -79,25 +79,11 @@ git fetch --depth 1 origin __nightly
 
 # git checkout __nightly
 git reset --hard origin/__nightly
-git clean -xdff
+#git clean -xdff
 #git lfs uninstall
 
-# remove everything except .git
-echo "[-] erasing old openpilot T=$SECONDS"
-find . -maxdepth 1 -not -path './.git' -not -name '.' -not -name '..' -exec rm -rf '{}' \;
-
-# reset source tree
-#cd $SOURCE_DIR
-#git clean -xdff
-
-# do the files copy
-#echo "[-] copying files T=$SECONDS"
-#cd $SOURCE_DIR
-##cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
-#rsync -l -R $(./release/release_files.py) $TARGET_DIR/
-
 # in the directory
-cd $TARGET_DIR
+#cd $TARGET_DIR
 rm -f panda/board/obj/panda.bin.signed
 
 # include source commit hash and build date in commit
@@ -106,7 +92,8 @@ DATETIME=$(date '+%Y-%m-%dT%H:%M:%S')
 VERSION=$(cat $SOURCE_DIR/common/version.h | awk -F\" '{print $2}')
 
 echo "[-] committing version $VERSION T=$SECONDS"
-git add -f .
+echo "Nightly branch created" > nightly.md
+git add nightly.md
 git status
 git commit -a -m "openpilot v$VERSION release-pi
 
@@ -148,4 +135,8 @@ if [ -n "$1" ]; then
 else
   echo "done!!"
 fi
+
+# remove everything except .git
+echo "[-] erasing old openpilot T=$SECONDS"
+find . -maxdepth 1 -not -name '.' -not -name '..' -exec rm -rf '{}' \;
 
