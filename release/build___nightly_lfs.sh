@@ -3,6 +3,14 @@ set -ex
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
+git lfs ls-files -n | while read f; do
+    git lfs pointer --file "$f" > "${f}_sha"
+    mv "${f}_sha" "$f"
+    git add "$f"
+done
+
+exit 1
+
 SOURCE_DIR="$(git -C $DIR rev-parse --show-toplevel)"
 if [ -z "$TARGET_DIR" ]; then
   TARGET_DIR="$(mktemp -d)"
