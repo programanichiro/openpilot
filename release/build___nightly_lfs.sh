@@ -3,13 +3,22 @@ set -ex
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
-git lfs ls-files -n | while read f; do
-    git lfs pointer --file "$f" > "${f}_sha"
-    mv "${f}_sha" "$f"
-    git add "$f"
-done
+git lfs update --force
+git lfs install
 
-exit 1
+set +ex
+git lfs ls-files -n | while read f; do
+    git add --dry-run $f 2>/dev/null
+    status=$?
+    if [ $status -ne 0 ]; then
+        continue
+    fi
+    git lfs pointer --file "$f" > "${f}_sha" 2>/dev/null
+    mv "${f}_sha" "$f"
+    git add "$f" 2>/dev/null
+    echo lfs-sha $f
+done
+set -ex
 
 SOURCE_DIR="$(git -C $DIR rev-parse --show-toplevel)"
 if [ -z "$TARGET_DIR" ]; then
@@ -21,7 +30,7 @@ source $DIR/identity.sh
 
 git lfs update --force
 git lfs install
-git lfs checkout
+#git lfs checkout
 
 echo "[-] Setting up target repo T=$SECONDS"
 
@@ -34,11 +43,35 @@ pre-commit uninstall || true
 echo "[-] bringing __nightly in sync T=$SECONDS"
 cd $TARGET_DIR
 git branch -D __nightly || true
+
 git push origin --delete __nightly || true
 
-git checkout __nightly
-# git checkout -f --track remotes/__nightly
-git reset --hard __nightly
+git checkout --orphan __nightly || true
+
+# reset source tree
+cd $SOURCE_DIR
+git clean -xdff
+
+# do the files copy
+echo "[-] copying files T=$SECONDS"
+cd $SOURCE_DIR
+#cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
+rsync -l -R $(./release/release_files_lfs.py) $TARGET_DIR/
+
+# in the directory
+cd $TARGET_DIR
+
+sed -i '' '/filter=lfs/d' .gitattributes
+
+git add .gitattributes
+git commit -m "remove lfs tracking"
+
+git lfs uninstall
+#git lfs install
+
+git add .              # すべてのファイルをステージ
+git commit -m "Initial commit for __nightly"
+
 git push --set-upstream origin __nightly
 
 git fetch --depth 1 origin __nightly
@@ -54,14 +87,14 @@ echo "[-] erasing old openpilot T=$SECONDS"
 find . -maxdepth 1 -not -path './.git' -not -name '.' -not -name '..' -exec rm -rf '{}' \;
 
 # reset source tree
-cd $SOURCE_DIR
-git clean -xdff
+#cd $SOURCE_DIR
+#git clean -xdff
 
 # do the files copy
-echo "[-] copying files T=$SECONDS"
-cd $SOURCE_DIR
-#cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
-rsync -l -R $(./release/release_files.py) $TARGET_DIR/
+#echo "[-] copying files T=$SECONDS"
+#cd $SOURCE_DIR
+##cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
+#rsync -l -R $(./release/release_files.py) $TARGET_DIR/
 
 # in the directory
 cd $TARGET_DIR
