@@ -11,10 +11,10 @@ from enum import StrEnum
 from typing import NamedTuple
 from importlib.resources import as_file, files
 from openpilot.common.swaglog import cloudlog
-from openpilot.system.hardware import HARDWARE, PC
+from openpilot.system.hardware import HARDWARE, PC, TICI
 from openpilot.common.realtime import Ratekeeper
 
-_DEFAULT_FPS = int(os.getenv("FPS", "60"))
+_DEFAULT_FPS = int(os.getenv("FPS", 20 if TICI else 60))
 FPS_LOG_INTERVAL = 5  # Seconds between logging FPS drops
 FPS_DROP_THRESHOLD = 0.9  # FPS drop threshold for triggering a warning
 FPS_CRITICAL_THRESHOLD = 0.5  # Critical threshold for triggering strict actions
@@ -142,6 +142,10 @@ class GuiApplication:
     # Debug variables
     self._mouse_history: deque[MousePos] = deque(maxlen=MOUSE_THREAD_RATE)
 
+  @property
+  def target_fps(self):
+    return self._target_fps
+
   def request_close(self):
     self._window_close_requested = True
 
@@ -164,21 +168,14 @@ class GuiApplication:
       rl.set_mouse_scale(1 / self._scale, 1 / self._scale)
       self._render_texture = rl.load_render_texture(self._width, self._height)
       rl.set_texture_filter(self._render_texture.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    rl.set_target_fps(fps)
 
-    self.set_target_fps(fps)
+    self._target_fps = fps
     self._set_styles()
     self._load_fonts()
 
     if not PC:
       self._mouse.start()
-
-  @property
-  def target_fps(self):
-    return self._target_fps
-
-  def set_target_fps(self, fps: int):
-    self._target_fps = fps
-    rl.set_target_fps(fps)
 
   def set_modal_overlay(self, overlay, callback: Callable | None = None):
     self._modal_overlay = ModalOverlay(overlay=overlay, callback=callback)
@@ -334,7 +331,7 @@ class GuiApplication:
     for layout in KEYBOARD_LAYOUTS.values():
       all_chars.update(key for row in layout for key in row)
     all_chars = "".join(all_chars)
-    all_chars += "–✓×°"
+    all_chars += "–✓×°§"
 
     codepoint_count = rl.ffi.new("int *", 1)
     codepoints = rl.load_codepoints(all_chars, codepoint_count)

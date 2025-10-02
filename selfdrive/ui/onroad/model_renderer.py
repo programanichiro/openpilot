@@ -277,7 +277,6 @@ class ModelRenderer(Widget):
       return
 
     allow_throttle = sm['longitudinalPlan'].allowThrottle or not self._longitudinal_control
-    self._blend_filter.update_dt(1 / gui_app.target_fps)
     self._blend_filter.update(int(allow_throttle))
 
     if self._experimental_mode:

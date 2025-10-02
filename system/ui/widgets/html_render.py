@@ -6,8 +6,8 @@ from typing import Any
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 from openpilot.system.ui.lib.wrap_text import wrap_text
-from openpilot.system.ui.widgets import Widget, DialogResult
-from openpilot.system.ui.widgets.button import gui_button, ButtonStyle
+from openpilot.system.ui.widgets import Widget
+from openpilot.system.ui.widgets.button import Button, ButtonStyle
 
 
 class ElementType(Enum):
@@ -35,10 +35,12 @@ class HtmlElement:
 
 class HtmlRenderer(Widget):
   def __init__(self, file_path: str):
+    super().__init__()
     self.elements: list[HtmlElement] = []
     self._normal_font = gui_app.font(FontWeight.NORMAL)
     self._bold_font = gui_app.font(FontWeight.BOLD)
     self._scroll_panel = GuiScrollPanel()
+    self._ok_button = Button("OK", click_callback=lambda: gui_app.set_modal_overlay(None), button_style=ButtonStyle.PRIMARY)
 
     self.styles: dict[ElementType, dict[str, Any]] = {
       ElementType.H1: {"size": 68, "weight": FontWeight.BOLD, "color": rl.BLACK, "margin_top": 20, "margin_bottom": 16},
@@ -115,20 +117,19 @@ class HtmlRenderer(Widget):
 
     total_height = self.get_total_height(int(scrollable_rect.width))
     scroll_content_rect = rl.Rectangle(scrollable_rect.x, scrollable_rect.y, scrollable_rect.width, total_height)
-    scroll_offset = self._scroll_panel.handle_scroll(scrollable_rect, scroll_content_rect)
+    scroll_offset = self._scroll_panel.update(scrollable_rect, scroll_content_rect)
 
     rl.begin_scissor_mode(int(scrollable_rect.x), int(scrollable_rect.y), int(scrollable_rect.width), int(scrollable_rect.height))
-    self._render_content(scrollable_rect, scroll_offset.y)
+    self._render_content(scrollable_rect, scroll_offset)
     rl.end_scissor_mode()
 
     button_width = (rect.width - 3 * 50) // 3
-    button_x = content_rect.x + (content_rect.width - button_width) / 2
+    button_x = content_rect.x + content_rect.width - button_width
     button_y = content_rect.y + content_rect.height - button_height
     button_rect = rl.Rectangle(button_x, button_y, button_width, button_height)
-    if gui_button(button_rect, "OK", button_style=ButtonStyle.PRIMARY) == 1:
-      return DialogResult.CONFIRM
+    self._ok_button.render(button_rect)
 
-    return DialogResult.NO_ACTION
+    return -1
 
   def _render_content(self, rect: rl.Rectangle, scroll_offset: float = 0) -> float:
     current_y = rect.y + scroll_offset
