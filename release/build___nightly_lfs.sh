@@ -13,7 +13,7 @@ source $DIR/identity.sh
 
 git lfs update --force
 git lfs install
-git lfs pull
+git lfs checkout
 
 echo "[-] Setting up target repo T=$SECONDS"
 
@@ -39,7 +39,7 @@ git fetch --depth 1 origin __nightly
 # git checkout __nightly
 git reset --hard origin/__nightly
 git clean -xdff
-git lfs uninstall
+#git lfs uninstall
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
