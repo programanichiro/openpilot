@@ -61,6 +61,26 @@ rsync -l -R $(./release/release_files_lfs.py) $TARGET_DIR/
 # in the directory
 cd $TARGET_DIR
 
+# .gitmodules 削除
+# rm .gitmodules
+git rm --cached .gitmodules
+
+# submodule として記録されたパスをインデックスから削除
+git rm --cached -f msgq_repo
+git rm --cached -f opendbc_repo
+git rm --cached -f panda
+git rm --cached -f rednose_repo
+git rm --cached -f teleoprtc_repo
+git rm --cached -f tinygrad_repo
+
+# もう一度ただのディレクトリとして add
+git add msgq_repo
+git add opendbc_repo
+git add panda
+git add rednose_repo
+git add teleoprtc_repo
+git add tinygrad_repo
+
 sed -i '' '/filter=lfs/d' .gitattributes
 
 git add .gitattributes
