@@ -81,10 +81,9 @@ git add rednose_repo
 git add teleoprtc_repo
 git add tinygrad_repo
 
-sed -i '' '/filter=lfs/d' .gitattributes
-
-git add .gitattributes
-git commit -m "remove lfs tracking"
+#sed -i '' '/filter=lfs/d' .gitattributes
+#git add .gitattributes
+#git commit -m "remove lfs tracking"
 
 git lfs uninstall
 #git lfs install
