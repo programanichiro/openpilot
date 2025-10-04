@@ -3,8 +3,6 @@ from functools import partial
 from typing import cast
 
 import pyray as rl
-from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.common.params import Params
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 from openpilot.system.ui.lib.wifi_manager import WifiManager, SecurityType, Network, MeteredType
@@ -15,8 +13,16 @@ from openpilot.system.ui.widgets.keyboard import Keyboard
 from openpilot.system.ui.widgets.label import TextAlignment, gui_label
 from openpilot.system.ui.widgets.scroller import Scroller
 from openpilot.system.ui.widgets.list_view import ButtonAction, ListItem, MultipleButtonAction, ToggleAction, button_item, text_item
-from openpilot.selfdrive.ui.ui_state import ui_state
-from openpilot.selfdrive.ui.lib.prime_state import PrimeType
+
+# These are only used for AdvancedNetworkSettings, standalone apps just need WifiManagerUI
+try:
+  from openpilot.common.params import Params
+  from openpilot.selfdrive.ui.ui_state import ui_state
+  from openpilot.selfdrive.ui.lib.prime_state import PrimeType
+except Exception:
+  Params = None
+  ui_state = None  # type: ignore
+  PrimeType = None  # type: ignore
 
 NM_DEVICE_STATE_NEED_AUTH = 60
 MIN_PASSWORD_LENGTH = 8
@@ -50,16 +56,6 @@ class NavButton(Widget):
     super().__init__()
     self.text = text
     self.set_rect(rl.Rectangle(0, 0, 400, 100))
-    self._x_pos_filter = FirstOrderFilter(0.0, 0.05, 1 / gui_app.target_fps, initialized=False)
-    self._y_pos_filter = FirstOrderFilter(0.0, 0.05, 1 / gui_app.target_fps, initialized=False)
-
-  def set_position(self, x: float, y: float) -> None:
-    x = self._x_pos_filter.update(x)
-    y = self._y_pos_filter.update(y)
-    changed = (self._rect.x != x or self._rect.y != y)
-    self._rect.x, self._rect.y = x, y
-    if changed:
-      self._update_layout_rects()
 
   def _render(self, _):
     color = rl.Color(74, 74, 74, 255) if self.is_pressed else rl.Color(57, 57, 57, 255)
@@ -257,6 +253,8 @@ class AdvancedNetworkSettings(Widget):
     gui_app.set_modal_overlay(self._keyboard, update_password)
 
   def _update_state(self):
+    self._wifi_manager.process_callbacks()
+
     # If not using prime SIM, show GSM settings and enable IPv4 forwarding
     show_cell_settings = ui_state.prime_state.get_type() in (PrimeType.NONE, PrimeType.LITE)
     self._wifi_manager.set_ipv4_forward(show_cell_settings)
