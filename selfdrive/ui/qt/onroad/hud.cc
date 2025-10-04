@@ -582,8 +582,8 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
     bool locationd_valid = ((int)gps_output[5] == 1);
 
     if (locationd_valid) {
-      FILE *fp = fopen("/dev/shm/limitspeed_info.txt","w");
-      if(fp != NULL){
+      //FILE *fp = fopen("/dev/shm/limitspeed_info.txt","w");
+      if(1/*fp != NULL*/){
         //この辺で30mか1秒？ごとに、以下を/dev/shm/limitspeed_info.txtに書き込む。
         double latitude = locationd_pos[0]; // 緯度を取得
         double longitude = locationd_pos[1]; // 経度を取得
@@ -605,10 +605,10 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
            velo = ms.toDouble(); //刈り取りモードではMAX値を記録する手もある。
         }
 #endif
-        QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
-        double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
-        fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
-        fclose(fp);
+        // QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
+        // double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
+        // fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
+        // fclose(fp);
       }
     }
   }
