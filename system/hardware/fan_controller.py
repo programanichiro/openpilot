@@ -438,13 +438,16 @@ class TiciFanController(BaseFanController):
     limitspeed_info_ok = False
     limitspeed_min = 30
     try:
-      with open('/dev/shm/limitspeed_info.txt','r') as fp:
+#     with open('/dev/shm/limitspeed_info.txt','r') as fp:
+      with open('/dev/shm/gps_axs_data.txt','r') as fp:
         limitspeed_info_str = fp.read()
         if limitspeed_info_str:
           limitspeed_info_ok = True
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
+          self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
+          self.timestamp *= 1000 #gps_axs_data.txtなら秒に直す
           if rec_mode == True and rec_speed >= 30 and self.velocity >= limitspeed_min:
             self.velocity = rec_speed
           # if self.tss_type < 2 and self.velocity > 119:
