@@ -575,7 +575,7 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   static unsigned int limitspeed_update_ct;
   static double car_bearing;
   if ((limitspeed_update_ct ++) % 10 == 0 && okGps) {
-    double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
+    //double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
     double locationd_orientation = gps_output[2]; //bearing
     //double locationd_velocity = gps_output[3]; //VEgo、信用できない。
 
@@ -596,9 +596,9 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
         } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
         //double velo = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
         car_bearing = bearing;
-        double velo = velo_for_trans;
+        //double velo = velo_for_trans;
         if(add_v_by_lead == true){
-          velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
+          //velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
         }
 #if 0 //保留。"○"ボタンONでは思い切って記録しないという選択もありか？
         if(Limit_speed_mode == 2 && ms.toDouble() >= 30){
