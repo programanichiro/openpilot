@@ -201,8 +201,17 @@ class UbloxMsgParser:
     # if gps.bearingAccuracyDeg > 60:
     #   locationd_valid = 0
 
+    car_vego = gps.speed
+    try:
+      with open('/dev/shm/car_vego.txt','r') as fp:
+        car_vego_str = fp.read()
+        if car_vego_str:
+          car_vego = float(car_vego_str)
+    except Exception as e:
+      pass
+
     with open('/dev/shm/gps_axs_data.txt','w') as fp:
-      fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (gps.latitude,gps.longitude,gps.bearingDeg,gps.speed,gps.unixTimestampMillis,locationd_valid))
+      fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (gps.latitude,gps.longitude,gps.bearingDeg,car_vego,gps.unixTimestampMillis,locationd_valid))
 
     return ('gpsLocationExternal', dat)
 

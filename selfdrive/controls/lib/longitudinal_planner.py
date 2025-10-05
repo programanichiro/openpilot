@@ -198,7 +198,7 @@ class LongitudinalPlanner:
 
     v_ego = sm['carState'].vEgo
     # v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
-    vk_ego = sm['carState'].vEgo
+    vk_ego = v_ego # sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
     dexp_mode = False
     try:
@@ -828,6 +828,9 @@ class LongitudinalPlanner:
     if CVS_FRAME % 5 == 2:
       with open('/dev/shm/limit_vc_info.txt','w') as fp:
         fp.write('%d' % (limit_vc))
+    if CVS_FRAME % 5 == 1:
+      with open('/dev/shm/car_vego.txt','w') as fp:
+        fp.write('%.1f' % (vk_ego))
     # if True: #CVS_FRAME % 5 == 1:
     #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
     #   with open('/dev/shm/steer_ang_info.txt','w') as fp: #carstateに移動。
