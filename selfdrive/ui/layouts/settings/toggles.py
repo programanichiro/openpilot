@@ -90,6 +90,7 @@ class TogglesLayout(Widget):
         "Use Raylib UI",
         DESCRIPTIONS["RaylibMode"],
         self._params.get_bool("RaylibMode"),
+        callback=self._set_RaylibMode,
         icon="warning.png",
       ),
     ]
@@ -98,6 +99,9 @@ class TogglesLayout(Widget):
 
   def _render(self, rect):
     self._scroller.render(rect)
+
+  def _set_RaylibMode(self, button_state: bool):
+    self._params.put_bool("RaylibMode", button_state)
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index)
