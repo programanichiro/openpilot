@@ -418,19 +418,23 @@ class TiciFanController(BaseFanController):
 
     rec_mode = False
     rec_speed = 0
+    add_v_by_lead = False
     try:
       with open('/dev/shm/limitspeed_sw.txt','r') as fp:
         limitspeed_sw_str = fp.read()
         if limitspeed_sw_str:
           if int(limitspeed_sw_str) == 2: #RECモード
             rec_mode = True
-            with open('/dev/shm/cruise_info.txt','r') as fp:
-              cruise_info_str = fp.read()
-              if cruise_info_str:
-                #",30"とかの状況を考慮
-                if cruise_info_str.startswith(','):
-                    cruise_info_str = cruise_info_str[1:]  # 先頭のカンマを取り除く
-                rec_speed = int(cruise_info_str) #MAX km/h
+
+      with open('/dev/shm/cruise_info.txt','r') as fp:
+        cruise_info_str = fp.read()
+        if cruise_info_str:
+          #",30"とかの状況を考慮
+          if cruise_info_str.startswith(','):
+              add_v_by_lead = True
+              cruise_info_str = cruise_info_str[1:]  # 先頭のカンマを取り除く
+          if rec_mode:
+            rec_speed = int(cruise_info_str) #MAX km/h
     except Exception as e:
       pass
 
@@ -449,6 +453,8 @@ class TiciFanController(BaseFanController):
           self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
           if self.velocity < 1.0:
             self.velocity = 0 #時速1キロ未満はゼロ扱い
+          if add_v_by_lead:
+            self.velocity /= 1.15; #前走車追従中は、増速前の推定速度を学習する。
           self.timestamp /= 1000 #gps_axs_data.txtなら秒に直す
           # self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
           if rec_mode == True and rec_speed >= 30 and self.velocity >= limitspeed_min:
@@ -471,16 +477,6 @@ class TiciFanController(BaseFanController):
             self.db_add += 1
           else:
             self.db_none += 1
-
-      # with open('/dev/shm/gps_axs_data.txt','r') as fp:
-      #   limitspeed_info_str = fp.read()
-      #   if limitspeed_info_str:
-      #     latitude, longitude, bearing, velocity,timestamp,dummy = map(float, limitspeed_info_str.split(","))
-      #     velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
-      #     timestamp /= 1000 #gps_axs_data.txtなら秒に直す
-      #     with open('/tmp/debug_out_k','w') as fp2:
-      #       fp2.write('%.7f,%.7f,%.7f,%.3f,%.3f,%d' % (latitude, longitude, bearing, velocity,timestamp,int(dummy)))
-
     except Exception as e:
       pass
     #speedsから距離と方位が近いデータを100個読み、100m以内で速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
