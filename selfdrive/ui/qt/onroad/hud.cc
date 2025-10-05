@@ -580,18 +580,18 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
   static unsigned int limitspeed_update_ct;
   static double car_bearing;
   if ((limitspeed_update_ct ++) % 10 == 0 && okGps) {
-    double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
+    //double locationd_pos[2] = {gps_output[0],gps_output[1]}; //lat,lon
     double locationd_orientation = gps_output[2]; //bearing
     //double locationd_velocity = gps_output[3]; //VEgo、信用できない。
 
     bool locationd_valid = ((int)gps_output[5] == 1);
 
     if (locationd_valid) {
-      FILE *fp = fopen("/dev/shm/limitspeed_info.txt","w");
-      if(fp != NULL){
+      //FILE *fp = fopen("/dev/shm/limitspeed_info.txt","w");
+      if(1/*fp != NULL*/){
         //この辺で30mか1秒？ごとに、以下を/dev/shm/limitspeed_info.txtに書き込む。
-        double latitude = locationd_pos[0]; // 緯度を取得
-        double longitude = locationd_pos[1]; // 経度を取得
+        //double latitude = locationd_pos[0]; // 緯度を取得
+        //double longitude = locationd_pos[1]; // 経度を取得
         double bearing = locationd_orientation;  //-180〜180
         if(bearing < 0){
           bearing += 360;
@@ -601,19 +601,19 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
         } //0〜360へ変換、クエリの角度差分計算は-180でも大丈夫だったみたい。
         //double velo = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
         car_bearing = bearing;
-        double velo = velo_for_trans;
+        //double velo = velo_for_trans;
         if(add_v_by_lead == true){
-          velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
+          //velo /= 1.15; //前走車追従中は、増速前の推定速度を学習する。
         }
 #if 0 //保留。"○"ボタンONでは思い切って記録しないという選択もありか？
         if(Limit_speed_mode == 2 && ms.toDouble() >= 30){
            velo = ms.toDouble(); //刈り取りモードではMAX値を記録する手もある。
         }
 #endif
-        QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
-        double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
-        fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
-        fclose(fp);
+        // QDateTime currentTime = QDateTime::currentDateTime(); // 現在時刻を表すQDateTimeオブジェクトを作成
+        // double now = (double)currentTime.toMSecsSinceEpoch() / 1000;
+        // fprintf(fp,"%.7f,%.7f,%.7f,%.3f,%.3f",latitude,longitude,bearing,velo,now);
+        // fclose(fp);
       }
     }
   }
