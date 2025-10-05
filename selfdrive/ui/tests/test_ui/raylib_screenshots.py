@@ -28,6 +28,14 @@ UI_DELAY = 0.2
 OFFROAD_ALERTS = ['Offroad_IsTakingSnapshot']
 
 
+def put_update_params(params: Params):
+  params.put("UpdaterCurrentReleaseNotes", parse_release_notes(BASEDIR))
+  params.put("UpdaterNewReleaseNotes", parse_release_notes(BASEDIR))
+  description = "0.10.1 / this-is-a-really-super-mega-long-branch-name / 7864838 / Oct 03"
+  params.put("UpdaterCurrentDescription", description)
+  params.put("UpdaterNewDescription", description)
+
+
 def setup_homescreen(click, pm: PubMaster):
   pass
 
@@ -51,6 +59,7 @@ def setup_settings_toggles(click, pm: PubMaster):
 
 
 def setup_settings_software(click, pm: PubMaster):
+  put_update_params(Params())
   setup_settings(click, pm)
   click(278, 720)
 
@@ -89,14 +98,18 @@ def setup_confirmation_dialog(click, pm: PubMaster):
   click(1985, 791)  # reset calibration
 
 
-def setup_update_available(click, pm: PubMaster):
+def setup_homescreen_update_available(click, pm: PubMaster):
   params = Params()
   params.put_bool("UpdateAvailable", True)
-  params.put("UpdaterNewReleaseNotes", parse_release_notes(BASEDIR))
-  description = "0.10.1 / html-release-notes-2 / 7864838 / Oct 03"
-  params.put("UpdaterCurrentDescription", description)
+  put_update_params(params)
   setup_settings(click, pm)
   close_settings(click, pm)
+
+
+def setup_software_release_notes(click, pm: PubMaster):
+  setup_settings(click, pm)
+  setup_settings_software(click, pm)
+  click(588, 110)  # expand description for current version
 
 
 CASES = {
@@ -110,8 +123,9 @@ CASES = {
   "keyboard": setup_keyboard,
   "pair_device": setup_pair_device,
   "offroad_alert": setup_offroad_alert,
-  "update_available": setup_update_available,
+  "homescreen_update_available": setup_homescreen_update_available,
   "confirmation_dialog": setup_confirmation_dialog,
+  "software_release_notes": setup_software_release_notes,
 }
 
 
@@ -149,6 +163,7 @@ class TestUI:
   @with_processes(["raylib_ui"])
   def test_ui(self, name, setup_case):
     self.setup()
+    time.sleep(UI_DELAY)  # wait for UI to start
     setup_case(self.click, self.pm)
     self.screenshot(name)
 
