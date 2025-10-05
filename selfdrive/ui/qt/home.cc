@@ -111,12 +111,12 @@ void HomeWindow::updateState(const UIState &s) {
       lsta_can_get = false; //一旦ウインカーを戻すまでは発動しない。
     }
   }
-  double vEgo = sm["carState"].getCarState().getVEgo();
-  FILE *fp = fopen("/dev/shm/car_vego.txt","w");
-  if(fp != NULL){
-    fprintf(fp,"%.2f",vEgo);
-    fclose(fp);
-  }
+  // double vEgo = sm["carState"].getCarState().getVEgo();
+  // FILE *fp = fopen("/dev/shm/car_vego.txt","w");
+  // if(fp != NULL){
+  //   fprintf(fp,"%.2f",vEgo);
+  //   fclose(fp);
+  // }
 }
 
 void HomeWindow::offroadTransition(bool offroad) {
