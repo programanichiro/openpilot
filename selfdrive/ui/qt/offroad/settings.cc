@@ -99,6 +99,13 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
     },
 #endif
     {
+      "RaylibMode",
+      tr("Use Raylib UI"),
+      tr("Switching to a user interface built with raylib."),
+      "../assets/icons/warning.png",
+      false,
+    },
+    {
       "DisableMaxSpeedModify",
       tr("Use the vehicle ACC with TSSP over 115 km/h"),
       tr("ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it."),
