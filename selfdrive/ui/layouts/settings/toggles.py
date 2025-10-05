@@ -23,6 +23,8 @@ DESCRIPTIONS = {
   'RecordFront': "Upload data from the driver facing camera and help improve the driver monitoring algorithm.",
   "IsMetric": "Display speed in km/h instead of mph.",
   "RecordAudio": "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.",
+  "RaylibMode": "Switching to a user interface built with raylib.",
+
 }
 
 
@@ -84,12 +86,22 @@ class TogglesLayout(Widget):
       toggle_item(
         "Use Metric System", DESCRIPTIONS["IsMetric"], self._params.get_bool("IsMetric"), icon="metric.png"
       ),
+      toggle_item(
+        "Use Raylib UI",
+        DESCRIPTIONS["RaylibMode"],
+        self._params.get_bool("RaylibMode"),
+        callback=self._set_RaylibMode,
+        icon="warning.png",
+      ),
     ]
 
     self._scroller = Scroller(items, line_separator=True, spacing=0)
 
   def _render(self, rect):
     self._scroller.render(rect)
+
+  def _set_RaylibMode(self): #パラメータは無いみたい。
+    self._params.put_bool("RaylibMode", self._params.get_bool("RaylibMode") == False)
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index)
