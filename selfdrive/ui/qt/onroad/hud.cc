@@ -585,8 +585,8 @@ void HudRenderer::drawHud(QPainter &p,const QRect &surface_rect) {
       //FILE *fp = fopen("/dev/shm/limitspeed_info.txt","w");
       if(1/*fp != NULL*/){
         //この辺で30mか1秒？ごとに、以下を/dev/shm/limitspeed_info.txtに書き込む。
-        double latitude = locationd_pos[0]; // 緯度を取得
-        double longitude = locationd_pos[1]; // 経度を取得
+        //double latitude = locationd_pos[0]; // 緯度を取得
+        //double longitude = locationd_pos[1]; // 経度を取得
         double bearing = locationd_orientation;  //-180〜180
         if(bearing < 0){
           bearing += 360;
