@@ -438,15 +438,6 @@ class TiciFanController(BaseFanController):
     limitspeed_info_ok = False
     limitspeed_min = 30
     try:
-      with open('/dev/shm/gps_axs_data.txt','r') as fp:
-        limitspeed_info_str = fp.read()
-        if limitspeed_info_str:
-          latitude, longitude, bearing, velocity,timestamp = map(float, limitspeed_info_str.split(","))
-          velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
-          timestamp *= 1000 #gps_axs_data.txtなら秒に直す
-          with open('/tmp/debug_out_k','w') as fp:
-            fp.write("%.7f,%.7f,%.7f,%.3f,%.3f" % (latitude, longitude, bearing, velocity,timestamp))
-
       with open('/dev/shm/limitspeed_info.txt','r') as fp:
         limitspeed_info_str = fp.read()
         if limitspeed_info_str:
@@ -474,6 +465,16 @@ class TiciFanController(BaseFanController):
             self.db_add += 1
           else:
             self.db_none += 1
+
+      with open('/dev/shm/gps_axs_data.txt','r') as fp:
+        limitspeed_info_str = fp.read()
+        if limitspeed_info_str:
+          latitude, longitude, bearing, velocity,timestamp = map(float, limitspeed_info_str.split(","))
+          velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
+          timestamp *= 1000 #gps_axs_data.txtなら秒に直す
+          with open('/tmp/debug_out_k','w') as fp2:
+            fp2.write('%.7f,%.7f,%.7f,%.3f,%.3f' % (latitude, longitude, bearing, velocity,timestamp))
+
     except Exception as e:
       pass
     #speedsから距離と方位が近いデータを100個読み、100m以内で速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
