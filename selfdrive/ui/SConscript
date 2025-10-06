@@ -71,8 +71,8 @@ if GetOption('extras'):
 
     raylib_libs = common + ["raylib"]
     if arch == "larch64":
-      # raylib_libs += ["GLESv2", "wayland-client", "wayland-egl", "EGL"]
-      raylib_libs += ["GLESv2", "EGL", "gbm", "drm"]
+      raylib_libs += ["GLESv2", "wayland-client", "wayland-egl", "EGL"]
+      # raylib_libs += ["GLESv2", "EGL", "gbm", "drm"] #結局2つ間違いがあって、gdb->gbmと、liblaylib.aのlfs格納元がwaylandに依存したビルドになっててリンク通らない。
     else:
       raylib_libs += ["GL"]
 
