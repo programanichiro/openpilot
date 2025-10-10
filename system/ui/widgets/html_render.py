@@ -3,7 +3,7 @@ import pyray as rl
 from dataclasses import dataclass
 from enum import Enum
 from typing import Any
-from openpilot.system.ui.lib.application import gui_app, FontWeight, FONT_SCALE
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.scroll_panel import GuiScrollPanel
 from openpilot.system.ui.lib.wrap_text import wrap_text
 from openpilot.system.ui.widgets import Widget
@@ -121,15 +121,18 @@ class HtmlRenderer(Widget):
       is_start_tag, is_end_tag, tag = is_tag(token)
       if tag is not None:
         if tag == ElementType.BR:
+          # Close current tag and add a line break
+          close_tag()
           self._add_element(ElementType.BR, "")
 
         elif is_start_tag or is_end_tag:
           # Always add content regardless of opening or closing tag
           close_tag()
 
-          # TODO: reset to None if end tag?
           if is_start_tag:
             current_tag = tag
+          else:
+            current_tag = None
 
         # increment after we add the content for the current tag
         if tag == ElementType.UL:
@@ -176,8 +179,8 @@ class HtmlRenderer(Widget):
         wrapped_lines = wrap_text(font, element.content, element.font_size, int(content_width))
 
         for line in wrapped_lines:
-          if current_y < rect.y - element.font_size * FONT_SCALE:
-            current_y += element.font_size * FONT_SCALE * element.line_height
+          if current_y < rect.y - element.font_size:
+            current_y += element.font_size * element.line_height
             continue
 
           if current_y > rect.y + rect.height:
@@ -186,7 +189,7 @@ class HtmlRenderer(Widget):
           text_x = rect.x + (max(element.indent_level - 1, 0) * LIST_INDENT_PX)
           rl.draw_text_ex(font, line, rl.Vector2(text_x + padding, current_y), element.font_size, 0, self._text_color)
 
-          current_y += element.font_size * FONT_SCALE * element.line_height
+          current_y += element.font_size * element.line_height
 
       # Apply bottom margin
       current_y += element.margin_bottom
@@ -210,7 +213,7 @@ class HtmlRenderer(Widget):
         wrapped_lines = wrap_text(font, element.content, element.font_size, int(usable_width))
 
         for _ in wrapped_lines:
-          total_height += element.font_size * FONT_SCALE * element.line_height
+          total_height += element.font_size * element.line_height
 
       total_height += element.margin_bottom
 
