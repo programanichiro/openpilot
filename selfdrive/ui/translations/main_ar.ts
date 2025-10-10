@@ -161,6 +161,33 @@
     </message>
 </context>
 <context>
+    <name>DestinationWidget</name>
+    <message>
+        <source>Home</source>
+        <translation>المنزل</translation>
+    </message>
+    <message>
+        <source>Work</source>
+        <translation>العمل</translation>
+    </message>
+    <message>
+        <source>No destination set</source>
+        <translation>لم يتم ضبط الوجهة</translation>
+    </message>
+    <message>
+        <source>home</source>
+        <translation>المنزل</translation>
+    </message>
+    <message>
+        <source>work</source>
+        <translation>العمل</translation>
+    </message>
+    <message>
+        <source>No %1 location set</source>
+        <translation>لم يتم ضبط %1 موقع</translation>
+    </message>
+</context>
+<context>
     <name>DevicePanel</name>
     <message>
         <source>Dongle ID</source>
@@ -425,6 +452,54 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     </message>
 </context>
 <context>
+    <name>Installer</name>
+    <message>
+        <source>Installing...</source>
+        <translation>جارٍ التثبيت...</translation>
+    </message>
+</context>
+<context>
+    <name>MapETA</name>
+    <message>
+        <source>eta</source>
+        <translation>الوصول</translation>
+    </message>
+    <message>
+        <source>min</source>
+        <translation>د</translation>
+    </message>
+    <message>
+        <source>hr</source>
+        <translation>س</translation>
+    </message>
+</context>
+<context>
+    <name>MapSettings</name>
+    <message>
+        <source>NAVIGATION</source>
+        <translation>التنقل</translation>
+    </message>
+    <message>
+        <source>Manage at connect.comma.ai</source>
+        <translation>الإدارة في connect.comma.ai</translation>
+    </message>
+</context>
+<context>
+    <name>MapWindow</name>
+    <message>
+        <source>Map Loading</source>
+        <translation>تحميل الخريطة</translation>
+    </message>
+    <message>
+        <source>Waiting for GPS</source>
+        <translation>بانتظار GPS</translation>
+    </message>
+    <message>
+        <source>Waiting for route</source>
+        <translation>بانتظار الطريق</translation>
+    </message>
+</context>
+<context>
     <name>MultiOptionDialog</name>
     <message>
         <source>Select</source>
@@ -606,6 +681,10 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
         <translation>سنة واحدة من تخزين القرص</translation>
     </message>
     <message>
+        <source>Turn-by-turn navigation</source>
+        <translation>التنقل خطوة بخطوة</translation>
+    </message>
+    <message>
         <source>Remote snapshots</source>
         <translation>لقطات عن بُعد</translation>
     </message>
@@ -659,6 +738,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
             <numerusform>منذ %n أيام</numerusform>
             <numerusform>منذ %n يوم</numerusform>
         </translation>
+    </message>
+    <message>
+        <source>km</source>
+        <translation>كم</translation>
+    </message>
+    <message>
+        <source>m</source>
+        <translation>م</translation>
+    </message>
+    <message>
+        <source>mi</source>
+        <translation>ميل</translation>
+    </message>
+    <message>
+        <source>ft</source>
+        <translation>قدم</translation>
     </message>
     <message>
         <source>now</source>
@@ -963,6 +1058,22 @@ Firehose Mode allows you to maximize your training data uploads to improve openp
     <message>
         <source>When enabled, pressing the accelerator pedal will disengage openpilot.</source>
         <translation>عند تمكين هذه الميزة، فإن الضغط على دواسة الوقود سيؤدي إلى فك ارتباط openpilot.</translation>
+    </message>
+    <message>
+        <source>Show ETA in 24h Format</source>
+        <translation>إظهار الوقت المقدر للوصول بصيغة 24 ساعة</translation>
+    </message>
+    <message>
+        <source>Use 24h format instead of am/pm</source>
+        <translation>استخدام صيغة 24 ساعة بدلاً من صباحاً/مساء</translation>
+    </message>
+    <message>
+        <source>Show Map on Left Side of UI</source>
+        <translation>عرض الخريطة على الجانب الأيسر من واجهة المستخدم</translation>
+    </message>
+    <message>
+        <source>Show map on left side when in split screen view.</source>
+        <translation>عرض الخريطة عل الجانب الأيسر عندما تكون وضعية العرض بطريقة الشاشة المنقسمة.</translation>
     </message>
     <message>
         <source>Experimental Mode</source>

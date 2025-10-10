@@ -1,5 +1,4 @@
 import pyray as rl
-from collections.abc import Callable
 from openpilot.system.ui.lib.application import MousePos
 from openpilot.system.ui.widgets import Widget
 
@@ -15,10 +14,9 @@ ANIMATION_SPEED = 8.0
 
 
 class Toggle(Widget):
-  def __init__(self, initial_state: bool = False, callback: Callable[[bool], None] | None = None):
+  def __init__(self, initial_state=False):
     super().__init__()
     self._state = initial_state
-    self._callback = callback
     self._enabled = True
     self._progress = 1.0 if initial_state else 0.0
     self._target = self._progress
@@ -34,10 +32,8 @@ class Toggle(Widget):
     self._clicked = True
     self._state = not self._state
     self._target = 1.0 if self._state else 0.0
-    if self._callback:
-      self._callback(self._state)
 
-  def get_state(self) -> bool:
+  def get_state(self):
     return self._state
 
   def set_state(self, state: bool):
