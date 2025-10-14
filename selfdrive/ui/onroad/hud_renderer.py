@@ -12,6 +12,7 @@ SET_SPEED_NA = 255
 KM_TO_MILE = 0.621371
 CRUISE_DISABLED_CHAR = '–'
 
+y_ofs = 150
 
 @dataclass(frozen=True)
 class UIConfig:
@@ -58,6 +59,10 @@ COLORS = Colors()
 class HudRenderer(Widget):
   def __init__(self):
     super().__init__()
+
+    with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
+      dst.write(src.read())
+
     """Initialize the HUD renderer."""
     self.is_cruise_set: bool = False
     self.is_cruise_available: bool = True
@@ -106,7 +111,7 @@ class HudRenderer(Widget):
       int(rect.x),
       int(rect.y),
       int(rect.width),
-      UI_CONFIG.header_height,
+      UI_CONFIG.header_height + y_ofs,
       COLORS.header_gradient_start,
       COLORS.header_gradient_end,
     )
@@ -117,7 +122,7 @@ class HudRenderer(Widget):
     self._draw_current_speed(rect)
 
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
-    button_y = rect.y + UI_CONFIG.border_size
+    button_y = rect.y + UI_CONFIG.border_size + y_ofs
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
   def user_interacting(self) -> bool:
@@ -127,7 +132,7 @@ class HudRenderer(Widget):
     """Draw the MAX speed indicator box."""
     set_speed_width = UI_CONFIG.set_speed_width_metric if ui_state.is_metric else UI_CONFIG.set_speed_width_imperial
     x = rect.x + 60 + (UI_CONFIG.set_speed_width_imperial - set_speed_width) // 2
-    y = rect.y + 45
+    y = rect.y + 45 + y_ofs
 
     set_speed_rect = rl.Rectangle(x, y, set_speed_width, UI_CONFIG.set_speed_height)
     rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, COLORS.black_translucent)
@@ -170,10 +175,10 @@ class HudRenderer(Widget):
     """Draw the current vehicle speed and unit."""
     speed_text = str(round(self.speed))
     speed_text_size = measure_text_cached(self._font_bold, speed_text, FONT_SIZES.current_speed)
-    speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2)
+    speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_bold, speed_text, speed_pos, FONT_SIZES.current_speed, 0, COLORS.white)
 
     unit_text = "km/h" if ui_state.is_metric else "mph"
     unit_text_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
-    unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2)
+    unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
