@@ -6,6 +6,7 @@ from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
+from openpilot.system.ui.widgets.button import Button, ButtonStyle
 
 # Constants
 SET_SPEED_NA = 255
@@ -76,6 +77,33 @@ class HudRenderer(Widget):
 
     self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
 
+    self._accel_engaged_button = Button("Test",click_callback=self._press_accel_engaged)
+
+  def _press_accel_engaged(self):
+    try:
+      with open('/dev/shm/accel_engaged.txt','r') as fp:
+        accel_engaged_str = fp.read()
+        accel_engaged = int(accel_engaged_str)
+        accel_engaged = (accel_engaged + 1) % 5
+        if accel_engaged == 0:
+          self._accel_engaged_button.set_text("N")
+        elif accel_engaged == 1:
+          self._accel_engaged_button.set_text("A")
+        elif accel_engaged == 2:
+          self._accel_engaged_button.set_text("AA")
+        elif accel_engaged == 3:
+          self._accel_engaged_button.set_text("iP")
+        elif accel_engaged == 4:
+          self._accel_engaged_button.set_text("eP")
+
+        with open('/dev/shm/accel_engaged.txt','w') as fp2:
+          fp2.write("%d" % (accel_engaged))
+        with open('/data/accel_engaged.txt','w') as fp3:
+          fp3.write("%d" % (accel_engaged))
+
+    except Exception as e:
+      pass
+
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
     sm = ui_state.sm
@@ -124,6 +152,8 @@ class HudRenderer(Widget):
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
+
+    self._accel_engaged_button.render(rl.Rectangle(rect.width/2, rect.height/2, 200, 100))
 
   def user_interacting(self) -> bool:
     return self._exp_button.is_pressed
