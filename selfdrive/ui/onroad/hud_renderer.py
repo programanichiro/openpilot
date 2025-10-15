@@ -61,8 +61,11 @@ class HudRenderer(Widget):
   def __init__(self):
     super().__init__()
 
-    with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
-      dst.write(src.read())
+    try:
+      with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
 
     """Initialize the HUD renderer."""
     self.is_cruise_set: bool = False
@@ -131,6 +134,8 @@ class HudRenderer(Widget):
     v_ego = v_ego_cluster if self.v_ego_cluster_seen else car_state.vEgo
     speed_conversion = CV.MS_TO_KPH if ui_state.is_metric else CV.MS_TO_MPH
     self.speed = max(0.0, v_ego * speed_conversion)
+
+    self.ip_sound_req_proc()
 
   def _render(self, rect: rl.Rectangle) -> None:
     """Render HUD elements to the screen."""
@@ -212,3 +217,44 @@ class HudRenderer(Widget):
     unit_text_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
+
+  def ip_sound_req_proc(self):
+    pass
+
+    try:
+      with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
+        signal_start_prompt_info_str = fp.read()
+        if signal_start_prompt_info_str:
+          pr = int(signal_start_prompt_info_str)
+          if pr == 1:
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (6)) #prompt.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+          elif pr == 2:
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (1)) #engage.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+          elif pr == 3: #デバッグ用。
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (1)) #po.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+    except Exception as e:
+      pass
+
+    # std::string signal_start_prompt_info_txt = util::read_file("/dev/shm/signal_start_prompt_info.txt");
+    # if(signal_start_prompt_info_txt.empty() == false){
+    #   int pr = std::stoi(signal_start_prompt_info_txt);
+    #   if(pr == 1){
+    #     setButtonInt("/dev/shm/sound_py_request.txt" , 6); //prompt.wav
+    #     setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
+    #   } else if(pr == 2){ //自動発進とワンペダル->オートパイロットはこちら。
+    #     setButtonInt("/dev/shm/sound_py_request.txt" , 1); //engage.wav
+    #     setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
+    #   } else if(pr == 3){ //デバッグ用。
+    #     setButtonInt("/dev/shm/sound_py_request.txt" , 101); //po.wav
+    #     setButtonEnabled0("/dev/shm/signal_start_prompt_info.txt" , false);
+    #   }
+    # }
