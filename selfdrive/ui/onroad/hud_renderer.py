@@ -6,12 +6,14 @@ from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
+from openpilot.system.ui.widgets.button import Button, ButtonStyle
 
 # Constants
 SET_SPEED_NA = 255
 KM_TO_MILE = 0.621371
 CRUISE_DISABLED_CHAR = '–'
 
+y_ofs = 150
 
 @dataclass(frozen=True)
 class UIConfig:
@@ -58,6 +60,10 @@ COLORS = Colors()
 class HudRenderer(Widget):
   def __init__(self):
     super().__init__()
+
+    with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
+      dst.write(src.read())
+
     """Initialize the HUD renderer."""
     self.is_cruise_set: bool = False
     self.is_cruise_available: bool = True
@@ -70,6 +76,33 @@ class HudRenderer(Widget):
     self._font_medium: rl.Font = gui_app.font(FontWeight.MEDIUM)
 
     self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
+
+    self._accel_engaged_button = Button("Test",click_callback=self._press_accel_engaged)
+
+  def _press_accel_engaged(self):
+    try:
+      with open('/dev/shm/accel_engaged.txt','r') as fp:
+        accel_engaged_str = fp.read()
+        accel_engaged = int(accel_engaged_str)
+        accel_engaged = (accel_engaged + 1) % 5
+        if accel_engaged == 0:
+          self._accel_engaged_button.set_text("N")
+        elif accel_engaged == 1:
+          self._accel_engaged_button.set_text("A")
+        elif accel_engaged == 2:
+          self._accel_engaged_button.set_text("AA")
+        elif accel_engaged == 3:
+          self._accel_engaged_button.set_text("iP")
+        elif accel_engaged == 4:
+          self._accel_engaged_button.set_text("eP")
+
+        with open('/dev/shm/accel_engaged.txt','w') as fp2:
+          fp2.write("%d" % (accel_engaged))
+        with open('/data/accel_engaged.txt','w') as fp3:
+          fp3.write("%d" % (accel_engaged))
+
+    except Exception as e:
+      pass
 
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
@@ -106,7 +139,7 @@ class HudRenderer(Widget):
       int(rect.x),
       int(rect.y),
       int(rect.width),
-      UI_CONFIG.header_height,
+      UI_CONFIG.header_height + y_ofs,
       COLORS.header_gradient_start,
       COLORS.header_gradient_end,
     )
@@ -117,17 +150,19 @@ class HudRenderer(Widget):
     self._draw_current_speed(rect)
 
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
-    button_y = rect.y + UI_CONFIG.border_size
+    button_y = rect.y + UI_CONFIG.border_size + y_ofs
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
+    self._accel_engaged_button.render(rl.Rectangle(rect.width/2, rect.height/2, 200, 150))
+
   def user_interacting(self) -> bool:
-    return self._exp_button.is_pressed
+    return self._exp_button.is_pressed or self._accel_engaged_button.is_pressed
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
     """Draw the MAX speed indicator box."""
     set_speed_width = UI_CONFIG.set_speed_width_metric if ui_state.is_metric else UI_CONFIG.set_speed_width_imperial
     x = rect.x + 60 + (UI_CONFIG.set_speed_width_imperial - set_speed_width) // 2
-    y = rect.y + 45
+    y = rect.y + 45 + y_ofs
 
     set_speed_rect = rl.Rectangle(x, y, set_speed_width, UI_CONFIG.set_speed_height)
     rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, COLORS.black_translucent)
@@ -170,10 +205,10 @@ class HudRenderer(Widget):
     """Draw the current vehicle speed and unit."""
     speed_text = str(round(self.speed))
     speed_text_size = measure_text_cached(self._font_bold, speed_text, FONT_SIZES.current_speed)
-    speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2)
+    speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_bold, speed_text, speed_pos, FONT_SIZES.current_speed, 0, COLORS.white)
 
     unit_text = "km/h" if ui_state.is_metric else "mph"
     unit_text_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
-    unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2)
+    unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
