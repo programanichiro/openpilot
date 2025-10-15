@@ -153,10 +153,10 @@ class HudRenderer(Widget):
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
-    self._accel_engaged_button.render(rl.Rectangle(rect.width/2, rect.height/2, 200, 100))
+    self._accel_engaged_button.render(rl.Rectangle(rect.width/2, rect.height/2, 200, 150))
 
   def user_interacting(self) -> bool:
-    return self._exp_button.is_pressed
+    return self._exp_button.is_pressed or self._accel_engaged_button.is_pressed
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
     """Draw the MAX speed indicator box."""
