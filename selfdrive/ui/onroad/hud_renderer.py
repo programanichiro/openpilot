@@ -82,11 +82,13 @@ class HudRenderer(Widget):
 
     self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
 
+    self.button_style_only = True
     self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged)
     self._press_accel_engaged()
 
     self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode)
     self._press_dexp_sw_mode()
+    self.button_style_only = False
 
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
@@ -243,7 +245,8 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
-    accel_engaged = (accel_engaged + 1) % 5
+    if self.button_style_only == False:
+      accel_engaged = (accel_engaged + 1) % 5
     if accel_engaged == 0:
       self._accel_engaged_button.set_text("A")
       self._accel_engaged_button.set_button_style(ButtonStyle.NORMAL)
@@ -258,6 +261,9 @@ class HudRenderer(Widget):
 
     if accel_engaged != 0:
       self._accel_engaged_button.set_button_style(ButtonStyle.PRIMARY)
+
+    if self.button_style_only:
+      return
 
     with open('/dev/shm/accel_engaged.txt','w') as fp2:
       fp2.write("%d" % (accel_engaged))
@@ -275,11 +281,16 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
-    dexp_sw_mode = (dexp_sw_mode + 1) % 2
+    if self.button_style_only == False:
+      dexp_sw_mode = (dexp_sw_mode + 1) % 2
     if dexp_sw_mode == 0:
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.NORMAL)
     else:
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.PRIMARY)
+
+    if self.button_style_only:
+      return
+
 
     with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
       fp2.write("%d" % (dexp_sw_mode))
