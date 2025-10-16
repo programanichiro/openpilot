@@ -61,8 +61,13 @@ class HudRenderer(Widget):
   def __init__(self):
     super().__init__()
 
-    with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
-      dst.write(src.read())
+    try:
+      with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
+        dst.write(src.read())
+      with open('/data/dexp_sw_mode.txt', 'rb') as src, open('/dev/shm/dexp_sw_mode.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
 
     """Initialize the HUD renderer."""
     self.is_cruise_set: bool = False
@@ -77,32 +82,13 @@ class HudRenderer(Widget):
 
     self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
 
-    self._accel_engaged_button = Button("Test",click_callback=self._press_accel_engaged)
+    self.button_style_only = True
+    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged)
+    self._press_accel_engaged()
 
-  def _press_accel_engaged(self):
-    try:
-      with open('/dev/shm/accel_engaged.txt','r') as fp:
-        accel_engaged_str = fp.read()
-        accel_engaged = int(accel_engaged_str)
-        accel_engaged = (accel_engaged + 1) % 5
-        if accel_engaged == 0:
-          self._accel_engaged_button.set_text("N")
-        elif accel_engaged == 1:
-          self._accel_engaged_button.set_text("A")
-        elif accel_engaged == 2:
-          self._accel_engaged_button.set_text("AA")
-        elif accel_engaged == 3:
-          self._accel_engaged_button.set_text("iP")
-        elif accel_engaged == 4:
-          self._accel_engaged_button.set_text("eP")
-
-        with open('/dev/shm/accel_engaged.txt','w') as fp2:
-          fp2.write("%d" % (accel_engaged))
-        with open('/data/accel_engaged.txt','w') as fp3:
-          fp3.write("%d" % (accel_engaged))
-
-    except Exception as e:
-      pass
+    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode)
+    self._press_dexp_sw_mode()
+    self.button_style_only = False
 
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
@@ -132,6 +118,8 @@ class HudRenderer(Widget):
     speed_conversion = CV.MS_TO_KPH if ui_state.is_metric else CV.MS_TO_MPH
     self.speed = max(0.0, v_ego * speed_conversion)
 
+    self.ip_sound_req_proc()
+
   def _render(self, rect: rl.Rectangle) -> None:
     """Render HUD elements to the screen."""
     # Draw the header background
@@ -153,10 +141,18 @@ class HudRenderer(Widget):
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
-    self._accel_engaged_button.render(rl.Rectangle(rect.width/2, rect.height/2, 200, 150))
+    btn_w0 = 250
+    btn_w = 200
+    btn_h0 = 175
+    btn_h = 150
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
+    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
 
   def user_interacting(self) -> bool:
-    return self._exp_button.is_pressed or self._accel_engaged_button.is_pressed
+    return (self._exp_button.is_pressed
+      or self._accel_engaged_button.is_pressed
+      or self._dexp_sw_mode_button.is_pressed
+      )
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
     """Draw the MAX speed indicator box."""
@@ -212,3 +208,91 @@ class HudRenderer(Widget):
     unit_text_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
+
+  def ip_sound_req_proc(self):
+    pass
+
+    try:
+      with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
+        signal_start_prompt_info_str = fp.read()
+        if signal_start_prompt_info_str:
+          pr = int(signal_start_prompt_info_str)
+          if pr == 1:
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (6)) #prompt.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+          elif pr == 2:
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (1)) #engage.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+          elif pr == 3: #デバッグ用。
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (1)) #po.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+    except Exception as e:
+      pass
+
+  def _press_accel_engaged(self):
+    accel_engaged = 0
+    try:
+      with open('/dev/shm/accel_engaged.txt','r') as fp:
+        accel_engaged_str = fp.read()
+        if accel_engaged_str:
+          accel_engaged = int(accel_engaged_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      accel_engaged = (accel_engaged + 1) % 5
+    if accel_engaged == 0:
+      self._accel_engaged_button.set_text("A")
+      self._accel_engaged_button.set_button_style(ButtonStyle.NORMAL)
+    elif accel_engaged == 1:
+      self._accel_engaged_button.set_text("A")
+    elif accel_engaged == 2:
+      self._accel_engaged_button.set_text("AA")
+    elif accel_engaged == 3:
+      self._accel_engaged_button.set_text("iP")
+    elif accel_engaged == 4:
+      self._accel_engaged_button.set_text("eP")
+
+    if accel_engaged != 0:
+      self._accel_engaged_button.set_button_style(ButtonStyle.PRIMARY)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/accel_engaged.txt','w') as fp2:
+      fp2.write("%d" % (accel_engaged))
+    with open('/data/accel_engaged.txt','w') as fp3:
+      fp3.write("%d" % (accel_engaged))
+
+
+  def _press_dexp_sw_mode(self):
+    dexp_sw_mode = 0
+    try:
+      with open('/dev/shm/dexp_sw_mode.txt','r') as fp:
+        dexp_sw_mode_str = fp.read()
+        if dexp_sw_mode_str:
+          dexp_sw_mode = int(dexp_sw_mode_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      dexp_sw_mode = (dexp_sw_mode + 1) % 2
+    if dexp_sw_mode == 0:
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.NORMAL)
+    else:
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.PRIMARY)
+
+    if self.button_style_only:
+      return
+
+
+    with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
+      fp2.write("%d" % (dexp_sw_mode))
+    with open('/data/dexp_sw_mode.txt','w') as fp3:
+      fp3.write("%d" % (dexp_sw_mode))
