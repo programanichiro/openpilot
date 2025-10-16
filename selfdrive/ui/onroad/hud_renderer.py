@@ -141,9 +141,10 @@ class HudRenderer(Widget):
 
     btn_w0 = 250
     btn_w = 200
+    btn_h0 = 175
     btn_h = 150
-    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width/2 + btn_w0*0, rect.height/2, btn_w, btn_h))
-    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x + rect.width/2 + btn_w0*1, rect.height/2, btn_w, btn_h))
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
+    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
@@ -276,9 +277,9 @@ class HudRenderer(Widget):
 
     dexp_sw_mode = (dexp_sw_mode + 1) % 2
     if dexp_sw_mode == 0:
-      self._accel_engaged_button.set_button_style(ButtonStyle.NORMAL)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.NORMAL)
     else:
-      self._accel_engaged_button.set_button_style(ButtonStyle.PRIMARY)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.PRIMARY)
 
     with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
       fp2.write("%d" % (dexp_sw_mode))
