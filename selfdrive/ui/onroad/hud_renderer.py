@@ -61,14 +61,6 @@ class HudRenderer(Widget):
   def __init__(self):
     super().__init__()
 
-    try:
-      with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
-        dst.write(src.read())
-      with open('/data/dexp_sw_mode.txt', 'rb') as src, open('/dev/shm/dexp_sw_mode.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-
     """Initialize the HUD renderer."""
     self.is_cruise_set: bool = False
     self.is_cruise_available: bool = True
@@ -81,14 +73,7 @@ class HudRenderer(Widget):
     self._font_medium: rl.Font = gui_app.font(FontWeight.MEDIUM)
 
     self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
-
-    self.button_style_only = True
-    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged)
-    self._press_accel_engaged()
-
-    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode)
-    self._press_dexp_sw_mode()
-    self.button_style_only = False
+    self.ip_button_init()
 
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
@@ -118,7 +103,7 @@ class HudRenderer(Widget):
     speed_conversion = CV.MS_TO_KPH if ui_state.is_metric else CV.MS_TO_MPH
     self.speed = max(0.0, v_ego * speed_conversion)
 
-    self.ip_sound_req_proc()
+    self.ip_update_state()
 
   def _render(self, rect: rl.Rectangle) -> None:
     """Render HUD elements to the screen."""
@@ -147,11 +132,13 @@ class HudRenderer(Widget):
     btn_h = 150
     self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
     self._dexp_sw_mode_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
+    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
       or self._accel_engaged_button.is_pressed
       or self._dexp_sw_mode_button.is_pressed
+      or self._long_speeddown_disable_button.is_pressed
       )
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
@@ -209,9 +196,36 @@ class HudRenderer(Widget):
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
 
-  def ip_sound_req_proc(self):
-    pass
+  def ip_button_init(self):
+    try:
+      with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
+    try:
+      with open('/data/dexp_sw_mode.txt', 'rb') as src, open('/dev/shm/dexp_sw_mode.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
+    try:
+      with open('/data/long_speeddown_disable.txt', 'rb') as src, open('/dev/shm/long_speeddown_disable.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
 
+    self.ip_update_state_ct = 0
+    self.button_style_only = True
+    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged)
+    self._press_accel_engaged()
+
+    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode)
+    self._press_dexp_sw_mode()
+
+    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable) #イチロウロング独立ボタン
+    self._press_long_speeddown_disable()
+    self.button_style_only = False
+
+  def ip_update_state(self):
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
         signal_start_prompt_info_str = fp.read()
@@ -234,6 +248,13 @@ class HudRenderer(Widget):
               fp3.write('%d' % (0))
     except Exception as e:
       pass
+
+    self.ip_update_state_ct += 1
+    if(self.ip_update_state_ct % 10 == 7):
+      self.button_style_only = True
+      self._press_long_speeddown_disable()
+      self.button_style_only = False
+
 
   def _press_accel_engaged(self):
     accel_engaged = 0
@@ -291,8 +312,32 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
-
     with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
       fp2.write("%d" % (dexp_sw_mode))
     with open('/data/dexp_sw_mode.txt','w') as fp3:
       fp3.write("%d" % (dexp_sw_mode))
+
+  def _press_long_speeddown_disable(self):
+    long_speeddown_disable = 0
+    try:
+      with open('/dev/shm/long_speeddown_disable.txt','r') as fp:
+        long_speeddown_disable_str = fp.read()
+        if long_speeddown_disable_str:
+          long_speeddown_disable = int(long_speeddown_disable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      long_speeddown_disable = (long_speeddown_disable + 1) % 2
+    if long_speeddown_disable == 0:
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.PRIMARY)
+    else:
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.NORMAL)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/long_speeddown_disable.txt','w') as fp2:
+      fp2.write("%d" % (long_speeddown_disable))
+    with open('/data/long_speeddown_disable.txt','w') as fp3:
+      fp3.write("%d" % (long_speeddown_disable))
