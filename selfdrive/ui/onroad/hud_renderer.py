@@ -130,15 +130,25 @@ class HudRenderer(Widget):
     btn_w = 200
     btn_h0 = 175
     btn_h = 150
-    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
-    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
-    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
+    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2, btn_w, btn_h))
+
+    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
+    self._decel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*2.5, btn_w, btn_h))
+    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.5, btn_w, btn_h))
+
+    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
+    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.5, btn_w, btn_h))
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
       or self._accel_engaged_button.is_pressed
       or self._dexp_sw_mode_button.is_pressed
       or self._long_speeddown_disable_button.is_pressed
+      or self._lta_enable_sw_button.is_pressed
+      or self._start_accel_power_up_disp_enable_button.is_pressed
+      or self._accel_ctrl_disable_button.is_pressed
+      or self._decel_ctrl_disable_button.is_pressed
       )
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
@@ -212,17 +222,56 @@ class HudRenderer(Widget):
         dst.write(src.read())
     except Exception as e:
       pass
+    try:
+      with open('/data/lta_enable_sw.txt', 'rb') as src, open('/dev/shm/lta_enable_sw.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
+    try:
+      with open('/data/start_accel_power_up_disp_enable.txt', 'rb') as src, open('/dev/shm/start_accel_power_up_disp_enable.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
+    try:
+      with open('/data/accel_ctrl_disable.txt', 'rb') as src, open('/dev/shm/accel_ctrl_disable.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
+    try:
+      with open('/data/decel_ctrl_disable.txt', 'rb') as src, open('/dev/shm/decel_ctrl_disable.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
 
     self.ip_update_state_ct = 0
     self.button_style_only = True
-    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged)
+    font_sz = 75
+    font_wt = FontWeight.BOLD #EXTRA_BOLD
+    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=font_sz,font_weight=font_wt)
     self._press_accel_engaged()
 
-    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode)
+    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=font_wt)
     self._press_dexp_sw_mode()
 
-    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable) #イチロウロング独立ボタン
+    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable,font_size=font_sz,font_weight=font_wt) #イチロウロング独立ボタン
     self._press_long_speeddown_disable()
+
+    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=font_wt)
+    self._press_lta_enable_sw()
+
+    #日本語フォント対応待ち
+    # self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    # self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    # self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+
+    self._start_accel_power_up_disp_enable_button = Button("Bst",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    self._press_start_accel_power_up_disp_enable()
+
+    self._accel_ctrl_disable_button = Button("Up",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._press_accel_ctrl_disable()
+
+    self._decel_ctrl_disable_button = Button("Dn",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._press_decel_ctrl_disable()
     self.button_style_only = False
 
   def ip_update_state(self):
@@ -270,7 +319,7 @@ class HudRenderer(Widget):
       accel_engaged = (accel_engaged + 1) % 5
     if accel_engaged == 0:
       self._accel_engaged_button.set_text("A")
-      self._accel_engaged_button.set_button_style(ButtonStyle.NORMAL)
+      self._accel_engaged_button.set_button_style(ButtonStyle.HudSOff)
     elif accel_engaged == 1:
       self._accel_engaged_button.set_text("A")
     elif accel_engaged == 2:
@@ -281,7 +330,7 @@ class HudRenderer(Widget):
       self._accel_engaged_button.set_text("eP")
 
     if accel_engaged != 0:
-      self._accel_engaged_button.set_button_style(ButtonStyle.PRIMARY)
+      self._accel_engaged_button.set_button_style(ButtonStyle.HudSOn)
 
     if self.button_style_only:
       return
@@ -305,9 +354,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       dexp_sw_mode = (dexp_sw_mode + 1) % 2
     if dexp_sw_mode == 0:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.NORMAL)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOff)
     else:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.PRIMARY)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOn)
 
     if self.button_style_only:
       return
@@ -330,9 +379,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       long_speeddown_disable = (long_speeddown_disable + 1) % 2
     if long_speeddown_disable == 0:
-      self._long_speeddown_disable_button.set_button_style(ButtonStyle.PRIMARY)
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOn)
     else:
-      self._long_speeddown_disable_button.set_button_style(ButtonStyle.NORMAL)
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOff)
 
     if self.button_style_only:
       return
@@ -341,3 +390,104 @@ class HudRenderer(Widget):
       fp2.write("%d" % (long_speeddown_disable))
     with open('/data/long_speeddown_disable.txt','w') as fp3:
       fp3.write("%d" % (long_speeddown_disable))
+
+  def _press_lta_enable_sw(self):
+    lta_enable_sw = 0
+    try:
+      with open('/dev/shm/lta_enable_sw.txt','r') as fp:
+        lta_enable_sw_str = fp.read()
+        if lta_enable_sw_str:
+          lta_enable_sw = int(lta_enable_sw_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      lta_enable_sw = (lta_enable_sw + 1) % 2
+    if lta_enable_sw == 0:
+      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/lta_enable_sw.txt','w') as fp2:
+      fp2.write("%d" % (lta_enable_sw))
+    with open('/data/lta_enable_sw.txt','w') as fp3:
+      fp3.write("%d" % (lta_enable_sw))
+
+
+  def _press_start_accel_power_up_disp_enable(self):
+    start_accel_power_up_disp_enable = 0
+    try:
+      with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
+        start_accel_power_up_disp_enable_str = fp.read()
+        if start_accel_power_up_disp_enable_str:
+          start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      start_accel_power_up_disp_enable = (start_accel_power_up_disp_enable + 1) % 2
+    if start_accel_power_up_disp_enable == 0:
+      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/start_accel_power_up_disp_enable.txt','w') as fp2:
+      fp2.write("%d" % (start_accel_power_up_disp_enable))
+    with open('/data/start_accel_power_up_disp_enable.txt','w') as fp3:
+      fp3.write("%d" % (start_accel_power_up_disp_enable))
+
+  def _press_accel_ctrl_disable(self):
+    accel_ctrl_disable = 0
+    try:
+      with open('/dev/shm/accel_ctrl_disable.txt','r') as fp:
+        accel_ctrl_disable_str = fp.read()
+        if accel_ctrl_disable_str:
+          accel_ctrl_disable = int(accel_ctrl_disable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      accel_ctrl_disable = (accel_ctrl_disable + 1) % 2
+    if accel_ctrl_disable == 0:
+      self._accel_ctrl_disable_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._accel_ctrl_disable_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/accel_ctrl_disable.txt','w') as fp2:
+      fp2.write("%d" % (accel_ctrl_disable))
+    with open('/data/accel_ctrl_disable.txt','w') as fp3:
+      fp3.write("%d" % (accel_ctrl_disable))
+
+  def _press_decel_ctrl_disable(self):
+    decel_ctrl_disable = 0
+    try:
+      with open('/dev/shm/decel_ctrl_disable.txt','r') as fp:
+        decel_ctrl_disable_str = fp.read()
+        if decel_ctrl_disable_str:
+          decel_ctrl_disable = int(decel_ctrl_disable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      decel_ctrl_disable = (decel_ctrl_disable + 1) % 2
+    if decel_ctrl_disable == 0:
+      self._decel_ctrl_disable_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._decel_ctrl_disable_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/decel_ctrl_disable.txt','w') as fp2:
+      fp2.write("%d" % (decel_ctrl_disable))
+    with open('/data/decel_ctrl_disable.txt','w') as fp3:
+      fp3.write("%d" % (decel_ctrl_disable))
