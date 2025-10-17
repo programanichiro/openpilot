@@ -270,7 +270,7 @@ class HudRenderer(Widget):
     self._accel_ctrl_disable_button = Button("Up",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
     self._press_accel_ctrl_disable()
 
-    self._decel_ctrl_disable_button = Button("Dwn",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=FontWeight.SEMI_BOLD)
+    self._decel_ctrl_disable_button = Button("Dn",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=FontWeight.font_wt)
     self._press_decel_ctrl_disable()
     self.button_style_only = False
 
