@@ -130,9 +130,9 @@ class HudRenderer(Widget):
     btn_w = 200
     btn_h0 = 175
     btn_h = 150
-    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2, btn_w, btn_h))
 
-    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*1.5, btn_w, btn_h))
+    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.5, btn_w, btn_h))
 
     self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
     self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.5, btn_w, btn_h))
@@ -224,16 +224,18 @@ class HudRenderer(Widget):
 
     self.ip_update_state_ct = 0
     self.button_style_only = True
-    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged)
+    font_sz = 75
+    font_wt = FontWeight.EXTRA_BOLD
+    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=font_sz,font_weight=font_wt)
     self._press_accel_engaged()
 
-    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode)
+    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=font_wt)
     self._press_dexp_sw_mode()
 
-    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable) #イチロウロング独立ボタン
+    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable,font_size=font_sz,font_weight=font_wt) #イチロウロング独立ボタン
     self._press_long_speeddown_disable()
 
-    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw)
+    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=font_wt)
     self._press_lta_enable_sw()
     self.button_style_only = False
 
