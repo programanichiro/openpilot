@@ -133,12 +133,14 @@ class HudRenderer(Widget):
     self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
     self._dexp_sw_mode_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
     self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
+    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +btn_w0/2+ btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
       or self._accel_engaged_button.is_pressed
       or self._dexp_sw_mode_button.is_pressed
       or self._long_speeddown_disable_button.is_pressed
+      or self._lta_enable_sw_button.is_pressed
       )
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
@@ -212,6 +214,11 @@ class HudRenderer(Widget):
         dst.write(src.read())
     except Exception as e:
       pass
+    try:
+      with open('/data/lta_enable_sw.txt', 'rb') as src, open('/dev/shm/lta_enable_sw.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
 
     self.ip_update_state_ct = 0
     self.button_style_only = True
@@ -223,6 +230,9 @@ class HudRenderer(Widget):
 
     self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable) #イチロウロング独立ボタン
     self._press_long_speeddown_disable()
+
+    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_long_speeddown_disable) #イチロウロング独立ボタン
+    self._press_lta_enable_sw()
     self.button_style_only = False
 
   def ip_update_state(self):
@@ -341,3 +351,28 @@ class HudRenderer(Widget):
       fp2.write("%d" % (long_speeddown_disable))
     with open('/data/long_speeddown_disable.txt','w') as fp3:
       fp3.write("%d" % (long_speeddown_disable))
+
+  def _press_lta_enable_sw(self):
+    lta_enable_sw = 0
+    try:
+      with open('/dev/shm/lta_enable_sw.txt','r') as fp:
+        lta_enable_sw_str = fp.read()
+        if lta_enable_sw_str:
+          lta_enable_sw = int(lta_enable_sw_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      lta_enable_sw = (lta_enable_sw + 1) % 2
+    if lta_enable_sw == 0:
+      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/lta_enable_sw.txt','w') as fp2:
+      fp2.write("%d" % (lta_enable_sw))
+    with open('/data/lta_enable_sw.txt','w') as fp3:
+      fp3.write("%d" % (lta_enable_sw))
