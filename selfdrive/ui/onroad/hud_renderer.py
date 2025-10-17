@@ -259,13 +259,18 @@ class HudRenderer(Widget):
     self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=font_wt)
     self._press_lta_enable_sw()
 
-    self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    #日本語フォント対応待ち
+    # self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    # self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    # self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+
+    self._start_accel_power_up_disp_enable_button = Button("Bst",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
     self._press_start_accel_power_up_disp_enable()
 
-    self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._accel_ctrl_disable_button = Button("Up",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
     self._press_accel_ctrl_disable()
 
-    self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._decel_ctrl_disable_button = Button("Down",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
     self._press_decel_ctrl_disable()
     self.button_style_only = False
 
