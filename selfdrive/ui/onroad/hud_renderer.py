@@ -130,8 +130,10 @@ class HudRenderer(Widget):
     btn_w = 200
     btn_h0 = 175
     btn_h = 150
+    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
     self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2, btn_w, btn_h))
 
+    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
     self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.5, btn_w, btn_h))
 
     self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
@@ -143,6 +145,8 @@ class HudRenderer(Widget):
       or self._dexp_sw_mode_button.is_pressed
       or self._long_speeddown_disable_button.is_pressed
       or self._lta_enable_sw_button.is_pressed
+      or self._start_accel_power_up_disp_enable_button.is_pressed
+      or self._accel_ctrl_disable_button.is_pressed
       )
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
@@ -221,11 +225,21 @@ class HudRenderer(Widget):
         dst.write(src.read())
     except Exception as e:
       pass
+    try:
+      with open('/data/start_accel_power_up_disp_enable.txt', 'rb') as src, open('/dev/shm/start_accel_power_up_disp_enable.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
+    try:
+      with open('/data/accel_ctrl_disable.txt', 'rb') as src, open('/dev/shm/accel_ctrl_disable.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
 
     self.ip_update_state_ct = 0
     self.button_style_only = True
     font_sz = 75
-    font_wt = FontWeight.EXTRA_BOLD
+    font_wt = FontWeight.BOLD #EXTRA_BOLD
     self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=font_sz,font_weight=font_wt)
     self._press_accel_engaged()
 
@@ -237,6 +251,12 @@ class HudRenderer(Widget):
 
     self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=font_wt)
     self._press_lta_enable_sw()
+
+    self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    self._press_start_accel_power_up_disp_enable()
+
+    self._saccel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._press_accel_ctrl_disable()
     self.button_style_only = False
 
   def ip_update_state(self):
@@ -380,3 +400,54 @@ class HudRenderer(Widget):
       fp2.write("%d" % (lta_enable_sw))
     with open('/data/lta_enable_sw.txt','w') as fp3:
       fp3.write("%d" % (lta_enable_sw))
+
+
+  def _press_start_accel_power_up_disp_enable(self):
+    start_accel_power_up_disp_enable = 0
+    try:
+      with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
+        start_accel_power_up_disp_enable_str = fp.read()
+        if start_accel_power_up_disp_enable_str:
+          start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      start_accel_power_up_disp_enable = (start_accel_power_up_disp_enable + 1) % 2
+    if start_accel_power_up_disp_enable == 0:
+      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/start_accel_power_up_disp_enable.txt','w') as fp2:
+      fp2.write("%d" % (start_accel_power_up_disp_enable))
+    with open('/data/start_accel_power_up_disp_enable.txt','w') as fp3:
+      fp3.write("%d" % (start_accel_power_up_disp_enable))
+
+  def _press_accel_ctrl_disable(self):
+    accel_ctrl_disable = 0
+    try:
+      with open('/dev/shm/accel_ctrl_disable.txt','r') as fp:
+        accel_ctrl_disable_str = fp.read()
+        if accel_ctrl_disable_str:
+          accel_ctrl_disable = int(accel_ctrl_disable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      accel_ctrl_disable = (accel_ctrl_disable + 1) % 2
+    if accel_ctrl_disable == 0:
+      self._accel_ctrl_disable_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._accel_ctrl_disable_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/accel_ctrl_disable.txt','w') as fp2:
+      fp2.write("%d" % (accel_ctrl_disable))
+    with open('/data/accel_ctrl_disable.txt','w') as fp3:
+      fp3.write("%d" % (accel_ctrl_disable))
