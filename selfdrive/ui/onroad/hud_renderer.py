@@ -270,7 +270,7 @@ class HudRenderer(Widget):
       accel_engaged = (accel_engaged + 1) % 5
     if accel_engaged == 0:
       self._accel_engaged_button.set_text("A")
-      self._accel_engaged_button.set_button_style(ButtonStyle.NORMAL)
+      self._accel_engaged_button.set_button_style(ButtonStyle.HudSOff)
     elif accel_engaged == 1:
       self._accel_engaged_button.set_text("A")
     elif accel_engaged == 2:
@@ -281,7 +281,7 @@ class HudRenderer(Widget):
       self._accel_engaged_button.set_text("eP")
 
     if accel_engaged != 0:
-      self._accel_engaged_button.set_button_style(ButtonStyle.PRIMARY)
+      self._accel_engaged_button.set_button_style(ButtonStyle.HudSOn)
 
     if self.button_style_only:
       return
@@ -305,9 +305,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       dexp_sw_mode = (dexp_sw_mode + 1) % 2
     if dexp_sw_mode == 0:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.NORMAL)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOff)
     else:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.PRIMARY)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOn)
 
     if self.button_style_only:
       return
@@ -330,9 +330,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       long_speeddown_disable = (long_speeddown_disable + 1) % 2
     if long_speeddown_disable == 0:
-      self._long_speeddown_disable_button.set_button_style(ButtonStyle.PRIMARY)
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOn)
     else:
-      self._long_speeddown_disable_button.set_button_style(ButtonStyle.NORMAL)
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOff)
 
     if self.button_style_only:
       return
