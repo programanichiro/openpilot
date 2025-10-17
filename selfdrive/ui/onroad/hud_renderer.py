@@ -130,10 +130,12 @@ class HudRenderer(Widget):
     btn_w = 200
     btn_h0 = 175
     btn_h = 150
-    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
-    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
-    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
-    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +btn_w0/2+ btn_w0*1, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
+    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
+
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*3, rect.y + rect.height - btn_h0*1.5, btn_w, btn_h))
+
+    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
+    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.5, btn_w, btn_h))
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
@@ -231,7 +233,7 @@ class HudRenderer(Widget):
     self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable) #イチロウロング独立ボタン
     self._press_long_speeddown_disable()
 
-    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_long_speeddown_disable) #イチロウロング独立ボタン
+    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw)
     self._press_lta_enable_sw()
     self.button_style_only = False
 
