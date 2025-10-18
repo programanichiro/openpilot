@@ -104,6 +104,9 @@ class UbloxMsgParser:
   }
 
   def __init__(self) -> None:
+    with open('/dev/shm/gps_axs_data.txt','w') as fp:
+      fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (0,0,0,0,0,0))
+
     self.framer = UbxFramer()
     self.caches = EphemerisCaches(
       gps_subframes=defaultdict(dict),
@@ -191,6 +194,25 @@ class UbloxMsgParser:
     gps.verticalAccuracy = msg.v_acc * 1e-03
     gps.speedAccuracy = msg.s_acc * 1e-03
     gps.bearingAccuracyDeg = msg.head_acc * 1e-05
+
+    locationd_valid = 1
+    if gps.vNED[0] == 0 and gps.vNED[1] == 0 and gps.vNED[2] == 0:
+      locationd_valid = 0
+    # if gps.bearingAccuracyDeg > 60:
+    #   locationd_valid = 0
+
+    car_vego = gps.speed
+    try:
+      with open('/dev/shm/car_vego.txt','r') as fp:
+        car_vego_str = fp.read()
+        if car_vego_str:
+          car_vego = float(car_vego_str)
+    except Exception as e:
+      pass
+
+    with open('/dev/shm/gps_axs_data.txt','w') as fp:
+      fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (gps.latitude,gps.longitude,gps.bearingDeg,car_vego,gps.unixTimestampMillis,locationd_valid))
+
     return ('gpsLocationExternal', dat)
 
   # RXM-SFRBX dispatch to GPS or GLONASS ephemeris

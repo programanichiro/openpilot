@@ -93,7 +93,22 @@ class Controls:
 
     # Check which actuators can be enabled
     standstill = abs(CS.vEgo) <= max(self.CP.minSteerSpeed, 0.3) or CS.standstill
-    CC.latActive = self.sm['selfdriveState'].active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
+    steer_always = 0
+    cruise_available = 0
+    try:
+      with open('/dev/shm/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+      with open('/dev/shm/cruise_available.txt','r') as fp:
+        cruise_available_str = fp.read()
+        if cruise_available_str:
+          if int(cruise_available_str) >= 1:
+            cruise_available = 1 #ACCボタンがOFFならlatActiveをTrueにしない。
+    except Exception as e:
+      pass
+    CC.latActive = (self.sm['selfdriveState'].active or (steer_always != 0 and cruise_available != 0)) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                    (not standstill or self.CP.steerAtStandstill)
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
 
