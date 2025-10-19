@@ -209,12 +209,12 @@ class HudRenderer(Widget):
       rect_border_color = rl.Color(205, 44, 38, 200)
     if self.db_rec_mode:
       rect_color = rl.Color(100, 0, 0, 250)
-    if self.add_v_by_lead:
+    if self.add_v_by_lead and self.is_cruise_set:
       rect_border_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
-    if self.curve_brake:
+    if self.curve_brake and self.is_cruise_set:
       rect_color = COLORS.black_translucent
       rect_border_color = rl.Color(0xff, 0, 0, 200) #減速時は赤
-    if self.turbo_boost:
+    if self.turbo_boost and self.is_cruise_set:
       rect_border_color = rl.Color(0xff, 0xff, 0, 200) #スタートダッシュ時は黄色
 
     rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, rect_color)
@@ -331,6 +331,8 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.exp_mode = Params().get("ExperimentalMode")
+    self.dexp_sw_mode = False
     self.limit_speed_num = 0
     self.limit_speed_auto_detect = 0
     self.limit_speed_override = False
@@ -372,10 +374,10 @@ class HudRenderer(Widget):
 
     font_sz = 25
     font_wt = "JP" #FontWeight.BOLD #EXTRA_BOLD
-    self._knight_scanner_bit3_button = Button("⚫︎⚫︎⚫︎",click_callback=self._press_knight_scanner_bit3,font_size=font_sz,font_weight=font_wt)
+    self._knight_scanner_bit3_button = Button("●●●",click_callback=self._press_knight_scanner_bit3,font_size=font_sz,font_weight=font_wt)
     self._press_knight_scanner_bit3()
 
-    self._limitspeed_sw_button = Button("⚪︎",click_callback=self._press_limitspeed_sw,font_size=font_sz,font_weight=font_wt)
+    self._limitspeed_sw_button = Button("○",click_callback=self._press_limitspeed_sw,font_size=font_sz,font_weight=font_wt)
     self._press_limitspeed_sw()
 
     font_sz = 25
@@ -427,6 +429,12 @@ class HudRenderer(Widget):
       self.button_style_only = True
       self._press_accel_ctrl_disable()
       self.button_style_only = False
+
+    if(self.ip_update_state_ct % 10 == 0):
+      if self.dexp_sw_mode == 1:
+        self.button_style_only = True
+        self._press_dexp_sw_mode() #ExperimentalModeを操作したらdX解除する
+        self.button_style_only = False
 
     try:
       with open('/dev/shm/limitspeed_data.txt','r') as fp2:
@@ -498,6 +506,8 @@ class HudRenderer(Widget):
     else:
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOn)
 
+    self.dexp_sw_mode = dexp_sw_mode
+
     if self.button_style_only:
       return
 
@@ -544,9 +554,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       lta_enable_sw = (lta_enable_sw + 1) % 2
     if lta_enable_sw == 0:
-      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudSOn)
-    else:
       self._lta_enable_sw_button.set_button_style(ButtonStyle.HudSOff)
+    else:
+      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudSOn)
 
     if self.button_style_only:
       return
@@ -570,9 +580,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       start_accel_power_up_disp_enable = (start_accel_power_up_disp_enable + 1) % 2
     if start_accel_power_up_disp_enable == 0:
-      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudSOn)
-    else:
       self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudSOff)
+    else:
+      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudSOn)
 
     if self.button_style_only:
       return
@@ -648,22 +658,22 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       Knight_scanner = (Knight_scanner + 1) % 8
     if Knight_scanner == 0:
-      self._knight_scanner_bit3_button.set_text("⚪︎⚪︎⚪︎")
+      self._knight_scanner_bit3_button.set_text("○○○")
       self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudUnder)
     elif Knight_scanner == 1:
-      self._knight_scanner_bit3_button.set_text("⚫︎⚪︎⚪︎")
+      self._knight_scanner_bit3_button.set_text("●○○")
     elif Knight_scanner == 2:
-      self._knight_scanner_bit3_button.set_text("⚪︎⚫︎⚪︎")
+      self._knight_scanner_bit3_button.set_text("○●○")
     elif Knight_scanner == 3:
-      self._knight_scanner_bit3_button.set_text("⚫︎⚫︎⚪︎")
+      self._knight_scanner_bit3_button.set_text("●●○")
     elif Knight_scanner == 4:
-      self._knight_scanner_bit3_button.set_text("⚪︎⚪︎⚫︎")
+      self._knight_scanner_bit3_button.set_text("○○●")
     elif Knight_scanner == 5:
-      self._knight_scanner_bit3_button.set_text("⚫︎⚪︎⚫︎")
+      self._knight_scanner_bit3_button.set_text("●○●")
     elif Knight_scanner == 6:
-      self._knight_scanner_bit3_button.set_text("⚪︎⚫︎⚫︎")
+      self._knight_scanner_bit3_button.set_text("○●●")
     elif Knight_scanner == 7:
-      self._knight_scanner_bit3_button.set_text("⚫︎⚫︎⚫︎")
+      self._knight_scanner_bit3_button.set_text("●●●")
 
     if Knight_scanner != 0:
       self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudUnder)
@@ -690,10 +700,10 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       limitspeed_sw = (limitspeed_sw + 1) % 3
     if limitspeed_sw == 0:
-      self._limitspeed_sw_button.set_text("⚪︎")
+      self._limitspeed_sw_button.set_text("○")
       self._limitspeed_sw_button.set_button_style(ButtonStyle.HudUnder)
     elif limitspeed_sw == 1:
-      self._limitspeed_sw_button.set_text("⚫︎")
+      self._limitspeed_sw_button.set_text("●")
     elif limitspeed_sw == 2:
       self._limitspeed_sw_button.set_text("⬇︎")
 

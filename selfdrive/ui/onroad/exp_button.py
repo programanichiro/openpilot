@@ -62,6 +62,9 @@ class ExpButton(Widget):
       new_mode = not self._experimental_mode
       self._params.put_bool("ExperimentalMode", new_mode)
 
+      with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
+        fp2.write("%d" % (0)) # experimentalModeを操作したらdX解除する
+
       # Hold new state temporarily
       self._held_mode = new_mode
       self._hold_end_time = time.monotonic() + self._hold_duration
