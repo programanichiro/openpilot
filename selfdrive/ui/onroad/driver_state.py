@@ -109,7 +109,7 @@ class DriverStateRenderer(Widget):
 
     #"R"を表示
     if self.is_rhd:
-      pos = rl.Vector2(self.position_x, self.position_y)
+      pos = rl.Vector2(self.position_x - (BTN_SIZE // 2) -20, self.position_y - (BTN_SIZE // 2) -20)
       rl.draw_text_ex(self.r_font, "R", pos, 70, 0, rl.Color(255, 255, 255, 200))
 
   def _update_state(self):
