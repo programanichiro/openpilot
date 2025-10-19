@@ -1,6 +1,7 @@
 import pyray as rl
 from dataclasses import dataclass
 from openpilot.common.constants import CV
+from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
 from openpilot.selfdrive.ui.onroad.exp_button import ExpButton
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app, FontWeight
@@ -94,6 +95,26 @@ class HudRenderer(Widget):
     self.is_cruise_set = 0 < self.set_speed < SET_SPEED_NA
     self.is_cruise_available = self.set_speed != -1
 
+    try:
+      with open('/dev/shm/cruise_info.txt','r') as fp:
+        cruise_info_str = fp.read()
+        if cruise_info_str:
+          self.limit_speed_override = False
+          self.add_v_by_lead = False
+          if cruise_info_str.startswith(";"): #先頭セミコロンで制限速度適用
+            cruise_info_str = cruise_info_str[1:]
+            self.limit_speed_override = True
+          if cruise_info_str.startswith(","): #先頭カンマで増速、前走車追従
+            cruise_info_str = cruise_info_str[1:]
+            self.add_v_by_lead = True
+          if cruise_info_str.endswith("."): #末尾ピリオドで減速
+              cruise_info_str = cruise_info_str[:-1]
+          if cruise_info_str.endswith(";"): #末尾セミコロンスタートBoost
+              cruise_info_str = cruise_info_str[:-1]
+          self.set_speed = int(cruise_info_str)
+    except Exception as e:
+      pass
+
     if self.is_cruise_set and not ui_state.is_metric:
       self.set_speed *= KM_TO_MILE
 
@@ -103,6 +124,8 @@ class HudRenderer(Widget):
     speed_conversion = CV.MS_TO_KPH if ui_state.is_metric else CV.MS_TO_MPH
     self.speed = max(0.0, v_ego * speed_conversion)
 
+    self.maxspeed_org = car_state.vCruise #これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
+    self.vc_speed = v_ego
     self.ip_update_state()
 
   def _render(self, rect: rl.Rectangle) -> None:
@@ -130,15 +153,24 @@ class HudRenderer(Widget):
     btn_w = 200
     btn_h0 = 175
     btn_h = 150
-    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3, btn_w, btn_h))
-    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2, btn_w, btn_h))
+    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3.2, btn_w, btn_h))
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2.2, btn_w, btn_h))
 
-    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
-    self._decel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*2.5, btn_w, btn_h))
-    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.5, btn_w, btn_h))
+    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.7, btn_w, btn_h))
+    self._decel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*2.7, btn_w, btn_h))
+    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.7, btn_w, btn_h))
 
-    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.5, btn_w, btn_h))
-    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.5, btn_w, btn_h))
+    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.3, btn_w, btn_h))
+    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.3, btn_w, btn_h))
+
+    ud_btn_w0 = rect.width / 5
+    ud_btn_w = ud_btn_w0 * 0.7
+    ud_btn_h0 = 120
+    ud_btn_h = 80
+    self._knight_scanner_bit3_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*0, rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._limitspeed_sw_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(-1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._LongitudinalPersonality_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._lockon_disp_disable_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(2), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
@@ -149,6 +181,10 @@ class HudRenderer(Widget):
       or self._start_accel_power_up_disp_enable_button.is_pressed
       or self._accel_ctrl_disable_button.is_pressed
       or self._decel_ctrl_disable_button.is_pressed
+      or self._knight_scanner_bit3_button.is_pressed
+      or self._limitspeed_sw_button.is_pressed
+      or self._LongitudinalPersonality_button.is_pressed
+      or self._lockon_disp_disable_button.is_pressed
       )
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
@@ -158,8 +194,21 @@ class HudRenderer(Widget):
     y = rect.y + 45 + y_ofs
 
     set_speed_rect = rl.Rectangle(x, y, set_speed_width, UI_CONFIG.set_speed_height)
-    rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, COLORS.black_translucent)
-    rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, COLORS.border_translucent)
+    #SetSpeedの色
+    rect_color = COLORS.black_translucent
+    rect_border_color = COLORS.border_translucent
+
+    if self.limit_speed_override:
+      # self.limit_speed_num = int(limitspeed_data[0])
+      rect_color = rl.Color(235, 235, 235, 200)
+      rect_border_color = rl.Color(205, 44, 38, 200)
+    elif self.db_rec_mode:
+      rect_color = rl.Color(100, 0, 0, 250)
+    elif self.add_v_by_lead:
+      rect_border_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
+
+    rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, rect_color)
+    rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, rect_border_color)
 
     max_color = COLORS.grey
     set_speed_color = COLORS.dark_grey
@@ -172,7 +221,26 @@ class HudRenderer(Widget):
       elif ui_state.status == UIStatus.OVERRIDE:
         max_color = COLORS.override
 
+    if self.limit_speed_override:
+        max_color = rl.Color(0x24, 0x57, 0xa1 , 255)
+        set_speed_color = rl.Color(0x24, 0x57, 0xa1 , 255)
+
+    self.db_rec_mode = False
+    if self.limit_speed_override == False:
+      if self.Limit_speed_mode == 2:
+        if self.set_speed >= 30:
+          self.db_rec_mode = True
+      elif self.Limit_speed_mode == 1 and self.limit_speed_auto_detect == 1:
+        if self.maxspeed_org+12 <= self.set_speed and self.maxspeed_org+5 < self.vc_speed * 3.6:
+          #yellow_flagは保留
+          pass
+
     max_text = "MAX"
+    if self.limit_speed_override:
+      max_text = "AUTO"
+    if self.db_rec_mode:
+      max_text = "REC"
+
     max_text_width = measure_text_cached(self._font_semi_bold, max_text, FONT_SIZES.max_speed).x
     rl.draw_text_ex(
       self._font_semi_bold,
@@ -242,7 +310,24 @@ class HudRenderer(Widget):
         dst.write(src.read())
     except Exception as e:
       pass
+    try:
+      with open('/data/knight_scanner_bit3.txt', 'rb') as src, open('/dev/shm/knight_scanner_bit3.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
+    try:
+      with open('/data/limitspeed_sw.txt', 'rb') as src, open('/dev/shm/limitspeed_sw.txt', 'wb') as dst:
+        dst.write(src.read())
+    except Exception as e:
+      pass
 
+    self.limit_speed_num = 0
+    self.limit_speed_auto_detect = 0
+    self.limit_speed_override = False
+    self.add_v_by_lead = False
+    self.db_rec_mode = False
+    self.maxspeed_org = 0
+    self.vc_speed = 0
     self.ip_update_state_ct = 0
     self.button_style_only = True
     font_sz = 75
@@ -272,6 +357,20 @@ class HudRenderer(Widget):
 
     self._decel_ctrl_disable_button = Button("Dn",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
     self._press_decel_ctrl_disable()
+
+    font_sz = 50
+    font_wt = FontWeight.BOLD #EXTRA_BOLD
+    self._knight_scanner_bit3_button = Button("---",click_callback=self._press_knight_scanner_bit3,font_size=font_sz,font_weight=font_wt)
+    self._press_knight_scanner_bit3()
+
+    self._limitspeed_sw_button = Button("Max",click_callback=self._press_limitspeed_sw,font_size=font_sz,font_weight=font_wt)
+    self._press_limitspeed_sw()
+
+    self._LongitudinalPersonality_button = Button("^^^",click_callback=self._press_LongitudinalPersonality,font_size=font_sz,font_weight=font_wt)
+    self._press_LongitudinalPersonality()
+
+    self._lockon_disp_disable_button = Button("Lock",click_callback=self._press_lockon_disp_disable,font_size=font_sz,font_weight=font_wt)
+    self._press_lockon_disp_disable()
     self.button_style_only = False
 
   def ip_update_state(self):
@@ -299,11 +398,38 @@ class HudRenderer(Widget):
       pass
 
     self.ip_update_state_ct += 1
-    if(self.ip_update_state_ct % 10 == 7):
+
+    if(self.ip_update_state_ct % 10 == 8):
       self.button_style_only = True
       self._press_long_speeddown_disable()
       self.button_style_only = False
 
+    if(self.ip_update_state_ct % 10 == 2):
+      self.button_style_only = True
+      self._press_LongitudinalPersonality()
+      self.button_style_only = False
+
+    if(self.ip_update_state_ct % 10 == 5):
+      self.button_style_only = True
+      self._press_accel_ctrl_disable()
+      self.button_style_only = False
+
+    try:
+      with open('/dev/shm/limitspeed_data.txt','r') as fp2:
+        limitspeed_data_str = fp2.read()
+        if limitspeed_data_str:
+          limitspeed_data = limitspeed_data_str.split(",")
+          limitspeed_flag = int(limitspeed_data[2]) #111,999
+          if limitspeed_flag != 999:
+            self.limit_speed_num = 0
+            self.limit_speed_auto_detect = 0
+          else:
+            self.limit_speed_num = int(limitspeed_data[0])
+            self.limit_speed_auto_detect = 1
+    except Exception as e:
+      self.limit_speed_num = 0
+      self.limit_speed_auto_detect = 0
+      pass
 
   def _press_accel_engaged(self):
     accel_engaged = 0
@@ -442,6 +568,7 @@ class HudRenderer(Widget):
     with open('/data/start_accel_power_up_disp_enable.txt','w') as fp3:
       fp3.write("%d" % (start_accel_power_up_disp_enable))
 
+
   def _press_accel_ctrl_disable(self):
     accel_ctrl_disable = 0
     try:
@@ -467,6 +594,7 @@ class HudRenderer(Widget):
     with open('/data/accel_ctrl_disable.txt','w') as fp3:
       fp3.write("%d" % (accel_ctrl_disable))
 
+
   def _press_decel_ctrl_disable(self):
     decel_ctrl_disable = 0
     try:
@@ -491,3 +619,129 @@ class HudRenderer(Widget):
       fp2.write("%d" % (decel_ctrl_disable))
     with open('/data/decel_ctrl_disable.txt','w') as fp3:
       fp3.write("%d" % (decel_ctrl_disable))
+
+
+  def _press_knight_scanner_bit3(self):
+    Knight_scanner = 0
+    try:
+      with open('/dev/shm/knight_scanner_bit3.txt','r') as fp:
+        Knight_scanner_str = fp.read()
+        if Knight_scanner_str:
+          Knight_scanner = int(Knight_scanner_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      Knight_scanner = (Knight_scanner + 1) % 8
+    if Knight_scanner == 0:
+      self._knight_scanner_bit3_button.set_text("---")
+      self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudSOn)
+    elif Knight_scanner == 1:
+      self._knight_scanner_bit3_button.set_text("+--")
+    elif Knight_scanner == 2:
+      self._knight_scanner_bit3_button.set_text("-+-")
+    elif Knight_scanner == 3:
+      self._knight_scanner_bit3_button.set_text("++-")
+    elif Knight_scanner == 4:
+      self._knight_scanner_bit3_button.set_text("--+")
+    elif Knight_scanner == 5:
+      self._knight_scanner_bit3_button.set_text("+-+")
+    elif Knight_scanner == 6:
+      self._knight_scanner_bit3_button.set_text("-++")
+    elif Knight_scanner == 7:
+      self._knight_scanner_bit3_button.set_text("+++")
+
+    if Knight_scanner != 0:
+      self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudSOn)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/knight_scanner_bit3.txt','w') as fp2:
+      fp2.write("%d" % (Knight_scanner))
+    with open('/data/knight_scanner_bit3.txt','w') as fp3:
+      fp3.write("%d" % (Knight_scanner))
+
+
+  def _press_limitspeed_sw(self):
+    limitspeed_sw = 0
+    try:
+      with open('/dev/shm/limitspeed_sw.txt','r') as fp:
+        limitspeed_sw_str = fp.read()
+        if limitspeed_sw_str:
+          limitspeed_sw = int(limitspeed_sw_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      limitspeed_sw = (limitspeed_sw + 1) % 3
+    if limitspeed_sw == 0:
+      self._limitspeed_sw_button.set_text("Max")
+      self._limitspeed_sw_button.set_button_style(ButtonStyle.HudSOn)
+    elif limitspeed_sw == 1:
+      self._limitspeed_sw_button.set_text("Auto")
+    elif limitspeed_sw == 2:
+      self._limitspeed_sw_button.set_text("Rec")
+
+    self.Limit_speed_mode = limitspeed_sw
+
+    if limitspeed_sw != 0:
+      self._limitspeed_sw_button.set_button_style(ButtonStyle.HudSOn)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
+      fp2.write("%d" % (limitspeed_sw))
+    with open('/data/limitspeed_sw.txt','w') as fp3:
+      fp3.write("%d" % (limitspeed_sw))
+
+
+  def _press_LongitudinalPersonality(self):
+    psn_str = Params().get("LongitudinalPersonality")
+    psn = int(psn_str)
+
+    if self.button_style_only == False:
+      psn = (psn -1 + 3) % 3
+
+    if psn == 0:
+      self._LongitudinalPersonality_button.set_text("^^^")
+    elif psn == 1:
+      self._LongitudinalPersonality_button.set_text("^^")
+    else:
+      self._LongitudinalPersonality_button.set_text("^")
+
+    self._LongitudinalPersonality_button.set_button_style(ButtonStyle.HudSOn)
+
+    if self.button_style_only:
+      return
+
+    Params().put("LongitudinalPersonality", psn)
+
+
+  def _press_lockon_disp_disable(self):
+    lockon_disp_disable = 0
+    try:
+      with open('/dev/shm/lockon_disp_disable.txt','r') as fp:
+        lockon_disp_disable_str = fp.read()
+        if lockon_disp_disable_str:
+          lockon_disp_disable = int(lockon_disp_disable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      lockon_disp_disable = (lockon_disp_disable + 1) % 2
+    if lockon_disp_disable == 0:
+      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
+      fp2.write("%d" % (lockon_disp_disable))
+    with open('/data/lockon_disp_disable.txt','w') as fp3:
+      fp3.write("%d" % (lockon_disp_disable))
+
+

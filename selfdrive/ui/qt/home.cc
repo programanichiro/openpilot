@@ -84,7 +84,7 @@ void HomeWindow::updateState(const UIState &s) {
     //developer control
     std::string branch = Params().get("GitBranch");
     std::string dongleId = Params().get("DongleId");
-    if(branch != "release3" && branch != "release2" && branch.find("release3-pi")  == std::string::npos && branch.find("release2-pi")  == std::string::npos && branch.find("rehearsal")  == std::string::npos && dongleId.find("d9000cf782e6") == std::string::npos && branch.find("debug") == std::string::npos){
+    if(branch.find("release") == std::string::npos && dongleId.find("d9000cf782e6") == std::string::npos && branch.find("debug") == std::string::npos){
       back_gear = false;
       lsta = 0;
       blinker_stat = false;
