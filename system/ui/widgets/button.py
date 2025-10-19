@@ -23,6 +23,7 @@ class ButtonStyle(IntEnum):
 
   HudSOff = 100
   HudSOn = 101
+  HudUnder = 102
 
 
 ICON_PADDING = 15
@@ -44,6 +45,7 @@ BUTTON_TEXT_COLOR = {
 
   ButtonStyle.HudSOff: rl.Color(0x90, 0x90, 0x90, 0xd0),
   ButtonStyle.HudSOn: rl.Color(0x37, 0xb8, 0x68, 0xe0),
+  ButtonStyle.HudUnder: rl.Color(228, 228, 228, 255),
 }
 
 BUTTON_DISABLED_TEXT_COLORS = {
@@ -65,6 +67,7 @@ BUTTON_BACKGROUND_COLORS = {
 
   ButtonStyle.HudSOff: rl.Color(0, 0, 0, 0x40),
   ButtonStyle.HudSOn: rl.Color(0, 0, 0, 0x40),
+  ButtonStyle.HudUnder: rl.Color(0, 0, 0, 0),
 }
 
 BUTTON_PRESSED_BACKGROUND_COLORS = {
@@ -82,6 +85,7 @@ BUTTON_PRESSED_BACKGROUND_COLORS = {
 
   ButtonStyle.HudSOff: rl.Color(0x30, 0x30, 0x30, 0x40),
   ButtonStyle.HudSOn: rl.Color(0x30, 0x30, 0x30, 0x40),
+  ButtonStyle.HudUnder: rl.Color(0, 0, 0, 0x40),
 }
 
 BUTTON_DISABLED_BACKGROUND_COLORS = {

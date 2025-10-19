@@ -101,6 +101,8 @@ class HudRenderer(Widget):
         if cruise_info_str:
           self.limit_speed_override = False
           self.add_v_by_lead = False
+          self.curve_brake = False
+          self.turbo_boost = False
           if cruise_info_str.startswith(";"): #先頭セミコロンで制限速度適用
             cruise_info_str = cruise_info_str[1:]
             self.limit_speed_override = True
@@ -108,9 +110,11 @@ class HudRenderer(Widget):
             cruise_info_str = cruise_info_str[1:]
             self.add_v_by_lead = True
           if cruise_info_str.endswith("."): #末尾ピリオドで減速
-              cruise_info_str = cruise_info_str[:-1]
+            cruise_info_str = cruise_info_str[:-1]
+            self.curve_brake = True
           if cruise_info_str.endswith(";"): #末尾セミコロンスタートBoost
-              cruise_info_str = cruise_info_str[:-1]
+            cruise_info_str = cruise_info_str[:-1]
+            self.turbo_boost = True
           self.set_speed = int(cruise_info_str)
     except Exception as e:
       pass
@@ -149,8 +153,17 @@ class HudRenderer(Widget):
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
-    btn_w0 = 250
-    btn_w = 200
+    ud_btn_w0 = rect.width / 5
+    ud_btn_w = ud_btn_w0 * 0.7
+    ud_btn_h0 = 160
+    ud_btn_h = 160
+    self._knight_scanner_bit3_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*0, rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._limitspeed_sw_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(-1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._LongitudinalPersonality_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._lockon_disp_disable_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(2), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+
+    btn_w0 = 200
+    btn_w = 150
     btn_h0 = 175
     btn_h = 150
     self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3.2, btn_w, btn_h))
@@ -163,14 +176,6 @@ class HudRenderer(Widget):
     self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.3, btn_w, btn_h))
     self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.3, btn_w, btn_h))
 
-    ud_btn_w0 = rect.width / 5
-    ud_btn_w = ud_btn_w0 * 0.7
-    ud_btn_h0 = 120
-    ud_btn_h = 80
-    self._knight_scanner_bit3_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*0, rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
-    self._limitspeed_sw_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(-1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
-    self._LongitudinalPersonality_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
-    self._lockon_disp_disable_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(2), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
@@ -202,10 +207,15 @@ class HudRenderer(Widget):
       # self.limit_speed_num = int(limitspeed_data[0])
       rect_color = rl.Color(235, 235, 235, 200)
       rect_border_color = rl.Color(205, 44, 38, 200)
-    elif self.db_rec_mode:
+    if self.db_rec_mode:
       rect_color = rl.Color(100, 0, 0, 250)
-    elif self.add_v_by_lead:
+    if self.add_v_by_lead:
       rect_border_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
+    if self.curve_brake:
+      rect_color = COLORS.black_translucent
+      rect_border_color = rl.Color(0xff, 0, 0, 200) #減速時は赤
+    if self.turbo_boost:
+      rect_border_color = rl.Color(0xff, 0xff, 0, 200) #スタートダッシュ時は黄色
 
     rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, rect_color)
     rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, rect_border_color)
@@ -325,13 +335,15 @@ class HudRenderer(Widget):
     self.limit_speed_auto_detect = 0
     self.limit_speed_override = False
     self.add_v_by_lead = False
+    self.curve_brake = False
+    self.turbo_boost = False
     self.db_rec_mode = False
     self.maxspeed_org = 0
     self.vc_speed = 0
     self.ip_update_state_ct = 0
     self.button_style_only = True
-    font_sz = 75
-    font_wt = FontWeight.BOLD #EXTRA_BOLD
+    font_sz = 100
+    font_wt = "JP" # FontWeight.BOLD #EXTRA_BOLD
     self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=font_sz,font_weight=font_wt)
     self._press_accel_engaged()
 
@@ -344,32 +356,34 @@ class HudRenderer(Widget):
     self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=font_wt)
     self._press_lta_enable_sw()
 
-    #日本語フォント対応待ち
-    # self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
     # self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
     # self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
 
-    self._start_accel_power_up_disp_enable_button = Button("Bst",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    #日本語フォント対応
+    self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    #self._start_accel_power_up_disp_enable_button = Button("Bst",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
     self._press_start_accel_power_up_disp_enable()
 
-    self._accel_ctrl_disable_button = Button("Up",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
     self._press_accel_ctrl_disable()
 
-    self._decel_ctrl_disable_button = Button("Dn",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
     self._press_decel_ctrl_disable()
 
-    font_sz = 50
-    font_wt = FontWeight.BOLD #EXTRA_BOLD
-    self._knight_scanner_bit3_button = Button("---",click_callback=self._press_knight_scanner_bit3,font_size=font_sz,font_weight=font_wt)
+    font_sz = 25
+    font_wt = "JP" #FontWeight.BOLD #EXTRA_BOLD
+    self._knight_scanner_bit3_button = Button("⚫︎⚫︎⚫︎",click_callback=self._press_knight_scanner_bit3,font_size=font_sz,font_weight=font_wt)
     self._press_knight_scanner_bit3()
 
-    self._limitspeed_sw_button = Button("Max",click_callback=self._press_limitspeed_sw,font_size=font_sz,font_weight=font_wt)
+    self._limitspeed_sw_button = Button("⚪︎",click_callback=self._press_limitspeed_sw,font_size=font_sz,font_weight=font_wt)
     self._press_limitspeed_sw()
 
-    self._LongitudinalPersonality_button = Button("^^^",click_callback=self._press_LongitudinalPersonality,font_size=font_sz,font_weight=font_wt)
+    font_sz = 25
+    self._LongitudinalPersonality_button = Button("⬆︎⬆︎",click_callback=self._press_LongitudinalPersonality,font_size=font_sz,font_weight=font_wt)
     self._press_LongitudinalPersonality()
 
-    self._lockon_disp_disable_button = Button("Lock",click_callback=self._press_lockon_disp_disable,font_size=font_sz,font_weight=font_wt)
+    font_sz = 40
+    self._lockon_disp_disable_button = Button("■",click_callback=self._press_lockon_disp_disable,font_size=font_sz,font_weight=font_wt)
     self._press_lockon_disp_disable()
     self.button_style_only = False
 
@@ -634,25 +648,25 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       Knight_scanner = (Knight_scanner + 1) % 8
     if Knight_scanner == 0:
-      self._knight_scanner_bit3_button.set_text("---")
-      self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudSOn)
+      self._knight_scanner_bit3_button.set_text("⚪︎⚪︎⚪︎")
+      self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudUnder)
     elif Knight_scanner == 1:
-      self._knight_scanner_bit3_button.set_text("+--")
+      self._knight_scanner_bit3_button.set_text("⚫︎⚪︎⚪︎")
     elif Knight_scanner == 2:
-      self._knight_scanner_bit3_button.set_text("-+-")
+      self._knight_scanner_bit3_button.set_text("⚪︎⚫︎⚪︎")
     elif Knight_scanner == 3:
-      self._knight_scanner_bit3_button.set_text("++-")
+      self._knight_scanner_bit3_button.set_text("⚫︎⚫︎⚪︎")
     elif Knight_scanner == 4:
-      self._knight_scanner_bit3_button.set_text("--+")
+      self._knight_scanner_bit3_button.set_text("⚪︎⚪︎⚫︎")
     elif Knight_scanner == 5:
-      self._knight_scanner_bit3_button.set_text("+-+")
+      self._knight_scanner_bit3_button.set_text("⚫︎⚪︎⚫︎")
     elif Knight_scanner == 6:
-      self._knight_scanner_bit3_button.set_text("-++")
+      self._knight_scanner_bit3_button.set_text("⚪︎⚫︎⚫︎")
     elif Knight_scanner == 7:
-      self._knight_scanner_bit3_button.set_text("+++")
+      self._knight_scanner_bit3_button.set_text("⚫︎⚫︎⚫︎")
 
     if Knight_scanner != 0:
-      self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudSOn)
+      self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudUnder)
 
     if self.button_style_only:
       return
@@ -676,17 +690,17 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       limitspeed_sw = (limitspeed_sw + 1) % 3
     if limitspeed_sw == 0:
-      self._limitspeed_sw_button.set_text("Max")
-      self._limitspeed_sw_button.set_button_style(ButtonStyle.HudSOn)
+      self._limitspeed_sw_button.set_text("⚪︎")
+      self._limitspeed_sw_button.set_button_style(ButtonStyle.HudUnder)
     elif limitspeed_sw == 1:
-      self._limitspeed_sw_button.set_text("Auto")
+      self._limitspeed_sw_button.set_text("⚫︎")
     elif limitspeed_sw == 2:
-      self._limitspeed_sw_button.set_text("Rec")
+      self._limitspeed_sw_button.set_text("⬇︎")
 
     self.Limit_speed_mode = limitspeed_sw
 
     if limitspeed_sw != 0:
-      self._limitspeed_sw_button.set_button_style(ButtonStyle.HudSOn)
+      self._limitspeed_sw_button.set_button_style(ButtonStyle.HudUnder)
 
     if self.button_style_only:
       return
@@ -705,13 +719,13 @@ class HudRenderer(Widget):
       psn = (psn -1 + 3) % 3
 
     if psn == 0:
-      self._LongitudinalPersonality_button.set_text("^^^")
+      self._LongitudinalPersonality_button.set_text("⬆︎⬆︎⬆︎")
     elif psn == 1:
-      self._LongitudinalPersonality_button.set_text("^^")
+      self._LongitudinalPersonality_button.set_text("⬆︎⬆︎")
     else:
-      self._LongitudinalPersonality_button.set_text("^")
+      self._LongitudinalPersonality_button.set_text("⬆︎")
 
-    self._LongitudinalPersonality_button.set_button_style(ButtonStyle.HudSOn)
+    self._LongitudinalPersonality_button.set_button_style(ButtonStyle.HudUnder)
 
     if self.button_style_only:
       return
@@ -732,9 +746,11 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       lockon_disp_disable = (lockon_disp_disable + 1) % 2
     if lockon_disp_disable == 0:
-      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudSOn)
+      self._lockon_disp_disable_button.set_text("■")
+      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudUnder)
     else:
-      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudSOff)
+      self._lockon_disp_disable_button.set_text("□")
+      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudUnder)
 
     if self.button_style_only:
       return

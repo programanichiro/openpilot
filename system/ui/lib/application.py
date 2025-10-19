@@ -5,6 +5,7 @@ import time
 import signal
 import sys
 import pyray as rl
+import array
 import threading
 from collections.abc import Callable
 from collections import deque
@@ -365,6 +366,23 @@ class GuiApplication:
         self._fonts[font_weight_file] = font
 
     rl.unload_codepoints(codepoints)
+
+    # ===========================================================
+    # 🈺 日本語フォントを全グリフ読み込み
+    # ===========================================================
+    jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+
+    # BMP全体のコードポイント（0x0000～0xFFFF）
+    codepoint_count = rl.ffi.new("int *", 1)
+
+    # BMP 全体（U+0000～U+FFFF）からサロゲート領域を除く
+    all_chars += "⇧↑↓★☆●○°C⚪︎⚫︎⬇︎□■⬆︎" #とりあえずUIで必要な固定記号をロード。
+    codepoints = rl.load_codepoints(all_chars, codepoint_count)
+
+    jp_font = rl.load_font_ex(jp_font_path, 128, codepoints, codepoint_count[0])
+    rl.set_texture_filter(jp_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    self._fonts["JP"] = jp_font
+
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
 
   def _set_styles(self):
