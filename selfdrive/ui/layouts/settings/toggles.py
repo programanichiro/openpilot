@@ -2,8 +2,10 @@ from cereal import log
 from openpilot.common.params import Params, UnknownKeyName
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.list_view import multiple_button_item, toggle_item
+from openpilot.system.ui.widgets.list_view import ButtonAction, ListItem
 from openpilot.system.ui.widgets.scroller import Scroller
 from openpilot.system.ui.widgets.confirm_dialog import ConfirmDialog
+from openpilot.system.ui.widgets.keyboard import Keyboard
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import DialogResult
 from openpilot.selfdrive.ui.ui_state import ui_state
@@ -127,6 +129,13 @@ class TogglesLayout(Widget):
       # ),
     }
 
+    # Edit tethering password
+    self._keyboard = Keyboard()
+
+    self._tethering_password_action = ButtonAction(text="EDIT")
+    self._tethering_password_btn = ListItem(title="Tethering Password", action_item=self._tethering_password_action, callback=self._edit_tethering_password)
+    self._tethering_password_action.set_enabled(True)
+
     self._long_personality_setting = multiple_button_item(
       "Driving Personality",
       DESCRIPTIONS["LongitudinalPersonality"],
@@ -175,6 +184,7 @@ class TogglesLayout(Widget):
 
       # insert longitudinal personality after NDOG toggle
       if param == "DisengageOnAccelerator":
+        self._toggles["Tethering Password"] = self._tethering_password_btn
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
         self._toggles["AccelMethodSwitch"] = self._accel_method_setting
 
@@ -290,3 +300,17 @@ class TogglesLayout(Widget):
 
   def _set_accel_method(self, button_index: int):
     self._params.put_bool("AccelMethodSwitch", button_index == 1)
+
+  def _edit_tethering_password(self):
+    def update_password(result):
+      if result != 1:
+        return
+
+      # password = self._keyboard.text
+      # self._wifi_manager.set_tethering_password(password)
+      self._tethering_password_action.set_enabled(False)
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("Enter new tethering password", "")
+    self._keyboard.set_text("aaaaaaaaaaaaaa")
+    gui_app.set_modal_overlay(self._keyboard, update_password)
