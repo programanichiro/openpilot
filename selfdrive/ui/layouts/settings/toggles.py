@@ -2,8 +2,10 @@ from cereal import log
 from openpilot.common.params import Params, UnknownKeyName
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.list_view import multiple_button_item, toggle_item
+from openpilot.system.ui.widgets.list_view import ButtonAction, ListItem
 from openpilot.system.ui.widgets.scroller import Scroller
 from openpilot.system.ui.widgets.confirm_dialog import ConfirmDialog
+from openpilot.system.ui.widgets.keyboard import Keyboard
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import DialogResult
 from openpilot.selfdrive.ui.ui_state import ui_state
@@ -30,6 +32,12 @@ DESCRIPTIONS = {
   'RecordFront': "Upload data from the driver facing camera and help improve the driver monitoring algorithm.",
   "IsMetric": "Display speed in km/h instead of mph.",
   "RecordAudio": "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.",
+  "RaylibMode": "Switching to a user interface built with raylib.",
+  "AccelMethodSwitch": "Switch Accel Method to Official version or recommendation. A reboot is required.",
+  "GpsAlwaysSwitch": "GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.",
+  "DisableMaxSpeedModify": "ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it.",
+  "ForceHybridVehicle": "Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash.",
+  "IgnoreRerouteHarness": "Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed.",
 }
 
 
@@ -89,7 +97,40 @@ class TogglesLayout(Widget):
         "metric.png",
         False,
       ),
+      "GpsAlwaysSwitch": (
+        "Always receive GPS signals",
+        DESCRIPTIONS["GpsAlwaysSwitch"],
+        "../offroad/icon_gps_car.png",
+        False,
+      ),
+      "DisableMaxSpeedModify": (
+        "Use the vehicle ACC with TSSP over 115 km/h",
+        DESCRIPTIONS["DisableMaxSpeedModify"],
+        "../icons/calibration.png",
+        False,
+      ),
+      "ForceHybridVehicle": (
+        "Force recognition as a hybrid vehicle",
+        DESCRIPTIONS["ForceHybridVehicle"],
+        "disengage_on_accelerator.png",
+        False,
+      ),
+      "IgnoreRerouteHarness": (
+        "Ignore DSU bypass harness for TSSPh",
+        DESCRIPTIONS["IgnoreRerouteHarness"],
+        "../icons/calibration.png",
+        False,
+      ),
+      # "RaylibMode": (
+      #   "Use Raylib UI",
+      #   DESCRIPTIONS["RaylibMode"],
+      #   "warning.png",
+      #   True,
+      # ),
     }
+
+    # Edit tethering password
+    self._keyboard = Keyboard()
 
     self._long_personality_setting = multiple_button_item(
       "Driving Personality",
@@ -99,6 +140,16 @@ class TogglesLayout(Widget):
       callback=self._set_longitudinal_personality,
       selected_index=self._params.get("LongitudinalPersonality", return_default=True),
       icon="speed_limit.png"
+    )
+
+    self._accel_method_setting = multiple_button_item(
+      "Accel Method",
+      DESCRIPTIONS["AccelMethodSwitch"],
+      buttons=["Recommend", "Official"],
+      button_width=270,
+      callback=self._set_accel_method,
+      selected_index=self._params.get("AccelMethodSwitch", return_default=True),
+      icon="calibration.png"
     )
 
     self._toggles = {}
@@ -130,6 +181,33 @@ class TogglesLayout(Widget):
       # insert longitudinal personality after NDOG toggle
       if param == "DisengageOnAccelerator":
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
+        self._toggles["AccelMethodSwitch"] = self._accel_method_setting
+
+        self._auto_door_lock_action = ButtonAction(text="EDIT")
+        self._auto_door_lock_action.set_enabled(True)
+        self._auto_door_lock_btn = ListItem(title="Auto door lock by speed", icon="../offroad/icon_car_key.png", action_item=self._auto_door_lock_action, callback=self._edit_auto_door_lock)
+        self._auto_door_lock_btn.action_item.set_value("")
+        try:
+          with open('/data/run_auto_lock.txt','r') as fp:
+            lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+            if lock_speed_str:
+              self._auto_door_lock_btn.action_item.set_value(lock_speed_str+" [km/h]")
+        except Exception as e:
+          pass
+        self._toggles["AutoDoorLock"] = self._auto_door_lock_btn
+
+        self._vehicle_mass_action = ButtonAction(text="EDIT")
+        self._vehicle_mass_action.set_enabled(True)
+        self._vehicle_mass_btn = ListItem(title="Vehicle weight", icon="../offroad/icon_car_weight.png", action_item=self._vehicle_mass_action, callback=self._edit_vehicle_mass)
+        self._vehicle_mass_btn.action_item.set_value("")
+        try:
+          with open('/data/vehicle_mass.txt','r') as fp:
+            vehicle_mass_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+            if vehicle_mass_str:
+              self._vehicle_mass_btn.action_item.set_value(vehicle_mass_str+" [kg]")
+        except Exception as e:
+          pass
+        self._toggles["VehicleMass"] = self._vehicle_mass_btn
 
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
@@ -167,11 +245,13 @@ class TogglesLayout(Widget):
         self._toggles["ExperimentalMode"].action_item.set_enabled(True)
         self._toggles["ExperimentalMode"].set_description(e2e_description)
         self._long_personality_setting.action_item.set_enabled(True)
+        self._accel_method_setting.action_item.set_enabled(True)
       else:
         # no long for now
         self._toggles["ExperimentalMode"].action_item.set_enabled(False)
         self._toggles["ExperimentalMode"].action_item.set_state(False)
         self._long_personality_setting.action_item.set_enabled(False)
+        self._accel_method_setting.action_item.set_enabled(False)
         self._params.remove("ExperimentalMode")
 
         unavailable = "Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control."
@@ -238,3 +318,54 @@ class TogglesLayout(Widget):
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index)
+
+  def _set_accel_method(self, button_index: int):
+    self._params.put_bool("AccelMethodSwitch", button_index == 1)
+
+  def _edit_auto_door_lock(self):
+    def update_door_lock(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/run_auto_lock.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._auto_door_lock_btn.action_item.set_value("")
+        return
+
+      if self._keyboard.text == "0" or not self._keyboard.text:
+        self._auto_door_lock_btn.action_item.set_value("")
+      else:
+        self._auto_door_lock_btn.action_item.set_value(self._keyboard.text+" [km/h]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("Auto door lock by speed", "")
+    s = self._auto_door_lock_btn.action_item.value
+    s = s.removesuffix(" [km/h]")
+    self._keyboard.set_text(s)
+    gui_app.set_modal_overlay(self._keyboard, update_door_lock)
+
+  def _edit_vehicle_mass(self):
+    def update_mass(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/vehicle_mass.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._vehicle_mass_btn.action_item.set_value("")
+        return
+
+      if self._keyboard.text == "0" or not self._keyboard.text:
+        self._vehicle_mass_btn.action_item.set_value("")
+      else:
+        self._vehicle_mass_btn.action_item.set_value(self._keyboard.text+" [kg]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("Vehicle weight", "")
+    s = self._vehicle_mass_btn.action_item.value
+    s = s.removesuffix(" [kg]")
+    self._keyboard.set_text(s)
+    gui_app.set_modal_overlay(self._keyboard, update_mass)

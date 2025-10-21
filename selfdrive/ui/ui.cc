@@ -91,8 +91,19 @@ void UIState::updateStatus() {
       status = STATUS_DISENGAGED;
       scene.started_frame = sm->frame;
     }
-    started_prev = scene.started;
-    emit offroadTransition(!scene.started);
+    //developer control
+    std::string branch = Params().get("GitBranch");
+    std::string dongleId = Params().get("DongleId");
+    bool enable = true;
+    if(branch.find("release") == std::string::npos && dongleId.find("d9000cf782e6") == std::string::npos && branch.find("debug") == std::string::npos){
+      if(sm->frame != 1){
+        enable = false;
+      }
+    }
+    if(enable == true){
+      started_prev = scene.started;
+      emit offroadTransition(!scene.started);
+    }
   }
 }
 

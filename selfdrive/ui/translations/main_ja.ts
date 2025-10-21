@@ -417,6 +417,14 @@ Firehoseモードを有効にすると学習データを最大限アップロー
             <numerusform>%n文字以上にして下さい！</numerusform>
         </translation>
     </message>
+    <message>
+        <source>Auto door lock by speed</source>
+        <translation>車速ドアロック</translation>
+    </message>
+    <message>
+        <source>Vehicle weight</source>
+        <translation>車両重量</translation>
+    </message>
 </context>
 <context>
     <name>MultiOptionDialog</name>
@@ -537,6 +545,14 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     <message>
         <source>System Unresponsive</source>
         <translation>システムが応答しません</translation>
+    </message>
+    <message>
+        <source>Press Resume to Exit Standstill</source>
+        <translation>停車中です。アクセルで発進</translation>
+    </message>
+    <message>
+        <source>Release Brake to Engage</source>
+        <translation>ブレーキを踏んでいます</translation>
     </message>
 </context>
 <context>
@@ -763,6 +779,10 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     <message>
         <source>5G</source>
         <translation>5G</translation>
+    </message>
+    <message>
+        <source>EXPLORE</source>
+        <translation>探索中</translation>
     </message>
 </context>
 <context>
@@ -1010,6 +1030,70 @@ Firehoseモードを有効にすると学習データを最大限アップロー
     <message>
         <source>Enable driver monitoring even when openpilot is not engaged.</source>
         <translation>openpilotが作動していない場合でも運転者モニタリングを有効にする。</translation>
+    </message>
+    <message>
+        <source>Accel Method</source>
+        <translation>アクセル制御セレクト</translation>
+    </message>
+    <message>
+        <source>Switch Accel Method to Official version or recommendation. A reboot is required.</source>
+        <translation>アクセル制御を推奨の手法と公式から選択します。再起動が必要です。TSSPでは推奨を選択してください。</translation>
+    </message>
+    <message>
+        <source>Recommend</source>
+        <translation>推奨</translation>
+    </message>
+    <message>
+        <source>Official</source>
+        <translation>公式</translation>
+    </message>
+    <message>
+        <source>Auto door lock by speed</source>
+        <translation>車速ドアロック</translation>
+    </message>
+    <message>
+        <source>Enter Lock speed (km/h). 0 = default. Reset if changed.</source>
+        <translation>ドアロックする速度をkm/hで指定(0で解除)。変更で要リセットです。</translation>
+    </message>
+    <message>
+        <source>Vehicle weight</source>
+        <translation>車両重量</translation>
+    </message>
+    <message>
+        <source>Enter Vehicle weight (kg). 0 = default. Reset if changed.</source>
+        <translation>車両重量をkgで指定します(0で解除)。変更で要リセットです。</translation>
+    </message>
+    <message>
+        <source>Always receive GPS signals</source>
+        <translation>GPS信号の常時受信</translation>
+    </message>
+    <message>
+        <source>GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.</source>
+        <translation>車が走っていなくてもGPS受信を開始します。衛星の補足が早まり、一時的なOffroadでもGPS受信を打ち切りません。車が停止している時のバッテリー消費に影響する可能性があります。</translation>
+    </message>
+    <message>
+        <source>Use the vehicle ACC with TSSP over 115 km/h</source>
+        <translation>TSSP115キロ超の車体ACCを使用する</translation>
+    </message>
+    <message>
+        <source>ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it.</source>
+        <translation>115キロを超えるACC速度を車体から直に取得します。TSSP 2019 PHV ユーザーは有効化してください。</translation>
+    </message>
+    <message>
+        <source>Force recognition as a hybrid vehicle</source>
+        <translation>ハイブリッド車として強制認識</translation>
+    </message>
+    <message>
+        <source>Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash.</source>
+        <translation>ハイブリッド車なのにガス車として認識する場合はこのスイッチをオンにして下さい。ガス車でONにするとクラッシュします。</translation>
+    </message>
+    <message>
+        <source>Ignore DSU bypass harness for TSSP</source>
+        <translation>TSSP車のリルートハーネス制御を無視</translation>
+    </message>
+    <message>
+        <source>Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed.</source>
+        <translation>DSU bypass harnessもsmartDSUもつけていない車でCANエラーが出るのを修正します。</translation>
     </message>
     <message>
         <source>Use the openpilot system for adaptive cruise control and lane keep driver assistance. Your attention is required at all times to use this feature.</source>

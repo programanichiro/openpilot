@@ -122,10 +122,18 @@ class ModelRenderer(Widget):
       self._update_model(lead_one, path_x_array)
       if render_lead_indicator:
         self._update_leads(radar_state, path_x_array)
+
+        leads = model.leadsV3
+        leads_num = len(leads)
+
+        for i in range(leads_num):
+          if leads[i].prob > 0.2: # 信用度20%以上で表示。調整中。
+            pass
+            #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
       self._transform_dirty = False
 
     # Draw elements
-    self._draw_lane_lines()
+    self._draw_lane_lines(sm)
     self._draw_path(sm)
 
     if render_lead_indicator and radar_state:
@@ -252,19 +260,65 @@ class ModelRenderer(Widget):
     g_xo = sz / 5
     g_yo = sz / 10
 
-    glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)]
-    chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
+    homebase_h = 12
+
+    # glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)] #土台
+    # chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
+    # draw_triangle_fanで描画できるように３角が交差しない配置に修正。
+    glow = [(x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo),(x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h), (x, y + sz + homebase_h + g_yo + 10),(x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h),(x + (sz * 1.35) + g_xo, y + sz + g_yo)] #土台
+    chevron = [(x, y), (x - (sz * 1.25), y + sz),(x - (sz * 1.25), y + sz + homebase_h), (x, y + sz + homebase_h - 7),(x + (sz * 1.25), y + sz + homebase_h),(x + (sz * 1.25), y + sz)]
 
     return LeadVehicle(glow=glow, chevron=chevron, fill_alpha=int(fill_alpha))
 
-  def _draw_lane_lines(self):
+  def _draw_lane_lines(self, sm):
     """Draw lane lines and road edges"""
+    lta_enable_sw = 0
+    try:
+      with open('/dev/shm/lta_enable_sw.txt','r') as fp:
+        lta_enable_sw_str = fp.read()
+        if lta_enable_sw_str:
+          lta_enable_sw = int(lta_enable_sw_str)
+    except Exception as e:
+      pass
+
+    lta_mode = lta_enable_sw and (sm['carState'].vEgo > 16/3.6)
+    lane_collision = -1
+
     for i, lane_line in enumerate(self._lane_lines):
       if lane_line.projected_points.size == 0:
         continue
 
-      alpha = np.clip(self._lane_line_probs[i], 0.0, 0.7)
-      color = rl.Color(255, 255, 255, int(alpha * 255))
+      if lta_mode:
+        if lane_collision == -1:
+          try:
+            with open('/dev/shm/lane_collision.txt','r') as fp:
+              lane_collision_str = fp.read()
+              if lane_collision_str:
+                lane_collision = int(lane_collision_str)
+              else:
+                lane_collision = 0x80 #lane_collision.txtが無い。
+          except Exception as e:
+            lane_collision = 0x80 #lane_collision.txtが無い。
+
+        if (i == 1 and (lane_collision & 0x01)) or (i == 2 and (lane_collision & 0x02)):
+          lane_prob = self._lane_line_probs[i];
+          if lane_prob > 0.5:
+            lane_prob = 1.0
+          else:
+            lane_prob *= 2; #50％以下でも多少の影響を視覚化。
+
+          if lane_collision & 0x04:
+            #ALDP無視状態
+            color = rl.Color(128, 128, 128, int(lane_prob * 255))
+          else:
+            color = rl.Color(255, 128, 0, int(lane_prob * 255))
+        else:
+          alpha = np.clip(self._lane_line_probs[i], 0.0, 0.7)
+          color = rl.Color(255, 255, 255, int(alpha * 255))
+      else:
+        alpha = np.clip(self._lane_line_probs[i], 0.0, 0.7)
+        color = rl.Color(255, 255, 255, int(alpha * 255))
+
       draw_polygon(self._rect, lane_line.projected_points, color)
 
     for i, road_edge in enumerate(self._road_edges):

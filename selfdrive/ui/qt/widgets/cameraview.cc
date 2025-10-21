@@ -317,13 +317,13 @@ void CameraWidget::vipcThread() {
   VisionIpcBufExtra meta_main = {0};
 
   while (!QThread::currentThread()->isInterruptionRequested()) {
-    if (!vipc_client || cur_stream != requested_stream_type) {
+    if (!vipc_client || cur_stream != requested_stream_type && ready_to_switch_stream) {
       clearFrames();
       qDebug().nospace() << "connecting to stream " << requested_stream_type << ", was connected to " << cur_stream;
       cur_stream = requested_stream_type;
       vipc_client.reset(new VisionIpcClient(stream_name, cur_stream, false));
+      active_stream_type = cur_stream;
     }
-    active_stream_type = cur_stream;
 
     if (!vipc_client->connected) {
       clearFrames();

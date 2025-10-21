@@ -49,6 +49,9 @@ class AugmentedRoadView(CameraView):
     self.alert_renderer = AlertRenderer()
     self.driver_state_renderer = DriverStateRenderer()
 
+    self.hazard = False
+    self.hazard_ct = 0
+
     # debug
     self._pm = messaging.PubMaster(['uiDebug'])
 
@@ -113,8 +116,28 @@ class AugmentedRoadView(CameraView):
 
   def _draw_border(self, rect: rl.Rectangle):
     rl.begin_scissor_mode(int(rect.x), int(rect.y), int(rect.width), int(rect.height))
-    border_roundness = 0.12
+    border_roundness = 0.01
     border_color = BORDER_COLORS.get(ui_state.status, BORDER_COLORS[UIStatus.DISENGAGED])
+
+    self.hazard_ct += 1
+    if self.hazard_ct % 7 == 0:
+      try:
+        with open('/tmp/hazard_light.txt','r') as fp:
+          hazard_light_str = fp.read()
+          if hazard_light_str:
+            hazard_light = int(hazard_light_str)
+            if hazard_light > 0:
+              #bgColorをオレンジに点滅
+              self.hazard = not self.hazard
+            elif hazard_light == 0:
+              self.hazard = False
+      except Exception as e:
+        pass
+
+    if self.hazard == True:
+      #bgColorをオレンジに点滅
+      border_color = rl.Color(int(192*13/10), int(102*13/10), 0, 255) #ウインカーと同じ色
+
     border_rect = rl.Rectangle(rect.x + UI_BORDER_SIZE, rect.y + UI_BORDER_SIZE,
                                rect.width - 2 * UI_BORDER_SIZE, rect.height - 2 * UI_BORDER_SIZE)
     rl.draw_rectangle_rounded_lines_ex(border_rect, border_roundness, 10, UI_BORDER_SIZE, border_color)
