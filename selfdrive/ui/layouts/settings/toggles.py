@@ -183,12 +183,18 @@ class TogglesLayout(Widget):
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
         self._toggles["AccelMethodSwitch"] = self._accel_method_setting
 
-        self._tethering_password_action = ButtonAction(text="EDIT")
-        self._tethering_password_action.set_enabled(True)
-        self._tethering_password_btn = ListItem(title="Tethering Password", icon="../offroad/icon_car_key.png", action_item=self._tethering_password_action, callback=self._edit_tethering_password)
-        self._tethering_password_btn.action_item.set_value("24km/h")
-
-        self._toggles["Tethering Password"] = self._tethering_password_btn
+        self._auto_door_lock_action = ButtonAction(text="EDIT")
+        self._auto_door_lock_action.set_enabled(True)
+        self._auto_door_lock_btn = ListItem(title="Auto door lock by speed", icon="../offroad/icon_car_key.png", action_item=self._auto_door_lock_action, callback=self._edit_auto_door_lock)
+        self._auto_door_lock_btn.action_item.set_value("")
+        try:
+          with open('/data/run_auto_lock.txt','r') as fp:
+            lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+            if lock_speed_str:
+              self._auto_door_lock_btn.action_item.set_value(lock_speed_str+" [km/h]")
+        except Exception as e:
+          pass
+        self._toggles["AutoDoorLock"] = self._auto_door_lock_btn
 
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
@@ -303,16 +309,26 @@ class TogglesLayout(Widget):
   def _set_accel_method(self, button_index: int):
     self._params.put_bool("AccelMethodSwitch", button_index == 1)
 
-  def _edit_tethering_password(self):
+  def _edit_auto_door_lock(self):
     def update_password(result):
       if result != 1:
         return
 
-      # password = self._keyboard.text
-      # self._wifi_manager.set_tethering_password(password)
-      # self._tethering_password_action.set_enabled(False)
+      try:
+        with open('/data/run_auto_lock.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._auto_door_lock_btn.action_item.set_value("")
+        return
+
+      if self._keyboard.text == "0":
+        self._auto_door_lock_btn.action_item.set_value("")
+      else:
+        self._auto_door_lock_btn.action_item.set_value(self._keyboard.text+" [km/h]")
 
     self._keyboard.reset(min_text_size=0)
-    self._keyboard.set_title("Enter new tethering password", "")
-    self._keyboard.set_text("aaaaaaaaaaaaaa")
+    self._keyboard.set_title("Auto door lock by speed", "")
+    s = self._auto_door_lock_btn.action_item.value
+    s = s.removesuffix(" [km/h]")
+    self._keyboard.set_text(s)
     gui_app.set_modal_overlay(self._keyboard, update_password)
