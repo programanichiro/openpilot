@@ -108,6 +108,16 @@ class TogglesLayout(Widget):
       icon="speed_limit.png"
     )
 
+    self._accel_method_setting = multiple_button_item(
+      "Accel Method",
+      DESCRIPTIONS["AccelMethodSwitch"],
+      buttons=["Recommend", "Official"],
+      button_width=255,
+      callback=self._set_accel_method,
+      selected_index=self._params.get("AccelMethodSwitch", return_default=True),
+      icon="calibration.png"
+    )
+
     self._toggles = {}
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
@@ -137,6 +147,7 @@ class TogglesLayout(Widget):
       # insert longitudinal personality after NDOG toggle
       if param == "DisengageOnAccelerator":
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
+        self._toggles["AccelMethodSwitch"] = self._accel_method_setting
 
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
@@ -174,11 +185,13 @@ class TogglesLayout(Widget):
         self._toggles["ExperimentalMode"].action_item.set_enabled(True)
         self._toggles["ExperimentalMode"].set_description(e2e_description)
         self._long_personality_setting.action_item.set_enabled(True)
+        self._accel_method_setting.action_item.set_enabled(True)
       else:
         # no long for now
         self._toggles["ExperimentalMode"].action_item.set_enabled(False)
         self._toggles["ExperimentalMode"].action_item.set_state(False)
         self._long_personality_setting.action_item.set_enabled(False)
+        self._accel_method_setting.action_item.set_enabled(False)
         self._params.remove("ExperimentalMode")
 
         unavailable = "Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control."
@@ -245,3 +258,6 @@ class TogglesLayout(Widget):
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index)
+
+  def _set_accel_method(self, button_index: int):
+    self._params.put_bool("AccelMethodSwitch", button_index == 1)
