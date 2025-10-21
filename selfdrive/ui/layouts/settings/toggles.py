@@ -110,7 +110,7 @@ class TogglesLayout(Widget):
         False,
       ),
       "ForceHybridVehicle": (
-        "Use the vehicle ACC with TSSP over 115 km/h",
+        "Force recognition as a hybrid vehicle",
         DESCRIPTIONS["ForceHybridVehicle"],
         "disengage_on_accelerator.png",
         False,
@@ -334,7 +334,7 @@ class TogglesLayout(Widget):
         self._auto_door_lock_btn.action_item.set_value("")
         return
 
-      if self._keyboard.text == "0":
+      if self._keyboard.text == "0" or not self._keyboard.text:
         self._auto_door_lock_btn.action_item.set_value("")
       else:
         self._auto_door_lock_btn.action_item.set_value(self._keyboard.text+" [km/h]")
@@ -358,7 +358,7 @@ class TogglesLayout(Widget):
         self._vehicle_mass_btn.action_item.set_value("")
         return
 
-      if self._keyboard.text == "0":
+      if self._keyboard.text == "0" or not self._keyboard.text:
         self._vehicle_mass_btn.action_item.set_value("")
       else:
         self._vehicle_mass_btn.action_item.set_value(self._keyboard.text+" [kg]")
