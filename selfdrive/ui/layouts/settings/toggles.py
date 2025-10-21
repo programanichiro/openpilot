@@ -31,6 +31,7 @@ DESCRIPTIONS = {
   "IsMetric": "Display speed in km/h instead of mph.",
   "RecordAudio": "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.",
   "RaylibMode": "Switching to a user interface built with raylib.",
+  "AccelMethodSwitch": "Switch Accel Method to Official version or recommendation. A reboot is required.",
 }
 
 
