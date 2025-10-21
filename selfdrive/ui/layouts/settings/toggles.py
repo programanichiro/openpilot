@@ -32,6 +32,10 @@ DESCRIPTIONS = {
   "RecordAudio": "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.",
   "RaylibMode": "Switching to a user interface built with raylib.",
   "AccelMethodSwitch": "Switch Accel Method to Official version or recommendation. A reboot is required.",
+  "GpsAlwaysSwitch": "GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary.",
+  "DisableMaxSpeedModify": "ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it.",
+  "ForceHybridVehicle": "Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash.",
+  "IgnoreRerouteHarness": "Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed.",
 }
 
 
@@ -91,12 +95,36 @@ class TogglesLayout(Widget):
         "metric.png",
         False,
       ),
-      "RaylibMode": (
-        "Use Raylib UI",
-        DESCRIPTIONS["RaylibMode"],
-        "warning.png",
-        True,
+      "GpsAlwaysSwitch": (
+        "Always receive GPS signals",
+        DESCRIPTIONS["GpsAlwaysSwitch"],
+        "../offroad/icon_gps_car.png",
+        False,
       ),
+      "DisableMaxSpeedModify": (
+        "Use the vehicle ACC with TSSP over 115 km/h",
+        DESCRIPTIONS["DisableMaxSpeedModify"],
+        "../icons/calibration.png",
+        False,
+      ),
+      "ForceHybridVehicle": (
+        "Use the vehicle ACC with TSSP over 115 km/h",
+        DESCRIPTIONS["ForceHybridVehicle"],
+        "disengage_on_accelerator.svg",
+        False,
+      ),
+      "IgnoreRerouteHarness": (
+        "Ignore DSU bypass harness for TSSPh",
+        DESCRIPTIONS["IgnoreRerouteHarness"],
+        "../icons/calibration.png",
+        False,
+      ),
+      # "RaylibMode": (
+      #   "Use Raylib UI",
+      #   DESCRIPTIONS["RaylibMode"],
+      #   "warning.png",
+      #   True,
+      # ),
     }
 
     self._long_personality_setting = multiple_button_item(
@@ -113,7 +141,7 @@ class TogglesLayout(Widget):
       "Accel Method",
       DESCRIPTIONS["AccelMethodSwitch"],
       buttons=["Recommend", "Official"],
-      button_width=255,
+      button_width=270,
       callback=self._set_accel_method,
       selected_index=self._params.get("AccelMethodSwitch", return_default=True),
       icon="calibration.png"
