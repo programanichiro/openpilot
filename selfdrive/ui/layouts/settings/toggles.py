@@ -110,7 +110,7 @@ class TogglesLayout(Widget):
       "ForceHybridVehicle": (
         "Use the vehicle ACC with TSSP over 115 km/h",
         DESCRIPTIONS["ForceHybridVehicle"],
-        "disengage_on_accelerator.svg",
+        "disengage_on_accelerator.png",
         False,
       ),
       "IgnoreRerouteHarness": (
