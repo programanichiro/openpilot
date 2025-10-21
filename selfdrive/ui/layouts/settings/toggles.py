@@ -185,7 +185,7 @@ class TogglesLayout(Widget):
 
         self._tethering_password_action = ButtonAction(text="EDIT")
         self._tethering_password_action.set_enabled(True)
-        self._tethering_password_btn = ListItem(title="Tethering Password", icons="../offroad/icon_car_key.png", description="24km/h", action_item=self._tethering_password_action, callback=self._edit_tethering_password)
+        self._tethering_password_btn = ListItem(title="Tethering Password", icon="../offroad/icon_car_key.png", description="24km/h", action_item=self._tethering_password_action, callback=self._edit_tethering_password)
 
         self._toggles["Tethering Password"] = self._tethering_password_btn
 
