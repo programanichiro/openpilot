@@ -122,6 +122,14 @@ class ModelRenderer(Widget):
       self._update_model(lead_one, path_x_array)
       if render_lead_indicator:
         self._update_leads(radar_state, path_x_array)
+
+        leads = model.leadsV3
+        leads_num = len(leads)
+
+        for i in range(leads_num):
+          if leads[i].prob > 0.2: # 信用度20%以上で表示。調整中。
+            pass
+            #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
       self._transform_dirty = False
 
     # Draw elements
