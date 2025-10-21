@@ -196,6 +196,19 @@ class TogglesLayout(Widget):
           pass
         self._toggles["AutoDoorLock"] = self._auto_door_lock_btn
 
+        self._vehicle_mass_action = ButtonAction(text="EDIT")
+        self._vehicle_mass_action.set_enabled(True)
+        self._vehicle_mass_btn = ListItem(title="Vehicle weight", icon="../offroad/icon_car_weight.png", action_item=self._vehicle_mass_action, callback=self._edit_vehicle_mass)
+        self._vehicle_mass_btn.action_item.set_value("")
+        try:
+          with open('/data/vehicle_mass.txt','r') as fp:
+            vehicle_mass_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+            if vehicle_mass_str:
+              self._vehicle_mass_btn.action_item.set_value(vehicle_mass_str+" [kg]")
+        except Exception as e:
+          pass
+        self._toggles["VehicleMass"] = self._vehicle_mass_btn
+
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
 
@@ -310,7 +323,7 @@ class TogglesLayout(Widget):
     self._params.put_bool("AccelMethodSwitch", button_index == 1)
 
   def _edit_auto_door_lock(self):
-    def update_password(result):
+    def update_door_lock(result):
       if result != 1:
         return
 
@@ -331,4 +344,28 @@ class TogglesLayout(Widget):
     s = self._auto_door_lock_btn.action_item.value
     s = s.removesuffix(" [km/h]")
     self._keyboard.set_text(s)
-    gui_app.set_modal_overlay(self._keyboard, update_password)
+    gui_app.set_modal_overlay(self._keyboard, update_door_lock)
+
+  def _edit_vehicle_mass(self):
+    def update_mass(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/vehicle_mass.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._vehicle_mass_btn.action_item.set_value("")
+        return
+
+      if self._keyboard.text == "0":
+        self._vehicle_mass_btn.action_item.set_value("")
+      else:
+        self._vehicle_mass_btn.action_item.set_value(self._keyboard.text+" [kg]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("Vehicle weight", "")
+    s = self._vehicle_mass_btn.action_item.value
+    s = s.removesuffix(" [kg]")
+    self._keyboard.set_text(s)
+    gui_app.set_modal_overlay(self._keyboard, update_mass)
