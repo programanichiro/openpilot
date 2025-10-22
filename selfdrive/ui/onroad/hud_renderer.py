@@ -294,6 +294,41 @@ class HudRenderer(Widget):
       set_speed_color,
     )
 
+    #速度標識
+    if self.limit_speed_num == 0:
+      traffic_speed = CRUISE_DISABLED_CHAR
+    else:
+      traffic_speed = str(self.limit_speed_num)
+
+    traffic_speed_r = 120 / 2
+    traffic_speed_x = 247
+    traffic_speed_y = rect.height - traffic_speed_r*2 - 50
+    traffic_back_color = rl.Color(235, 235, 235, int(0.85*255))
+    rl.draw_circle(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r,traffic_speed_r,traffic_back_color)
+
+    arc_w = -22 #内側に描画
+    if self.limit_speed_num >= 100:
+      arc_w = -15 #枠と数字が被らないように枠を細くする。
+
+    arc_w = arc_w * traffic_speed_r / (150 / 2)
+    arc_w_color = rl.Color(205, 44, 38, 255)
+
+    arc_center = rl.Vector2(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r)
+    rl.draw_ring(arc_center,traffic_speed_r+arc_w,traffic_speed_r-2,(90-self.car_bearing+5), (90-self.car_bearing-5),arc_w_color)
+
+    f_size = traffic_speed_r * 67 / (150 / 2)
+    traffic_speed_size = measure_text_cached(self._font_semi_bold, traffic_speed, f_size)
+    rl.draw_text_ex(
+      self._font_semi_bold,
+      traffic_speed,
+      rl.Vector2(traffic_speed_x-traffic_speed_size/2, traffic_speed_y-f_size/2),
+      f_size,
+      0,
+      rl.Color(0x24, 0x57, 0xa1 , 255),
+    )
+
+
+
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
     """Draw the current vehicle speed and unit."""
     speed_text = str(round(self.speed))
@@ -353,6 +388,7 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.car_bearing = 0
     self.yellow_flag = False
     self.yellow_flash_ct = 0
     self.exp_mode = Params().get("ExperimentalMode")
@@ -460,11 +496,13 @@ class HudRenderer(Widget):
         self._press_dexp_sw_mode() #ExperimentalModeを操作したらdX解除する
         self.button_style_only = False
 
+    gps_ok = False
+    gps_idx_i = 0
     try:
       with open('/dev/shm/limitspeed_data.txt','r') as fp2:
-        limitspeed_data_str = fp2.read()
-        if limitspeed_data_str:
-          limitspeed_data = limitspeed_data_str.split(",")
+        gps_output_str = fp2.read()
+        if gps_output_str:
+          gps_output = gps_output_str.split(",")
           limitspeed_flag = int(limitspeed_data[2]) #111,999
           if limitspeed_flag != 999:
             self.limit_speed_num = 0
@@ -472,10 +510,39 @@ class HudRenderer(Widget):
           else:
             self.limit_speed_num = int(limitspeed_data[0])
             self.limit_speed_auto_detect = 1
+
+      with open('/dev/shm/gps_axs_data.txt','r') as fp3:
+        limitspeed_data_str = fp3.read()
+        if limitspeed_data_str:
+          limitspeed_data = limitspeed_data_str.split(",")
+          gps_ok = True
+          gps_idx_i = len(limitspeed_data)
     except Exception as e:
       self.limit_speed_num = 0
       self.limit_speed_auto_detect = 0
       pass
+
+    self.car_bearing = float(gps_output[2]) #bearing
+    if self.car_bearing < 0:
+      # 0〜360へ変換
+      self.car_bearing += 360
+      if self.car_bearing >= 360:
+        self.car_bearing = 0
+
+    # max_temp = sm['deviceState'].maxTempC #表示はこれを使う。
+    # bool okGps = (gps_idx_i == 6 && gps_ok && (int)gps_output[5]);
+    # bool okConnect = false;
+    # auto last_ping = deviceState.getLastAthenaPingTime();
+    # if (last_ping != 0) {
+    #   okConnect = nanos_since_boot() - last_ping < 80e9 ? true : false;
+    # }
+    # int max_temp = (int)deviceState.getMaxTempC(); //表示はこれを使う。
+    # //下の方がマシかQString temp_disp = QString(okConnect ? "● " : "○ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
+    # //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
+    # //QString temp_disp1 = QString(okConnect ? "⚫︎" : "⚪︎");
+    # QString temp_disp1 = QString(okConnect ? "●" : "○");
+    # QString temp_disp2 = QString(okGps ? "★" : "☆");
+    # QString temp_disp3 = QString::number(max_temp) + "°C";
 
   def _press_accel_engaged(self):
     accel_engaged = 0
