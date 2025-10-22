@@ -203,12 +203,10 @@ class HudRenderer(Widget):
     rect_color = COLORS.black_translucent
     rect_border_color = COLORS.border_translucent
 
-    #self.limit_speed_override = True #テスト
     if self.limit_speed_override:
       # self.limit_speed_num = int(limitspeed_data[0])
       rect_color = rl.Color(235, 235, 235, 200)
-      # rect_border_color = rl.Color(205, 44, 38, 200)
-      # rect_border_color = rl.Color(20, 20, 200, 255)
+      rect_border_color = rl.Color(235, 235, 235, 250)
 
     self.yellow_flash_ct += 1
     self.db_rec_mode = False
@@ -225,13 +223,14 @@ class HudRenderer(Widget):
             rect_color = rl.Color(255, 255, 0, 255) # 速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
             self.yellow_flag = True
     else:
-      if self.maxspeed_org+12 <= self.set_speed and self.maxspeed_org+5 < self.vc_speed * 3.6:
+      if self.maxspeed_org+12 > self.set_speed or self.maxspeed_org+5 >= self.vc_speed * 3.6:
+        #g_night_modeは保留
         pass #rect_color = rl.Color(235, 235, 235, 200)
       elif self.is_cruise_set:
         if self.yellow_flash_ct % 6 < 3:
           rect_color = rl.Color(255, 255, 0, 255) # 速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
-        # else:
-        #   rect_color = rl.Color(235, 235, 235, 200)
+        else:
+          pass # rect_color = rl.Color(235, 235, 235, 200)
 
     if self.add_v_by_lead and self.is_cruise_set:
       rect_border_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
