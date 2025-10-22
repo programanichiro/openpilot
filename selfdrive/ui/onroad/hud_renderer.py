@@ -226,7 +226,7 @@ class HudRenderer(Widget):
     else:
       if self.maxspeed_org+12 <= self.set_speed and self.maxspeed_org+5 < self.vc_speed * 3.6:
         pass #rect_color = rl.Color(235, 235, 235, 200)
-      else:
+      elif self.is_cruise_set:
         if self.yellow_flash_ct % 6 < 3:
           rect_color = rl.Color(255, 255, 0, 255) # 速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
         # else:
@@ -244,7 +244,7 @@ class HudRenderer(Widget):
 
     if self.limit_speed_override == True or (self.Limit_speed_mode == 1 and self.limit_speed_auto_detect == 1):
       # 太い赤枠を内側に描画する。
-      ls_w2 = 23 #27
+      ls_w2 = 27
       set_speed_rect2 = rl.Rectangle(x+ls_w2/2, y+ls_w2/2, set_speed_width-ls_w2, UI_CONFIG.set_speed_height-ls_w2)
       speed_limit_border_color = rl.Color(205, 44, 38, (255 if self.limit_speed_override else 180))
       rl.draw_rectangle_rounded_lines_ex(set_speed_rect2, 0.35, 10, ls_w2-2, speed_limit_border_color)
