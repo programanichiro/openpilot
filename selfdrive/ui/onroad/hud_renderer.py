@@ -241,14 +241,15 @@ class HudRenderer(Widget):
       rect_border_color = rl.Color(0xff, 0xff, 0, 200) #スタートダッシュ時は黄色
 
     rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, rect_color)
-    rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, rect_border_color)
 
     if self.limit_speed_override == True or (self.Limit_speed_mode == 1 and self.limit_speed_auto_detect == 1):
       # 太い赤枠を内側に描画する。
-      ls_w2 = 21 #27
+      ls_w2 = 23 #27
       set_speed_rect2 = rl.Rectangle(x+ls_w2/2, y+ls_w2/2, set_speed_width-ls_w2, UI_CONFIG.set_speed_height-ls_w2)
       speed_limit_border_color = rl.Color(205, 44, 38, (255 if self.limit_speed_override else 180))
-      rl.draw_rectangle_rounded_lines_ex(set_speed_rect2, 0.35, 10, ls_w2, speed_limit_border_color)
+      rl.draw_rectangle_rounded_lines_ex(set_speed_rect2, 0.35, 10, ls_w2-2, speed_limit_border_color)
+
+    rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, rect_border_color)
 
     max_color = COLORS.grey
     set_speed_color = COLORS.dark_grey
