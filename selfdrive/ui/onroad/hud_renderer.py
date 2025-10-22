@@ -247,7 +247,7 @@ class HudRenderer(Widget):
       ls_w2 = 27
       set_speed_rect2 = rl.Rectangle(x+ls_w2/2, y+ls_w2/2, set_speed_width-ls_w2, UI_CONFIG.set_speed_height-ls_w2)
       speed_limit_border_color = rl.Color(205, 44, 38, (255 if self.limit_speed_override else 180))
-      rl.draw_rectangle_rounded_lines_ex(set_speed_rect2, 0.35, 10, ls_w2-2, speed_limit_border_color)
+      rl.draw_rectangle_rounded_lines_ex(set_speed_rect2, 0.3, 10, ls_w2-6, speed_limit_border_color)
 
     rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, rect_border_color)
 
