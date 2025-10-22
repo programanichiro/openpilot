@@ -99,31 +99,31 @@ class TogglesLayout(Widget):
         False,
       ),
       "GpsAlwaysSwitch": (
-        "Always receive GPS signals",
+        tr("Always receive GPS signals"),
         DESCRIPTIONS["GpsAlwaysSwitch"],
         "../offroad/icon_gps_car.png",
         False,
       ),
       "DisableMaxSpeedModify": (
-        "Use the vehicle ACC with TSSP over 115 km/h",
+        tr("Use the vehicle ACC with TSSP over 115 km/h"),
         DESCRIPTIONS["DisableMaxSpeedModify"],
         "../icons/calibration.png",
         False,
       ),
       "ForceHybridVehicle": (
-        "Force recognition as a hybrid vehicle",
+        tr("Force recognition as a hybrid vehicle"),
         DESCRIPTIONS["ForceHybridVehicle"],
         "disengage_on_accelerator.png",
         False,
       ),
       "IgnoreRerouteHarness": (
-        "Ignore DSU bypass harness for TSSPh",
+        tr("Ignore DSU bypass harness for TSSP"),
         DESCRIPTIONS["IgnoreRerouteHarness"],
         "../icons/calibration.png",
         False,
       ),
       # "RaylibMode": (
-      #   "Use Raylib UI",
+      #   tr("Use Raylib UI"),
       #   DESCRIPTIONS["RaylibMode"],
       #   "warning.png",
       #   True,
@@ -144,9 +144,9 @@ class TogglesLayout(Widget):
     )
 
     self._accel_method_setting = multiple_button_item(
-      "Accel Method",
+      tr("Accel Method"),
       DESCRIPTIONS["AccelMethodSwitch"],
-      buttons=["Recommend", "Official"],
+      buttons=[tr("Recommend"), tr("Official")],
       button_width=270,
       callback=self._set_accel_method,
       selected_index=self._params.get("AccelMethodSwitch", return_default=True),
