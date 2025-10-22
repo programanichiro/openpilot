@@ -206,9 +206,31 @@ class HudRenderer(Widget):
     if self.limit_speed_override:
       # self.limit_speed_num = int(limitspeed_data[0])
       rect_color = rl.Color(235, 235, 235, 200)
-      rect_border_color = rl.Color(205, 44, 38, 200)
-    if self.db_rec_mode:
-      rect_color = rl.Color(100, 0, 0, 250)
+      # rect_border_color = rl.Color(205, 44, 38, 200)
+
+    self.yellow_flash_ct += 1
+    self.db_rec_mode = False
+    if self.limit_speed_override == False:
+      self.yellow_flag = False
+      if self.Limit_speed_mode == 2:
+        rect_color = rl.Color(100, 0, 0, 250)
+        if self.set_speed >= 30:
+          self.db_rec_mode = True
+        self.yellow_flag = True
+      elif self.Limit_speed_mode == 1 and self.limit_speed_auto_detect == 1:
+        if self.maxspeed_org+12 <= self.set_speed and self.maxspeed_org+5 < self.vc_speed * 3.6:
+          if self.yellow_flash_ct % 6 < 3:
+            rect_color = rl.Color(255, 255, 0, 255) # 速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
+            self.yellow_flag = True
+    else:
+      if self.maxspeed_org+12 <= self.set_speed and self.maxspeed_org+5 < self.vc_speed * 3.6:
+        pass #rect_color = rl.Color(235, 235, 235, 200)
+      else:
+        if self.yellow_flash_ct % 6 < 3:
+          rect_color = rl.Color(255, 255, 0, 255) # 速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
+        # else:
+        #   rect_color = rl.Color(235, 235, 235, 200)
+
     if self.add_v_by_lead and self.is_cruise_set:
       rect_border_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
     if self.curve_brake and self.is_cruise_set:
@@ -219,6 +241,13 @@ class HudRenderer(Widget):
 
     rl.draw_rectangle_rounded(set_speed_rect, 0.35, 10, rect_color)
     rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, rect_border_color)
+
+    if self.limit_speed_override == True or (self.Limit_speed_mode == 1 and self.limit_speed_auto_detect == 1):
+      # 太い赤枠を内側に描画する。
+      ls_w2 = 21 #27
+      set_speed_rect2 = rl.Rectangle(x+ls_w2/2, y+ls_w2/2, set_speed_width-ls_w2, UI_CONFIG.set_speed_height-ls_w2)
+      speed_limit_border_color = rl.Color(205, 44, 38, (255 if self.limit_speed_override else 180))
+      rl.draw_rectangle_rounded_lines_ex(set_speed_rect2, 0.35, 10, ls_w2, speed_limit_border_color)
 
     max_color = COLORS.grey
     set_speed_color = COLORS.dark_grey
@@ -234,16 +263,6 @@ class HudRenderer(Widget):
     if self.limit_speed_override:
         max_color = rl.Color(0x24, 0x57, 0xa1 , 255)
         set_speed_color = rl.Color(0x24, 0x57, 0xa1 , 255)
-
-    self.db_rec_mode = False
-    if self.limit_speed_override == False:
-      if self.Limit_speed_mode == 2:
-        if self.set_speed >= 30:
-          self.db_rec_mode = True
-      elif self.Limit_speed_mode == 1 and self.limit_speed_auto_detect == 1:
-        if self.maxspeed_org+12 <= self.set_speed and self.maxspeed_org+5 < self.vc_speed * 3.6:
-          #yellow_flagは保留
-          pass
 
     max_text = "MAX"
     if self.limit_speed_override:
@@ -331,6 +350,8 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.yellow_flag = False
+    self.yellow_flash_ct = 0
     self.exp_mode = Params().get("ExperimentalMode")
     self.dexp_sw_mode = False
     self.limit_speed_num = 0
