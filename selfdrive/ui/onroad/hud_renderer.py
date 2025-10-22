@@ -203,6 +203,7 @@ class HudRenderer(Widget):
     rect_color = COLORS.black_translucent
     rect_border_color = COLORS.border_translucent
 
+    self.limit_speed_override = True #テスト
     if self.limit_speed_override:
       # self.limit_speed_num = int(limitspeed_data[0])
       rect_color = rl.Color(235, 235, 235, 200)
