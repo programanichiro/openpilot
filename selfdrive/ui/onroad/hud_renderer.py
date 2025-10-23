@@ -432,6 +432,8 @@ class HudRenderer(Widget):
     traffic_back_color = rl.Color(235, 235, 235, int(0.85*255))
     rl.draw_circle(int(traffic_speed_x+traffic_speed_r),int(traffic_speed_y+traffic_speed_r),float(traffic_speed_r),traffic_back_color)
 
+    return
+
     arc_w = -22 #内側に描画
     if self.limit_speed_num >= 100:
       arc_w = -15 #枠と数字が被らないように枠を細くする。
