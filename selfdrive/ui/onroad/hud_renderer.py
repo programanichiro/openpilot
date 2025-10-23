@@ -447,7 +447,7 @@ class HudRenderer(Widget):
     rl.draw_text_ex(
       self._font_semi_bold,
       traffic_speed,
-      rl.Vector2(traffic_speed_x-traffic_speed_size/2, traffic_speed_y-f_size/2),
+      rl.Vector2(traffic_speed_x-traffic_speed_size.x/2, traffic_speed_y-traffic_speed_size.y/2),
       f_size,
       0,
       rl.Color(0x24, 0x57, 0xa1 , 255),
