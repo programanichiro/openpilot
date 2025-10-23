@@ -131,7 +131,7 @@ class HudRenderer(Widget):
 
     self.maxspeed_org = car_state.vCruise #これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
     self.vc_speed = v_ego
-    self.ip_update_state()
+    self._ip_update_state()
 
   def _render(self, rect: rl.Rectangle) -> None:
     """Render HUD elements to the screen."""
@@ -394,7 +394,7 @@ class HudRenderer(Widget):
     self.button_style_only = False
 
 
-  def ip_draw(self, rect: rl.Rectangle):
+  def _ip_draw(self, rect: rl.Rectangle):
     #下段ボタン
     ud_btn_w0 = rect.width / 5
     ud_btn_w = ud_btn_w0 * 0.7
@@ -453,7 +453,7 @@ class HudRenderer(Widget):
       rl.Color(0x24, 0x57, 0xa1 , 255),
     )
 
-  def ip_update_state(self):
+  def _ip_update_state(self):
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
         signal_start_prompt_info_str = fp.read()
