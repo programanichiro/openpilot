@@ -432,8 +432,6 @@ class HudRenderer(Widget):
     traffic_back_color = rl.Color(235, 235, 235, int(0.85*255))
     rl.draw_circle(int(traffic_speed_x+traffic_speed_r),int(traffic_speed_y+traffic_speed_r),float(traffic_speed_r),traffic_back_color)
 
-    return
-
     arc_w = -22 #内側に描画
     if self.limit_speed_num >= 100:
       arc_w = -15 #枠と数字が被らないように枠を細くする。
@@ -442,7 +440,10 @@ class HudRenderer(Widget):
     arc_w_color = rl.Color(205, 44, 38, 255)
 
     arc_center = rl.Vector2(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r)
-    rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-2),float(90-self.car_bearing+5), float(90-self.car_bearing-5),90,arc_w_color)
+    #rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-2),float(90-self.car_bearing+5), float(90-self.car_bearing-5),90,arc_w_color)
+    rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-2),float(0), float(350),90,arc_w_color)
+
+    return
 
     f_size = traffic_speed_r * 67 / (150 / 2)
     traffic_speed_size = measure_text_cached(self._font_semi_bold, traffic_speed, f_size)
