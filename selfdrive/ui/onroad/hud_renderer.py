@@ -154,29 +154,7 @@ class HudRenderer(Widget):
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
     self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
-    ud_btn_w0 = rect.width / 5
-    ud_btn_w = ud_btn_w0 * 0.7
-    ud_btn_h0 = 160
-    ud_btn_h = 160
-    self._knight_scanner_bit3_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*0, rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
-    self._limitspeed_sw_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(-1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
-    self._LongitudinalPersonality_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
-    self._lockon_disp_disable_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(2), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
-
-    btn_w0 = 200
-    btn_w = 150
-    btn_h0 = 175
-    btn_h = 150
-    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3.2, btn_w, btn_h))
-    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2.2, btn_w, btn_h))
-
-    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.7, btn_w, btn_h))
-    self._decel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*2.7, btn_w, btn_h))
-    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.7, btn_w, btn_h))
-
-    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.3, btn_w, btn_h))
-    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.3, btn_w, btn_h))
-
+    self._ip_draw(rect)
 
   def user_interacting(self) -> bool:
     return (self._exp_button.is_pressed
@@ -294,41 +272,6 @@ class HudRenderer(Widget):
       set_speed_color,
     )
 
-    #速度標識
-    if self.limit_speed_num == 0:
-      traffic_speed = CRUISE_DISABLED_CHAR
-    else:
-      traffic_speed = str(self.limit_speed_num)
-
-    traffic_speed_r = 120 / 2
-    traffic_speed_x = 247
-    traffic_speed_y = rect.height - traffic_speed_r*2 - 50
-    traffic_back_color = rl.Color(235, 235, 235, int(0.85*255))
-    rl.draw_circle(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r,traffic_speed_r,traffic_back_color)
-
-    arc_w = -22 #内側に描画
-    if self.limit_speed_num >= 100:
-      arc_w = -15 #枠と数字が被らないように枠を細くする。
-
-    arc_w = arc_w * traffic_speed_r / (150 / 2)
-    arc_w_color = rl.Color(205, 44, 38, 255)
-
-    arc_center = rl.Vector2(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r)
-    rl.draw_ring(arc_center,traffic_speed_r+arc_w,traffic_speed_r-2,(90-self.car_bearing+5), (90-self.car_bearing-5),arc_w_color)
-
-    f_size = traffic_speed_r * 67 / (150 / 2)
-    traffic_speed_size = measure_text_cached(self._font_semi_bold, traffic_speed, f_size)
-    rl.draw_text_ex(
-      self._font_semi_bold,
-      traffic_speed,
-      rl.Vector2(traffic_speed_x-traffic_speed_size/2, traffic_speed_y-f_size/2),
-      f_size,
-      0,
-      rl.Color(0x24, 0x57, 0xa1 , 255),
-    )
-
-
-
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
     """Draw the current vehicle speed and unit."""
     speed_text = str(round(self.speed))
@@ -340,6 +283,7 @@ class HudRenderer(Widget):
     unit_text_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
+
 
   def ip_button_init(self):
     try:
@@ -448,6 +392,66 @@ class HudRenderer(Widget):
     self._lockon_disp_disable_button = Button("■",click_callback=self._press_lockon_disp_disable,font_size=font_sz,font_weight=font_wt)
     self._press_lockon_disp_disable()
     self.button_style_only = False
+
+
+  def ip_draw(self, rect: rl.Rectangle):
+    #下段ボタン
+    ud_btn_w0 = rect.width / 5
+    ud_btn_w = ud_btn_w0 * 0.7
+    ud_btn_h0 = 160
+    ud_btn_h = 160
+    self._knight_scanner_bit3_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*0, rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._limitspeed_sw_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(-1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._LongitudinalPersonality_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(1), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+    self._lockon_disp_disable_button.render(rl.Rectangle(rect.x +rect.width/2 - ud_btn_w/2 + ud_btn_w0*(2), rect.y + rect.height - ud_btn_h0*1, ud_btn_w, ud_btn_h))
+
+    #左右配置ボタン
+    btn_w0 = 200
+    btn_w = 150
+    btn_h0 = 175
+    btn_h = 150
+    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3.2, btn_w, btn_h))
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2.2, btn_w, btn_h))
+
+    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.7, btn_w, btn_h))
+    self._decel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*2.7, btn_w, btn_h))
+    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.7, btn_w, btn_h))
+
+    self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.3, btn_w, btn_h))
+    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.3, btn_w, btn_h))
+
+    #速度標識
+    if self.limit_speed_num == 0:
+      traffic_speed = CRUISE_DISABLED_CHAR
+    else:
+      traffic_speed = str(self.limit_speed_num)
+
+    traffic_speed_r = 120 / 2
+    traffic_speed_x = 247
+    traffic_speed_y = rect.height - traffic_speed_r*2 - 50
+    traffic_back_color = rl.Color(235, 235, 235, int(0.85*255))
+    rl.draw_circle(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r,traffic_speed_r,traffic_back_color)
+
+    arc_w = -22 #内側に描画
+    if self.limit_speed_num >= 100:
+      arc_w = -15 #枠と数字が被らないように枠を細くする。
+
+    arc_w = arc_w * traffic_speed_r / (150 / 2)
+    arc_w_color = rl.Color(205, 44, 38, 255)
+
+    arc_center = rl.Vector2(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r)
+    rl.draw_ring(arc_center,traffic_speed_r+arc_w,traffic_speed_r-2,(90-self.car_bearing+5), (90-self.car_bearing-5),arc_w_color)
+
+    f_size = traffic_speed_r * 67 / (150 / 2)
+    traffic_speed_size = measure_text_cached(self._font_semi_bold, traffic_speed, f_size)
+    rl.draw_text_ex(
+      self._font_semi_bold,
+      traffic_speed,
+      rl.Vector2(traffic_speed_x-traffic_speed_size/2, traffic_speed_y-f_size/2),
+      f_size,
+      0,
+      rl.Color(0x24, 0x57, 0xa1 , 255),
+    )
 
   def ip_update_state(self):
     try:
