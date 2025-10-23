@@ -185,7 +185,7 @@ class HudRenderer(Widget):
     if self.limit_speed_override:
       # self.limit_speed_num = int(limitspeed_data[0])
       rect_color = rl.Color(235, 235, 235, 200)
-      rect_border_color = rl.Color(235, 235, 235, 250)
+      rect_border_color = rl.Color(235, 235, 235, 200)
 
     self.yellow_flash_ct += 1
     self.db_rec_mode = False
@@ -427,8 +427,8 @@ class HudRenderer(Widget):
       traffic_speed = str(self.limit_speed_num)
 
     traffic_speed_r = 120 / 2
-    traffic_speed_x = 247
-    traffic_speed_y = rect.height - traffic_speed_r*2 - 50
+    traffic_speed_x = rect.x + 247
+    traffic_speed_y = rect.y + rect.height - traffic_speed_r*2 - 50
     traffic_back_color = rl.Color(235, 235, 235, int(0.85*255))
     rl.draw_circle(int(traffic_speed_x+traffic_speed_r),int(traffic_speed_y+traffic_speed_r),float(traffic_speed_r),traffic_back_color)
 
@@ -440,8 +440,7 @@ class HudRenderer(Widget):
     arc_w_color = rl.Color(205, 44, 38, 255)
 
     arc_center = rl.Vector2(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r)
-    #rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-2),float(90-self.car_bearing+5), float(90-self.car_bearing-5),90,arc_w_color)
-    rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-2),float(0), float(350),90,arc_w_color)
+    rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-4),float(90-self.car_bearing-5), float(90-self.car_bearing+5),90,arc_w_color)
 
     return
 
