@@ -505,9 +505,9 @@ class HudRenderer(Widget):
     gps_idx_i = 0
     try:
       with open('/dev/shm/limitspeed_data.txt','r') as fp2:
-        gps_output_str = fp2.read()
-        if gps_output_str:
-          gps_output = gps_output_str.split(",")
+        limitspeed_data_str = fp2.read()
+        if limitspeed_data_str:
+          limitspeed_data = limitspeed_data_str.split(",")
           limitspeed_flag = int(limitspeed_data[2]) #111,999
           if limitspeed_flag != 999:
             self.limit_speed_num = 0
@@ -517,11 +517,11 @@ class HudRenderer(Widget):
             self.limit_speed_auto_detect = 1
 
       with open('/dev/shm/gps_axs_data.txt','r') as fp3:
-        limitspeed_data_str = fp3.read()
-        if limitspeed_data_str:
-          limitspeed_data = limitspeed_data_str.split(",")
+        gps_output_str = fp3.read()
+        if gps_output_str:
+          gps_output = gps_output_str.split(",")
           gps_ok = True
-          gps_idx_i = len(limitspeed_data)
+          gps_idx_i = len(gps_output)
     except Exception as e:
       self.limit_speed_num = 0
       self.limit_speed_auto_detect = 0
