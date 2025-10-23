@@ -421,7 +421,7 @@ class HudRenderer(Widget):
     self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.3, btn_w, btn_h))
 
     #速度標識
-    if self.limit_speed_num == 0:
+    if not self.limit_speed_num or self.limit_speed_num == 0:
       traffic_speed = CRUISE_DISABLED_CHAR
     else:
       traffic_speed = str(self.limit_speed_num)
@@ -440,17 +440,16 @@ class HudRenderer(Widget):
     arc_w_color = rl.Color(205, 44, 38, 255)
 
     arc_center = rl.Vector2(traffic_speed_x+traffic_speed_r,traffic_speed_y+traffic_speed_r)
-    rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-4),float(90-self.car_bearing+5), float(90-self.car_bearing-5 + 360),90,arc_w_color)
-
-    return
+    rl.draw_ring(arc_center,float(traffic_speed_r+arc_w),float(traffic_speed_r-4),float(270-self.car_bearing+5), float(270-self.car_bearing-5 + 360),90,arc_w_color)
+    #もしかしたらcar_bearingが逆回りかもしれない。rl.draw_ringはX軸から時計回りだから、270が上（北とみなす）。Qtと違う。
 
     f_size = traffic_speed_r * 67 / (150 / 2)
-    traffic_speed_size = measure_text_cached(self._font_semi_bold, traffic_speed, f_size)
+    traffic_speed_size = measure_text_cached(self._font_semi_bold, traffic_speed, int(f_size))
     rl.draw_text_ex(
       self._font_semi_bold,
       traffic_speed,
       rl.Vector2(traffic_speed_x-traffic_speed_size.x/2, traffic_speed_y-traffic_speed_size.y/2),
-      f_size,
+      float(f_size),
       0,
       rl.Color(0x24, 0x57, 0xa1 , 255),
     )
