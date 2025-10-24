@@ -460,6 +460,24 @@ class HudRenderer(Widget):
       rl.Color(0x24, 0x57, 0xa1 , 255),
     )
 
+    th_tmp1 = 62; #ここから黄色
+    th_tmp2 = 71; #ここから赤
+
+    temp_rc = rl.Rectangle(rect.x+65-27, rect.y+110+6, 233+27*2-5, 54)
+    if self.temperature < th_tmp1: #警告色の変化はサイドバーと違う。もっと早く警告される。
+      temp_col = COLORS.white
+      if ui_state.status == UIStatus.ENGAGED:
+        temp_col = COLORS.engaged
+      elif ui_state.status == UIStatus.DISENGAGED:
+        temp_col = COLORS.disengaged
+      elif ui_state.status == UIStatus.OVERRIDE:
+        temp_col = COLORS.override
+    elif temp < th_tmp2:
+      temp_col = rl.Color(240, 240, 0, 200)
+    else:
+      temp_col = rl.Color(240, 0, 0, 200)
+    rl.draw_rectangle_rounded(temp_rc, 1.0, 10, temp_col)
+
   def _ip_update_state(self,sm):
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
