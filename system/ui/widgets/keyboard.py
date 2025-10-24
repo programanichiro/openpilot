@@ -45,13 +45,13 @@ KEYBOARD_LAYOUTS = {
   "numbers": [
     ["1", "2", "3", "4", "5", "6", "7", "8", "9", "0"],
     ["-", "/", ":", ";", "(", ")", "$", "&", "@", "\""],
-    [SYMBOL_KEY, ".", ",", "?", "!", "`", BACKSPACE_KEY],
+    [SYMBOL_KEY, "_", ",", "?", "!", "`", BACKSPACE_KEY],
     [ABC_KEY, SPACE_KEY, ".", ENTER_KEY],
   ],
   "specials": [
     ["[", "]", "{", "}", "#", "%", "^", "*", "+", "="],
     ["_", "\\", "|", "~", "<", ">", "€", "£", "¥", "•"],
-    [NUMERIC_KEY, ".", ",", "?", "!", "'", BACKSPACE_KEY],
+    [NUMERIC_KEY, "-", ",", "?", "!", "'", BACKSPACE_KEY],
     [ABC_KEY, SPACE_KEY, ".", ENTER_KEY],
   ],
 }
@@ -78,7 +78,7 @@ class Keyboard(Widget):
     self._backspace_last_repeat: float = 0.0
 
     self._render_return_status = -1
-    self._cancel_button = Button(tr("Cancel"), self._cancel_button_callback)
+    self._cancel_button = Button(lambda: tr("Cancel"), self._cancel_button_callback)
 
     self._eye_button = Button("", self._eye_button_callback, button_style=ButtonStyle.TRANSPARENT)
 
