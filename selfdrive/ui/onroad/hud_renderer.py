@@ -472,7 +472,7 @@ class HudRenderer(Widget):
         temp_col = COLORS.disengaged
       elif ui_state.status == UIStatus.OVERRIDE:
         temp_col = COLORS.override
-    elif temp < th_tmp2:
+    elif self.temperature < th_tmp2:
       temp_col = rl.Color(240, 240, 0, 200)
     else:
       temp_col = rl.Color(240, 0, 0, 200)
