@@ -119,6 +119,7 @@ class AugmentedRoadView(CameraView):
     border_roundness = 0.01
     border_color = BORDER_COLORS.get(ui_state.status, BORDER_COLORS[UIStatus.DISENGAGED])
 
+    # ハザード点滅
     self.hazard_ct += 1
     if self.hazard_ct % 7 == 0:
       try:
@@ -127,7 +128,7 @@ class AugmentedRoadView(CameraView):
           if hazard_light_str:
             hazard_light = int(hazard_light_str)
             if hazard_light > 0:
-              #bgColorをオレンジに点滅
+              # bgColorをオレンジに点滅
               self.hazard = not self.hazard
             elif hazard_light == 0:
               self.hazard = False
@@ -135,7 +136,7 @@ class AugmentedRoadView(CameraView):
         pass
 
     if self.hazard == True:
-      #bgColorをオレンジに点滅
+      # bgColorをオレンジに点滅
       border_color = rl.Color(int(192*13/10), int(102*13/10), 0, 255) #ウインカーと同じ色
 
     border_rect = rl.Rectangle(rect.x + UI_BORDER_SIZE, rect.y + UI_BORDER_SIZE,

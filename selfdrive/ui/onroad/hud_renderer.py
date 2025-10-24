@@ -467,11 +467,11 @@ class HudRenderer(Widget):
     if self.temperature < th_tmp1: #警告色の変化はサイドバーと違う。もっと早く警告される。
       temp_col = COLORS.white
       if ui_state.status == UIStatus.ENGAGED:
-        temp_col = COLORS.engaged
+        temp_col = rl.Color(0x16, 0x7F, 0x40, 0xFF)
       elif ui_state.status == UIStatus.DISENGAGED:
-        temp_col = COLORS.disengaged
+        temp_col = rl.Color(0x12, 0x28, 0x39, 0xFF)
       elif ui_state.status == UIStatus.OVERRIDE:
-        temp_col = COLORS.override
+        temp_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
     elif self.temperature < th_tmp2:
       temp_col = rl.Color(240, 240, 0, 200)
     else:
