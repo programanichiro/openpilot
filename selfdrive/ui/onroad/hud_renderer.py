@@ -1,4 +1,6 @@
 import pyray as rl
+import time
+from cereal import log
 from dataclasses import dataclass
 from openpilot.common.constants import CV
 from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
@@ -75,7 +77,7 @@ class HudRenderer(Widget):
     self._font_medium: rl.Font = gui_app.font(FontWeight.MEDIUM)
 
     self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
-    self.ip_button_init()
+    self._ip_button_init()
 
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
@@ -131,7 +133,7 @@ class HudRenderer(Widget):
 
     self.maxspeed_org = car_state.vCruise #これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
     self.vc_speed = v_ego
-    self._ip_update_state()
+    self._ip_update_state(sm)
 
   def _render(self, rect: rl.Rectangle) -> None:
     """Render HUD elements to the screen."""
@@ -285,7 +287,7 @@ class HudRenderer(Widget):
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
 
 
-  def ip_button_init(self):
+  def _ip_button_init(self):
     try:
       with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
         dst.write(src.read())
@@ -332,6 +334,10 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.temperature = 0 #温度が取れなくなったので目安。
+    self.temp_disp1 = "○"
+    self.temp_disp2 = "☆"
+    self.temp_disp3 = "°C"
     self.car_bearing = 0
     self.yellow_flag = False
     self.yellow_flash_ct = 0
@@ -454,7 +460,7 @@ class HudRenderer(Widget):
       rl.Color(0x24, 0x57, 0xa1 , 255),
     )
 
-  def _ip_update_state(self):
+  def _ip_update_state(self,sm):
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
         signal_start_prompt_info_str = fp.read()
@@ -534,20 +540,29 @@ class HudRenderer(Widget):
       if self.car_bearing >= 360:
         self.car_bearing = 0
 
-    # max_temp = sm['deviceState'].maxTempC #表示はこれを使う。
-    # bool okGps = (gps_idx_i == 6 && gps_ok && (int)gps_output[5]);
-    # bool okConnect = false;
-    # auto last_ping = deviceState.getLastAthenaPingTime();
-    # if (last_ping != 0) {
-    #   okConnect = nanos_since_boot() - last_ping < 80e9 ? true : false;
-    # }
-    # int max_temp = (int)deviceState.getMaxTempC(); //表示はこれを使う。
+    deviceState = sm['deviceState']
+    okGps = (gps_idx_i == 6 and gps_ok and int(gps_output[5]))
+    okConnect = False
+    last_ping = deviceState.lastAthenaPingTime
+    if last_ping != 0:
+      okConnect = True if time.monotonic_ns() - last_ping < 80_000_000_000 else False
+    self.temperature = 0 #温度が取れなくなったので目安。
+    ts = deviceState.thermalStatus
+    ThermalStatus = log.DeviceState.ThermalStatus
+    if ts == ThermalStatus.green:
+      self.temperature = 55 #色変化のための参照値
+    elif ts == ThermalStatus.yellow:
+      self.temperature = 65 #色変化のための参照値
+    else:
+      self.temperature = 75 #色変化のための参照値
+
+    max_temp = deviceState.maxTempC #表示はこれを使う。
     # //下の方がマシかQString temp_disp = QString(okConnect ? "● " : "○ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
     # //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
     # //QString temp_disp1 = QString(okConnect ? "⚫︎" : "⚪︎");
-    # QString temp_disp1 = QString(okConnect ? "●" : "○");
-    # QString temp_disp2 = QString(okGps ? "★" : "☆");
-    # QString temp_disp3 = QString::number(max_temp) + "°C";
+    self.temp_disp1 = "●" if okConnect else "○"
+    self.temp_disp2 = "★" if okGps else "☆"
+    self.temp_disp3 = str(max_temp) + "°C"
 
   def _press_accel_engaged(self):
     accel_engaged = 0
