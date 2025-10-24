@@ -551,12 +551,13 @@ class HudRenderer(Widget):
       self.limit_speed_auto_detect = 0
       pass
 
-    self.car_bearing = float(gps_output[2]) #bearing
-    if self.car_bearing < 0:
-      # 0〜360へ変換
-      self.car_bearing += 360
-      if self.car_bearing >= 360:
-        self.car_bearing = 0
+    if gps_idx_i == 6 and gps_ok:
+      self.car_bearing = float(gps_output[2]) #bearing
+      if self.car_bearing < 0:
+        # 0〜360へ変換
+        self.car_bearing += 360
+        if self.car_bearing >= 360:
+          self.car_bearing = 0
 
     deviceState = sm['deviceState']
     okGps = (gps_idx_i == 6 and gps_ok and int(gps_output[5]))
