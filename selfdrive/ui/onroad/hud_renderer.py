@@ -299,9 +299,13 @@ class HudRenderer(Widget):
       ACC_font_size_for_rect = ACC_font_size+15
       ACC_font_x = rect.x + rect.width/2 + unit_text_size.x/2 + 43
       ACC_font_y = rect.y+290 + y_ofs-35
-      ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2,ACC_font_y-ACC_font_size_for_rect/2,ACC_font_size_for_rect,ACC_font_size_for_rect)
+      if self.ACC_speed < 100:
+        ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2,ACC_font_y-ACC_font_size_for_rect/2,ACC_font_size_for_rect,ACC_font_size_for_rect)
+      else: #100km/h以上なら幅を広げる。
+        add = 10
+        ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2-add,ACC_font_y-ACC_font_size_for_rect/2,ACC_font_size_for_rect+add*2,ACC_font_size_for_rect)
       rl.draw_rectangle_rounded(ACC_rect, 0.3, 10, rl.Color(240, 240, 240,230))
-      self._drawText(font=self._font_semi_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
+      self._drawText(font=self._font_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y+ACC_font_size/2,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
       # drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
 
   def _ip_button_init(self):
@@ -502,7 +506,7 @@ class HudRenderer(Widget):
     self._drawText(font=self._font_JP,font_size=56,x=rect.x+65+55+5-5+30,y=temp_rc.y+temp_rc.height+3,text=self.temp_disp2,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
     self._drawText(font=self._font_JP,font_size=47,x=rect.x+65+5+5+20,y=temp_rc.y+temp_rc.height-1,text=self.temp_disp1,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
 
-    calib_h = -33 -33 - 30 #表示位置を上に
+    calib_h = -33 -33 - 30 -10 #表示位置を上に
     rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, rect.y -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
     if abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center > -99:
       #ハンドル角度を表示
