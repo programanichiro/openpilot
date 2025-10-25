@@ -494,7 +494,7 @@ class HudRenderer(Widget):
       h_ang = str(h_ang_i)+"°"
 
       h_ang_size = 60
-      self._drawText(font=self._font_bold,font_size=h_ang_size,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height-12,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
+      self._drawText(font=self._font_bold,font_size=h_ang_size,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
     elif self.handle_center > -99:
       #ハンドルセンター値を表示
       #status_col = p.setBrush(bg_colors[status]);
