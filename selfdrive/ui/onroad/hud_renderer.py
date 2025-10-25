@@ -508,7 +508,7 @@ class HudRenderer(Widget):
       calib_col = rl.Color(150, 150, 0, 0xf1)
       rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
 
-      if True:#self.handle_calibct == 0:
+      if False:#self.handle_calibct == 0:
         # p.setFont(InterFont(33));
         # drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
         self._drawText(font=self._font_semi_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height,text="Calibrating",alpha=200) #x,yを下段中心にtextを表示する
