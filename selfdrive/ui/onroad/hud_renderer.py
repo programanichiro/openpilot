@@ -299,7 +299,7 @@ class HudRenderer(Widget):
       ACC_font_size_for_rect = ACC_font_size+15
       ACC_font_x = rect.x + rect.width/2 + unit_text_size.x/2 + 43
       ACC_font_y = rect.y+290 + y_ofs-35
-      ACC_rect = rl.Rectangle(x-ACC_font_size_for_rect/2,y-ACC_font_size_for_rect/2,-ACC_font_size_for_rect,-ACC_font_size_for_rect)
+      ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2,ACC_font_y-ACC_font_size_for_rect/2,ACC_font_size_for_rect,ACC_font_size_for_rect)
       rl.draw_rectangle_rounded(ACC_rect, 0.3, 10, rl.Color(240, 240, 240,230))
       self._drawText(font=self._font_semi_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
       # drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
