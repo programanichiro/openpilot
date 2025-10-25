@@ -102,6 +102,7 @@ class HudRenderer(Widget):
     self.set_speed = (
       controls_state.vCruiseDEPRECATED if v_cruise_cluster == 0.0 else v_cruise_cluster
     )
+    self.ACC_speed = int(round(self.set_speed)) #車体SetSpeed取っておく
     self.is_cruise_set = 0 < self.set_speed < SET_SPEED_NA
     self.is_cruise_available = self.set_speed != -1
 
@@ -293,6 +294,15 @@ class HudRenderer(Widget):
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
 
+    if self.is_cruise_set:
+      ACC_font_size = 40
+      ACC_font_size_for_rect = ACC_font_size+15
+      ACC_font_x = rect.x + rect.width/2 + unit_text_size.x/2 + 43
+      ACC_font_y = rect.y+290 + y_ofs-35
+      ACC_rect = rl.Rectangle(x-ACC_font_size_for_rect/2,y-ACC_font_size_for_rect/2,-ACC_font_size_for_rect,-ACC_font_size_for_rect)
+      rl.draw_rectangle_rounded(ACC_rect, 0.3, 10, rl.Color(240, 240, 240,230))
+      self._drawText(font=self._font_semi_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
+      # drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
 
   def _ip_button_init(self):
     try:
@@ -341,6 +351,7 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.ACC_speed = 0
     self.handle_calibct = 0
     self.global_angle_steer0 = 0
     self.handle_center = -100
