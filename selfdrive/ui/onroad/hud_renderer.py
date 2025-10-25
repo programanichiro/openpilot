@@ -492,14 +492,9 @@ class HudRenderer(Widget):
       h_ang_i = int(self.global_angle_steer0-self.handle_center)
       h_ang_i = 99 if h_ang_i > 99 else (-99 if h_ang_i < -99 else h_ang_i)
       h_ang = str(h_ang_i)+"°"
+
       h_ang_size = 60
-      text_size = measure_text_cached(self._font_bold, h_ang, h_ang_size)
-      rl.draw_text_ex(self._font_bold,h_ang,
-        rl.Vector2(rc3.x+rc3.width/2-text_size.x/2, rc3.y + rc3.height/2 - text_size.y/2),
-        h_ang_size,
-        0, #spacing
-        rl.Color(255,255,255,200),
-      )
+      self._drawText(self,font=self._font_bold,font_size=60,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height-12,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
     elif self.handle_center > -99:
       #ハンドルセンター値を表示
       #status_col = p.setBrush(bg_colors[status]);
@@ -967,4 +962,20 @@ class HudRenderer(Widget):
     with open('/data/lockon_disp_disable.txt','w') as fp3:
       fp3.write("%d" % (lockon_disp_disable))
 
+  def _drawText(self,font,font_size,x,y,text,alpha,brakeLight=False):
+    text_size = measure_text_cached(font, text, font_size)
+    if brakeLight == False:
+      color = rl.Color(0xff, 0xff, 0xff, alpha)
+    else:
+      alpha += 100
+      if alpha > 255:
+        alpha = 255
+      color = rl.Color(0xff, 0, 0, alpha)
 
+      rl.draw_text_ex(font,text,
+        rl.Vector2(x-text_size.x/2, y - text_size.y), #yを下段として表示。
+        font_size,
+        0, #spacing
+        color,
+      )
+    return text_size.x #続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
