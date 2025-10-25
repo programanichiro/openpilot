@@ -160,7 +160,7 @@ class HudRenderer(Widget):
 
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
-    self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
+    self._exp_button.render(rl.Rectangle(button_x, button_y - 20, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
     self._ip_draw(rect)
 
@@ -365,46 +365,42 @@ class HudRenderer(Widget):
     self.button_style_only = True
     font_sz = 100
     font_wt = "JP" # FontWeight.BOLD #EXTRA_BOLD
-    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=font_sz,font_weight=font_wt)
+    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_accel_engaged()
 
-    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=font_wt)
+    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_dexp_sw_mode()
 
-    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable,font_size=font_sz,font_weight=font_wt) #イチロウロング独立ボタン
+    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable,font_size=font_sz,font_weight=font_wt, border_radius=20) #イチロウロング独立ボタン
     self._press_long_speeddown_disable()
 
-    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=font_wt)
+    self._lta_enable_sw_button = Button("/ \\",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_lta_enable_sw()
 
-    # self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
-    # self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
-
     #日本語フォント対応
-    self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
-    #self._start_accel_power_up_disp_enable_button = Button("Bst",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt)
+    self._start_accel_power_up_disp_enable_button = Button("⇧",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_start_accel_power_up_disp_enable()
 
-    self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._accel_ctrl_disable_button = Button("↑",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_accel_ctrl_disable()
 
-    self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt)
+    self._decel_ctrl_disable_button = Button("↓",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_decel_ctrl_disable()
 
     font_sz = 25
     font_wt = "JP" #FontWeight.BOLD #EXTRA_BOLD
-    self._knight_scanner_bit3_button = Button("●●●",click_callback=self._press_knight_scanner_bit3,font_size=font_sz,font_weight=font_wt)
+    self._knight_scanner_bit3_button = Button("●●●",click_callback=self._press_knight_scanner_bit3,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_knight_scanner_bit3()
 
-    self._limitspeed_sw_button = Button("○",click_callback=self._press_limitspeed_sw,font_size=font_sz,font_weight=font_wt)
+    self._limitspeed_sw_button = Button("○",click_callback=self._press_limitspeed_sw,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_limitspeed_sw()
 
     font_sz = 25
-    self._LongitudinalPersonality_button = Button("⬆︎⬆︎",click_callback=self._press_LongitudinalPersonality,font_size=font_sz,font_weight=font_wt)
+    self._LongitudinalPersonality_button = Button("⬆︎⬆︎",click_callback=self._press_LongitudinalPersonality,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_LongitudinalPersonality()
 
     font_sz = 40
-    self._lockon_disp_disable_button = Button("■",click_callback=self._press_lockon_disp_disable,font_size=font_sz,font_weight=font_wt)
+    self._lockon_disp_disable_button = Button("■",click_callback=self._press_lockon_disp_disable,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_lockon_disp_disable()
     self.button_style_only = False
 
@@ -493,13 +489,17 @@ class HudRenderer(Widget):
       rc3 = rl.Rectangle(rc2.x+20,rc2.y-30,rc2.width-40,rc2.height+30)
       rl.draw_rectangle_rounded(rc3, 1.0, 10, status_col)
 
-      # char h_ang[16];
-      # int h_ang_i = (int)(global_angle_steer0-handle_center);
-      # if(h_ang_i > 99)h_ang_i=99; else if(h_ang_i < -99)h_ang_i=-99;
-      # sprintf(h_ang,"%+d°",h_ang_i); //99カンスト
-
-      # p.setFont(InterFont(60, QFont::Bold));
-      # drawText(p, rc3.x()+rc3.width()/2 , rc3.y() + rc3.height() - 12, h_ang , 200);
+      h_ang_i = int(self.global_angle_steer0-self.handle_center)
+      h_ang_i = 99 if h_ang_i > 99 else (-99 if h_ang_i < -99 else h_ang_i)
+      h_ang = str(h_ang_i)+"°"
+      h_ang_size = 60
+      text_size = measure_text_cached(self._font_bold, h_ang, h_ang_size)
+      rl.draw_text_ex(self._font_bold,h_ang,
+        rl.Vector2(rc3.x+rc3.width/2-text_size.x/2, rc3.y + rc3.height/2 - text_size.y/2),
+        h_ang_size,
+        0, #spacing
+        rl.Color(255,255,255,200),
+      )
     elif self.handle_center > -99:
       #ハンドルセンター値を表示
       #status_col = p.setBrush(bg_colors[status]);
