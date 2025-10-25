@@ -483,7 +483,7 @@ class HudRenderer(Widget):
 
     calib_h = -33 -33 - 30; #表示位置を上に
     rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
-    if abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center > -99:
+    if False:#abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center > -99:
       #ハンドル角度を表示
       #status_col = p.setBrush(bg_colors[status]);
       rc3 = rl.Rectangle(rc2.x+20,rc2.y-30,rc2.width-40,rc2.height+30)
@@ -493,8 +493,8 @@ class HudRenderer(Widget):
       h_ang_i = 99 if h_ang_i > 99 else (-99 if h_ang_i < -99 else h_ang_i)
       h_ang = str(h_ang_i)+"°"
 
-      self._drawText(font=self._font_bold,font_size=60,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height+2,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
-    elif self.handle_center > -99:
+      self._drawText(font=self._font_bold,font_size=60,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height+3,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
+    elif False:#self.handle_center > -99:
       #ハンドルセンター値を表示
       #status_col = p.setBrush(bg_colors[status]);
       rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
@@ -508,13 +508,14 @@ class HudRenderer(Widget):
       calib_col = rl.Color(150, 150, 0, 0xf1)
       rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
 
-      # if(handle_calibct == 0){
-      #   p.setFont(InterFont(33));
-      #   drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
-      # } else {
-      #   p.setFont(InterFont(33, QFont::Bold));
-      #   drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
-      # }
+      if True:#self.handle_calibct == 0:
+        # p.setFont(InterFont(33));
+        # drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
+        self._drawText(font=self._font_semi_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height,text="Calibrating",alpha=200) #x,yを下段中心にtextを表示する
+      else:
+        # p.setFont(InterFont(33, QFont::Bold));
+        # drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
+        self._drawText(font=self._font_semi_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height,text=str(self.handle_calibct)+"%",alpha=200) #x,yを下段中心にtextを表示する
 
   def _ip_update_state(self,sm):
     try:
