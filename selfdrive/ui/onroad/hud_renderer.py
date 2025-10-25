@@ -489,13 +489,13 @@ class HudRenderer(Widget):
 
     # p.setFont(InterFont(44, QFont::DemiBold));
     # p.drawText(QRect(surface_rect.left()+65+120-5, surface_rect.top()+110+7, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
-    self._drawText(font=self._font_semi_bold,font_size=44,x=rect.x+65+120-5,y=rect.y+rect.height,text=self.temp_disp3,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+    self._drawText(font=self._font_semi_bold,font_size=44,x=rect.x+65+120-5,y=rect.y+temp_rc.y+temp_rc.height,text=self.temp_disp3,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
     # p.setFont(InterFont(54, QFont::Bold));
     # p.drawText(QRect(surface_rect.left()+65+55+5-5, surface_rect.top()+110-8+9, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
-    self._drawText(font=self._font_JP,font_size=54,x=rect.x+65+55+5-5,y=rect.y+rect.height,text=self.temp_disp2,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+    self._drawText(font=self._font_JP,font_size=54,x=rect.x+65+55+5-5,y=rect.y+temp_rc.y+temp_rc.height,text=self.temp_disp2,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
     # p.setFont(InterFont(48));
     # p.drawText(QRect(surface_rect.left()+65+5+5, surface_rect.top()+110-8+11, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
-    self._drawText(font=self._font_JP,font_size=48,x=rect.x+65+5+5,y=rect.y+rect.height,text=self.temp_disp1,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+    self._drawText(font=self._font_JP,font_size=48,x=rect.x+65+5+5,y=rect.y+temp_rc.y+temp_rc.height,text=self.temp_disp1,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
 
     calib_h = -33 -33 - 30; #表示位置を上に
     rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
@@ -629,7 +629,7 @@ class HudRenderer(Widget):
     else:
       self.temperature = 75 #色変化のための参照値
 
-    max_temp = deviceState.maxTempC #表示はこれを使う。
+    max_temp = int(deviceState.maxTempC) #表示はこれを使う。
     # //下の方がマシかQString temp_disp = QString(okConnect ? "● " : "○ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
     # //QString temp_disp = QString(okConnect ? "⚫︎ " : "⚪︎ ") + QString(okGps ? "★ " : "☆ ") + QString::number(temp) + "°C";
     # //QString temp_disp1 = QString(okConnect ? "⚫︎" : "⚪︎");
