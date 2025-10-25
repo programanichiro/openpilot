@@ -488,8 +488,8 @@ class HudRenderer(Widget):
     rl.draw_rectangle_rounded(temp_rc, 1.0, 10, temp_col)
 
     self._drawText(font=self._font_semi_bold,font_size=44,x=rect.x+65+120-5+40,y=temp_rc.y+temp_rc.height-1,text=self.temp_disp3,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
-    self._drawText(font=self._font_JP,font_size=56,x=rect.x+65+55+5-5+30,y=temp_rc.y+temp_rc.height+2,text=self.temp_disp2,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
-    self._drawText(font=self._font_JP,font_size=48,x=rect.x+65+5+5+20,y=temp_rc.y+temp_rc.height-1,text=self.temp_disp1,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+    self._drawText(font=self._font_JP,font_size=56,x=rect.x+65+55+5-5+30,y=temp_rc.y+temp_rc.height+3,text=self.temp_disp2,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+    self._drawText(font=self._font_JP,font_size=47,x=rect.x+65+5+5+20,y=temp_rc.y+temp_rc.height-1,text=self.temp_disp1,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
 
     calib_h = -33 -33 - 30; #表示位置を上に
     rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
