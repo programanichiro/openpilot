@@ -294,18 +294,19 @@ class HudRenderer(Widget):
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
 
+    self.ACC_speed = 100
     if self.is_cruise_set:
       ACC_font_size = 40
       ACC_font_size_for_rect = ACC_font_size+15
       ACC_font_x = rect.x + rect.width/2 + unit_text_size.x/2 + 43
       ACC_font_y = rect.y+290 + y_ofs-35
       if self.ACC_speed < 100:
-        ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2,ACC_font_y-ACC_font_size_for_rect/2,ACC_font_size_for_rect,ACC_font_size_for_rect)
+        ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2,ACC_font_y-ACC_font_size_for_rect/2-2,ACC_font_size_for_rect,ACC_font_size_for_rect-4)
       else: #100km/h以上なら幅を広げる。
         add = 10
-        ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2-add,ACC_font_y-ACC_font_size_for_rect/2,ACC_font_size_for_rect+add*2,ACC_font_size_for_rect)
-      rl.draw_rectangle_rounded(ACC_rect, 0.3, 10, rl.Color(240, 240, 240,230))
-      self._drawText(font=self._font_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y+ACC_font_size/2,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
+        ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2-add,ACC_font_y-ACC_font_size_for_rect/2-2,ACC_font_size_for_rect+add*2,ACC_font_size_for_rect-4)
+      rl.draw_rectangle_rounded(ACC_rect, 0.45, 10, rl.Color(240, 240, 240,230))
+      self._drawText(font=self._font_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y+ACC_font_size/2 +3,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
       # drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
 
   def _ip_button_init(self):
