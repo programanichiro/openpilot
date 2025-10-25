@@ -161,7 +161,7 @@ class HudRenderer(Widget):
 
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
-    self._exp_button.render(rl.Rectangle(button_x, button_y - 20, UI_CONFIG.button_size, UI_CONFIG.button_size))
+    self._exp_button.render(rl.Rectangle(button_x, button_y - 10, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
     self._ip_draw(rect)
 
