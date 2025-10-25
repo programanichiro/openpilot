@@ -473,13 +473,29 @@ class HudRenderer(Widget):
       status_col = rl.Color(0x12, 0x28, 0x39, 0xFF)
     elif ui_state.status == UIStatus.OVERRIDE:
       status_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
+
     if self.temperature < th_tmp1: #警告色の変化はサイドバーと違う。もっと早く警告される。
       temp_col = status_col
+      letter_col = rl.Color(0xff, 0xff, 0xff , 200)
     elif self.temperature < th_tmp2:
       temp_col = rl.Color(240, 240, 0, 200)
+      letter_col = rl.Color(10, 10, 10 , 255)
     else:
       temp_col = rl.Color(240, 0, 0, 200)
+      letter_col = rl.Color(0xff, 0xff, 0 , 255)
+
     rl.draw_rectangle_rounded(temp_rc, 1.0, 10, temp_col)
+
+    # p.setFont(InterFont(44, QFont::DemiBold));
+    # p.drawText(QRect(surface_rect.left()+65+120-5, surface_rect.top()+110+7, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp3);
+    self._drawText(font=self._font_semi_bold,font_size=44,x=rect.x+65+120-5,y=rect.y+rect.height,text=self.temp_disp3,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+    # p.setFont(InterFont(54, QFont::Bold));
+    # p.drawText(QRect(surface_rect.left()+65+55+5-5, surface_rect.top()+110-8+9, 300, 65), Qt::AlignTop | Qt::AlignLeft, temp_disp2);
+    self._drawText(font="JP",font_size=54,x=rect.x+65+55+5-5,y=rect.y+rect.height,text=self.temp_disp2,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+    # p.setFont(InterFont(48));
+    # p.drawText(QRect(surface_rect.left()+65+5+5, surface_rect.top()+110-8+11, 300, 65+5), Qt::AlignTop | Qt::AlignLeft, temp_disp1);
+    self._drawText(font="JP",font_size=48,x=rect.x+65+5+5,y=rect.y+rect.height,text=self.temp_disp1,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
+
 
     calib_h = -33 -33 - 30; #表示位置を上に
     rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
@@ -959,10 +975,12 @@ class HudRenderer(Widget):
     with open('/data/lockon_disp_disable.txt','w') as fp3:
       fp3.write("%d" % (lockon_disp_disable))
 
-  def _drawText(self,font,font_size,x,y,text,alpha,brakeLight=False):
+  def _drawText(self,font,font_size,x,y,text,alpha,brakeLight=False,color_ex=rl.Color(0,0,0,0)):
     text_size = measure_text_cached(font, text, font_size)
     if brakeLight == False:
       color = rl.Color(0xff, 0xff, 0xff, alpha)
+    elif alpha < 0:
+      color = color_ex
     else:
       alpha += 100
       if alpha > 255:
