@@ -493,17 +493,17 @@ class HudRenderer(Widget):
       h_ang_i = 99 if h_ang_i > 99 else (-99 if h_ang_i < -99 else h_ang_i)
       h_ang = str(h_ang_i)+"°"
 
-      h_ang_size = 60
-      self._drawText(font=self._font_bold,font_size=h_ang_size,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
+      self._drawText(font=self._font_bold,font_size=60,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height+2,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
     elif self.handle_center > -99:
       #ハンドルセンター値を表示
       #status_col = p.setBrush(bg_colors[status]);
       rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
 
-      # float hc = handle_center;
+      hc_str = f"{self.handle_center:.2f}"
 
       # p.setFont(InterFont(33, QFont::Bold));
       # drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, QString::number(hc,'f',2) + "deg", 200);
+      self._drawText(font=self._font_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height,text=hc_str+"deg",alpha=200) #x,yを下段中心にtextを表示する
     else:
       calib_col = rl.Color(150, 150, 0, 0xf1)
       rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
