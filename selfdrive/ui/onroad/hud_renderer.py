@@ -482,7 +482,7 @@ class HudRenderer(Widget):
     rl.draw_rectangle_rounded(temp_rc, 1.0, 10, temp_col)
 
     calib_h = -33 -33 - 30; #表示位置を上に
-    rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
+    rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
     if abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center > -99:
       #ハンドル角度を表示
       #status_col = p.setBrush(bg_colors[status]);
@@ -494,7 +494,7 @@ class HudRenderer(Widget):
       h_ang = str(h_ang_i)+"°"
 
       h_ang_size = 60
-      self._drawText(font=self._font_bold,font_size=60,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height-12,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
+      self._drawText(font=self._font_bold,font_size=h_ang_size,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height-12,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
     elif self.handle_center > -99:
       #ハンドルセンター値を表示
       #status_col = p.setBrush(bg_colors[status]);
@@ -972,10 +972,10 @@ class HudRenderer(Widget):
         alpha = 255
       color = rl.Color(0xff, 0, 0, alpha)
 
-      rl.draw_text_ex(font,text,
-        rl.Vector2(x-text_size.x/2, y - text_size.y), #yを下段として表示。
-        font_size,
-        0, #spacing
-        color,
-      )
+    rl.draw_text_ex(font,text,
+      rl.Vector2(x-text_size.x/2, y - text_size.y), #yを下段として表示。
+      font_size,
+      0, #spacing
+      color,
+    )
     return text_size.x #続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
