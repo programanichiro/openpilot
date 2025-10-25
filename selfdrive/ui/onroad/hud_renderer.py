@@ -977,10 +977,10 @@ class HudRenderer(Widget):
 
   def _drawText(self,font,font_size,x,y,text,alpha,brakeLight=False,color_ex=rl.Color(0,0,0,0)):
     text_size = measure_text_cached(font, text, font_size)
-    if brakeLight == False:
-      color = rl.Color(0xff, 0xff, 0xff, alpha)
-    elif alpha < 0:
+    if alpha < 0:
       color = color_ex
+    elif brakeLight == False:
+      color = rl.Color(0xff, 0xff, 0xff, alpha)
     else:
       alpha += 100
       if alpha > 255:
