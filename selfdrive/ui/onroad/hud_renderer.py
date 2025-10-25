@@ -18,6 +18,12 @@ KM_TO_MILE = 0.621371
 CRUISE_DISABLED_CHAR = '–'
 
 y_ofs = 150
+th_tmp1 = 62; #ここから黄色
+th_tmp2 = 71; #ここから赤
+btn_size = 192
+# img_size = (btn_size / 4) * 3;
+UI_BORDER_SIZE = 30
+
 
 @dataclass(frozen=True)
 class UIConfig:
@@ -334,6 +340,9 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.handle_calibct = 0
+    self.global_angle_steer0 = 0
+    self.handle_center = -100
     self.temperature = 0 #温度が取れなくなったので目安。
     self.temp_disp1 = "○"
     self.temp_disp2 = "☆"
@@ -460,23 +469,57 @@ class HudRenderer(Widget):
       rl.Color(0x24, 0x57, 0xa1 , 255),
     )
 
-    th_tmp1 = 62; #ここから黄色
-    th_tmp2 = 71; #ここから赤
-
     temp_rc = rl.Rectangle(rect.x+65-27, rect.y+110+6, 233+27*2-5, 54)
+    status_col = COLORS.white
+    if ui_state.status == UIStatus.ENGAGED:
+      status_col = rl.Color(0x16, 0x7F, 0x40, 0xFF)
+    elif ui_state.status == UIStatus.DISENGAGED:
+      status_col = rl.Color(0x12, 0x28, 0x39, 0xFF)
+    elif ui_state.status == UIStatus.OVERRIDE:
+      status_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
     if self.temperature < th_tmp1: #警告色の変化はサイドバーと違う。もっと早く警告される。
-      temp_col = COLORS.white
-      if ui_state.status == UIStatus.ENGAGED:
-        temp_col = rl.Color(0x16, 0x7F, 0x40, 0xFF)
-      elif ui_state.status == UIStatus.DISENGAGED:
-        temp_col = rl.Color(0x12, 0x28, 0x39, 0xFF)
-      elif ui_state.status == UIStatus.OVERRIDE:
-        temp_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
+      temp_col = status_col
     elif self.temperature < th_tmp2:
       temp_col = rl.Color(240, 240, 0, 200)
     else:
       temp_col = rl.Color(240, 0, 0, 200)
     rl.draw_rectangle_rounded(temp_rc, 1.0, 10, temp_col)
+
+    calib_h = -33 -33 - 30; #表示位置を上に
+    rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
+    if abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center > -99:
+      #ハンドル角度を表示
+      #status_col = p.setBrush(bg_colors[status]);
+      rc3 = rl.Rectangle(rc2.x+20,rc2.y-30,rc2.width-40,rc2.height+30)
+      rl.draw_rectangle_rounded(rc3, 1.0, 10, status_col)
+
+      # char h_ang[16];
+      # int h_ang_i = (int)(global_angle_steer0-handle_center);
+      # if(h_ang_i > 99)h_ang_i=99; else if(h_ang_i < -99)h_ang_i=-99;
+      # sprintf(h_ang,"%+d°",h_ang_i); //99カンスト
+
+      # p.setFont(InterFont(60, QFont::Bold));
+      # drawText(p, rc3.x()+rc3.width()/2 , rc3.y() + rc3.height() - 12, h_ang , 200);
+    elif self.handle_center > -99:
+      #ハンドルセンター値を表示
+      #status_col = p.setBrush(bg_colors[status]);
+      rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
+
+      # float hc = handle_center;
+
+      # p.setFont(InterFont(33, QFont::Bold));
+      # drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, QString::number(hc,'f',2) + "deg", 200);
+    else:
+      calib_col = rl.Color(150, 150, 0, 0xf1)
+      rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
+
+      # if(handle_calibct == 0){
+      #   p.setFont(InterFont(33));
+      #   drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 8, "Calibrating", 200);
+      # } else {
+      #   p.setFont(InterFont(33, QFont::Bold));
+      #   drawText(p, surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2 , -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h - 6, QString::number(handle_calibct) + '%', 200);
+      # }
 
   def _ip_update_state(self,sm):
     try:
@@ -539,7 +582,12 @@ class HudRenderer(Widget):
           else:
             self.limit_speed_num = int(limitspeed_data[0])
             self.limit_speed_auto_detect = 1
+    except Exception as e:
+      self.limit_speed_num = 0
+      self.limit_speed_auto_detect = 0
+      pass
 
+    try:
       with open('/dev/shm/gps_axs_data.txt','r') as fp3:
         gps_output_str = fp3.read()
         if gps_output_str:
@@ -547,8 +595,6 @@ class HudRenderer(Widget):
           gps_ok = True
           gps_idx_i = len(gps_output)
     except Exception as e:
-      self.limit_speed_num = 0
-      self.limit_speed_auto_detect = 0
       pass
 
     if gps_idx_i == 6 and gps_ok:
@@ -582,6 +628,27 @@ class HudRenderer(Widget):
     self.temp_disp1 = "●" if okConnect else "○"
     self.temp_disp2 = "★" if okGps else "☆"
     self.temp_disp3 = str(max_temp) + "°C"
+
+    try:
+      with open('/dev/shm/steer_ang_info.txt','r') as fp3:
+        steer_ang_info = fp3.read()
+        if steer_ang_info:
+          self.global_angle_steer0 = float(steer_ang_info)
+    except Exception as e:
+      pass
+
+    try:
+      with open('/dev/shm/handle_center_info.txt','r') as fp3:
+        handle_center_info = fp3.read()
+        if handle_center_info:
+          self.handle_center = float(handle_center_info)
+        else:
+          with open('/data/handle_calibct_info','r') as fp3:
+            handle_calibct_info = fp3.read()
+            if handle_calibct_info:
+              self.handle_calibct = float(handle_calibct_info)
+    except Exception as e:
+      pass
 
   def _press_accel_engaged(self):
     accel_engaged = 0
