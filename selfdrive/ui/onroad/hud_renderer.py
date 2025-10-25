@@ -161,7 +161,7 @@ class HudRenderer(Widget):
 
     button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
     button_y = rect.y + UI_CONFIG.border_size + y_ofs
-    self._exp_button.render(rl.Rectangle(button_x, button_y - 10, UI_CONFIG.button_size, UI_CONFIG.button_size))
+    self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
 
     self._ip_draw(rect)
 
@@ -422,12 +422,12 @@ class HudRenderer(Widget):
     btn_w = 150
     btn_h0 = 175
     btn_h = 150
-    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3.2, btn_w, btn_h))
-    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2.2, btn_w, btn_h))
+    self._start_accel_power_up_disp_enable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*3.1, btn_w, btn_h))
+    self._accel_engaged_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*2, rect.y + rect.height - btn_h0*2.1, btn_w, btn_h))
 
-    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.7, btn_w, btn_h))
-    self._decel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*2.7, btn_w, btn_h))
-    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.7, btn_w, btn_h))
+    self._accel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*3.6, btn_w, btn_h))
+    self._decel_ctrl_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*2.6, btn_w, btn_h))
+    self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.6, btn_w, btn_h))
 
     self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.3, btn_w, btn_h))
     self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.3, btn_w, btn_h))
@@ -491,8 +491,8 @@ class HudRenderer(Widget):
     self._drawText(font=self._font_JP,font_size=56,x=rect.x+65+55+5-5+30,y=temp_rc.y+temp_rc.height+3,text=self.temp_disp2,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
     self._drawText(font=self._font_JP,font_size=47,x=rect.x+65+5+5+20,y=temp_rc.y+temp_rc.height-1,text=self.temp_disp1,alpha=-1,color_ex=letter_col) #x,yを下段中心にtextを表示する
 
-    calib_h = -33 -33 - 30; #表示位置を上に
-    rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
+    calib_h = -33 -33 - 30 #表示位置を上に
+    rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, rect.y -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
     if abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center > -99:
       #ハンドル角度を表示
       #status_col = p.setBrush(bg_colors[status]);
