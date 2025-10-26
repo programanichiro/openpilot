@@ -1,1 +1,1 @@
-#define COMMA_VERSION "0.10.1-piV"
+#define COMMA_VERSION "0.10.2-piW"
