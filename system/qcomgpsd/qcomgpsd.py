@@ -17,7 +17,7 @@ from opendbc.car import structs
 from cereal import log
 import cereal.messaging as messaging
 from openpilot.common.gpio import gpio_init, gpio_set
-from openpilot.common.retry import retry
+from openpilot.common.utils import retry
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.hardware.tici.pins import GPIO
 from openpilot.common.swaglog import cloudlog
