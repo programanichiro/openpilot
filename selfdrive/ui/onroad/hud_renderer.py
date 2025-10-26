@@ -355,6 +355,9 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.distance_traveled = 0
+    self.prev_draw_t = time.monotonic_ns() / 1_000_000
+
     self.ACC_speed = 0
     self.handle_calibct = 0
     self.global_angle_steer0 = 0
@@ -563,6 +566,11 @@ class HudRenderer(Widget):
       pass
 
     self.ip_update_state_ct += 1
+    cur_draw_t = time.monotonic_ns() / 1_000_000  # ナノ秒→ミリ秒 #millis_since_boot();
+    dt = cur_draw_t - self.prev_draw_t
+    car_state = sm['carState']
+    self.distance_traveled += abs(car_state.vEgo) * dt / 1000
+    self.prev_draw_t = cur_draw_t
 
     if(self.ip_update_state_ct % 10 == 8):
       self.button_style_only = True
