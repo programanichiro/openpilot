@@ -549,9 +549,9 @@ class HudRenderer(Widget):
     font_size_debug_info = 44
     debug_disp_xpos = rect.x
     rect_h = rect.y+rect.height
-    debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h+2 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 4 , 0 , -5) + 4
+    debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h+4 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 4 , 0 , -5) + 4
     ahr_str = str(int(self.ahr)) + "%"
-    debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+2 , ahr_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 4 , 0 , -5)
+    debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , ahr_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 4 , 0 , -5)
 
   def _ip_update_state(self,sm):
     try:
