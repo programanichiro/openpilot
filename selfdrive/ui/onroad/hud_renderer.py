@@ -1076,8 +1076,8 @@ class HudRenderer(Widget):
 
     if bk_alp > 0:
       #//バックを塗る。
-      bk_color = rl.Color(bk_red, bk_blu, bk_grn, bk_alp)
-      rc = rl.Rectangle(x+bk_xofs,y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
+      bk_color = rl.Color(int(bk_red), int(bk_blu), int(bk_grn), int(bk_alp))
+      rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
       rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
 
     if brakeLight == False:
