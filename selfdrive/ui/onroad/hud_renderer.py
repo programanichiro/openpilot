@@ -546,6 +546,13 @@ class HudRenderer(Widget):
       else:
         self._drawText(font=self._font_semi_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height+1,text=str(self.handle_calibct)+"%",alpha=200) #x,yを下段中心にtextを表示する
 
+    font_size_debug_info = 44
+    debug_disp_xpos = rect.x
+    rect_h = rect.y+rect.hight
+    debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h - 10 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 13 , 5 , 4 , 0 , -5) + 4
+    ahr_str = str(int(ahr)) + "%"
+    debug_disp_xpos = self.drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h - 10 , ahr_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 13 , 5 , 4 , 0 , -5)
+
   def _ip_update_state(self,sm):
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
@@ -1063,3 +1070,32 @@ class HudRenderer(Widget):
       color,
     )
     return text_size.x #続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
+
+  def _drawTextLeft(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, blu=255, grn=255 , bk_red=0, bk_blu=0, bk_grn=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+    text_size = measure_text_cached(font, text, font_size)
+
+    if bk_alp > 0:
+      #//バックを塗る。
+      bk_color = rl.Color(bk_red, bk_blu, bk_grn, bk_alp)
+      rc = rl.Rectangle(x+bk_xofs,y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
+      rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
+
+    if brakeLight == False:
+      pen_color = rl.Color(int(red), int(blu), int(grn), int(alpha))
+    else:
+      alpha += 100
+      if alpha > 255:
+        alpha = 255
+      pen_color = rl.Color(0xff, 0, 0, int(alpha))
+
+    rl.draw_text_ex(
+      font,
+      text,
+      rl.Vector2(x, y-text_size.y),
+      font_size,
+      0,
+      pen_color,
+    )
+
+    return x + text_size.width #続けて並べるxposを返す。
+
