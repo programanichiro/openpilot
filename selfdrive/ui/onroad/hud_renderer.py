@@ -563,10 +563,10 @@ class HudRenderer(Widget):
 
     debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+6 , rect_h+4 , "Trip" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 10 , -3 , -5) + 5
     trip_str = f"{self.distance_traveled / 1000:.1f}" + "km"
-    debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , trip_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 8 , -2 , -5) + 3
+    debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , trip_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 8 , -2 , -5) + 3+3
 
     if abs(self.vc_speed) < 0.1/3.6:
-      debug_disp_xpos = self._drawTextLeft(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 13 , 0 , -5) + 12
+      debug_disp_xpos = self._drawTextLeft(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=13, bk_xofs=0-3 , bk_add_h=-5) + 12
       blue_signal_chk_str = str(self.blue_signal_chk)
       debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 13 , 1 , -5)
 
