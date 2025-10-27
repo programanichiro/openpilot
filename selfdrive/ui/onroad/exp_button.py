@@ -16,6 +16,7 @@ class ExpButton(Widget):
     self.limitspeed_update_ct = 0
     self.steer_always = False
     self.cruise_available = False
+    self._press_time_ms = 0
 
     # State hold mechanism
     self._hold_duration = 2.0  # seconds
@@ -58,6 +59,14 @@ class ExpButton(Widget):
 
   def _handle_mouse_release(self, _):
     super()._handle_mouse_release(_)
+    release_time_ms = time.monotonic_ns() / 1_000_000
+    if release_time_ms - self._press_time_ms > 1000:
+      #1秒以上長押し後に離すとここ。
+      self.steer_always = not self.steer_always
+      with open('/dev/shm/steer_always.txt','w') as fp:
+        fp.write('%d' % (1 if self.steer_always else 0))
+      return
+
     if self._is_toggle_allowed():
       new_mode = not self._experimental_mode
       self._params.put_bool("ExperimentalMode", new_mode)
@@ -68,6 +77,10 @@ class ExpButton(Widget):
       # Hold new state temporarily
       self._held_mode = new_mode
       self._hold_end_time = time.monotonic() + self._hold_duration
+
+  def _handle_mouse_press(self, _):
+    super()._handle_mouse_press(_)
+    self._press_time_ms = time.monotonic_ns() / 1_000_000
 
   def _render(self, rect: rl.Rectangle) -> None:
     center_x = int(self._rect.x + self._rect.width // 2)
