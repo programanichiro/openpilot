@@ -554,7 +554,7 @@ class HudRenderer(Widget):
     rect_h = rect.y+rect.height
 
     debug_disp_xpos = self._drawTextLeft(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h+4 , "↓" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 11 , 0 , -5) + 11
-    cv_str = int(self.limit_vc_info)
+    cv_str = str(int(self.limit_vc_info))
     debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , cv_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 11 , 0 , -5)+3
 
     debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h+4 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 4 , 0 , -5) + 4
@@ -567,7 +567,7 @@ class HudRenderer(Widget):
 
     if abs(self.vc_speed) < 0.1/3.6:
       debug_disp_xpos = self._drawTextLeft(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 13 , 0 , -5) + 12
-      blue_signal_chk_str = self.blue_signal_chk
+      blue_signal_chk_str = str(self.blue_signal_chk)
       debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 13 , 1 , -5)
 
 
