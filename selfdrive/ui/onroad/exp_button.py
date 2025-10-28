@@ -104,7 +104,7 @@ class ExpButton(Widget):
 
     # Angle度回転（時計回り）
     import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
-    rl.draw_texture_pro(texture, src_rect, dest_rect, origin, hud.global_angle_steer00, self._white_color)
+    rl.draw_texture_pro(texture, src_rect, dest_rect, origin, -hud.global_angle_steer00, self._white_color)
 
   def _held_or_actual_mode(self):
     now = time.monotonic()
