@@ -434,7 +434,8 @@ class HudRenderer(Widget):
     self._press_lockon_disp_disable()
 
     font_sz = 10 #ACC速度のかぶせる透明ボタン
-    self._set_speed_MAX_button = Button("max",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=font_wt, border_radius=20)
+    self._set_speed_MAX_button = Button(" ",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=font_wt, border_radius=20)
+    self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_set_speed_MAX()
     self.button_style_only = False
 
