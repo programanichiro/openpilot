@@ -24,6 +24,7 @@ btn_size = 192
 # img_size = (btn_size / 4) * 3;
 UI_BORDER_SIZE = 30
 global_angle_steer00 = 0
+long_speeddown_disable00 = 0
 
 @dataclass(frozen=True)
 class UIConfig:
@@ -783,6 +784,44 @@ class HudRenderer(Widget):
       except Exception as e:
         pass
 
+#   static int osm_frame_ct_ct = -1; //-1 or 100以上でosmへの通信が死んでいる。
+#   static int osm_per = 0; //2Hzに対してosmの応答率。走行中ならだいたい50パーセントくらいになる。
+#   static std::string osm_access_counter_txt;
+#   static unsigned int osm_access_counter_ct = 0;
+#   if(osm_access_counter_ct++ % 20 == 0){
+#     osm_access_counter_txt = util::read_file("/dev/shm/osm_access_counter.txt");
+#   }
+#   if(osm_access_counter_txt.empty() == false){
+#     int i = 0; // インデックス
+#     std::stringstream ss(osm_access_counter_txt); // 入力文字列をstringstreamに変換
+#     std::string token; // 一時的にトークンを格納する変数
+#     static int before_osm_frame_ct = 0;
+#     while (i < 3 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
+#       if(i == 0){
+#         osm_per = std::stoi(token);
+#       }
+#       if(i == 1){
+#         int osm_frame_ct2 = std::stoi(token);
+#         if(osm_frame_ct2 == before_osm_frame_ct){
+#           osm_frame_ct_ct ++; //osm_frame_ct2が変化しなければカウントアップし続ける
+#         } else {
+#           osm_frame_ct_ct = 0; //ゼロに戻らなければ、osmへの通信が死んでいる。
+#         }
+#         before_osm_frame_ct = osm_frame_ct2;
+#       }
+#       i++; // インデックスを1つ進める
+#     }
+#   }
+#   if(osm_per >= 0){
+#     float h = rect_h * osm_per / 100;
+#     float wp1 = 10;
+#     if(0 <= osm_frame_ct_ct && osm_frame_ct_ct < 100){
+#       p.setBrush(QColor(0, 245, 0, 200)); //緑
+#     } else {
+#       p.setBrush(QColor(245, 0, 0, 200)); //赤、通信断絶。
+#     }
+#     p.drawRect(QRect(0 , rect_h - h , wp1 , h));
+#   }
 
   def _press_accel_engaged(self):
     accel_engaged = 0
@@ -856,6 +895,9 @@ class HudRenderer(Widget):
           long_speeddown_disable = int(long_speeddown_disable_str)
     except Exception as e:
       pass
+
+    global long_speeddown_disable00
+    long_speeddown_disable00 = long_speeddown_disable
 
     if self.button_style_only == False:
       long_speeddown_disable = (long_speeddown_disable + 1) % 2

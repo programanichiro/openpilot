@@ -106,6 +106,70 @@ class ExpButton(Widget):
     import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     rl.draw_texture_pro(texture, src_rect, dest_rect, origin, -hud.global_angle_steer00, self._white_color)
 
+    #＝＞　hud.long_speeddown_disable00 #long_speeddown_disable.txtを開かなくても、long_speeddown_disable.txtを使う。
+
+  # const float x_Long_enable = surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2;
+  # const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
+  # std::string long_speeddown_disable_txt = util::read_file("/dev/shm/long_speeddown_disable.txt");
+  # Long_enable = true;　＝＞　hud.long_speeddown_disable00
+  # if(long_speeddown_disable_txt.empty() == false){
+  #   if(std::stoi(long_speeddown_disable_txt) != 0){
+  #     Long_enable = false;
+  #   }
+  # }
+  # int long_base_angle0 = 45; //下中央から左右に何度か指定する。
+  # if(/*(Long_enable || (*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) && とにかく表示する*/ global_engageable){
+  #   const int arc_w = -8; //内側に描画
+  #   QPen pen = QPen(QColor(255, 255, ((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w));
+  #   pen.setCapStyle(Qt::FlatCap); //端をフラットに
+  #   p.setPen(pen);
+  #   const float x = x_Long_enable;
+  #   const float y = y_Long_enable;
+  #   static float desired_path_x_rate = 0 , desired_path_x_rate0 = 0;
+  #   //static unsigned int desired_path_x_rate_ct = 0;
+  #   if(true /*|| desired_path_x_rate_ct ++ % 2 == 0*/){
+  #     std::string desired_path_x_rate_txt = util::read_file("/dev/shm/desired_path_x_rate.txt");
+  #     if(desired_path_x_rate_txt.empty() == false){
+  #       desired_path_x_rate0 = std::stof(desired_path_x_rate_txt);
+  #       if(desired_path_x_rate0 < 0.0f){
+  #         desired_path_x_rate0 = 0.0f; //なんか逆に動く場合がある？
+  #       }
+  #       if(desired_path_x_rate0 > 1.0f){
+  #         desired_path_x_rate0 = 1.0f;
+  #       }
+  #     }
+  #   }
+  #   float max_diff = fabs(desired_path_x_rate0-desired_path_x_rate) / 10; // = 0.1; //これ以上一気にメーターが疎かない。可変式
+  #   if(max_diff < 0.02)max_diff = 0.02; else if(max_diff > 0.05)max_diff = 0.05;
+  #   if(desired_path_x_rate0 > desired_path_x_rate){
+  #     if(desired_path_x_rate0 > desired_path_x_rate + max_diff){
+  #       desired_path_x_rate += max_diff;
+  #     } else {
+  #       desired_path_x_rate = desired_path_x_rate0;
+  #     }
+  #   } else if(desired_path_x_rate0 < desired_path_x_rate){
+  #     if(desired_path_x_rate0 < desired_path_x_rate - max_diff){
+  #       desired_path_x_rate -= max_diff;
+  #     } else {
+  #       desired_path_x_rate = desired_path_x_rate0;
+  #     }
+  #   }
+  #   int long_base_angle = long_base_angle0; //下中央から左右に何度か指定する。
+  #   p.drawArc(x - btn_size / 2 -arc_w/2, y - btn_size / 2 -arc_w/2, btn_size+arc_w, btn_size+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
+  # }
+  # if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが) , Experimental Modeでは表示しない。
+  #   const float x = x_Long_enable;
+  #   const float y = y_Long_enable;
+  #   const int long_base_angle = long_base_angle0-3; //下中央から左右に何度か指定する。
+  #   //ONOFFの状態をこれで視認できる。
+  #   const int arc_w_base = -14; //内側に描画
+  #   QPen pen = QPen(QColor(255, 255, ((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w_base));
+  #   pen.setCapStyle(Qt::FlatCap); //端をフラットに
+  #   p.setPen(pen);
+  #   p.drawArc(x - btn_size / 2 -arc_w_base/2, y - btn_size / 2 -arc_w_base/2, btn_size+arc_w_base, btn_size+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
+  # }
+
+
   def _held_or_actual_mode(self):
     now = time.monotonic()
     if self._hold_end_time and now < self._hold_end_time:
