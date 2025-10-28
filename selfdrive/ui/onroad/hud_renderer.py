@@ -282,6 +282,8 @@ class HudRenderer(Widget):
       set_speed_color,
     )
 
+    self._set_speed_MAX_button.render(set_speed_rect)
+
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
     """Draw the current vehicle speed and unit."""
     speed_text = str(round(self.speed))
@@ -429,10 +431,17 @@ class HudRenderer(Widget):
     font_sz = 40
     self._lockon_disp_disable_button = Button("■",click_callback=self._press_lockon_disp_disable,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_lockon_disp_disable()
+
+    font_sz = 10 #ACC速度のかぶせる透明ボタン
+    self._set_speed_MAX_button = Button(" ",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=font_wt, border_radius=20)
+    self._press_set_speed_MAX()
     self.button_style_only = False
 
 
   def _ip_draw(self, rect: rl.Rectangle):
+    #set speed MAXボタン
+    #self._set_speed_MAX_button.render() -> _draw_set_speedで描画する。
+
     #下段ボタン
     ud_btn_w0 = rect.width / 5
     ud_btn_w = ud_btn_w0 * 0.7
@@ -1088,6 +1097,40 @@ class HudRenderer(Widget):
     with open('/data/lockon_disp_disable.txt','w') as fp3:
       fp3.write("%d" % (lockon_disp_disable))
 
+
+
+  def _press_set_speed_MAX(self):
+    # const auto cs = (*(uiState()->sm))["selfdriveState"].getSelfdriveState();
+    # if(getButtonInt("/dev/shm/accel_engaged.txt" , 0) >= 3 && cs.getEnabled()){ //ワンペダルのみ
+    #   std::string stdstr_txt = util::read_file("/dev/shm/cruise_info.txt");
+    #   if(stdstr_txt.empty() == false){
+    #     if(stdstr_txt != "1" && stdstr_txt != ",1"){ //MAXが1ではない時
+    #       if((*(uiState()->sm))["carState"].getCarState().getVEgo() < 0.1/3.6){ //スピードが出ていない時
+    #         setButtonEnabled0("/dev/shm/force_one_pedal.txt" , true); //これがセットされる条件をなるべく絞る。
+    #       } else {
+    #         //⚫︎ボタンの代わりに動作する
+    #         //soundPo(); //操作不能音として鳴らす。
+    #         MAX_touch();
+    #       }
+    #     } else {
+    #       //MAX=1でタッチ(↑ボタン効果で",1"も含む)
+    #       float vego = (*(uiState()->sm))["carState"].getCarState().getVEgo();
+    #       if(vego > 3/3.6 && vego <= 30/3.6){ //スピードが3〜30km/hのとき
+    #         setButtonEnabled0("/dev/shm/force_low_engage.txt" , true);
+    #       } else {
+    #         //⚫︎ボタンの代わりに動作する
+    #         //soundPo(); //操作不能音として鳴らす。
+    #         MAX_touch();
+    #       }
+    #     }
+    #   }
+    # } else {
+    #   //⚫︎ボタンの代わりに動作する
+    #   MAX_touch();
+    # }
+    self._press_limitspeed_sw() #MAX_touch
+
+
   def _drawText(self,font,font_size,x,y,text,alpha,brakeLight=False,color_ex=rl.Color(0,0,0,0)):
     text_size = measure_text_cached(font, text, font_size)
     if alpha < 0:
@@ -1135,4 +1178,3 @@ class HudRenderer(Widget):
     )
 
     return x + text_size.x #続けて並べるxposを返す。
-
