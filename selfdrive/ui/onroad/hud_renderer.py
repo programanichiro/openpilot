@@ -179,6 +179,7 @@ class HudRenderer(Widget):
       or self._limitspeed_sw_button.is_pressed
       or self._LongitudinalPersonality_button.is_pressed
       or self._lockon_disp_disable_button.is_pressed
+      or self._set_speed_MAX_button.is_pressed
       )
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
@@ -433,7 +434,7 @@ class HudRenderer(Widget):
     self._press_lockon_disp_disable()
 
     font_sz = 10 #ACC速度のかぶせる透明ボタン
-    self._set_speed_MAX_button = Button(" ",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=font_wt, border_radius=20)
+    self._set_speed_MAX_button = Button("max",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_set_speed_MAX()
     self.button_style_only = False
 
