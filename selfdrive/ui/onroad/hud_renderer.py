@@ -23,7 +23,7 @@ th_tmp2 = 71; #ここから赤
 btn_size = 192
 # img_size = (btn_size / 4) * 3;
 UI_BORDER_SIZE = 30
-
+global_angle_steer00 = 0
 
 @dataclass(frozen=True)
 class UIConfig:
@@ -747,6 +747,8 @@ class HudRenderer(Widget):
         steer_ang_info = fp3.read()
         if steer_ang_info:
           self.global_angle_steer0 = float(steer_ang_info)
+          global global_angle_steer00
+          global_angle_steer00 = self.global_angle_steer0
     except Exception as e:
       pass
 

@@ -103,7 +103,8 @@ class ExpButton(Widget):
     origin = rl.Vector2(texture.width / 2, texture.height / 2)  # 回転の中心（画像の中央）
 
     # Angle度回転（時計回り）
-    rl.draw_texture_pro(texture, src_rect, dest_rect, origin, 45, self._white_color)
+    import hud_renderer #遅延インポート、重くないらしい。
+    rl.draw_texture_pro(texture, src_rect, dest_rect, origin, hud_renderer.global_angle_steer00, self._white_color)
 
   def _held_or_actual_mode(self):
     now = time.monotonic()
