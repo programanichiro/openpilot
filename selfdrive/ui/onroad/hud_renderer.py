@@ -597,7 +597,7 @@ class HudRenderer(Widget):
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
 
       #rl.begin_blend_mode(rl.BLEND_ADDITIVE)  # 加算ブレンドも可能のようだ。
-      rl.draw_rectangle(rect.x , rect.y+rect_h - h , wp1 , h)
+      rl.draw_rectangle(rect.x , rect.y+rect_h - h , wp1 , h , osm_bar_color)
       #rl.end_blend_mode()  # 元のブレンドに戻す
 
 
