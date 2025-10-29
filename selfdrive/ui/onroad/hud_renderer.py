@@ -359,6 +359,8 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.vc_accel = 0
+
     self.osm_frame_ct_ct = -1 #-1 or 100以上でosmへの通信が死んでいる。
     self.osm_per = 0 #2Hzに対してosmの応答率。走行中ならだいたい50パーセントくらいになる。
     self.osm_access_counter_txt = ""
@@ -600,6 +602,26 @@ class HudRenderer(Widget):
       rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
       #rl.end_blend_mode()  # 元のブレンドに戻す
 
+    #加速減速表示
+    car_state = ui_state.sm['carState']
+    self.vc_accel += (car_state.aEgo - self.vc_accel) / 5
+    hha = 0
+    if self.vc_accel > 0:
+      hha = 1 - 0.1 / self.vc_accel
+      va_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), 200)
+    if self.vc_accel < 0:
+      hha = 1 + 0.1 / self.vc_accel
+      va_color = rl.Color(245, 0, 0, 200)
+    if hha < 0:
+      hha = 0
+    hha = hha * rect.height
+    wp = 35
+    if self.vc_accel > 0:
+      meter = [(rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 - hha/2),(rect.x+rect.width , rect.y+rect.height/2 - hha/2), (rect.x+rect.width , rect.y+rect.height/2), (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
+      rl.draw_triangle_fan(meter,len(meter),va_color)
+    elif self.vc_accel < 0:
+      meter = [(rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2),(rect.x+rect.width , rect.y+rect.height/2), (rect.x+rect.width , rect.y+rect.height/2 + hha/2), (rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 + hha/2)]
+      rl.draw_triangle_fan(meter,len(meter),va_color)
 
   def _ip_update_state(self,sm):
     try:
