@@ -359,6 +359,12 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.osm_frame_ct_ct = -1 #-1 or 100以上でosmへの通信が死んでいる。
+    self.osm_per = 0 #2Hzに対してosmの応答率。走行中ならだいたい50パーセントくらいになる。
+    self.osm_access_counter_txt = ""
+    self.osm_access_counter_ct = 0
+    self.before_osm_frame_ct = 0
+
     self.blue_signal_chk = 0
     self.limit_vc_info = 0
 
@@ -582,6 +588,18 @@ class HudRenderer(Widget):
       blue_signal_chk_str = str(self.blue_signal_chk)
       debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
 
+    if self.osm_per >= 0:
+      h = rect.h * self.osm_per / 100
+      wp1 = 10
+      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < 100:
+        osm_bar_color = rl.Color(0, 245, 0, 200) #緑
+      else:
+        osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
+
+      #rl.begin_blend_mode(rl.BLEND_ADDITIVE)  # 加算ブレンドも可能のようだ。
+      rl.draw_rectangle(rect.x , rect.y+rect_h - h , wp1 , h)
+      #rl.end_blend_mode()  # 元のブレンドに戻す
+
 
   def _ip_update_state(self,sm):
     try:
@@ -784,44 +802,24 @@ class HudRenderer(Widget):
       except Exception as e:
         pass
 
-#   static int osm_frame_ct_ct = -1; //-1 or 100以上でosmへの通信が死んでいる。
-#   static int osm_per = 0; //2Hzに対してosmの応答率。走行中ならだいたい50パーセントくらいになる。
-#   static std::string osm_access_counter_txt;
-#   static unsigned int osm_access_counter_ct = 0;
-#   if(osm_access_counter_ct++ % 20 == 0){
-#     osm_access_counter_txt = util::read_file("/dev/shm/osm_access_counter.txt");
-#   }
-#   if(osm_access_counter_txt.empty() == false){
-#     int i = 0; // インデックス
-#     std::stringstream ss(osm_access_counter_txt); // 入力文字列をstringstreamに変換
-#     std::string token; // 一時的にトークンを格納する変数
-#     static int before_osm_frame_ct = 0;
-#     while (i < 3 && std::getline(ss, token, ',')) { // カンマで分割し、一つずつ処理する
-#       if(i == 0){
-#         osm_per = std::stoi(token);
-#       }
-#       if(i == 1){
-#         int osm_frame_ct2 = std::stoi(token);
-#         if(osm_frame_ct2 == before_osm_frame_ct){
-#           osm_frame_ct_ct ++; //osm_frame_ct2が変化しなければカウントアップし続ける
-#         } else {
-#           osm_frame_ct_ct = 0; //ゼロに戻らなければ、osmへの通信が死んでいる。
-#         }
-#         before_osm_frame_ct = osm_frame_ct2;
-#       }
-#       i++; // インデックスを1つ進める
-#     }
-#   }
-#   if(osm_per >= 0){
-#     float h = rect_h * osm_per / 100;
-#     float wp1 = 10;
-#     if(0 <= osm_frame_ct_ct && osm_frame_ct_ct < 100){
-#       p.setBrush(QColor(0, 245, 0, 200)); //緑
-#     } else {
-#       p.setBrush(QColor(245, 0, 0, 200)); //赤、通信断絶。
-#     }
-#     p.drawRect(QRect(0 , rect_h - h , wp1 , h));
-#   }
+    if self.osm_access_counter_ct % 20 == 0:
+      try:
+        with open('/dev/shm/osm_access_counter.txt','r') as fp3:
+          self.osm_access_counter_txt = fp3.read()
+      except Exception as e:
+        pass
+    self.osm_access_counter_ct += 1
+
+    if self.osm_access_counter_txt:
+      osm_access_data = self.osm_access_counter_txt.split(",")
+      self.osm_per = int(osm_access_data[0])
+      osm_frame_ct2 = int(osm_access_data[1])
+      if osm_frame_ct2 == self.before_osm_frame_ct:
+        self.osm_frame_ct_ct += 1 #osm_frame_ct2が変化しなければカウントアップし続ける
+      else:
+        self.osm_frame_ct_ct = 0 #ゼロに戻らなければ、osmへの通信が死んでいる。
+      self.before_osm_frame_ct = osm_frame_ct2
+
 
   def _press_accel_engaged(self):
     accel_engaged = 0
