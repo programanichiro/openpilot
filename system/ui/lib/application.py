@@ -405,6 +405,7 @@ class GuiApplication:
       base_chars.update(key for row in layout for key in row)
     base_chars |= set("–‑✓×°§•")
 
+    base_chars = "".join(base_chars)
     # ===========================================================
     # 日本語フォントをbase_charsだけグリフ読み込み
     # ===========================================================
