@@ -589,7 +589,7 @@ class HudRenderer(Widget):
       debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
 
     if self.osm_per >= 0:
-      h = rect.h * self.osm_per / 100
+      h = rect.height * self.osm_per / 100
       wp1 = 10
       if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < 100:
         osm_bar_color = rl.Color(0, 245, 0, 200) #緑
