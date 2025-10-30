@@ -638,7 +638,7 @@ class HudRenderer(Widget):
 
     rl.end_blend_mode() #元のブレンドに戻す
 
-    os.system(f'tmux rect.y "現在の値は {int(rect.y):d}"')
+    print(f"rect.y = {rect.y}")
 
     top_label_size=33
     # drawText(p, surface_rect.center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
