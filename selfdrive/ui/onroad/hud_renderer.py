@@ -1,3 +1,4 @@
+import os
 import pyray as rl
 import time
 from cereal import log
@@ -637,10 +638,12 @@ class HudRenderer(Widget):
 
     rl.end_blend_mode() #元のブレンドに戻す
 
+    os.system(f'tmux rect.y "現在の値は {int(rect.y):d}"')
+
     top_label_size=33
     # drawText(p, surface_rect.center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
     top_label_center_x = rect.x+rect.width/2
-    top_label_top_y = rect.y + 50
+    top_label_top_y = 0 + 50
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*0,text="extra cruise speed engagement",alpha=self.a0,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
     # drawText(p, surface_rect.center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*1,text="slow down corner correctly",alpha=self.a1,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
