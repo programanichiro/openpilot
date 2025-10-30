@@ -617,10 +617,24 @@ class HudRenderer(Widget):
     hha = hha * rect.height
     wp = 35
     if self.vc_accel > 0:
-      meter = [(rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 - hha/2),(rect.x+rect.width , rect.y+rect.height/2 - hha/2), (rect.x+rect.width , rect.y+rect.height/2), (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
+      # meter = [(rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 - hha/2),
+      #          (rect.x+rect.width , rect.y+rect.height/2 - hha/2),
+      #          (rect.x+rect.width , rect.y+rect.height/2),
+      #          (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
+      meter = [(rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2),
+               (rect.x+rect.width , rect.y+rect.height/2),
+               (rect.x+rect.width , rect.y+rect.height/2 - hha/2),
+               (rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 - hha/2)]
       rl.draw_triangle_fan(meter,len(meter),va_color)
     elif self.vc_accel < 0:
-      meter = [(rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2),(rect.x+rect.width , rect.y+rect.height/2), (rect.x+rect.width , rect.y+rect.height/2 + hha/2), (rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 + hha/2)]
+      # meter = [(rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2),
+      #          (rect.x+rect.width , rect.y+rect.height/2),
+      #          (rect.x+rect.width , rect.y+rect.height/2 + hha/2),
+      #          (rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 + hha/2)]
+      meter = [(rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 + hha/2),
+               (rect.x+rect.width , rect.y+rect.height/2 + hha/2),
+               (rect.x+rect.width , rect.y+rect.height/2),
+               (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
       rl.draw_triangle_fan(meter,len(meter),va_color)
 
   def _ip_update_state(self,sm):
