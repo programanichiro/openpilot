@@ -164,7 +164,7 @@ class DriverStateRenderer(Widget):
     # Calculate icon position (bottom-left or bottom-right)
     width, height = self._rect.width, self._rect.height
     offset = UI_BORDER_SIZE + BTN_SIZE // 2
-    self.position_x = self._rect.x + (width - offset if self.is_rhd else offset)
+    self.position_x = self._rect.x + (width - offset if False else offset) #self.is_rhd->False,常に顔アイコンを左側に出す。
     self.position_y = self._rect.y + height - offset
 
     # Pre-calculate the face lines positions

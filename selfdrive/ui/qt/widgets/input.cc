@@ -72,6 +72,7 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
   cancel_btn->setFixedSize(386, 125);
   cancel_btn->setStyleSheet(R"(
     QPushButton {
+      border: none;
       font-size: 48px;
       border-radius: 10px;
       color: #E4E4E4;
@@ -95,7 +96,8 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
   QHBoxLayout *textbox_layout = new QHBoxLayout(textbox_widget);
   textbox_layout->setContentsMargins(50, 0, 50, 0);
 
-  textbox_widget->setStyleSheet(R"(
+  textbox_widget->setStyleSheet(
+    title != tr("Enter Mapbox Token") ? R"(
     #textbox {
       margin-left: 50px;
       margin-right: 50px;
@@ -105,6 +107,19 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
     * {
       border: none;
       font-size: 80px;
+      font-weight: light;
+      background-color: transparent;
+    }
+  )" : R"(
+    #textbox {
+      margin-left: 50px;
+      margin-right: 50px;
+      border-radius: 0;
+      border-bottom: 3px solid #BDBDBD;
+    }
+    * {
+      border: none;
+      font-size: 35px;
       font-weight: light;
       background-color: transparent;
     }
@@ -137,7 +152,12 @@ InputDialog::InputDialog(const QString &title, QWidget *parent, const QString &s
   main_layout->addWidget(textbox_widget, 0, Qt::AlignBottom);
   main_layout->addSpacing(25);
 
-  k = new Keyboard(this);
+  int key_layout = 0;
+  if(title == tr("Auto door lock by speed") || title == tr("Vehicle weight")){
+    key_layout = 2; //k->main_layout->setCurrentIndex(2);
+  }
+
+  k = new Keyboard(this, key_layout);
   QObject::connect(k, &Keyboard::emitEnter, this, &InputDialog::handleEnter);
   QObject::connect(k, &Keyboard::emitBackspace, this, [=]() {
     line->backspace();

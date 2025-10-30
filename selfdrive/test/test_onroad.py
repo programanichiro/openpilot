@@ -63,6 +63,7 @@ PROCS = {
   "system.micd": 5.0,
   "system.timed": 0,
   "selfdrive.pandad.pandad": 0,
+  "selfdrive.navd.navd": 0.4,
   "system.statsd": 1.0,
   "system.loggerd.uploader": 15.0,
   "system.loggerd.deleter": 1.0,
@@ -206,8 +207,7 @@ class TestOnroad:
     result += "-------------- UI Draw Timing ------------------\n"
     result += "------------------------------------------------\n"
 
-    # skip first few frames -- connecting to vipc
-    ts = self.ts['uiDebug']['drawTimeMillis'][15:]
+    ts = self.ts['uiDebug']['drawTimeMillis']
     result += f"min  {min(ts):.2f}ms\n"
     result += f"max  {max(ts):.2f}ms\n"
     result += f"std  {np.std(ts):.2f}ms\n"
@@ -286,7 +286,7 @@ class TestOnroad:
 
     # check for big leaks. note that memory usage is
     # expected to go up while the MSGQ buffers fill up
-    assert np.average(mems) <= 85, "Average memory usage above 85%"
+    assert np.average(mems) <= 65, "Average memory usage above 65%"
     assert np.max(np.diff(mems)) <= 4, "Max memory increase too high"
     assert np.average(np.diff(mems)) <= 1, "Average memory increase too high"
 

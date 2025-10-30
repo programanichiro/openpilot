@@ -100,7 +100,7 @@ class ButtonControl : public AbstractControl {
   Q_OBJECT
 
 public:
-  ButtonControl(const QString &title, const QString &text, const QString &desc = "", QWidget *parent = nullptr);
+  ButtonControl(const QString &title, const QString &text, const QString &desc = "", QWidget *parent = nullptr, const QString &icon = "");
   inline void setText(const QString &text) { btn.setText(text); }
   inline QString text() const { return btn.text(); }
 

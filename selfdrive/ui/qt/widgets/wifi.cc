@@ -9,8 +9,8 @@ WiFiPromptWidget::WiFiPromptWidget(QWidget *parent) : QFrame(parent) {
   // Setup Firehose Mode
   QVBoxLayout *main_layout = new QVBoxLayout(this);
   main_layout->setContentsMargins(56, 40, 56, 40);
-  main_layout->setSpacing(42);  
-  
+  main_layout->setSpacing(42);
+
   QLabel *title = new QLabel(tr("<span style='font-family: \"Noto Color Emoji\";'>🔥</span> Firehose Mode <span style='font-family: Noto Color Emoji;'>🔥</span>"));
   title->setStyleSheet("font-size: 64px; font-weight: 500;");
   main_layout->addWidget(title);

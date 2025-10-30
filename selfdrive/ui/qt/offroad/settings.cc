@@ -75,6 +75,57 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
       "../assets/icons/metric.png",
       false,
     },
+#ifdef ENABLE_MAPS
+    {
+      "NavSettingTime24h",
+      tr("Show ETA in 24h Format"),
+      tr("Use 24h format instead of am/pm"),
+      "../assets/icons/metric.png",
+      false,
+    },
+    {
+      "NavSettingLeftSide",
+      tr("Show Map on Left Side of UI"),
+      tr("Show map on left side when in split screen view."),
+      "../assets/icons/road.png",
+      false,
+    },
+    {
+      "GpsAlwaysSwitch",
+      tr("Always receive GPS signals"),
+      tr("GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary."),
+      "../assets/offroad/icon_gps_car.png",
+      false,
+    },
+#endif
+    {
+      "RaylibMode",
+      tr("Use Raylib UI"),
+      tr("Switching to a user interface built with raylib."),
+      "../assets/icons/warning.png",
+      false,
+    },
+    {
+      "DisableMaxSpeedModify",
+      tr("Use the vehicle ACC with TSSP over 115 km/h"),
+      tr("ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it."),
+      "../assets/icons/calibration.png",
+      true,
+    },
+    {
+      "ForceHybridVehicle",
+      tr("Force recognition as a hybrid vehicle"),
+      tr("Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash."),
+      "../assets/icons/disengage_on_accelerator.svg",
+      true,
+    },
+    {
+      "IgnoreRerouteHarness",
+      tr("Ignore DSU bypass harness for TSSP"),
+      tr("Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed."),
+      "../assets/icons/calibration.png", //アクセル制御に関するアイコン。
+      true,
+    },
   };
 
 
@@ -85,6 +136,12 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
                                              "your steering wheel distance button."),
                                           "../assets/icons/speed_limit.png",
                                           longi_button_texts);
+
+  std::vector<QString> accel_method_button_texts{tr("Recommend"), tr("Official")};
+  accel_method_setting = new ButtonParamControl("AccelMethodSwitch", tr("Accel Method"),
+                                          tr("Switch Accel Method to Official version or recommendation. A reboot is required."),
+                                          "../assets/icons/calibration.png",
+                                          accel_method_button_texts);
 
   // set up uiState update for personality setting
   QObject::connect(uiState(), &UIState::uiUpdate, this, &TogglesPanel::updateState);
@@ -113,6 +170,87 @@ TogglesPanel::TogglesPanel(SettingsWindow *parent) : ListWidget(parent) {
     // insert longitudinal personality after NDOG toggle
     if (param == "DisengageOnAccelerator") {
       addItem(long_personality_setting);
+      addItem(accel_method_setting);
+
+      // Auto door lock
+      ButtonControl *editAutomaticDoorLockSpeedButton = new ButtonControl(tr("Auto door lock by speed"), tr("EDIT"), "", nullptr, "../assets/offroad/icon_car_key.png");
+      std::string my_lock_speed = util::read_file("/data/run_auto_lock.txt");
+      if(my_lock_speed.empty() == false){
+        int lock_speed = std::stoi(my_lock_speed);
+        if(lock_speed > 0){
+          QString cur_speed = QString::fromStdString(my_lock_speed) + " [km/h]";
+          editAutomaticDoorLockSpeedButton->setValue(cur_speed);
+        }
+      }
+      connect(editAutomaticDoorLockSpeedButton, &ButtonControl::clicked, [=]() {
+        std::string my_lock_speed = util::read_file("/data/run_auto_lock.txt");
+        my_lock_speed.erase(std::remove(my_lock_speed.begin(), my_lock_speed.end(), '\n'), my_lock_speed.end());
+        my_lock_speed.erase(std::remove(my_lock_speed.begin(), my_lock_speed.end(), '\r'), my_lock_speed.end());
+        QString cur_speed;
+        if(my_lock_speed.empty() == false){
+          if(my_lock_speed != "0"){
+            cur_speed = QString::fromStdString(my_lock_speed);
+          }
+        }
+        QString lck_speed = InputDialog::getText(tr("Auto door lock by speed"), this, tr("Enter Lock speed (km/h). 0 = default. Reset if changed."), false, -1, cur_speed).trimmed();
+
+        if (lck_speed.isEmpty() == false) {
+          FILE *fp = fopen("/data/run_auto_lock.txt","w");
+          if(fp != NULL){
+            fprintf(fp,"%s",lck_speed.toUtf8().constData());
+            fclose(fp);
+          }
+          if(lck_speed == "0"){
+            editAutomaticDoorLockSpeedButton->setValue("");
+          } else {
+            editAutomaticDoorLockSpeedButton->setValue(lck_speed + " [km/h]");
+          }
+        } else {
+          //キャンセルと空文字OKの区別がつかない。0なら何もしないというルールにするか。
+          //editAutomaticDoorLockSpeedButton->setValue("canceled...");
+        }
+      });
+      addItem(editAutomaticDoorLockSpeedButton);
+
+      // Vehicle weight
+      ButtonControl *editVehicleMassButton = new ButtonControl(tr("Vehicle weight"), tr("EDIT"), "", nullptr, "../assets/offroad/icon_car_weight.png");
+      std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
+      if(my_vehicle_mass.empty() == false){
+        int vehicle_mass = std::stoi(my_vehicle_mass);
+        if(vehicle_mass > 0){
+          QString cur_mass = QString::fromStdString(my_vehicle_mass) + " [kg]";
+          editVehicleMassButton->setValue(cur_mass);
+        }
+      }
+      connect(editVehicleMassButton, &ButtonControl::clicked, [=]() {
+        std::string my_vehicle_mass = util::read_file("/data/vehicle_mass.txt");
+        my_vehicle_mass.erase(std::remove(my_vehicle_mass.begin(), my_vehicle_mass.end(), '\n'), my_vehicle_mass.end());
+        my_vehicle_mass.erase(std::remove(my_vehicle_mass.begin(), my_vehicle_mass.end(), '\r'), my_vehicle_mass.end());
+        QString cur_mass;
+        if(my_vehicle_mass.empty() == false){
+          if(my_vehicle_mass != "0"){
+            cur_mass = QString::fromStdString(my_vehicle_mass);
+          }
+        }
+        QString vcl_mass = InputDialog::getText(tr("Vehicle weight"), this, tr("Enter Vehicle weight (kg). 0 = default. Reset if changed."), false, -1, cur_mass).trimmed();
+
+        if (vcl_mass.isEmpty() == false) {
+          FILE *fp = fopen("/data/vehicle_mass.txt","w");
+          if(fp != NULL){
+            fprintf(fp,"%s",vcl_mass.toUtf8().constData());
+            fclose(fp);
+          }
+          if(vcl_mass == "0"){
+            editVehicleMassButton->setValue("");
+          } else {
+            editVehicleMassButton->setValue(vcl_mass + " [kg]");
+          }
+        } else {
+          //キャンセルと空文字OKの区別がつかない。0なら何もしないというルールにするか。
+          //editVehicleMassButton->setValue("canceled...");
+        }
+      });
+      addItem(editVehicleMassButton);
     }
   }
 
@@ -177,10 +315,12 @@ void TogglesPanel::updateToggles() {
       experimental_mode_toggle->setEnabled(true);
       experimental_mode_toggle->setDescription(e2e_description);
       long_personality_setting->setEnabled(true);
+      accel_method_setting->setEnabled(true);
     } else {
       // no long for now
       experimental_mode_toggle->setEnabled(false);
       long_personality_setting->setEnabled(false);
+      accel_method_setting->setEnabled(false);
       params.remove("ExperimentalMode");
 
       const QString unavailable = tr("Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control.");

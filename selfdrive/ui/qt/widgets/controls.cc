@@ -64,7 +64,7 @@ void AbstractControl::hideEvent(QHideEvent *e) {
 
 // controls
 
-ButtonControl::ButtonControl(const QString &title, const QString &text, const QString &desc, QWidget *parent) : AbstractControl(title, desc, "", parent) {
+ButtonControl::ButtonControl(const QString &title, const QString &text, const QString &desc, QWidget *parent, const QString &icon) : AbstractControl(title, desc, icon, parent) {
   btn.setText(text);
   btn.setStyleSheet(R"(
     QPushButton {

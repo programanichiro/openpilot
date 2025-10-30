@@ -54,6 +54,14 @@ OnroadAlerts::Alert OnroadAlerts::getAlert(const SubMaster &sm, uint64_t started
   return a;
 }
 
+QString OnroadAlerts::translateAlertText(const QString &text) {
+  QString translated;
+  if (!text.isEmpty()) {
+    translated = tr(text.toUtf8().data());
+  }
+  return translated;
+}
+
 void OnroadAlerts::paintEvent(QPaintEvent *event) {
   if (alert.size == cereal::SelfdriveState::AlertSize::NONE) {
     return;
@@ -96,17 +104,17 @@ void OnroadAlerts::paintEvent(QPaintEvent *event) {
   p.setRenderHint(QPainter::TextAntialiasing);
   if (alert.size == cereal::SelfdriveState::AlertSize::SMALL) {
     p.setFont(InterFont(74, QFont::DemiBold));
-    p.drawText(r, Qt::AlignCenter, alert.text1);
+    p.drawText(r, Qt::AlignCenter, translateAlertText(alert.text1));
   } else if (alert.size == cereal::SelfdriveState::AlertSize::MID) {
     p.setFont(InterFont(88, QFont::Bold));
-    p.drawText(QRect(0, c.y() - 125, width(), 150), Qt::AlignHCenter | Qt::AlignTop, alert.text1);
+    p.drawText(QRect(0, c.y() - 125, width(), 150), Qt::AlignHCenter | Qt::AlignTop, translateAlertText(alert.text1));
     p.setFont(InterFont(66));
-    p.drawText(QRect(0, c.y() + 21, width(), 90), Qt::AlignHCenter, alert.text2);
+    p.drawText(QRect(0, c.y() + 21, width(), 90), Qt::AlignHCenter, translateAlertText(alert.text2));
   } else if (alert.size == cereal::SelfdriveState::AlertSize::FULL) {
-    bool l = alert.text1.length() > 15;
+    bool l = alert.text1.length() > 15; //あえて翻訳せず
     p.setFont(InterFont(l ? 132 : 177, QFont::Bold));
-    p.drawText(QRect(0, r.y() + (l ? 240 : 270), width(), 600), Qt::AlignHCenter | Qt::TextWordWrap, alert.text1);
+    p.drawText(QRect(0, r.y() + (l ? 240 : 270), width(), 600), Qt::AlignHCenter | Qt::TextWordWrap, translateAlertText(alert.text1));
     p.setFont(InterFont(88));
-    p.drawText(QRect(0, r.height() - (l ? 361 : 420), width(), 300), Qt::AlignHCenter | Qt::TextWordWrap, alert.text2);
+    p.drawText(QRect(0, r.height() - (l ? 361 : 420), width(), 300), Qt::AlignHCenter | Qt::TextWordWrap, translateAlertText(alert.text2));
   }
 }

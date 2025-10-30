@@ -17,6 +17,7 @@ protected:
   void showEvent(QShowEvent *event) override;
   void hideEvent(QHideEvent *event) override;
   void paintGL() override;
+  void mini_knightScanner(QPainter &p);
 
   Params params;
   DriverMonitorRenderer driver_monitor;

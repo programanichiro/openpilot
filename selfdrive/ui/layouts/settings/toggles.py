@@ -30,6 +30,8 @@ DESCRIPTIONS = {
   'RecordFront': "Upload data from the driver facing camera and help improve the driver monitoring algorithm.",
   "IsMetric": "Display speed in km/h instead of mph.",
   "RecordAudio": "Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect.",
+  "RaylibMode": "Switching to a user interface built with raylib.",
+
 }
 
 
@@ -88,6 +90,12 @@ class TogglesLayout(Widget):
         DESCRIPTIONS["IsMetric"],
         "metric.png",
         False,
+      ),
+      "RaylibMode": (
+        "Use Raylib UI",
+        DESCRIPTIONS["RaylibMode"],
+        "warning.png",
+        True,
       ),
     }
 
