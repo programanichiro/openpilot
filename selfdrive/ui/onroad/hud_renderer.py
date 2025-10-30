@@ -359,6 +359,13 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.tss_type = 0
+    self.phv_2019 = False
+    self.a0 = 150
+    self.a1 = 150
+    self.a2 = 150
+    self.a3 = 150
+
     self.vc_accel = 0
 
     self.osm_frame_ct_ct = -1 #-1 or 100以上でosmへの通信が死んでいる。
@@ -375,7 +382,7 @@ class HudRenderer(Widget):
     self.before_distance_traveled = 0
     self.h_manual_dist = 0.001
     self.h_autopilot_dist = 0 #停止時間は1秒を1m換算でカウントする。
-    self.all_brake_light = False
+    self.brake_light = False
     self.ahr = 0
 
     self.ACC_speed = 0
@@ -630,6 +637,19 @@ class HudRenderer(Widget):
 
     rl.end_blend_mode() #元のブレンドに戻す
 
+  # self.brake_light
+  # p.setFont(InterFont(33, QFont::Bold));
+    top_label_size=33
+    # drawText(p, surface_rect.center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
+    top_label_center_x = rect.x+rect.width/2
+    self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=50 + 40*0,text="extra cruise speed engagement",alpha=self.a0,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
+    # drawText(p, surface_rect.center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
+    self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=50 + 40*1,text="slow down corner correctly",alpha=self.a1,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
+    # drawText(p, surface_rect.center().x(), 50 + 40*2 , "speed limit auto detect", a2 , brake_light);
+    self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=50 + 40*2,text="speed limit auto detect",alpha=self.a2,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
+    # drawText(p, surface_rect.center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
+    self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=50 + 40*3,text="auto brake holding",alpha=self.a3,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
+
   def _ip_update_state(self,sm):
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
@@ -654,6 +674,19 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    if self.tss_type == 0:
+      try:
+        with open('/data/tss_type_info.txt','r') as fp:
+          tss_type_info = fp.read()
+          if tss_type_info:
+            self.tss_type = int(tss_type_info)
+      except Exception as e:
+        pass
+      if self.tss_type == 2:
+        pass #TSS2
+      elif self.tss_type == 1:
+        self.phv_2019 = Params().get_bool("DisableMaxSpeedModify")
+
     self.ip_update_state_ct += 1
     cur_draw_t = time.monotonic_ns() / 1_000_000  # ナノ秒→ミリ秒 #millis_since_boot();
     dt = cur_draw_t - self.prev_draw_t
@@ -674,14 +707,14 @@ class HudRenderer(Widget):
     # const auto ss = (*s.sm)["selfdriveState"].getSelfdriveState();
     # global_engageable = (ss.getEngageable() || ss.getEnabled());
 
-    brake_light = False
+    self.brake_light = False
     all_brake_light = False
     try:
       with open('/dev/shm/brake_light_state.txt','r') as fp3:
         brake_light_state = fp3.read()
         if brake_light_state and int(brake_light_state) != 0:
           if ui_state.status != UIStatus.DISENGAGED:
-            brake_light = True
+            self.brake_light = True
             # logo_trs = 80; //drawText内部で100足される。
           all_brake_light = True #ちらはエンゲージしていなくてもセットされる。
     except Exception as e:
@@ -849,6 +882,30 @@ class HudRenderer(Widget):
         self.osm_frame_ct_ct = 0 #ゼロに戻らなければ、osmへの通信が死んでいる。
       self.before_osm_frame_ct = osm_frame_ct2
 
+    self.a0 = 150
+    self.a1 = 150
+    self.a2 = 150
+    self.a3 = 150
+    if not(ui_state.status == UIStatus.ENGAGED or ui_state.status == UIStatus.OVERRIDE):
+      self.a0 = 50
+      self.a1 = 50
+      self.a2 = 50
+      self.a3 = 50
+    elif (ui_state.status == UIStatus.ENGAGED or ui_state.status == UIStatus.OVERRIDE):
+      self.a0 = 50
+      self.a1 = 50
+      self.a2 = 50
+      self.a3 = 50
+      if self.vc_speed < 1/3.6:
+        self.a3 = 200
+      if self.limit_speed_auto_detect == 1: #インジケーターはACC自動設定時にするか、速度標識表示時にするか検討中
+        self.a2 = 200
+      if self.curve_brake:
+        self.a1 = 200
+      if self.is_cruise_set:
+        acc_speed = self.set_speed
+        if acc_speed > 0 and (acc_speed < (31 if self.tss_type <= 1 else 26.0)) or (acc_speed > 109.0 and self.phv_2019 == False and self.tss_type <= 1):
+          self.a0 = 200
 
   def _press_accel_engaged(self):
     accel_engaged = 0
