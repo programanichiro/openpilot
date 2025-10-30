@@ -891,7 +891,7 @@ public:
   inline bool hasWheelSpeeds() const;
   inline  ::cereal::CarState::WheelSpeeds::Reader getWheelSpeeds() const;
 
-  inline float getGasDEPRECATED() const;
+  inline float getGas() const;
 
   inline bool getGasPressed() const;
 
@@ -981,7 +981,7 @@ public:
 
   inline bool getRegenBraking() const;
 
-  inline float getEngineRpmDEPRECATED() const;
+  inline float getEngineRpm() const;
 
   inline bool getCarFaultedNonCritical() const;
 
@@ -1057,8 +1057,8 @@ public:
   inline void adoptWheelSpeeds(::capnp::Orphan< ::cereal::CarState::WheelSpeeds>&& value);
   inline ::capnp::Orphan< ::cereal::CarState::WheelSpeeds> disownWheelSpeeds();
 
-  inline float getGasDEPRECATED();
-  inline void setGasDEPRECATED(float value);
+  inline float getGas();
+  inline void setGas(float value);
 
   inline bool getGasPressed();
   inline void setGasPressed(bool value);
@@ -1203,8 +1203,8 @@ public:
   inline bool getRegenBraking();
   inline void setRegenBraking(bool value);
 
-  inline float getEngineRpmDEPRECATED();
-  inline void setEngineRpmDEPRECATED(float value);
+  inline float getEngineRpm();
+  inline void setEngineRpm(float value);
 
   inline bool getCarFaultedNonCritical();
   inline void setCarFaultedNonCritical(bool value);
@@ -4389,16 +4389,16 @@ inline ::capnp::Orphan< ::cereal::CarState::WheelSpeeds> CarState::Builder::diso
       ::capnp::bounded<1>() * ::capnp::POINTERS));
 }
 
-inline float CarState::Reader::getGasDEPRECATED() const {
+inline float CarState::Reader::getGas() const {
   return _reader.getDataField<float>(
       ::capnp::bounded<1>() * ::capnp::ELEMENTS);
 }
 
-inline float CarState::Builder::getGasDEPRECATED() {
+inline float CarState::Builder::getGas() {
   return _builder.getDataField<float>(
       ::capnp::bounded<1>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setGasDEPRECATED(float value) {
+inline void CarState::Builder::setGas(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<1>() * ::capnp::ELEMENTS, value);
 }
@@ -5080,16 +5080,16 @@ inline void CarState::Builder::setRegenBraking(bool value) {
       ::capnp::bounded<361>() * ::capnp::ELEMENTS, value);
 }
 
-inline float CarState::Reader::getEngineRpmDEPRECATED() const {
+inline float CarState::Reader::getEngineRpm() const {
   return _reader.getDataField<float>(
       ::capnp::bounded<15>() * ::capnp::ELEMENTS);
 }
 
-inline float CarState::Builder::getEngineRpmDEPRECATED() {
+inline float CarState::Builder::getEngineRpm() {
   return _builder.getDataField<float>(
       ::capnp::bounded<15>() * ::capnp::ELEMENTS);
 }
-inline void CarState::Builder::setEngineRpmDEPRECATED(float value) {
+inline void CarState::Builder::setEngineRpm(float value) {
   _builder.setDataField<float>(
       ::capnp::bounded<15>() * ::capnp::ELEMENTS, value);
 }
