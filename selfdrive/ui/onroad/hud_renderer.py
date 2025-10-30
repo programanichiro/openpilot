@@ -1309,3 +1309,33 @@ class HudRenderer(Widget):
     )
 
     return x + text_size.x #続けて並べるxposを返す。
+
+  def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, blu=255, grn=255 , bk_red=0, bk_blu=0, bk_grn=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+    text_size = measure_text_cached(font, text, font_size)
+    x -= text_size.x #右寄せ
+
+    if bk_alp > 0:
+      #//バックを塗る。
+      bk_color = rl.Color(int(bk_red), int(bk_blu), int(bk_grn), int(bk_alp))
+      rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
+      rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
+
+    if brakeLight == False:
+      pen_color = rl.Color(int(red), int(blu), int(grn), int(alpha))
+    else:
+      alpha += 100
+      if alpha > 255:
+        alpha = 255
+      pen_color = rl.Color(0xff, 0, 0, int(alpha))
+
+    rl.draw_text_ex(
+      font,
+      text,
+      rl.Vector2(x, y-text_size.y),
+      font_size,
+      0,
+      pen_color,
+    )
+
+    return x - text_size.x #続けて並べるxposを返す。
+
