@@ -638,18 +638,12 @@ class HudRenderer(Widget):
 
     rl.end_blend_mode() #元のブレンドに戻す
 
-    os.system(f'tmux display-message "rect.y = {rect.y}"')
-
     top_label_size=33
-    # drawText(p, surface_rect.center().x(), 50 + 40*0 , "extra cruise speed engagement", a0 , brake_light);
     top_label_center_x = rect.x+rect.width/2
     top_label_top_y = rect.y + 50
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*0,text="extra cruise speed engagement",alpha=self.a0,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
-    # drawText(p, surface_rect.center().x(), 50 + 40*1 , "slow down corner correctly", a1 , brake_light);
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*1,text="slow down corner correctly",alpha=self.a1,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
-    # drawText(p, surface_rect.center().x(), 50 + 40*2 , "speed limit auto detect", a2 , brake_light);
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*2,text="speed limit auto detect",alpha=self.a2,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
-    # drawText(p, surface_rect.center().x(), 50 + 40*3 , "auto brake holding", a3 , brake_light);
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*3,text="auto brake holding",alpha=self.a3,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
 
   def _ip_update_state(self,sm):
