@@ -590,6 +590,7 @@ class HudRenderer(Widget):
       blue_signal_chk_str = str(self.blue_signal_chk)
       debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
 
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     if self.osm_per >= 0:
       h = rect.height * self.osm_per // 100
       wp1 = 10
@@ -598,9 +599,7 @@ class HudRenderer(Widget):
       else:
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
 
-      #rl.begin_blend_mode(rl.BLEND_ADDITIVE)  # 加算ブレンドも可能のようだ。
       rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
-      #rl.end_blend_mode()  # 元のブレンドに戻す
 
     #加速減速表示
     car_state = ui_state.sm['carState']
@@ -617,25 +616,19 @@ class HudRenderer(Widget):
     hha = hha * rect.height
     wp = 35
     if self.vc_accel > 0:
-      # meter = [(rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 - hha/2),
-      #          (rect.x+rect.width , rect.y+rect.height/2 - hha/2),
-      #          (rect.x+rect.width , rect.y+rect.height/2),
-      #          (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
       meter = [(rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2),
                (rect.x+rect.width , rect.y+rect.height/2),
                (rect.x+rect.width , rect.y+rect.height/2 - hha/2),
                (rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 - hha/2)]
       rl.draw_triangle_fan(meter,len(meter),va_color)
     elif self.vc_accel < 0:
-      # meter = [(rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2),
-      #          (rect.x+rect.width , rect.y+rect.height/2),
-      #          (rect.x+rect.width , rect.y+rect.height/2 + hha/2),
-      #          (rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 + hha/2)]
       meter = [(rect.x+rect.width - wp/2 - wp/2 * hha / rect.height , rect.y+rect.height/2 + hha/2),
                (rect.x+rect.width , rect.y+rect.height/2 + hha/2),
                (rect.x+rect.width , rect.y+rect.height/2),
                (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
       rl.draw_triangle_fan(meter,len(meter),va_color)
+
+    rl.end_blend_mode() #元のブレンドに戻す
 
   def _ip_update_state(self,sm):
     try:
