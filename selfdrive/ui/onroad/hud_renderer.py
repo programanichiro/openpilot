@@ -268,22 +268,6 @@ class HudRenderer(Widget):
     if self.db_rec_mode:
       max_text = tr("REC")
 
-  # p.setPen(set_speed_color);
-  # scene.mAccelEngagedButton --> self.accel_engaged
-  # if(setSpeedStr == "1" && uiState()->scene.mAccelEngagedButton == 4){ //MAXが1の時
-  #   std::string red_signal_eP_iP_set_txt = util::read_file("/dev/shm/red_signal_eP_iP_set.txt");
-  #   bool red_signal_eP_iP_set = false;
-  #   if(red_signal_eP_iP_set_txt.empty() == false){
-  #     if(std::stoi(red_signal_eP_iP_set_txt) == 1){
-  #       red_signal_eP_iP_set = true;
-  #     }
-  #   }
-  #   p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, red_signal_eP_iP_set == 0 ? "8" : setSpeedStr);
-  # } else {
-  #   p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, setSpeedStr);
-  # }
-
-
     max_text_width = measure_text_cached(self._font_semi_bold, max_text, FONT_SIZES.max_speed).x
     rl.draw_text_ex(
       self._font_semi_bold,
@@ -295,6 +279,18 @@ class HudRenderer(Widget):
     )
 
     set_speed_text = CRUISE_DISABLED_CHAR if not self.is_cruise_set else str(round(self.set_speed))
+
+    if set_speed_text == "1" and self.accel_engaged == 4: #MAXが1の時
+      try:
+        red_signal_eP_iP_set = False
+        with open('/dev/shm/red_signal_eP_iP_set.txt','r') as fp:
+          red_signal_eP_iP_set = fp.read()
+          if red_signal_eP_iP_set and int(red_signal_eP_iP_set) == 1:
+            red_signal_eP_iP_set = True
+        if red_signal_eP_iP_set == False:
+          set_speed_text = "8"
+      except Exception as e:
+        pass
     speed_text_width = measure_text_cached(self._font_bold, set_speed_text, FONT_SIZES.set_speed).x
     rl.draw_text_ex(
       self._font_bold,
