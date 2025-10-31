@@ -255,14 +255,33 @@ class HudRenderer(Widget):
         max_color = COLORS.override
 
     if self.limit_speed_override:
-        max_color = rl.Color(0x24, 0x57, 0xa1 , 255)
-        set_speed_color = rl.Color(0x24, 0x57, 0xa1 , 255)
+      max_color = rl.Color(0x24, 0x57, 0xa1 , 255)
+      set_speed_color = rl.Color(0x24, 0x57, 0xa1 , 255) #速度標識の数字に合わせる。
+
+    if self.red_signal_scan_flag >= 3:
+      set_speed_color = rl.Color(0xff, 0, 0 , 255)
 
     max_text = tr("MAX")
     if self.limit_speed_override:
       max_text = tr("AUTO")
     if self.db_rec_mode:
       max_text = tr("REC")
+
+  # p.setPen(set_speed_color);
+  # scene.mAccelEngagedButton --> self.accel_engaged
+  # if(setSpeedStr == "1" && uiState()->scene.mAccelEngagedButton == 4){ //MAXが1の時
+  #   std::string red_signal_eP_iP_set_txt = util::read_file("/dev/shm/red_signal_eP_iP_set.txt");
+  #   bool red_signal_eP_iP_set = false;
+  #   if(red_signal_eP_iP_set_txt.empty() == false){
+  #     if(std::stoi(red_signal_eP_iP_set_txt) == 1){
+  #       red_signal_eP_iP_set = true;
+  #     }
+  #   }
+  #   p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, red_signal_eP_iP_set == 0 ? "8" : setSpeedStr);
+  # } else {
+  #   p.drawText(set_speed_rect.adjusted(0, 77*max_disp_k, 0, 0), Qt::AlignTop | Qt::AlignHCenter, setSpeedStr);
+  # }
+
 
     max_text_width = measure_text_cached(self._font_semi_bold, max_text, FONT_SIZES.max_speed).x
     rl.draw_text_ex(
@@ -289,6 +308,51 @@ class HudRenderer(Widget):
 
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
     """Draw the current vehicle speed and unit."""
+
+  # QColor speed_waku;
+  # if(red_signal_scan_flag >= 1/*== 1*/){
+  #   if(speed > 45 && clipped_brightness0 >= 90 //昼は45超を信頼度低いとする。
+  #     || speed > 65 && clipped_brightness0 < 90){ //夜は65超を信頼度低いとする。
+  #     speed_waku = QColor(171, 171, 0 , 255);
+  #   } else {
+  #     speed_waku = QColor(0xff, 0, 0 , 255);
+  #   }
+  # // } else if(red_signal_scan_flag >= 2){
+  # //   speed_waku = QColor(0xff, 0xff, 0 , 255);
+  # } else {
+  #   speed_waku = bg_colors[status];
+  # }
+  # // current speed
+  # p.setFont(InterFont(176, QFont::Bold));
+  # UIState *s = uiState();
+  # double velo_for_trans = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
+  # const double velo_for_trans_limit = 0.05; //0.05km/h以下では速度を半透明にする。
+  # if(velo_for_trans >= velo_for_trans_limit){
+  #   drawText(p, surface_rect.center().x()-7, 210+y_ofs-5, speedStr,speed_waku);
+  #   drawText(p, surface_rect.center().x()+7, 210+y_ofs-5, speedStr,speed_waku);
+  #   drawText(p, surface_rect.center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
+  #   drawText(p, surface_rect.center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
+  # }
+  # QColor speed_num;
+  # static bool red_signal_scan_flag_2 = false;
+  # if(red_signal_scan_flag >= 2 && red_signal_scan_flag_txt_ct %6 < 3){
+  #   speed_num = QColor(0xff, 100, 100 , 255); //赤信号認識中は点滅。
+  #   if(red_signal_scan_flag_2 == false && setSpeedStr != "1"){
+  #     red_signal_scan_flag_2 = true;
+  #     if(red_signal_scan_flag == 2){
+  #       soundButton2(1); //pikiriオンを信号認識開始に転用。
+  #     }
+  #   }
+  # } else {
+  #   speed_num = QColor(0xff, 0xff, 0xff , 255);
+  #   if(red_signal_scan_flag < 2 && this->speed > 24){
+  #     red_signal_scan_flag_2 = false; //ある程度スピードが上がらないと、このフラグも戻さない。
+  #   }
+  #   if(velo_for_trans < velo_for_trans_limit){
+  #     speed_num = QColor(0xff, 0xff, 0xff , 70);
+  #   }
+  # }
+
     speed_text = str(round(self.speed))
     speed_text_size = measure_text_cached(self._font_bold, speed_text, FONT_SIZES.current_speed)
     speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2 + y_ofs)
@@ -359,6 +423,12 @@ class HudRenderer(Widget):
         dst.write(src.read())
     except Exception as e:
       pass
+
+    self.clipped_brightness0 = 101
+    self.red_signal_scan_flag = 0
+    self.red_signal_scan_flag_txt_ct = 0
+    self.night_mode_ct = 0
+    self.accel_engaged = 0
 
     self.tss_type = 0
     self.phv_2019 = False
@@ -903,6 +973,44 @@ class HudRenderer(Widget):
         if acc_speed > 0 and (acc_speed < (31 if self.tss_type <= 1 else 26.0)) or (acc_speed > 109.0 and self.phv_2019 == False and self.tss_type <= 1):
           self.a0 = 200
 
+      # self.accel_engaged == mAccelEngagedButton
+    # if(red_signal_scan_flag_txt_ct % 7 == 0){
+    #   std::string red_signal_scan_flag_txt = util::read_file("/dev/shm/red_signal_scan_flag.txt");
+    #   if(red_signal_scan_flag_txt.empty() == false){
+    #     if(uiState()->scene.mAccelEngagedButton >= 3){
+    #       red_signal_scan_flag = std::stoi(red_signal_scan_flag_txt);
+    #     } else {
+    #       red_signal_scan_flag = 0;
+    #     }
+    #   }
+    # }
+    # red_signal_scan_flag_txt_ct ++;
+
+      # ui_state.light_sensor
+      # ui_state.started
+    # if((red_signal_scan_flag >= 2 && (night_mode_ct ++) % 11 == 0) || red_signal_scan_flag_txt_ct % (20*5) == 1 /*5秒に一回は更新*/){
+    #   if (uiState()->scene.started) {
+    #     float clipped_brightness = uiState()->scene.light_sensor;
+
+    #     // CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+    #     if (clipped_brightness <= 8) {
+    #       clipped_brightness = (clipped_brightness / 903.3);
+    #     } else {
+    #       clipped_brightness = std::pow((clipped_brightness + 16.0) / 116.0, 3.0);
+    #     }
+
+    #     // Scale back to 0% to 100%
+    #     clipped_brightness = std::clamp(100.0f * clipped_brightness, 0.0f, 100.0f);
+
+    #     if(clipped_brightness0 != clipped_brightness){
+    #       clipped_brightness0 = clipped_brightness;
+    #       setButtonInt("/dev/shm/night_time_info.txt" , (int)clipped_brightness);
+
+    #       g_night_mode = clipped_brightness0 < (g_night_mode == 1 ? 90 : 75); //ばたつかないようにする。80程度でかなり夕方。
+    #     }
+    #   }
+    # }
+
   def _press_accel_engaged(self):
     accel_engaged = 0
     try:
@@ -912,6 +1020,8 @@ class HudRenderer(Widget):
           accel_engaged = int(accel_engaged_str)
     except Exception as e:
       pass
+
+    self.accel_engaged = accel_engaged
 
     if self.button_style_only == False:
       accel_engaged = (accel_engaged + 1) % 5
@@ -1338,4 +1448,33 @@ class HudRenderer(Widget):
     )
 
     return x - text_size.x #続けて並べるxposを返す。
+
+  def _drawTextCenter(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, blu=255, grn=255 , bk_red=0, bk_blu=0, bk_grn=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+    text_size = measure_text_cached(font, text, font_size)
+    x -= text_size.x /2 #中央寄せ
+
+    if bk_alp > 0:
+      #//バックを塗る。
+      bk_color = rl.Color(int(bk_red), int(bk_blu), int(bk_grn), int(bk_alp))
+      rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
+      rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
+
+    if brakeLight == False:
+      pen_color = rl.Color(int(red), int(blu), int(grn), int(alpha))
+    else:
+      alpha += 100
+      if alpha > 255:
+        alpha = 255
+      pen_color = rl.Color(0xff, 0, 0, int(alpha))
+
+    rl.draw_text_ex(
+      font,
+      text,
+      rl.Vector2(x, y-text_size.y),
+      font_size,
+      0,
+      pen_color,
+    )
+
+    return text_size.x #続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
 
