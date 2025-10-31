@@ -428,7 +428,7 @@ class HudRenderer(Widget):
     self.red_signal_scan_flag_txt_ct = 0
     self.night_mode_ct = 0
     self.accel_engaged = 0
-    self.status_col = COLORS.white
+    self.status_col = rl.Color(0x12, 0x28, 0x39, 0xFF) #UIStatus.DISENGAGEDの色
     self.red_signal_scan_flag_2 = False
 
     self.tss_type = 0
@@ -755,7 +755,7 @@ class HudRenderer(Widget):
     elif ui_state.status == UIStatus.OVERRIDE:
       self.status_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
     else:
-      self.status_col = COLORS.white
+      self.status_col = rl.Color(0x12, 0x28, 0x39, 0xFF)
 
     self.ip_update_state_ct += 1
     cur_draw_t = time.monotonic_ns() / 1_000_000  # ナノ秒→ミリ秒 #millis_since_boot();
