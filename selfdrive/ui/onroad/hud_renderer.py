@@ -26,6 +26,7 @@ btn_size = 192
 UI_BORDER_SIZE = 30
 global_angle_steer00 = 0
 long_speeddown_disable00 = 0
+g_night_mode = 100
 
 @dataclass(frozen=True)
 class UIConfig:
@@ -308,6 +309,9 @@ class HudRenderer(Widget):
 
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
     """Draw the current vehicle speed and unit."""
+    speed_text = str(round(self.speed))
+    speed_text_size = measure_text_cached(self._font_bold, speed_text, FONT_SIZES.current_speed)
+    speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2 + y_ofs)
 
   # QColor speed_waku;
   # if(red_signal_scan_flag >= 1/*== 1*/){
@@ -333,6 +337,7 @@ class HudRenderer(Widget):
   #   drawText(p, surface_rect.center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
   #   drawText(p, surface_rect.center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
   # }
+
   # QColor speed_num;
   # static bool red_signal_scan_flag_2 = false;
   # if(red_signal_scan_flag >= 2 && red_signal_scan_flag_txt_ct %6 < 3){
@@ -974,42 +979,42 @@ class HudRenderer(Widget):
           self.a0 = 200
 
       # self.accel_engaged == mAccelEngagedButton
-    # if(red_signal_scan_flag_txt_ct % 7 == 0){
-    #   std::string red_signal_scan_flag_txt = util::read_file("/dev/shm/red_signal_scan_flag.txt");
-    #   if(red_signal_scan_flag_txt.empty() == false){
-    #     if(uiState()->scene.mAccelEngagedButton >= 3){
-    #       red_signal_scan_flag = std::stoi(red_signal_scan_flag_txt);
-    #     } else {
-    #       red_signal_scan_flag = 0;
-    #     }
-    #   }
-    # }
-    # red_signal_scan_flag_txt_ct ++;
+      if self.red_signal_scan_flag_txt_ct % 7 == 0:
+        try:
+          with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
+            red_signal_scan_flag = fp.read()
+            if self.accel_engaged >= 3: #self.accel_engaged == mAccelEngagedButton
+              if red_signal_scan_flag:
+                self.red_signal_scan_flag = int(red_signal_scan_flag)
+            else:
+              self.red_signal_scan_flag = 0
+        except Exception as e:
+          pass
+      self.red_signal_scan_flag_txt_ct += 1
 
-      # ui_state.light_sensor
-      # ui_state.started
-    # if((red_signal_scan_flag >= 2 && (night_mode_ct ++) % 11 == 0) || red_signal_scan_flag_txt_ct % (20*5) == 1 /*5秒に一回は更新*/){
-    #   if (uiState()->scene.started) {
-    #     float clipped_brightness = uiState()->scene.light_sensor;
+      if self.red_signal_scan_flag >= 2:
+        self.night_mode_ct += 1 #VSCodeがウォルラス演算子(:=)の構文に対応してないので分けている。
+      if (self.red_signal_scan_flag >= 2 and (self.night_mode_ct) % 11 == 0) or self.red_signal_scan_flag_txt_ct % (20*5) == 1: #5秒に一回は更新
+        if ui_state.started:
+          clipped_brightness = ui_state.light_sensor
 
-    #     // CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
-    #     if (clipped_brightness <= 8) {
-    #       clipped_brightness = (clipped_brightness / 903.3);
-    #     } else {
-    #       clipped_brightness = std::pow((clipped_brightness + 16.0) / 116.0, 3.0);
-    #     }
+          # CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+          if clipped_brightness <= 8:
+            clipped_brightness = (clipped_brightness / 903.3)
+          else:
+            clipped_brightness = ((clipped_brightness + 16) / 116) ** 3
 
-    #     // Scale back to 0% to 100%
-    #     clipped_brightness = std::clamp(100.0f * clipped_brightness, 0.0f, 100.0f);
+          # Scale back to 0% to 100%
+          clipped_brightness = max(0.0, min(100.0, 100.0 * clipped_brightness))
 
-    #     if(clipped_brightness0 != clipped_brightness){
-    #       clipped_brightness0 = clipped_brightness;
-    #       setButtonInt("/dev/shm/night_time_info.txt" , (int)clipped_brightness);
+          if self.clipped_brightness0 != clipped_brightness:
+            self.clipped_brightness0 = clipped_brightness
+            with open('/dev/shm/night_time_info.txt','w') as fp:
+              fp.write("%d" % int(clipped_brightness))
 
-    #       g_night_mode = clipped_brightness0 < (g_night_mode == 1 ? 90 : 75); //ばたつかないようにする。80程度でかなり夕方。
-    #     }
-    #   }
-    # }
+            global g_night_mode
+            g_night_mode = self.clipped_brightness0 < (90 if g_night_mode == 1 else 75) #ばたつかないようにする。80程度でかなり夕方。
+
 
   def _press_accel_engaged(self):
     accel_engaged = 0
