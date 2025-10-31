@@ -313,60 +313,58 @@ class HudRenderer(Widget):
     speed_text_size = measure_text_cached(self._font_bold, speed_text, FONT_SIZES.current_speed)
     speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2 + y_ofs)
 
-  # QColor speed_waku;
-  # if(red_signal_scan_flag >= 1/*== 1*/){
-  #   if(speed > 45 && clipped_brightness0 >= 90 //昼は45超を信頼度低いとする。
-  #     || speed > 65 && clipped_brightness0 < 90){ //夜は65超を信頼度低いとする。
-  #     speed_waku = QColor(171, 171, 0 , 255);
-  #   } else {
-  #     speed_waku = QColor(0xff, 0, 0 , 255);
-  #   }
-  # // } else if(red_signal_scan_flag >= 2){
-  # //   speed_waku = QColor(0xff, 0xff, 0 , 255);
-  # } else {
-  #   speed_waku = bg_colors[status];
-  # }
-  # // current speed
-  # p.setFont(InterFont(176, QFont::Bold));
-  # UIState *s = uiState();
-  # double velo_for_trans = (*s->sm)["carState"].getCarState().getVEgo() * 3.6; //km/h
-  # const double velo_for_trans_limit = 0.05; //0.05km/h以下では速度を半透明にする。
-  # if(velo_for_trans >= velo_for_trans_limit){
-  #   drawText(p, surface_rect.center().x()-7, 210+y_ofs-5, speedStr,speed_waku);
-  #   drawText(p, surface_rect.center().x()+7, 210+y_ofs-5, speedStr,speed_waku);
-  #   drawText(p, surface_rect.center().x(), -7+210+y_ofs-5, speedStr,speed_waku);
-  #   drawText(p, surface_rect.center().x(), +7+210+y_ofs-5, speedStr,speed_waku);
-  # }
+    speed_waku = self.status_col
+    if self.red_signal_scan_flag >= 1: #== 1
+      if (self.speed > 45 and self.clipped_brightness0 >= 90 #昼は45超を信頼度低いとする。
+          or self.speed > 65 and self.clipped_brightness0 < 90): #夜は65超を信頼度低いとする。
+        speed_waku = rl.Color(171, 171, 0 , 255)
+      else:
+        speed_waku = rl.Color(0xff, 0, 0 , 255)
+      # elif self.red_signal_scan_flag >= 2:
+      #   speed_waku = rl.Color(0xff, 0xff, 0 , 255)
+    else:
+      speed_waku = self.status_col
 
-  # QColor speed_num;
-  # static bool red_signal_scan_flag_2 = false;
-  # if(red_signal_scan_flag >= 2 && red_signal_scan_flag_txt_ct %6 < 3){
-  #   speed_num = QColor(0xff, 100, 100 , 255); //赤信号認識中は点滅。
-  #   if(red_signal_scan_flag_2 == false && setSpeedStr != "1"){
-  #     red_signal_scan_flag_2 = true;
-  #     if(red_signal_scan_flag == 2){
-  #       soundButton2(1); //pikiriオンを信号認識開始に転用。
-  #     }
-  #   }
-  # } else {
-  #   speed_num = QColor(0xff, 0xff, 0xff , 255);
-  #   if(red_signal_scan_flag < 2 && this->speed > 24){
-  #     red_signal_scan_flag_2 = false; //ある程度スピードが上がらないと、このフラグも戻さない。
-  #   }
-  #   if(velo_for_trans < velo_for_trans_limit){
-  #     speed_num = QColor(0xff, 0xff, 0xff , 70);
-  #   }
-  # }
+    # // current speed
+    velo_for_trans = self.speed #km/h
+    velo_for_trans_limit = 0.05 #0.05km/h以下では速度を半透明にする。
+    if velo_for_trans >= velo_for_trans_limit:
+      speed_pos_1 = rl.Vector2(speed_pos.x-7,speed_pos.y)
+      rl.draw_text_ex(self._font_bold, speed_text, speed_pos_1, FONT_SIZES.current_speed, 0, speed_waku)
+      speed_pos_1 = rl.Vector2(speed_pos.x+7,speed_pos.y)
+      rl.draw_text_ex(self._font_bold, speed_text, speed_pos_1, FONT_SIZES.current_speed, 0, speed_waku)
+      speed_pos_1 = rl.Vector2(speed_pos.x,speed_pos.y-7)
+      rl.draw_text_ex(self._font_bold, speed_text, speed_pos_1, FONT_SIZES.current_speed, 0, speed_waku)
+      speed_pos_1 = rl.Vector2(speed_pos.x,speed_pos.y+7)
+      rl.draw_text_ex(self._font_bold, speed_text, speed_pos_1, FONT_SIZES.current_speed, 0, speed_waku)
 
-    speed_text = str(round(self.speed))
-    speed_text_size = measure_text_cached(self._font_bold, speed_text, FONT_SIZES.current_speed)
-    speed_pos = rl.Vector2(rect.x + rect.width / 2 - speed_text_size.x / 2, 180 - speed_text_size.y / 2 + y_ofs)
-    rl.draw_text_ex(self._font_bold, speed_text, speed_pos, FONT_SIZES.current_speed, 0, COLORS.white)
+    speed_num_color = COLORS.white
+    if self.red_signal_scan_flag >= 2 and self.red_signal_scan_flag_txt_ct %6 < 3:
+      speed_num_color = rl.Color(0xff, 100, 100 , 255) #赤信号認識中は点滅。
+      if self.red_signal_scan_flag_2 == False and str(round(self.set_speed)) != "1":
+        self.red_signal_scan_flag_2 = True
+        if self.red_signal_scan_flag == 2:
+          # soundButton2(1); //pikiriオンを信号認識開始に転用。
+          with open('/dev/shm/sound_py_request.txt','w') as fp2:
+            fp2.write('%d' % (103)) #pikiri.wav
+    else:
+      speed_num_color = rl.Color(0xff, 0xff, 0xff , 255)
+      if self.red_signal_scan_flag < 2 and self.speed > 24:
+        self.red_signal_scan_flag_2 = False #ある程度スピードが上がらないと、このフラグも戻さない。
+      if velo_for_trans < velo_for_trans_limit:
+        speed_num_color = rl.Color(0xff, 0xff, 0xff , 70)
+
+    rl.draw_text_ex(self._font_bold, speed_text, speed_pos, FONT_SIZES.current_speed, 0, speed_num_color)
 
     unit_text = tr("km/h") if ui_state.is_metric else tr("mph")
     unit_text_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
-    rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
+    longitudinal_control = ui_state.sm["carParams"].openpilotLongitudinalControl
+    if longitudinal_control:
+      rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, speed_num_color if velo_for_trans < velo_for_trans_limit else COLORS.white_translucent)
+    else:
+      COLOR_STATUS_WARNING = rl.Color(0xDA, 0x6F, 0x25, 0xf1)
+      rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLOR_STATUS_WARNING)
 
     if self.is_cruise_set:
       ACC_font_size = 40
@@ -378,7 +376,7 @@ class HudRenderer(Widget):
       else: #100km/h以上なら幅を広げる。
         add = 10
         ACC_rect = rl.Rectangle(ACC_font_x-ACC_font_size_for_rect/2-add,ACC_font_y-ACC_font_size_for_rect/2-2,ACC_font_size_for_rect+add*2,ACC_font_size_for_rect-4)
-      rl.draw_rectangle_rounded(ACC_rect, 0.45, 10, rl.Color(240, 240, 240,230))
+      rl.draw_rectangle_rounded(ACC_rect, 0.45, 10, speed_num_color if velo_for_trans < velo_for_trans_limit else rl.Color(240, 240, 240,230))
       self._drawText(font=self._font_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y+ACC_font_size/2 +1,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
       # drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
 
@@ -434,6 +432,8 @@ class HudRenderer(Widget):
     self.red_signal_scan_flag_txt_ct = 0
     self.night_mode_ct = 0
     self.accel_engaged = 0
+    self.status_col = COLORS.white
+    self.red_signal_scan_flag_2 = False
 
     self.tss_type = 0
     self.phv_2019 = False
@@ -596,13 +596,7 @@ class HudRenderer(Widget):
     )
 
     temp_rc = rl.Rectangle(rect.x+65-27, rect.y+110+6, 233+27*2-5, 54)
-    status_col = COLORS.white
-    if ui_state.status == UIStatus.ENGAGED:
-      status_col = rl.Color(0x16, 0x7F, 0x40, 0xFF)
-    elif ui_state.status == UIStatus.DISENGAGED:
-      status_col = rl.Color(0x12, 0x28, 0x39, 0xFF)
-    elif ui_state.status == UIStatus.OVERRIDE:
-      status_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
+    status_col = self.status_col
 
     if self.temperature < th_tmp1: #警告色の変化はサイドバーと違う。もっと早く警告される。
       temp_col = status_col
@@ -757,6 +751,15 @@ class HudRenderer(Widget):
         pass #TSS2
       elif self.tss_type == 1:
         self.phv_2019 = Params().get_bool("DisableMaxSpeedModify")
+
+    if ui_state.status == UIStatus.ENGAGED:
+      self.status_col = rl.Color(0x16, 0x7F, 0x40, 0xFF)
+    elif ui_state.status == UIStatus.DISENGAGED:
+      self.status_col = rl.Color(0x12, 0x28, 0x39, 0xFF)
+    elif ui_state.status == UIStatus.OVERRIDE:
+      self.status_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
+    else:
+      self.status_col = COLORS.white
 
     self.ip_update_state_ct += 1
     cur_draw_t = time.monotonic_ns() / 1_000_000  # ナノ秒→ミリ秒 #millis_since_boot();
