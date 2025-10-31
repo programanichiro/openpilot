@@ -377,51 +377,21 @@ class HudRenderer(Widget):
       # drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
 
   def _ip_button_init(self):
-    try:
-      with open('/data/accel_engaged.txt', 'rb') as src, open('/dev/shm/accel_engaged.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/dexp_sw_mode.txt', 'rb') as src, open('/dev/shm/dexp_sw_mode.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/long_speeddown_disable.txt', 'rb') as src, open('/dev/shm/long_speeddown_disable.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/lta_enable_sw.txt', 'rb') as src, open('/dev/shm/lta_enable_sw.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/start_accel_power_up_disp_enable.txt', 'rb') as src, open('/dev/shm/start_accel_power_up_disp_enable.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/accel_ctrl_disable.txt', 'rb') as src, open('/dev/shm/accel_ctrl_disable.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/decel_ctrl_disable.txt', 'rb') as src, open('/dev/shm/decel_ctrl_disable.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/knight_scanner_bit3.txt', 'rb') as src, open('/dev/shm/knight_scanner_bit3.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
-    try:
-      with open('/data/limitspeed_sw.txt', 'rb') as src, open('/dev/shm/limitspeed_sw.txt', 'wb') as dst:
-        dst.write(src.read())
-    except Exception as e:
-      pass
+    def copy_data2devshm(file_name):
+      try:
+        with open('/data/'+file_name, 'rb') as src, open('/dev/shm/'+file_name, 'wb') as dst:
+          dst.write(src.read())
+      except Exception as e:
+        pass
+    copy_data2devshm('accel_engaged.txt')
+    copy_data2devshm('dexp_sw_mode.txt')
+    copy_data2devshm('long_speeddown_disable.txt')
+    copy_data2devshm('lta_enable_sw.txt')
+    copy_data2devshm('start_accel_power_up_disp_enable.txt')
+    copy_data2devshm('accel_ctrl_disable.txt')
+    copy_data2devshm('decel_ctrl_disable.txt')
+    copy_data2devshm('knight_scanner_bit3.txt')
+    copy_data2devshm('limitspeed_sw.txt')
 
     self.clipped_brightness0 = 101
     self.red_signal_scan_flag = 0
@@ -524,7 +494,7 @@ class HudRenderer(Widget):
     font_sz = 10 #ACC速度にかぶせる透明ボタン
     self._set_speed_MAX_button = Button("",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=font_wt, border_radius=0.35*200/2)
     self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
-    self._press_set_speed_MAX()
+    self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
     self.button_style_only = False
 
 
@@ -1025,8 +995,6 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
-    self.accel_engaged = accel_engaged
-
     if self.button_style_only == False:
       accel_engaged = (accel_engaged + 1) % 5
     if accel_engaged == 0:
@@ -1041,6 +1009,7 @@ class HudRenderer(Widget):
     elif accel_engaged == 4:
       self._accel_engaged_button.set_text("eP")
 
+    self.accel_engaged = accel_engaged
     if accel_engaged != 0:
       self._accel_engaged_button.set_button_style(ButtonStyle.HudSOn)
 
@@ -1343,14 +1312,7 @@ class HudRenderer(Widget):
     sm = ui_state.sm
     cs = sm["selfdriveState"]
 
-    accel_engaged = 0
-    try:
-      with open('/dev/shm/accel_engaged.txt','r') as fp:
-        accel_engaged_str = fp.read()
-        if accel_engaged_str:
-          accel_engaged = int(accel_engaged_str)
-    except Exception as e:
-      pass
+    accel_engaged = self.accel_engaged
 
     if accel_engaged >= 3 and cs.enabled: #ワンペダルのみ
       if int(self.set_speed) != 1: #MAXが1ではない時
