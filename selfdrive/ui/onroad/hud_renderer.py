@@ -284,8 +284,8 @@ class HudRenderer(Widget):
       try:
         red_signal_eP_iP_set = False
         with open('/dev/shm/red_signal_eP_iP_set.txt','r') as fp:
-          red_signal_eP_iP_set = fp.read()
-          if red_signal_eP_iP_set and int(red_signal_eP_iP_set) == 1:
+          red_signal_eP_iP_set_txt = fp.read()
+          if red_signal_eP_iP_set_txt and int(red_signal_eP_iP_set_txt) == 1:
             red_signal_eP_iP_set = True
         if red_signal_eP_iP_set == False:
           set_speed_text = "8"
@@ -947,7 +947,6 @@ class HudRenderer(Widget):
         if acc_speed > 0 and (acc_speed < (31 if self.tss_type <= 1 else 26.0)) or (acc_speed > 109.0 and self.phv_2019 == False and self.tss_type <= 1):
           self.a0 = 200
 
-      # self.accel_engaged == mAccelEngagedButton
       if self.red_signal_scan_flag_txt_ct % 7 == 0:
         try:
           with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
