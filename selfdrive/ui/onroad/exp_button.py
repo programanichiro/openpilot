@@ -139,38 +139,24 @@ class ExpButton(Widget):
     import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     rl.draw_texture_pro(texture, src_rect, dest_rect, origin, -hud.global_angle_steer00, self._white_color)
 
-    x_Long_enable = center_x
-    y_Long_enable = center_y
     Long_enable = True
     if hud.long_speeddown_disable00 != 0: #hud.long_speeddown_disable00 #long_speeddown_disable.txtを開かなくても、long_speeddown_disable.txtを使う。
       Long_enable = False
 
+    arc_color = rl.Color(255, 255, 0 if self._experimental_mode else 255, 180)
     long_base_angle0 = 45 #下中央から左右に何度か指定する。
+    arc_center = rl.Vector2(center_x,center_y)
+    arc_r = self._rect.width / 2
     if self._engageable: #ui_state.status != UIStatus.DISENGAGED:
       arc_w = -8 #内側に描画
-      arc_color = rl.Color(255, 255, 0 if self._experimental_mode else 255, 180)
-      x = x_Long_enable
-      y = y_Long_enable
-
       long_base_angle = long_base_angle0 #下中央から左右に何度か指定する。
-  #   p.drawArc(x - btn_size / 2 -arc_w/2, y - btn_size / 2 -arc_w/2, btn_size+arc_w, btn_size+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
-      arc_center = rl.Vector2(x,y)
-      arc_r = self._rect.width / 2
-      rl.draw_ring(arc_center,float(arc_r+arc_w),float(arc_r),float(90+long_base_angle), float(90+(360-long_base_angle*2)*self.desired_path_x_rate),120,arc_color)
+      rl.draw_ring(arc_center,float(arc_r+arc_w),float(arc_r),float(90+long_base_angle), float(90+long_base_angle+(360-long_base_angle*2)*self.desired_path_x_rate),90,arc_color)
 
-  # }
-
-  # if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが) , Experimental Modeでは表示しない。
-  #   const float x = x_Long_enable;
-  #   const float y = y_Long_enable;
-  #   const int long_base_angle = long_base_angle0-3; //下中央から左右に何度か指定する。
-  #   //ONOFFの状態をこれで視認できる。
-  #   const int arc_w_base = -14; //内側に描画
-  #   QPen pen = QPen(QColor(255, 255, ((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w_base));
-  #   pen.setCapStyle(Qt::FlatCap); //端をフラットに
-  #   p.setPen(pen);
-  #   p.drawArc(x - btn_size / 2 -arc_w_base/2, y - btn_size / 2 -arc_w_base/2, btn_size+arc_w_base, btn_size+arc_w_base, (-90-(long_base_angle))*16, ((long_base_angle)*2)*16);
-  # }
+    if Long_enable: #エンゲージしてなくても表示する。
+      # ONOFFの状態をこれで視認できる。
+      arc_w_base = -14; #内側に描画
+      long_base_angle = long_base_angle0-3; #下中央から左右に何度か指定する。
+      rl.draw_ring(arc_center,float(arc_r+arc_w_base),float(arc_r),float(90-long_base_angle), float(90+long_base_angle),30,arc_color)
 
 
   def _held_or_actual_mode(self):
