@@ -1,7 +1,7 @@
 import time
 import pyray as rl
 from openpilot.common.params import Params
-from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import Widget
 
@@ -17,6 +17,8 @@ class ExpButton(Widget):
     self.steer_always = False
     self.cruise_available = False
     self._press_time_ms = 0
+    self.desired_path_x_rate = 0
+    self.desired_path_x_rate0 = 0
 
     # State hold mechanism
     self._hold_duration = 2.0  # seconds
@@ -56,6 +58,37 @@ class ExpButton(Widget):
             self.cruise_available = False
       except Exception as e:
         pass
+
+    if self._engageable: #ui_state.status != UIStatus.DISENGAGED:
+      if True: #(true /*|| desired_path_x_rate_ct ++ % 2 == 0*/){
+        try:
+          with open('/dev/shm/desired_path_x_rate.txt','r') as fp:
+            desired_path_x_rate_txt = fp.read()
+            if desired_path_x_rate_txt:
+              self.desired_path_x_rate0 = float(desired_path_x_rate_txt)
+              if self.desired_path_x_rate0 < 0:
+                self.desired_path_x_rate0 = 0 #なんか逆に動く場合がある？
+              if self.desired_path_x_rate0 > 1.0:
+                self.desired_path_x_rate0 = 1.0
+        except Exception as e:
+          pass
+
+      max_diff = abs(self.desired_path_x_rate0-self.desired_path_x_rate) / 10 # = 0.1; //これ以上一気にメーターが疎かない。可変式
+      if max_diff < 0.02:
+        max_diff = 0.02
+      elif max_diff > 0.05:
+        max_diff = 0.05
+
+      if self.desired_path_x_rate0 > self.desired_path_x_rate:
+        if self.desired_path_x_rate0 > self.desired_path_x_rate + max_diff:
+          self.desired_path_x_rate += max_diff
+        else:
+          self.desired_path_x_rate = self.desired_path_x_rate0
+      elif self.desired_path_x_rate0 < self.desired_path_x_rate:
+        if self.desired_path_x_rate0 < self.desired_path_x_rate - max_diff:
+          self.desired_path_x_rate -= max_diff
+        else:
+          self.desired_path_x_rate = self.desired_path_x_rate0
 
   def _handle_mouse_release(self, _):
     super()._handle_mouse_release(_)
@@ -106,57 +139,27 @@ class ExpButton(Widget):
     import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     rl.draw_texture_pro(texture, src_rect, dest_rect, origin, -hud.global_angle_steer00, self._white_color)
 
-    #＝＞　hud.long_speeddown_disable00 #long_speeddown_disable.txtを開かなくても、long_speeddown_disable.txtを使う。
+    x_Long_enable = center_x
+    y_Long_enable = center_y
+    Long_enable = True
+    if hud.long_speeddown_disable00 != 0: #hud.long_speeddown_disable00 #long_speeddown_disable.txtを開かなくても、long_speeddown_disable.txtを使う。
+      Long_enable = False
 
-  # const float x_Long_enable = surface_rect.right() - btn_size / 2 - UI_BORDER_SIZE * 2;
-  # const float y_Long_enable = btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs;
-  # std::string long_speeddown_disable_txt = util::read_file("/dev/shm/long_speeddown_disable.txt");
-  # Long_enable = true;　＝＞　hud.long_speeddown_disable00
-  # if(long_speeddown_disable_txt.empty() == false){
-  #   if(std::stoi(long_speeddown_disable_txt) != 0){
-  #     Long_enable = false;
-  #   }
-  # }
-  # int long_base_angle0 = 45; //下中央から左右に何度か指定する。
-  # if(/*(Long_enable || (*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) && とにかく表示する*/ global_engageable){
-  #   const int arc_w = -8; //内側に描画
-  #   QPen pen = QPen(QColor(255, 255, ((*s->sm)["selfdriveState"].getSelfdriveState().getExperimentalMode()) ? 0 : 255, 180), abs(arc_w));
-  #   pen.setCapStyle(Qt::FlatCap); //端をフラットに
-  #   p.setPen(pen);
-  #   const float x = x_Long_enable;
-  #   const float y = y_Long_enable;
-  #   static float desired_path_x_rate = 0 , desired_path_x_rate0 = 0;
-  #   //static unsigned int desired_path_x_rate_ct = 0;
-  #   if(true /*|| desired_path_x_rate_ct ++ % 2 == 0*/){
-  #     std::string desired_path_x_rate_txt = util::read_file("/dev/shm/desired_path_x_rate.txt");
-  #     if(desired_path_x_rate_txt.empty() == false){
-  #       desired_path_x_rate0 = std::stof(desired_path_x_rate_txt);
-  #       if(desired_path_x_rate0 < 0.0f){
-  #         desired_path_x_rate0 = 0.0f; //なんか逆に動く場合がある？
-  #       }
-  #       if(desired_path_x_rate0 > 1.0f){
-  #         desired_path_x_rate0 = 1.0f;
-  #       }
-  #     }
-  #   }
-  #   float max_diff = fabs(desired_path_x_rate0-desired_path_x_rate) / 10; // = 0.1; //これ以上一気にメーターが疎かない。可変式
-  #   if(max_diff < 0.02)max_diff = 0.02; else if(max_diff > 0.05)max_diff = 0.05;
-  #   if(desired_path_x_rate0 > desired_path_x_rate){
-  #     if(desired_path_x_rate0 > desired_path_x_rate + max_diff){
-  #       desired_path_x_rate += max_diff;
-  #     } else {
-  #       desired_path_x_rate = desired_path_x_rate0;
-  #     }
-  #   } else if(desired_path_x_rate0 < desired_path_x_rate){
-  #     if(desired_path_x_rate0 < desired_path_x_rate - max_diff){
-  #       desired_path_x_rate -= max_diff;
-  #     } else {
-  #       desired_path_x_rate = desired_path_x_rate0;
-  #     }
-  #   }
-  #   int long_base_angle = long_base_angle0; //下中央から左右に何度か指定する。
+    long_base_angle0 = 45 #下中央から左右に何度か指定する。
+    if self._engageable: #ui_state.status != UIStatus.DISENGAGED:
+      arc_w = -8 #内側に描画
+      arc_color = rl.Color(255, 255, 0 if self._experimental_mode else 255, 180)
+      x = x_Long_enable
+      y = y_Long_enable
+
+      long_base_angle = long_base_angle0 #下中央から左右に何度か指定する。
   #   p.drawArc(x - btn_size / 2 -arc_w/2, y - btn_size / 2 -arc_w/2, btn_size+arc_w, btn_size+arc_w, (-90-long_base_angle)*16, -(360-long_base_angle*2)*16*desired_path_x_rate);
+      arc_center = rl.Vector2(x,y)
+      arc_r = self._rect.width / 2
+      rl.draw_ring(arc_center,float(arc_r+arc_w),float(arc_r),float(90+long_base_angle), float(90+(360-long_base_angle*2)*self.desired_path_x_rate),120,arc_color)
+
   # }
+
   # if(Long_enable){ //エンゲージしてなくても表示する。完全になくなると操作の目標を失うため。(OFFで消えたら仕方がないが) , Experimental Modeでは表示しない。
   #   const float x = x_Long_enable;
   #   const float y = y_Long_enable;
