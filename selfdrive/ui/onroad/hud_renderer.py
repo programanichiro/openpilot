@@ -686,7 +686,7 @@ class HudRenderer(Widget):
 
     if self.tss_type <= 1:
       next_x = self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" TSSP", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, blu=label_grn, grn=label_blu) #47060車はTSSP部分が黄色くなる。
-      self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=60 , text="for toyota", slpha=self.logo_trs, brakeLight=self.brake_light)
+      self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=60 , text="for toyota", alpha=self.logo_trs, brakeLight=self.brake_light)
     else:
       self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, blu=label_grn, grn=label_blu)
 
