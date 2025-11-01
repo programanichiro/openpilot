@@ -387,7 +387,6 @@ class HudRenderer(Widget):
     copy_data2devshm('limitspeed_sw.txt')
 
     self.logo_trs = 150
-    self.tssp_47700_flag = ((ui_state.sm["carParams"].flags & 8192) != 0)
 
     self.clipped_brightness0 = 101
     self.red_signal_scan_flag = 0
@@ -677,7 +676,8 @@ class HudRenderer(Widget):
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*2,text="speed limit auto detect",alpha=self.a2,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*3,text="auto brake holding",alpha=self.a3,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
 
-    tssp_47700 = (self.tssp_47700_flag and self.brake_light == False)
+    tssp_47700_flag = ((ui_state.sm["carParams"].flags & 8192) != 0)
+    tssp_47700 = (tssp_47700_flag and self.brake_light == False)
     label_red = 255
     label_grn = 255
     label_blu = 255
