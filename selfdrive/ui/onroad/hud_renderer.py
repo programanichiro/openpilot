@@ -387,7 +387,7 @@ class HudRenderer(Widget):
     copy_data2devshm('limitspeed_sw.txt')
 
     self.logo_trs = 150
-    self.tssp_47700_flag = ((ui_state.sm["carParams"].getFlags() & 8192) != 0)
+    self.tssp_47700_flag = ((ui_state.sm["carParams"].flags & 8192) != 0)
 
     self.clipped_brightness0 = 101
     self.red_signal_scan_flag = 0
