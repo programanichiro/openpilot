@@ -375,7 +375,7 @@ class HudRenderer(Widget):
       # rl.draw_rectangle_rounded(ACC_rect, 0.45, 10, speed_num_color if velo_for_trans < velo_for_trans_limit else rl.Color(240, 240, 240,230))
       # self._drawText(font=self._font_bold,font_size=ACC_font_size,x=ACC_font_x,y=ACC_font_y+ACC_font_size/2 +1,text=str(self.ACC_speed),alpha=-1,color_ex=rl.Color(0x24, 0x57, 0xa1,200)) #x,yを下段中心にtextを表示する
       # # drawTextCenter(p, surface_rect.center().x() + w/2 + 43, 290 + y_ofs-35 , QString::number(ACC_speed) , velo_for_trans < velo_for_trans_limit ? 100 : 235 , false , 0x24, 0x57, 0xa1 , 240, 240, 240, velo_for_trans < velo_for_trans_limit ? 70 : 230 , 9 , 15 , 18 , 2);
-      self._drawTextCenter(self._font_bold , ACC_font_size , ACC_font_x, ACC_font_y, str(self.ACC_speed) , 100 if velo_for_trans < velo_for_trans_limit else 235 , False , 0x24, 0x57, 0xa1 , 240, 240, 240, 70 if velo_for_trans < velo_for_trans_limit else 230 , 9 , 0.4 , bk_add_w=18 , bk_xofs=2)
+      self._drawTextCenter(self._font_bold , ACC_font_size , ACC_font_x, ACC_font_y+ACC_font_size/2, str(self.ACC_speed) , 100 if velo_for_trans < velo_for_trans_limit else 235 , False , 0x24, 0x57, 0xa1 , 240, 240, 240, 70 if velo_for_trans < velo_for_trans_limit else 230 , bk_yofs=0, bk_corner_r=0.4 , bk_add_w=10 , bk_xofs=-5, bk_add_h=0)
 
   def _ip_button_init(self):
     def copy_data2devshm(file_name):
