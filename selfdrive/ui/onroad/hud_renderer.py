@@ -386,6 +386,9 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
 
+    self.logo_trs = 150
+    self.tssp_47700_flag = ((ui_state.sm["carParams"].getFlags() & 8192) != 0)
+
     self.clipped_brightness0 = 101
     self.red_signal_scan_flag = 0
     self.red_signal_scan_flag_txt_ct = 0
@@ -674,6 +677,23 @@ class HudRenderer(Widget):
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*2,text="speed limit auto detect",alpha=self.a2,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
     self._drawText(font=self._font_bold,font_size=top_label_size,x=top_label_center_x,y=top_label_top_y + 40*3,text="auto brake holding",alpha=self.a3,brakeLight=self.brake_light) #x,yを下段中心にtextを表示する
 
+    tssp_47700 = (self.tssp_47700_flag and self.brake_light == False)
+    label_red = 255
+    label_grn = 255
+    label_blu = 255
+    if tssp_47700:
+      label_blu = 0
+
+    if self.tss_type <= 1:
+      next_x = self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" TSSP", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, blu=label_grn, grn=label_blu) #47060車はTSSP部分が黄色くなる。
+      self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=60 , text="for toyota", slpha=self.logo_trs, brakeLight=self.brake_light)
+    else:
+      self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, blu=label_grn, grn=label_blu)
+
+    # if((float)rect_w / rect_h > 1.5f){
+    #   p.setFont(InterFont(44, QFont::DemiBold));
+    #   drawText(p, surface_rect.left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
+
   def _ip_update_state(self,sm):
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
@@ -742,13 +762,14 @@ class HudRenderer(Widget):
 
     self.brake_light = False
     all_brake_light = False
+    self.logo_trs = 150
     try:
       with open('/dev/shm/brake_light_state.txt','r') as fp3:
         brake_light_state = fp3.read()
         if brake_light_state and int(brake_light_state) != 0:
           if ui_state.status != UIStatus.DISENGAGED:
             self.brake_light = True
-            # logo_trs = 80; //drawText内部で100足される。
+            self.logo_trs = 80 #drawText内部で100足される。
           all_brake_light = True #ちらはエンゲージしていなくてもセットされる。
     except Exception as e:
       pass
@@ -1350,17 +1371,17 @@ class HudRenderer(Widget):
     )
     return text_size.x #続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
 
-  def _drawTextLeft(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, blu=255, grn=255 , bk_red=0, bk_blu=0, bk_grn=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+  def _drawTextLeft(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
 
     if bk_alp > 0:
       #//バックを塗る。
-      bk_color = rl.Color(int(bk_red), int(bk_blu), int(bk_grn), int(bk_alp))
+      bk_color = rl.Color(int(bk_red), int(bk_grn), int(bk_blu), int(bk_alp))
       rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
       rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
 
     if brakeLight == False:
-      pen_color = rl.Color(int(red), int(blu), int(grn), int(alpha))
+      pen_color = rl.Color(int(red), int(grn), int(blu), int(alpha))
     else:
       alpha += 100
       if alpha > 255:
@@ -1378,18 +1399,18 @@ class HudRenderer(Widget):
 
     return x + text_size.x #続けて並べるxposを返す。
 
-  def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, blu=255, grn=255 , bk_red=0, bk_blu=0, bk_grn=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+  def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
     x -= text_size.x #右寄せ
 
     if bk_alp > 0:
       #//バックを塗る。
-      bk_color = rl.Color(int(bk_red), int(bk_blu), int(bk_grn), int(bk_alp))
+      bk_color = rl.Color(int(bk_red), int(bk_grn), int(bk_blu), int(bk_alp))
       rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
       rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
 
     if brakeLight == False:
-      pen_color = rl.Color(int(red), int(blu), int(grn), int(alpha))
+      pen_color = rl.Color(int(red), int(grn), int(blu), int(alpha))
     else:
       alpha += 100
       if alpha > 255:
@@ -1407,18 +1428,18 @@ class HudRenderer(Widget):
 
     return x - text_size.x #続けて並べるxposを返す。
 
-  def _drawTextCenter(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, blu=255, grn=255 , bk_red=0, bk_blu=0, bk_grn=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+  def _drawTextCenter(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255 , blu=255, bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
     x -= text_size.x /2 #中央寄せ
 
     if bk_alp > 0:
       #//バックを塗る。
-      bk_color = rl.Color(int(bk_red), int(bk_blu), int(bk_grn), int(bk_alp))
+      bk_color = rl.Color(int(bk_red), int(bk_grn), int(bk_blu), int(bk_alp))
       rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
       rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
 
     if brakeLight == False:
-      pen_color = rl.Color(int(red), int(blu), int(grn), int(alpha))
+      pen_color = rl.Color(int(red), int(grn), int(blu), int(alpha))
     else:
       alpha += 100
       if alpha > 255:
