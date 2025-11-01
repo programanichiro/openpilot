@@ -685,10 +685,12 @@ class HudRenderer(Widget):
       label_blu = 0
 
     if self.tss_type <= 1:
-      next_x = self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" TSSP", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu) #47060車はTSSP部分が黄色くなる。
-      self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=rect.y+60 , text="for toyota", alpha=self.logo_trs, brakeLight=self.brake_light)
+      next_x = self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+65 , text=" TSSP", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu) #47060車はTSSP部分が黄色くなる。
+      self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=rect.y+65 , text="for toyota", alpha=self.logo_trs, brakeLight=self.brake_light)
     else:
-      self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu)
+      self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+65 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu)
+
+    self._drawTextLeft(font=self._font_bold,font_size=55, x=rect.x+20, y=rect.y+65 , text="ICHIRO PILOT", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu)
 
     # if((float)rect_w / rect_h > 1.5f){
     #   p.setFont(InterFont(44, QFont::DemiBold));
