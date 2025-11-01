@@ -686,7 +686,7 @@ class HudRenderer(Widget):
 
     if self.tss_type <= 1:
       next_x = self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" TSSP", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, blu=label_grn, grn=label_blu) #47060車はTSSP部分が黄色くなる。
-      self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=60 , text="for toyota", alpha=self.logo_trs, brakeLight=self.brake_light)
+      self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=rect.y+60 , text="for toyota", alpha=self.logo_trs, brakeLight=self.brake_light)
     else:
       self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+60 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, blu=label_grn, grn=label_blu)
 
@@ -1426,7 +1426,7 @@ class HudRenderer(Widget):
       pen_color,
     )
 
-    return x - text_size.x #続けて並べるxposを返す。
+    return x #続けて並べるxposを返す。
 
   def _drawTextCenter(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255 , blu=255, bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
