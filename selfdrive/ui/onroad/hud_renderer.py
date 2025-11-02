@@ -716,7 +716,7 @@ class HudRenderer(Widget):
         #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
         if self.kmh != "0":
           next_x = self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
-          self._drawTextRight(self._font_bold, font_size, next_x-4, rect.y+rect.height - 10 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0)
+          self._drawTextRight(self._font_bold, font_size, next_x-4, rect.y+rect.height - 10 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
         else:
           if self.road_name != "---":
             self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
@@ -1046,9 +1046,9 @@ class HudRenderer(Widget):
       if len(road_info_data) >=4:
         road_th_ct = int(road_info_data[0])
         if road_th_ct == self.before_road_th_ct:
-          road_th_ct_ct += 1 #road_th_ctが変化しなければカウントアップし続ける
+          self.road_th_ct_ct += 1 #road_th_ctが変化しなければカウントアップし続ける
         else:
-          road_th_ct_ct = 0 #30秒以上ゼロに戻らなければ、road_info_txt_flag = falseにして、道路名は出さない。
+          self.road_th_ct_ct = 0 #30秒以上ゼロに戻らなければ、road_info_txt_flag = falseにして、道路名は出さない。
         self.before_road_th_ct = road_th_ct
 
         self.kmh = road_info_data[1]
