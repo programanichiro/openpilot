@@ -715,19 +715,19 @@ class HudRenderer(Widget):
         #デバッグ用road_name = self.road_name + "&" + road_bear
         #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
         if self.kmh != "0":
-          next_x = self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height , self.road_name, 220)
-          self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height , self.road_name, 220) #2重描き
+          next_x = self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height+1 , self.road_name, 220)
+          self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height+1 , self.road_name, 220) #2重描き
           self._drawTextRight(self._font_semi_bold, 33, next_x-4, rect.y+rect.height - 5 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
         else:
           if self.road_name != "---":
-            self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height , self.road_name, 220)
-            self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height , self.road_name, 220) #2重描き
+            self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height+1 , self.road_name, 220)
+            self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height+1 , self.road_name, 220) #2重描き
           else:
             self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
 
-    next_x = self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
-    self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
-    self._drawTextRight(self._font_semi_bold, 33, next_x-4, rect.y+rect.height - 5 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+    # next_x = self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
+    # self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
+    # self._drawTextRight(self._font_semi_bold, 33, next_x-4, rect.y+rect.height - 5 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
 
   def _ip_update_state(self,sm):
     try:
