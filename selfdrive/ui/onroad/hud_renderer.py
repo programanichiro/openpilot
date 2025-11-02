@@ -726,7 +726,7 @@ class HudRenderer(Widget):
 
     next_x = self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height - 2 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
     self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height - 2 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
-    self._drawTextRight(self._font_semi_bold, 33, next_x-4, rect.y+rect.height - 5 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+    self._drawTextRight(self._font_semi_bold, 33, next_x-4, rect.y+rect.height - 5 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
 
   def _ip_update_state(self,sm):
     try:
