@@ -699,9 +699,9 @@ class HudRenderer(Widget):
       next_x = self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+65 , text=" TSSP", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu) #47060車はTSSP部分が黄色くなる。
       self._drawTextRight(font=self._font_bold,font_size=55, x=next_x, y=rect.y+65 , text="for toyota", alpha=self.logo_trs, brakeLight=self.brake_light)
     else:
-      self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+65 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu)
+      self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+65 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light)
 
-    self._drawTextLeft(font=self._font_bold,font_size=50, x=rect.x+20, y=rect.y+60 , text="ICHIRO PILOT", alpha=self.logo_trs, brakeLight=self.brake_light)
+    self._drawTextLeft(font=self._font_bold,font_size=50, x=rect.x+20, y=rect.y+60 , text="ICHIRO Pilot", alpha=self.logo_trs, brakeLight=self.brake_light)
 
     if self.road_info_txt:
       road_th_ct_ct_limit = 30 #30秒無通信チェック。
