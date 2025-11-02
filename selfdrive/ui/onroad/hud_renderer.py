@@ -724,7 +724,8 @@ class HudRenderer(Widget):
           else:
             self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
 
-    self._drawTextRight(self._font_uni, 50 , rect.x+rect.width-10, rect.y+rect.height - 5 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
+    self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height - 5 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
+    self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height - 5 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
 
   def _ip_update_state(self,sm):
     try:
