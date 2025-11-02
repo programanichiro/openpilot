@@ -39,7 +39,7 @@ class LeadcarLockon:
   lxf: float = 0.0
   lockOK: float = 0.0
 
-LeadcarLockon_MAX = 3 //5
+LeadcarLockon_MAX = 3 #5
 leadcar_lockon = [LeadcarLockon() for _ in range(LeadcarLockon_MAX)]
 
 @dataclass
@@ -47,7 +47,7 @@ class LeadVertices:
   x: float = 0.0
   y: float = 0.0
 
-lead_vertices = [LeadVertices() for _ in range(3)]
+lead_vertices = [LeadVertices() for _ in range(LeadcarLockon_MAX)]
 
 @dataclass
 class ModelPoints:
@@ -189,7 +189,6 @@ class ModelRenderer(Widget):
         z = self._path.raw_points[idx, 2] if idx < len(self._path.raw_points) else 0.0
         point = self._map_to_screen(d_rel, -y_rel, z + self._path_offset_z)
         if point:
-          global lead_vertices
           lead_vertices[i].x = point[0]
           lead_vertices[i].y = point[1]
           self._lead_vehicles[i] = self._update_lead_vehicle(d_rel, v_rel, point, self._rect)
@@ -517,7 +516,6 @@ class ModelRenderer(Widget):
 
 
   def _drawLockon(self,lead_data,vd,num,rect):
-    global leadcar_lockon
     d_rel = lead_data.x[0]
     a_rel = lead_data.a[0]
     self.global_a_rel = a_rel
