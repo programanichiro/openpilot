@@ -706,21 +706,22 @@ class HudRenderer(Widget):
       road_th_ct_ct_limit = 30 #30秒無通信チェック。
       if self.speed < 0.1: #velo_for_trans = self.speed #km/h
         road_th_ct_ct_limit = 180 #停止時は3分まで伸ばす。
-    if self.road_name == False or (self.road_name == "--" and self.kmh == "0") or self.road_th_ct_ct > road_th_ct_ct_limit * 20:
-      self.road_info_txt_flag = False
-    else:
-      self.road_info_txt_flag = True
-      font_size = 33
-      #デバッグ用road_name = self.road_name + "&" + road_bear
-      #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
-      if self.kmh != "0":
-        next_x = self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
-        self._drawTextRight(self._font_bold, font_size, next_x-4, rect.y+rect.height - 10 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0)
+
+      if self.road_name == False or (self.road_name == "--" and self.kmh == "0") or self.road_th_ct_ct > road_th_ct_ct_limit * 20:
+        self.road_info_txt_flag = False
       else:
-        if self.road_name != "---":
-          self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
+        self.road_info_txt_flag = True
+        font_size = 33
+        #デバッグ用road_name = self.road_name + "&" + road_bear
+        #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
+        if self.kmh != "0":
+          next_x = self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
+          self._drawTextRight(self._font_bold, font_size, next_x-4, rect.y+rect.height - 10 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0)
         else:
-          self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
+          if self.road_name != "---":
+            self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
+          else:
+            self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
 
 
   def _ip_update_state(self,sm):
