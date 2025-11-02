@@ -83,6 +83,7 @@ class HudRenderer(Widget):
 
     self._font_semi_bold: rl.Font = gui_app.font(FontWeight.SEMI_BOLD)
     self._font_JP: rl.Font = gui_app.font("JP")
+    self._font_uni: rl.Font = gui_app.font(FontWeight.UNIFONT)
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self._font_medium: rl.Font = gui_app.font(FontWeight.MEDIUM)
 
@@ -700,7 +701,7 @@ class HudRenderer(Widget):
     else:
       self._drawTextRight(font=self._font_bold,font_size=55, x=rect.x+rect.width-20, y=rect.y+65 , text=" for toyota TSS2", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu)
 
-    self._drawTextLeft(font=self._font_bold,font_size=55, x=rect.x+20, y=rect.y+65 , text="ICHIRO PILOT", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu)
+    self._drawTextLeft(font=self._font_bold,font_size=50, x=rect.x+20, y=rect.y+60 , text="ICHIRO PILOT", alpha=self.logo_trs, brakeLight=self.brake_light)
 
     if self.road_info_txt:
       road_th_ct_ct_limit = 30 #30秒無通信チェック。
@@ -715,11 +716,11 @@ class HudRenderer(Widget):
         #デバッグ用road_name = self.road_name + "&" + road_bear
         #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
         if self.kmh != "0":
-          next_x = self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
-          self._drawTextRight(self._font_bold, font_size, next_x-4, rect.y+rect.height - 10 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+          next_x = self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 5 , self.road_name, 220)
+          self._drawTextRight(self._font_uni, font_size, next_x-4, rect.y+rect.height - 5 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
         else:
           if self.road_name != "---":
-            self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
+            self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-10, rect.y+rect.height - 5 , self.road_name, 220)
           else:
             self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
 
