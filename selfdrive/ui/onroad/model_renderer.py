@@ -31,16 +31,23 @@ NO_THROTTLE_COLORS = [
 
 @dataclass
 class LeadcarLockon:
-    x: float = 0.0
-    y: float = 0.0
-    d: float = 0.0
-    a: float = 0.0
-    lxt: float = 0.0
-    lxf: float = 0.0
-    lockOK: float = 0.0
+  x: float = 0.0
+  y: float = 0.0
+  d: float = 0.0
+  a: float = 0.0
+  lxt: float = 0.0
+  lxf: float = 0.0
+  lockOK: float = 0.0
 
 LeadcarLockon_MAX = 3 //5
 leadcar_lockon = [LeadcarLockon() for _ in range(LeadcarLockon_MAX)]
+
+@dataclass
+class LeadVertices:
+  x: float = 0.0
+  y: float = 0.0
+
+lead_vertices = [LeadVertices() for _ in range(3)]
 
 @dataclass
 class ModelPoints:
@@ -142,11 +149,9 @@ class ModelRenderer(Widget):
         leads_num = len(leads)
 
         for i in range(leads_num):
-          if leads[i].prob > 0.2: # 信用度20%以上で表示。調整中。
-            vd_x = self._lead_vehicles[i].glow[0][0]
-            vd_y = self._lead_vehicles[i].glow[0][1]
+          if leads[i].prob > 0.2 and i < 2: # 信用度20%以上で表示。調整中。
             #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
-            self._drawLockon(leads[i],vd_x,vd_y, i, rect)
+            self._drawLockon(leads[i],lead_vertices[i], i, rect)
       self._transform_dirty = False
 
     # Draw elements
@@ -184,6 +189,9 @@ class ModelRenderer(Widget):
         z = self._path.raw_points[idx, 2] if idx < len(self._path.raw_points) else 0.0
         point = self._map_to_screen(d_rel, -y_rel, z + self._path_offset_z)
         if point:
+          global lead_vertices
+          lead_vertices[i].x = point[0]
+          lead_vertices[i].y = point[1]
           self._lead_vehicles[i] = self._update_lead_vehicle(d_rel, v_rel, point, self._rect)
 
   def _update_model(self, lead, path_x_array):
@@ -508,51 +516,50 @@ class ModelRenderer(Widget):
     ) for start, end in zip(begin_colors, end_colors, strict=True)]
 
 
-  def _drawLockon(self,lead_data,vd_x,vd_y,num,rect):
+  def _drawLockon(self,lead_data,vd,num,rect):
+    global leadcar_lockon
     d_rel = lead_data.x[0]
     a_rel = lead_data.a[0]
     self.global_a_rel = a_rel
 
     sz = max(15.0, min((25 * 30) / (d_rel / 3 + 30), 30.0)) * 2.35 #float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
-    x = max(rect.x, min(vd_x, rect.x+rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
-    y = vd_y #float y = (float)vd.y();
+    x = max(rect.x, min(vd.x, rect.x+rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
+    y = vd.y #float y = (float)vd.y();
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド#   painter.setCompositionMode(QPainter::CompositionMode_Plus);
-    pen_color = rl.Color(0, 255, 0, 255) #   //p.setPen(QColor(0, 255, 0, 255));
 
-  #   float prob_alpha = lead_data.getProb(); //getModelProb();
-  #   if(prob_alpha < 0){
-  #     prob_alpha = 0;
-  #   } else if(prob_alpha > 1.0){
-  #     prob_alpha = 1.0;
-  #   }
-  #   float prob_alpha0 = prob_alpha;
-  #   prob_alpha *= 245;
+    prob_alpha = lead_data.prob #getModelProb();
+    if prob_alpha < 0:
+      prob_alpha = 0
+    elif prob_alpha > 1.0:
+      prob_alpha = 1.0
+    prob_alpha0 = prob_alpha
+    prob_alpha *= 245
 
-  #   painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
-  #   painter.setBrush(QColor(0, 0, 0, 0));
-  #   float ww = 300 , hh = 300;
-  #   if(Hardware::TICI()){
-  #     ww *= 1.25; hh *= 1.25;
-  #   }
-  #   float d = d_rel; //距離をロックターケットの大きさに反映させる。
-  #   if(d < 1){
-  #     d = 1;
-  #   }
+    pen_size = 2
+    pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
 
-  #   //動きに緩衝処理。
-  #   leadcar_lockon[num].x = leadcar_lockon[num].x + (x - leadcar_lockon[num].x) / 6;
-  #   leadcar_lockon[num].y = leadcar_lockon[num].y + (y - leadcar_lockon[num].y) / 6;
-  #   leadcar_lockon[num].d = leadcar_lockon[num].d + (d - leadcar_lockon[num].d) / 6;
-  #   x = leadcar_lockon[num].x;
-  #   y = leadcar_lockon[num].y;
-  #   d = leadcar_lockon[num].d;
-  #   if(d < 1){
-  #     d = 1;
-  #   }
+    ww = 300; hh = 300
+    if True:
+       ww *= 1.25
+       hh *= 1.25
 
-  #   leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10;
-  #   a_rel = leadcar_lockon[num].a;
+    d = d_rel #距離をロックターケットの大きさに反映させる。
+    if d < 1:
+      d = 1
+
+    #動きに緩衝処理。
+    leadcar_lockon[num].x = leadcar_lockon[num].x + (x - leadcar_lockon[num].x) / 6
+    leadcar_lockon[num].y = leadcar_lockon[num].y + (y - leadcar_lockon[num].y) / 6
+    leadcar_lockon[num].d = leadcar_lockon[num].d + (d - leadcar_lockon[num].d) / 6
+    x = leadcar_lockon[num].x
+    y = leadcar_lockon[num].y
+    d = leadcar_lockon[num].d
+    if d < 1:
+      d = 1
+
+    leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10
+    a_rel = leadcar_lockon[num].a
 
   #   float dh = 50;
   #   extern bool g_wide_cam;
