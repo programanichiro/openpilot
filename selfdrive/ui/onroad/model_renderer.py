@@ -29,6 +29,18 @@ NO_THROTTLE_COLORS = [
   rl.Color(242, 242, 242, 0),   # HSLF(112/360, 0.0, 0.95, 0.0)
 ]
 
+@dataclass
+class LeadcarLockon:
+    x: float = 0.0
+    y: float = 0.0
+    d: float = 0.0
+    a: float = 0.0
+    lxt: float = 0.0
+    lxf: float = 0.0
+    lockOK: float = 0.0
+
+LeadcarLockon_MAX = 3 //5
+leadcar_lockon = [LeadcarLockon() for _ in range(LeadcarLockon_MAX)]
 
 @dataclass
 class ModelPoints:
@@ -72,6 +84,9 @@ class ModelRenderer(Widget):
       colors=[],
       stops=[],
     )
+
+    self.global_a_rel = 0
+    self.global_a_rel_col = 0
 
     # Get longitudinal control setting from car parameters
     if car_params := Params().get("CarParams"):
@@ -128,8 +143,10 @@ class ModelRenderer(Widget):
 
         for i in range(leads_num):
           if leads[i].prob > 0.2: # 信用度20%以上で表示。調整中。
-            pass
+            vd_x = self._lead_vehicles[i].glow[0][0]
+            vd_y = self._lead_vehicles[i].glow[0][1]
             #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
+            self._drawLockon(leads[i],vd_x,vd_y, i, rect)
       self._transform_dirty = False
 
     # Draw elements
@@ -489,3 +506,276 @@ class ModelRenderer(Widget):
       int(inv_t * start.b + t * end.b),
       int(inv_t * start.a + t * end.a)
     ) for start, end in zip(begin_colors, end_colors, strict=True)]
+
+
+  def _drawLockon(self,lead_data,vd_x,vd_y,num,rect):
+    d_rel = lead_data.x[0]
+    a_rel = lead_data.a[0]
+    self.global_a_rel = a_rel
+
+    sz = max(15.0, min((25 * 30) / (d_rel / 3 + 30), 30.0)) * 2.35 #float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
+    x = max(rect.x, min(vd_x, rect.x+rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
+    y = vd_y #float y = (float)vd.y();
+
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド#   painter.setCompositionMode(QPainter::CompositionMode_Plus);
+    pen_color = rl.Color(0, 255, 0, 255) #   //p.setPen(QColor(0, 255, 0, 255));
+
+  #   float prob_alpha = lead_data.getProb(); //getModelProb();
+  #   if(prob_alpha < 0){
+  #     prob_alpha = 0;
+  #   } else if(prob_alpha > 1.0){
+  #     prob_alpha = 1.0;
+  #   }
+  #   float prob_alpha0 = prob_alpha;
+  #   prob_alpha *= 245;
+
+  #   painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+  #   painter.setBrush(QColor(0, 0, 0, 0));
+  #   float ww = 300 , hh = 300;
+  #   if(Hardware::TICI()){
+  #     ww *= 1.25; hh *= 1.25;
+  #   }
+  #   float d = d_rel; //距離をロックターケットの大きさに反映させる。
+  #   if(d < 1){
+  #     d = 1;
+  #   }
+
+  #   //動きに緩衝処理。
+  #   leadcar_lockon[num].x = leadcar_lockon[num].x + (x - leadcar_lockon[num].x) / 6;
+  #   leadcar_lockon[num].y = leadcar_lockon[num].y + (y - leadcar_lockon[num].y) / 6;
+  #   leadcar_lockon[num].d = leadcar_lockon[num].d + (d - leadcar_lockon[num].d) / 6;
+  #   x = leadcar_lockon[num].x;
+  #   y = leadcar_lockon[num].y;
+  #   d = leadcar_lockon[num].d;
+  #   if(d < 1){
+  #     d = 1;
+  #   }
+
+  #   leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10;
+  #   a_rel = leadcar_lockon[num].a;
+
+  #   float dh = 50;
+  #   extern bool g_wide_cam;
+  #   if(g_wide_cam == false) { //dhに奥行き値を反映させる。
+  #     float dd = d;
+  #     dd -= 25; //dd=0〜75
+  #     dd /= (75.0/2); //dd=0〜2
+  #     dd += 1; //dd=1〜3
+  #     if(dd < 1)dd = 1;
+  #     dh /= dd;
+  #   } else { //ワイドカメラ使用でロジック変更。リアルタイムで変わる。
+  #     ww *= 0.5; hh *= 0.5;
+  #     dh = 100;
+  #     float dd = d;
+  #     dd -= 5; //dd=0〜95
+  #     dd /= (95.0/10); //dd=0〜10
+  #     dd += 1; //dd=1〜11
+  #     if(dd < 1)dd = 1;
+  #     dh /= dd*dd;
+  #   }
+
+  #   ww = ww * 2 * 5 / d;
+  #   hh = hh * 2 * 5 / d;
+  #   y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
+  #   QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
+
+  # #if 0
+  #   float y0 = lead0.getY()[0];
+  #   float y1 = lead1.getY()[0];
+  # #else
+  #   //y?ってわかりにくいな。横方向なんだが。getYは使えなさそうだし。
+  #   float y0 = leadcar_lockon[0].x * leadcar_lockon[0].d; //こうなったら画面座標から逆算。
+  #   float y1 = leadcar_lockon[1].x * leadcar_lockon[1].d;
+  # #endif
+
+  #   painter.setFont(InterFont(38, QFont::DemiBold));
+  #   if(num == 0 && uiState()->scene.mLockOnButton){
+  #     //推論1番
+  #     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+  #     painter.drawRect(r);
+
+  #     //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+  #     if(leadcar_lockon[0].x > leadcar_lockon[1].x - 20){
+  #       leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.right() - leadcar_lockon[num].lxt) / 20;
+  #       leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (surface_rect.width() - leadcar_lockon[num].lxf) / 20;
+  #       //painter.drawLine(r.right(),r.top() , width() , 0);
+  #     } else {
+  #       leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.left() - leadcar_lockon[num].lxt) / 20;
+  #       leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (0 - leadcar_lockon[num].lxf) / 20;
+  #       //painter.drawLine(r.left(),r.top() , 0 , 0);
+  #     }
+  #     painter.drawText(r, Qt::AlignTop | Qt::AlignLeft, " " + QString::number(num+1));
+
+  #     //painter.setPen(QPen(QColor(245, 245, 0, prob_alpha), 2));
+  #     float lxt = leadcar_lockon[num].lxt;
+  #     if(lxt < r.left()){
+  #       lxt = r.left();
+  #     } else if(lxt > r.right()){
+  #       lxt = r.right();
+  #     }
+  #     painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
+  #     if(ww >= 40){
+  #       //painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
+
+  #       //num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
+  #       painter.setPen(Qt::NoPen);
+  #       float wwa = ww * 0.15;
+  #       if(wwa > 40){
+  #         wwa = 40;
+  #       } else if(wwa < 10){
+  #         wwa = 10;
+  #       }
+  #       if(wwa > ww){
+  #         wwa = ww;
+  #       }
+
+  #       float hha = 0;
+  #       if(a_rel > 0){
+  #         hha = 1 - 0.1 / a_rel;
+  #         painter.setBrush(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha*0.9));
+
+  #         if(hha < 0){
+  #           hha = 0;
+  #         }
+  #         hha = hha * hh;
+  # #if 0
+  #         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
+  #         painter.drawRect(ra);
+  # #else //メーターを斜めに切る
+  #         QPointF meter[] = {{(float)x + ww/2 - wwa/2 - wwa/2 * hha / hh , (float)y /*- g_yo*/ - hh - dh + (hh-hha)},{(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + (hh-hha)}, {(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + hh}, {(float)x + ww/2 - wwa/2 , (float)y /*- g_yo*/ - hh - dh + hh}};
+  #         painter.drawPolygon(meter, std::size(meter));
+  # #endif
+  #       }
+  #       if(a_rel < 0){
+  #         hha = 1 + 0.1 / a_rel;
+  #         painter.setBrush(QColor(245, 0, 0, prob_alpha));
+  #         //減速は上から下へ変更。
+  #         if(hha < 0){
+  #           hha = 0;
+  #         }
+  #         hha = hha * hh;
+  # #if 0
+  #         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh , wwa, hha);
+  #         painter.drawRect(ra);
+  # #else //メーターを斜めに切る
+  #         QPointF meter[] = {{(float)x + ww/2 - wwa/2 , (float)y /*- g_yo*/ - hh - dh},{(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh}, {(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + hha}, {(float)x + ww/2 - wwa/2 - wwa/2 * hha / hh, (float)y /*- g_yo*/ - hh - dh + hha}};
+  #         painter.drawPolygon(meter, std::size(meter));
+  # #endif
+  #       }
+  #     }
+
+  #     if(//lead0.getX()[0] > lead1.getX()[0] //lead1がlead0より後ろ
+  #         //y0 > y1 //lead1がlead0より左
+  #         std::abs(y0 - y1) <= 300 //大きく横にずれた→逆
+  #         // ||ほかにv_relやa_relで前方の急減速を表示したり（num==0に表示してみた）
+  #         //&& lead1.getX()[0] < 10 //lead1が自分の前10m以内
+  #     ){
+  #       leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (40 - leadcar_lockon[num].lockOK) / 5;
+  #       //float td = 40;
+  #     } else {
+  #       leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (0 - leadcar_lockon[num].lockOK) / 5;
+  #     }
+  #     float td = leadcar_lockon[num].lockOK;
+  #     //d:10〜100->1〜3へ変換
+  #     if(td >= 3){
+  #       float dd = leadcar_lockon[num].d;
+  #       if(dd < 10){
+  #         dd = 10;
+  #       }
+  #       dd -= 10; //dd=0〜90
+  #       dd /= (90.0/2); //dd=0〜2
+  #       dd += 1; //dd=1〜3
+  #       td /= dd;
+
+  #       float tlw = 8;
+  #       float tlw_2 = tlw / 2;
+  #       painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), tlw));
+  #       painter.drawLine(r.center().x() , r.top()-tlw_2 , r.center().x() , r.top() - td);
+  #       painter.drawLine(r.left()-tlw_2 , r.center().y() , r.left() - td , r.center().y());
+  #       painter.drawLine(r.right()+tlw_2 , r.center().y() , r.right() + td , r.center().y());
+  #       painter.drawLine(r.center().x() , r.bottom()+tlw_2 , r.center().x() , r.bottom() + td);
+  #     }
+
+  #   } else if(uiState()->scene.mLockOnButton){
+  #     if(num == 1){
+  #       //推論2番
+  #       //邪魔な前右寄りを走るバイクを認識したい。
+  #       if(//lead0.getX()[0] > lead1.getX()[0] //lead1がlead0より後ろ
+  #         //y0 > y1 //lead1がlead0より左
+  #         std::abs(y0 - y1) > 300 //大きく横にずれた
+  #         // ||ほかにv_relやa_relで前方の急減速を表示したり（num==0に表示してみた）
+  #         //&& lead1.getX()[0] < 10 //lead1が自分の前10m以内
+  #       ){
+  #         //painter.setPen(QPen(QColor(245, 0, 0, prob_alpha), 4));
+  #         //painter.drawEllipse(r); //縁を描く
+  #         //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 1)); //文字を後で書くために色を再設定。->文字は赤でもいいや
+
+  #         //円を（意味不明だから）書かないで、枠ごと赤くする。推論1が推論と別のものを捉えてるのを簡単に認識できる。
+  #         painter.setPen(QPen(QColor(245, 0, 0, prob_alpha), 2));
+  #       } else {
+  #         painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+  #       }
+
+  #       if(leadcar_lockon[0].x > leadcar_lockon[1].x - 20){ //多少逆転しても許容する
+  #         leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.left() - leadcar_lockon[num].lxt) / 20;
+  #         leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (0 - leadcar_lockon[num].lxf) / 20;
+  #         //painter.drawLine(r.left(),r.top() , 0 , 0);
+  #       } else {
+  #         leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.right() - leadcar_lockon[num].lxt) / 20;
+  #         leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (surface_rect.width() - leadcar_lockon[num].lxf) / 20;
+  #         //painter.drawLine(r.right(),r.top() , width() , 0);
+  #       }
+  #       float lxt = leadcar_lockon[num].lxt;
+  #       if(lxt < r.left()){
+  #         lxt = r.left();
+  #       } else if(lxt > r.right()){
+  #         lxt = r.right();
+  #       }
+  #       painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
+
+  #       if(ww >= 80){
+  #         //float dy = y0 - y1;
+  #         //painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(dy,'f',1) + "m");
+  #         //painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(dy,'f',1));
+  #       }
+  #     } else if(num == 2){
+  #       //推論3番
+  #       //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 1));
+  #       painter.setPen(QPen(QColor(0.9*255, 0.9*255, 0.9*255, prob_alpha), 1));
+  #       //painter.drawLine(r.right(),r.center().y() , width() , height());
+  #     } else {
+  #       //推論4番以降。
+  #       //存在していない。
+  #       painter.setPen(QPen(QColor(0.8*255, 0.2*255, 0.2*255, prob_alpha), 1));
+  #       //painter.drawLine(r.left(),r.center().y() , 0 , height());
+  #     }
+
+  #     if(num < 2){
+  #       painter.drawRect(r);
+  #     } else {
+  #       painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
+  #     }
+
+  #     //painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+
+  #     if(ww >= 80){
+  #       //ここではy0,y1を参照できない。
+  #       float d_lim = 12;
+  #       extern bool g_wide_cam_requested;
+  #       if(g_wide_cam_requested == false){
+  #         d_lim = 32; //ロングカメラだとちょっと枠が大きい。実測
+  #       }
+  #       if(num == 0 || (num==1 && (d_rel < d_lim || std::abs(y0 - y1) > 300))){ //num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。
+  #         painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
+  #       }
+  #     }
+  #     if(ww >= 160 /*80*/){
+  #       //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
+  #       //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number(a_rel,'f',1) + "a");
+  #     }
+  #   }
+  #   painter.setPen(Qt::NoPen);
+  #   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+  # }
+    rl.end_blend_mode() #元のブレンドに戻す
+    pass
