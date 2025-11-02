@@ -463,6 +463,25 @@ class GuiApplication:
     self._fonts["JP"] = jp_font
     rl.unload_codepoints(jp_codepoints)
 
+    # ===========================================================
+    # 日本語フォント（ASCII + 第一次水準漢字用）
+    # ===========================================================
+    jp2_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+    jp2_codepoint_count = rl.ffi.new("int *", 1)
+
+    ascii_kanji_chars  = ''.join(chr(cp) for cp in range(0x20, 0x7F))        # ASCII
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x3040, 0x309F))    # ひらがな
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x30A0, 0x30FF))    # カタカナ
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x4E00, 0x9FB0))    # 漢字
+
+    jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
+
+    # 22ピクセルフォントを生成
+    jp2_font = rl.load_font_ex(jp2_font_path, 22, jp2_codepoints, jp2_codepoint_count[0])
+    rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    self._fonts["JP2"] = jp2_font
+    rl.unload_codepoints(jp2_codepoints)
+
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
 
   def _set_styles(self):
