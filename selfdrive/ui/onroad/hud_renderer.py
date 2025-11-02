@@ -386,6 +386,16 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
 
+    self.road_th_ct_ct = 0
+    self.before_road_th_ct = 0
+    self.road_info_txt_flag = False
+    self.road_info_txt_ct = 0
+    self.road_info_txt = ""
+    self.kmh = "" #制限速度
+    self.road_name = "" #道路名
+    self.road_bear = "99999" #道路方位
+    self.disp_ichiro_logo = False
+
     self.logo_trs = 150
 
     self.clipped_brightness0 = 101
@@ -692,9 +702,26 @@ class HudRenderer(Widget):
 
     self._drawTextLeft(font=self._font_bold,font_size=55, x=rect.x+20, y=rect.y+65 , text="ICHIRO PILOT", alpha=self.logo_trs, brakeLight=self.brake_light, red=label_red, grn=label_grn, blu=label_blu)
 
-    # if((float)rect_w / rect_h > 1.5f){
-    #   p.setFont(InterFont(44, QFont::DemiBold));
-    #   drawText(p, surface_rect.left()+260, 55, "Powered by COMMA.AI", logo_trs, brake_light);
+    if self.road_info_txt:
+      road_th_ct_ct_limit = 30 #30秒無通信チェック。
+      if self.speed < 0.1: #velo_for_trans = self.speed #km/h
+        road_th_ct_ct_limit = 180 #停止時は3分まで伸ばす。
+    if self.road_name == False or (self.road_name == "--" and self.kmh == "0") or self.road_th_ct_ct > road_th_ct_ct_limit * 20:
+      self.road_info_txt_flag = False
+    else:
+      self.road_info_txt_flag = True
+      font_size = 33
+      #デバッグ用road_name = self.road_name + "&" + road_bear
+      #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
+      if self.kmh != "0":
+        next_x = self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
+        self._drawTextRight(self._font_bold, font_size, next_x-4, rect.y+rect.height - 10 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 6 , 5 , 2 , 0)
+      else:
+        if self.road_name != "---":
+          self._drawTextRight(self._font_semi_bold, font_size , rect.x+rect.width-10, rect.y+rect.height - 10 , self.road_name, 220)
+        else:
+          self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
+
 
   def _ip_update_state(self,sm):
     try:
@@ -999,6 +1026,33 @@ class HudRenderer(Widget):
             global g_night_mode
             g_night_mode = self.clipped_brightness0 < (90 if g_night_mode == 1 else 75) #ばたつかないようにする。80程度でかなり夕方。
 
+    self.road_info_txt_flag = False
+    self.road_info_txt_ct += 1
+    if self.road_info_txt_ct % 20 == 17:
+      try:
+        with open('/dev/shm/road_info.txt','r') as fp:
+          self.road_info_txt = fp.read()
+      except Exception as e:
+        pass
+
+      # osm_access_data = self.osm_access_counter_txt.split(",")
+      # self.osm_per = int(osm_access_data[0])
+      # osm_frame_ct2 = int(osm_access_data[1])
+
+    self.disp_ichiro_logo = False
+    if self.road_info_txt:
+      road_info_data = self.road_info_txt.split(",")
+      if len(road_info_data) >=4:
+        road_th_ct = int(road_info_data[0])
+        if road_th_ct == self.before_road_th_ct:
+          road_th_ct_ct += 1 #road_th_ctが変化しなければカウントアップし続ける
+        else:
+          road_th_ct_ct = 0 #30秒以上ゼロに戻らなければ、road_info_txt_flag = falseにして、道路名は出さない。
+        self.before_road_th_ct = road_th_ct
+
+        self.kmh = road_info_data[1]
+        self.road_name = road_info_data[2]
+        self.road_bear = road_info_data[3]
 
   def _press_accel_engaged(self):
     accel_engaged = 0
