@@ -25,6 +25,7 @@ FPS_DROP_THRESHOLD = 0.9  # FPS drop threshold for triggering a warning
 FPS_CRITICAL_THRESHOLD = 0.5  # Critical threshold for triggering strict actions
 MOUSE_THREAD_RATE = 140  # touch controller runs at 140Hz
 MAX_TOUCH_SLOTS = 2
+TOUCH_HISTORY_TIMEOUT = 3.0  # Seconds before touch points fade out
 
 ENABLE_VSYNC = os.getenv("ENABLE_VSYNC", "0") == "1"
 SHOW_FPS = os.getenv("SHOW_FPS") == "1"
@@ -68,6 +69,12 @@ class ModalOverlay:
 class MousePos(NamedTuple):
   x: float
   y: float
+
+
+class MousePosWithTime(NamedTuple):
+  x: float
+  y: float
+  t: float
 
 
 class MouseEvent(NamedTuple):
@@ -163,7 +170,7 @@ class GuiApplication:
     self._should_render = True
 
     # Debug variables
-    self._mouse_history: deque[MousePos] = deque(maxlen=MOUSE_THREAD_RATE)
+    self._mouse_history: deque[MousePosWithTime] = deque(maxlen=MOUSE_THREAD_RATE)
     self._show_touches = SHOW_TOUCHES
     self._show_fps = SHOW_FPS
 
@@ -351,6 +358,8 @@ class GuiApplication:
 
         # Skip rendering when screen is off
         if not self._should_render:
+          if PC:
+            rl.poll_input_events()
           time.sleep(1 / self._target_fps)
           yield False
           continue
@@ -399,10 +408,16 @@ class GuiApplication:
           rl.draw_fps(10, 10)
 
         if self._show_touches:
+          current_time = time.monotonic()
+
           for mouse_event in self._mouse_events:
             if mouse_event.left_pressed:
               self._mouse_history.clear()
-            self._mouse_history.append(mouse_event.pos)
+            self._mouse_history.append(MousePosWithTime(mouse_event.pos.x * self._scale, mouse_event.pos.y * self._scale, current_time))
+
+          # Remove old touch points that exceed the timeout
+          while self._mouse_history and (current_time - self._mouse_history[0].t) > TOUCH_HISTORY_TIMEOUT:
+            self._mouse_history.popleft()
 
           if self._mouse_history:
             mouse_pos = self._mouse_history[-1]
