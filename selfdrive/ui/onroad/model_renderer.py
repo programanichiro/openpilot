@@ -7,7 +7,7 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.params import Params
 from openpilot.selfdrive.locationd.calibrationd import HEIGHT_INIT
 from openpilot.selfdrive.ui.ui_state import ui_state
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.shader_polygon import draw_polygon, Gradient
 from openpilot.system.ui.widgets import Widget
 
@@ -94,6 +94,7 @@ class ModelRenderer(Widget):
 
     self.global_a_rel = 0
     self.global_a_rel_col = 0
+    self._font_semi_bold: rl.Font = gui_app.font(FontWeight.SEMI_BOLD)
 
     # Get longitudinal control setting from car parameters
     if car_params := Params().get("CarParams"):
@@ -515,13 +516,14 @@ class ModelRenderer(Widget):
     ) for start, end in zip(begin_colors, end_colors, strict=True)]
 
 
-  def _drawLockon(self,lead_data,vd,num,rect):
+  def _drawLockon(self,lead_data,vd,num,rect): #vdにはrect.xとyが含まれている。
     d_rel = lead_data.x[0]
     a_rel = lead_data.a[0]
     self.global_a_rel = a_rel
 
     sz = max(15.0, min((25 * 30) / (d_rel / 3 + 30), 30.0)) * 2.35 #float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
-    x = max(rect.x, min(vd.x, rect.x+rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
+    x = max(0, min(vd.x, rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
+    #x = max(rect.x, min(vd.x, rect.x+rect.width - sz / 2)) #こっち？rect.xを含めた方がいいかな。
     y = vd.y #float y = (float)vd.y();
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド#   painter.setCompositionMode(QPainter::CompositionMode_Plus);
@@ -559,41 +561,40 @@ class ModelRenderer(Widget):
     leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10
     a_rel = leadcar_lockon[num].a
 
-  #   float dh = 50;
-  #   extern bool g_wide_cam;
-  #   if(g_wide_cam == false) { //dhに奥行き値を反映させる。
-  #     float dd = d;
-  #     dd -= 25; //dd=0〜75
-  #     dd /= (75.0/2); //dd=0〜2
-  #     dd += 1; //dd=1〜3
-  #     if(dd < 1)dd = 1;
-  #     dh /= dd;
-  #   } else { //ワイドカメラ使用でロジック変更。リアルタイムで変わる。
-  #     ww *= 0.5; hh *= 0.5;
-  #     dh = 100;
-  #     float dd = d;
-  #     dd -= 5; //dd=0〜95
-  #     dd /= (95.0/10); //dd=0〜10
-  #     dd += 1; //dd=1〜11
-  #     if(dd < 1)dd = 1;
-  #     dh /= dd*dd;
-  #   }
+    import openpilot.selfdrive.ui.onroad.augmented_road_view as road_view
 
-  #   ww = ww * 2 * 5 / d;
-  #   hh = hh * 2 * 5 / d;
-  #   y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
-  #   QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
+    dh = 50
+    g_wide_cam = road_view.g_wide_cam #extern bool g_wide_cam;
+    if g_wide_cam == False: #dhに奥行き値を反映させる。
+      dd = d
+      dd -= 25 #dd=0〜75
+      dd /= (75.0/2) #dd=0〜2
+      dd += 1 #dd=1〜3
+      if dd < 1:
+        dd = 1
+      dh /= dd
+    else: #ワイドカメラ使用でロジック変更。リアルタイムで変わる。
+      ww *= 0.5; hh *= 0.5
+      dh = 100
+      dd = d
+      dd -= 5 #dd=0〜95
+      dd /= (95.0/10) #dd=0〜10
+      dd += 1 #dd=1〜11
+      if dd < 1:
+        dd = 1
+      dh /= dd*dd
 
-  # #if 0
-  #   float y0 = lead0.getY()[0];
-  #   float y1 = lead1.getY()[0];
-  # #else
-  #   //y?ってわかりにくいな。横方向なんだが。getYは使えなさそうだし。
-  #   float y0 = leadcar_lockon[0].x * leadcar_lockon[0].d; //こうなったら画面座標から逆算。
-  #   float y1 = leadcar_lockon[1].x * leadcar_lockon[1].d;
-  # #endif
+      ww = ww * 2 * 5 / d
+      hh = hh * 2 * 5 / d
+      y = min(rect.height, y-dh) + dh #y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
+      #y = min(rect.y+rect.height, y-dh) + dh
+      r = rl.Rectangle(x - ww/2, y - hh - dh, ww, hh) #QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
 
-  #   painter.setFont(InterFont(38, QFont::DemiBold));
+      #//y?ってわかりにくいな。横方向なんだが。getYは使えなさそうだし。
+      y0 = leadcar_lockon[0].x * leadcar_lockon[0].d #こうなったら画面座標から逆算。
+      y1 = leadcar_lockon[1].x * leadcar_lockon[1].d
+
+      pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
   #   if(num == 0 && uiState()->scene.mLockOnButton){
   #     //推論1番
   #     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
