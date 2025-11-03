@@ -629,7 +629,8 @@ class ModelRenderer(Widget):
     if num == 0 and hud.g_lockon_disp_disable == False:
       #推論1番
       pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
-      rl.draw_rectangle_rounded_lines_ex(r, 0.1, 5, pen_size, pen_color)#     painter.drawRect(r);
+      c_r = 20 / (r.width/2)
+      rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
 
       if leadcar_lockon[0].x > leadcar_lockon[1].x - 20:
         leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x+r.width - leadcar_lockon[num].lxt) / 20
@@ -784,7 +785,8 @@ class ModelRenderer(Widget):
         pass #else
 
       if num < 2:
-        rl.draw_rectangle_rounded_lines_ex(r, 0.1, 5, pen_size, pen_color)#     painter.drawRect(r);
+        c_r = 20 / (r.width/2)
+        rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
       else:
         #3番目のサークル描画は一旦保留
         arc_center = rl.Vector2(r.x+r.width/2,r.y+r.height/2)
