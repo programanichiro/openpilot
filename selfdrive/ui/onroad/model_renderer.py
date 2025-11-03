@@ -624,12 +624,12 @@ class ModelRenderer(Widget):
     y1 = leadcar_lockon[1].x * leadcar_lockon[1].d
 
     pen_font_size = 38
-    pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
+    # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
     import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     if num == 0 and hud.g_lockon_disp_disable == False:
       #推論1番
       pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
-      c_r = 20 / (r.width/2)
+      c_r = 15 / (r.width/2)
       rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
 
       if leadcar_lockon[0].x > leadcar_lockon[1].x - 20:
@@ -642,17 +642,16 @@ class ModelRenderer(Widget):
         #painter.drawLine(r.left(),r.top() , 0 , 0);
 
       text = " "+str(num+1)
-      size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
+      #上端だから不要 size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
       rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y),pen_font_size,0,pen_color)#painter.drawText(r, Qt::AlignTop | Qt::AlignLeft, " " + QString::number(num+1));
 
-#     //painter.setPen(QPen(QColor(245, 245, 0, prob_alpha), 2));
-#     float lxt = leadcar_lockon[num].lxt;
-#     if(lxt < r.left()){
-#       lxt = r.left();
-#     } else if(lxt > r.right()){
-#       lxt = r.right();
-#     }
-#     painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
+      lxt = leadcar_lockon[num].lxt
+      if lxt < r.x:
+        lxt = r.x
+      elif lxt > r.x+r.width:
+        lxt = r.x+r.width
+      rl.draw_line_ex(rl.Vector2(lxt, r.y), rl.Vector2(leadcar_lockon[num].lxf, rect.y), 2, pen_color)#painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
+
 #     if(ww >= 40){
 #       //painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
 
@@ -758,13 +757,12 @@ class ModelRenderer(Widget):
           leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x+rect.width - leadcar_lockon[num].lxf) / 20
           #painter.drawLine(r.right(),r.top() , width() , 0);
 
-#       float lxt = leadcar_lockon[num].lxt;
-#       if(lxt < r.left()){
-#         lxt = r.left();
-#       } else if(lxt > r.right()){
-#         lxt = r.right();
-#       }
-#       painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
+        lxt = leadcar_lockon[num].lxt
+        if lxt < r.x:
+          lxt = r.x
+        elif lxt > r.x+r.width:
+          lxt = r.x+r.width
+        rl.draw_line_ex(rl.Vector2(lxt, r.y), rl.Vector2(leadcar_lockon[num].lxf, rect.y), 2, pen_color)#painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
 
 #       if(ww >= 80){
 #         //float dy = y0 - y1;
@@ -785,7 +783,7 @@ class ModelRenderer(Widget):
         pass #else
 
       if num < 2:
-        c_r = 20 / (r.width/2)
+        c_r = 15 / (r.width/2)
         rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
       else:
         #3番目のサークル描画は一旦保留
