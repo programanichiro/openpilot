@@ -551,8 +551,8 @@ class ModelRenderer(Widget):
     self.global_a_rel = a_rel
 
     sz = max(15.0, min((25 * 30) / (d_rel / 3 + 30), 30.0)) * 2.35 #float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
-    x = max(0, min(vd.x, rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
-    #x = max(rect.x, min(vd.x, rect.x+rect.width - sz / 2)) #こっち？rect.xを含めた方がいいかな。
+    #x = max(0, min(vd.x, rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
+    x = max(rect.x, min(vd.x, rect.x+rect.width - sz / 2)) #こっち？rect.xを含めた方がいいかな。
     y = vd.y #float y = (float)vd.y();
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド#   painter.setCompositionMode(QPainter::CompositionMode_Plus);
@@ -615,8 +615,8 @@ class ModelRenderer(Widget):
 
     ww = ww * 2 * 5 / d
     hh = hh * 2 * 5 / d
-    y = min(rect.height, y-dh) + dh #y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
-    #y = min(rect.y+rect.height, y-dh) + dh
+    #y = min(rect.height, y-dh) + dh #y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
+    y = min(rect.y+rect.height, y-dh) + dh
     r = rl.Rectangle(x - ww/2, y - hh - dh, ww, hh) #QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
 
     #//y?ってわかりにくいな。横方向なんだが。getYは使えなさそうだし。
