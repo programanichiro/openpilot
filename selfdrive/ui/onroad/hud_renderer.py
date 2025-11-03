@@ -27,6 +27,7 @@ UI_BORDER_SIZE = 30
 global_angle_steer00 = 0
 long_speeddown_disable00 = 0
 g_night_mode = 100
+g_lockon_disp_disable = False
 
 @dataclass(frozen=True)
 class UIConfig:
@@ -1372,6 +1373,9 @@ class HudRenderer(Widget):
     else:
       self._lockon_disp_disable_button.set_text("□")
       self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudUnder)
+
+    global g_lockon_disp_disable
+    g_lockon_disp_disable = lockon_disp_disable
 
     if self.button_style_only:
       return
