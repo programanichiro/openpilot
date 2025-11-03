@@ -632,12 +632,12 @@ class ModelRenderer(Widget):
       rl.draw_rectangle_rounded_lines_ex(r, 0.1, 5, pen_size, pen_color)#     painter.drawRect(r);
 
       if leadcar_lockon[0].x > leadcar_lockon[1].x - 20:
-        leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.right() - leadcar_lockon[num].lxt) / 20
-        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.width - leadcar_lockon[num].lxf) / 20
+        leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x+r.width - leadcar_lockon[num].lxt) / 20
+        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x+rect.width - leadcar_lockon[num].lxf) / 20
         #painter.drawLine(r.right(),r.top() , width() , 0);
       else:
-        leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.left() - leadcar_lockon[num].lxt) / 20
-        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (0 - leadcar_lockon[num].lxf) / 20
+        leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x - leadcar_lockon[num].lxt) / 20
+        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x - leadcar_lockon[num].lxf) / 20
         #painter.drawLine(r.left(),r.top() , 0 , 0);
 
       text = " "+str(num+1)
@@ -748,15 +748,15 @@ class ModelRenderer(Widget):
         else:
           pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#         painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
 
-#       if(leadcar_lockon[0].x > leadcar_lockon[1].x - 20){ //多少逆転しても許容する
-#         leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.left() - leadcar_lockon[num].lxt) / 20;
-#         leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (0 - leadcar_lockon[num].lxf) / 20;
-#         //painter.drawLine(r.left(),r.top() , 0 , 0);
-#       } else {
-#         leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.right() - leadcar_lockon[num].lxt) / 20;
-#         leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (surface_rect.width() - leadcar_lockon[num].lxf) / 20;
-#         //painter.drawLine(r.right(),r.top() , width() , 0);
-#       }
+        if leadcar_lockon[0].x > leadcar_lockon[1].x - 20: #多少逆転しても許容する
+          leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x - leadcar_lockon[num].lxt) / 20
+          leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x - leadcar_lockon[num].lxf) / 20
+          #painter.drawLine(r.left(),r.top() , 0 , 0);
+        else:
+          leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x+r.width - leadcar_lockon[num].lxt) / 20
+          leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x+rect.width - leadcar_lockon[num].lxf) / 20
+          #painter.drawLine(r.right(),r.top() , width() , 0);
+
 #       float lxt = leadcar_lockon[num].lxt;
 #       if(lxt < r.left()){
 #         lxt = r.left();
