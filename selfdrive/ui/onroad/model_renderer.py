@@ -702,37 +702,32 @@ class ModelRenderer(Widget):
 #       }
 #     }
 
-#     if(//lead0.getX()[0] > lead1.getX()[0] //lead1がlead0より後ろ
-#         //y0 > y1 //lead1がlead0より左
-#         std::abs(y0 - y1) <= 300 //大きく横にずれた→逆
-#         // ||ほかにv_relやa_relで前方の急減速を表示したり（num==0に表示してみた）
-#         //&& lead1.getX()[0] < 10 //lead1が自分の前10m以内
-#     ){
-#       leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (40 - leadcar_lockon[num].lockOK) / 5;
-#       //float td = 40;
-#     } else {
-#       leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (0 - leadcar_lockon[num].lockOK) / 5;
-#     }
-#     float td = leadcar_lockon[num].lockOK;
-#     //d:10〜100->1〜3へ変換
-#     if(td >= 3){
-#       float dd = leadcar_lockon[num].d;
-#       if(dd < 10){
-#         dd = 10;
-#       }
-#       dd -= 10; //dd=0〜90
-#       dd /= (90.0/2); //dd=0〜2
-#       dd += 1; //dd=1〜3
-#       td /= dd;
+      if abs(y0 - y1) <= 300: #大きく横にずれた→逆
+        leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (40 - leadcar_lockon[num].lockOK) / 5
+      else:
+        leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (0 - leadcar_lockon[num].lockOK) / 5
 
-#       float tlw = 8;
-#       float tlw_2 = tlw / 2;
-#       painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), tlw));
-#       painter.drawLine(r.center().x() , r.top()-tlw_2 , r.center().x() , r.top() - td);
-#       painter.drawLine(r.left()-tlw_2 , r.center().y() , r.left() - td , r.center().y());
-#       painter.drawLine(r.right()+tlw_2 , r.center().y() , r.right() + td , r.center().y());
-#       painter.drawLine(r.center().x() , r.bottom()+tlw_2 , r.center().x() , r.bottom() + td);
-#     }
+      td = leadcar_lockon[num].lockOK
+      #d:10〜100->1〜3へ変換
+      if td >= 3:
+        dd = leadcar_lockon[num].d
+        if dd < 10:
+          dd = 10
+
+        dd -= 10 #dd=0〜90
+        dd /= (90.0/2) #dd=0〜2
+        dd += 1 #dd=1〜3
+        td /= dd
+
+        tlw = 8
+        tlw_2 = tlw / 2
+        pen_size = tlw
+        pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
+        rl.draw_line_ex(rl.Vector2(r.x+r.width/2, r.y-tlw_2), rl.Vector2(r.x+r.width/2, r.y-td), pen_size, pen_color)#painter.drawLine(r.center().x() , r.top()-tlw_2 , r.center().x() , r.top() - td);
+        rl.draw_line_ex(rl.Vector2(r.x-tlw_2, r.y+r.height/2), rl.Vector2(r.x-td, r.y+r.height/2), pen_size, pen_color)#painter.drawLine(r.left()-tlw_2 , r.center().y() , r.left() - td , r.center().y());
+        rl.draw_line_ex(rl.Vector2(r.x+r.width+tlw_2, r.y+r.height/2), rl.Vector2(r.x+r.width+td, r.y+r.height/2), pen_size, pen_color)#painter.drawLine(r.right()+tlw_2 , r.center().y() , r.right() + td , r.center().y());
+        rl.draw_line_ex(rl.Vector2(r.x+r.width/2, r.y+r.height+tlw_2), rl.Vector2(r.x+r.width/2, r.y+r.height+td), pen_size, pen_color)#painter.drawLine(r.center().x() , r.bottom()+tlw_2 , r.center().x() , r.bottom() + td);
+
       pass
 
     elif hud.g_lockon_disp_disable == False:
