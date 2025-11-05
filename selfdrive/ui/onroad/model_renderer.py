@@ -652,55 +652,54 @@ class ModelRenderer(Widget):
         lxt = r.x+r.width
       rl.draw_line_ex(rl.Vector2(lxt, r.y), rl.Vector2(leadcar_lockon[num].lxf, rect.y), 2, pen_color)#painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
 
-#     if(ww >= 40){
-#       //painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
+      if ww >= 40:
+        #painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
 
-#       //num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
-#       painter.setPen(Qt::NoPen);
-#       float wwa = ww * 0.15;
-#       if(wwa > 40){
-#         wwa = 40;
-#       } else if(wwa < 10){
-#         wwa = 10;
-#       }
-#       if(wwa > ww){
-#         wwa = ww;
-#       }
+        #num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
+        wwa = ww * 0.15
+        if wwa > 40:
+          wwa = 40
+        elif wwa < 10:
+          wwa = 10
+        if wwa > ww:
+          wwa = ww
 
-#       float hha = 0;
-#       if(a_rel > 0){
-#         hha = 1 - 0.1 / a_rel;
-#         painter.setBrush(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha*0.9));
-
-#         if(hha < 0){
-#           hha = 0;
-#         }
-#         hha = hha * hh;
+        hha = 0
+        if a_rel > 0:
+          hha = 1 - 0.1 / a_rel
+          a_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha*0.9))
+          if hha < 0:
+            hha = 0
+          hha = hha * hh
 # #if 0
 #         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
 #         painter.drawRect(ra);
 # #else //メーターを斜めに切る
-#         QPointF meter[] = {{(float)x + ww/2 - wwa/2 - wwa/2 * hha / hh , (float)y /*- g_yo*/ - hh - dh + (hh-hha)},{(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + (hh-hha)}, {(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + hh}, {(float)x + ww/2 - wwa/2 , (float)y /*- g_yo*/ - hh - dh + hh}};
-#         painter.drawPolygon(meter, std::size(meter));
+          meter = [(x + ww/2 - wwa/2 , y - hh - dh + hh),
+                   (x + ww/2 , y - hh - dh + hh),
+                   (x + ww/2 , y - hh - dh + (hh-hha)),
+                   (x + ww/2 - wwa/2 - wwa/2 * hha / hh , y - hh - dh + (hh-hha))]
+          rl.draw_triangle_fan(meter, len(meter), a_color)
 # #endif
-#       }
-#       if(a_rel < 0){
-#         hha = 1 + 0.1 / a_rel;
-#         painter.setBrush(QColor(245, 0, 0, prob_alpha));
-#         //減速は上から下へ変更。
-#         if(hha < 0){
-#           hha = 0;
-#         }
-#         hha = hha * hh;
+          pass
+        if a_rel < 0:
+          hha = 1 + 0.1 / a_rel
+          a_color = rl.Color(245, 0, 0, int(prob_alpha))
+          #減速は上から下へ変更。
+          if hha < 0:
+            hha = 0
+          hha = hha * hh
 # #if 0
 #         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh , wwa, hha);
 #         painter.drawRect(ra);
 # #else //メーターを斜めに切る
-#         QPointF meter[] = {{(float)x + ww/2 - wwa/2 , (float)y /*- g_yo*/ - hh - dh},{(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh}, {(float)x + ww/2 , (float)y /*- g_yo*/ - hh - dh + hha}, {(float)x + ww/2 - wwa/2 - wwa/2 * hha / hh, (float)y /*- g_yo*/ - hh - dh + hha}};
-#         painter.drawPolygon(meter, std::size(meter));
+          meter = [(x + ww/2 - wwa/2 - wwa/2 * hha / hh, y - hh - dh + hha),
+                   (x + ww/2 , y - hh - dh + hha),
+                   (x + ww/2 , y - hh - dh),
+                   (x + ww/2 - wwa/2 , y - hh - dh)]
+          rl.draw_triangle_fan(meter, len(meter), a_color)
 # #endif
-#       }
-#     }
+          pass
 
       if abs(y0 - y1) <= 300: #大きく横にずれた→逆
         leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (40 - leadcar_lockon[num].lockOK) / 5
