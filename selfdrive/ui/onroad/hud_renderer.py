@@ -696,7 +696,7 @@ class HudRenderer(Widget):
                   (ld,50 + 40*3+10),
                   (lu,20)]
     #p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
-    taco_color = rl.Color(int(0.96*0.7), int(0.51*0.7), int(0.12*0.7, 0.65)) #オレンジ
+    taco_color = rl.Color(int(0.96*0.7*255), int(0.51*0.7*255), int(0.12*0.7*255),int(0.65*255)) #オレンジ
     rl.draw_triangle_fan(taco_meter, len(taco_meter), taco_color)
 
     rl.end_blend_mode() #元のブレンドに戻す
