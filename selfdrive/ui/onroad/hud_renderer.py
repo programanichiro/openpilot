@@ -691,10 +691,11 @@ class HudRenderer(Widget):
     ur = lu + upper_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+upper_2w
     ld = rect.x+rect.width/2-under_2w
     dr = ld + under_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+under_2w
-    taco_meter = [(lu,20),
-                  (ld,50 + 40*3+10),
-                  (dr,50 + 40*3+10),
-                  (ur,20)]
+    taco_y = rect.y-5
+    taco_meter = [(lu,20+taco_y),
+                  (ld,50 + 40*3+10+taco_y),
+                  (dr,50 + 40*3+10+taco_y),
+                  (ur,20+taco_y)]
     #p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
     taco_color = rl.Color(int(0.96*0.7*255), int(0.51*0.7*255), int(0.12*0.7*255),int(0.65*255)) #オレンジ
     rl.draw_triangle_fan(taco_meter, len(taco_meter), taco_color)
