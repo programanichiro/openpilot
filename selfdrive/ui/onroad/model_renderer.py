@@ -146,14 +146,6 @@ class ModelRenderer(Widget):
       self._update_model(lead_one, path_x_array)
       if render_lead_indicator:
         self._update_leads(radar_state, path_x_array)
-
-        leads = model.leadsV3
-        leads_num = len(leads)
-
-        for i in range(leads_num):
-          if leads[i].prob > 0.2 and i < 2: # 信用度20%以上で表示。調整中。
-            #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
-            self._drawLockon(leads[i],lead_vertices[i], i, rect)
       self._transform_dirty = False
 
     # Draw elements
@@ -162,6 +154,14 @@ class ModelRenderer(Widget):
 
     if render_lead_indicator and radar_state:
       self._draw_lead_indicator()
+
+    if render_lead_indicator:
+      leads = model.leadsV3
+      leads_num = len(leads)
+
+      for i in range(leads_num):
+        if leads[i].prob > 0.2 and i < 2: # 信用度20%以上で表示。調整中。
+          self._drawLockon(leads[i],lead_vertices[i], i, rect) #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
 
   def _update_raw_points(self, model):
     """Update raw 3D points from model data"""
@@ -308,8 +308,8 @@ class ModelRenderer(Widget):
 
     # Calculate size and position
     sz = np.clip((25 * 30) / (d_rel / 3 + 30), 15.0, 30.0) * 2.35
-    x = np.clip(point[0], 0.0, rect.width - sz / 2)
-    y = min(point[1], rect.height - sz * 0.6)
+    x = np.clip(point[0], rect.x+0.0, rect.x+rect.width - sz / 2)
+    y = min(point[1], rect.y + rect.height - sz * 0.6)
 
     g_xo = sz / 5
     g_yo = sz / 10
