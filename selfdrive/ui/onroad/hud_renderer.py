@@ -678,6 +678,27 @@ class HudRenderer(Widget):
                (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
       rl.draw_triangle_fan(meter,len(meter),va_color)
 
+
+    #タコメーター
+    taco_rpm = car_state.engineRpm
+    taco_max = 5000
+    if taco_rpm > taco_max:
+      taco_rpm = taco_max #5000回転表示がMAX。
+    #taco_rpm = taco_max/2; //表示テスト
+    upper_2w = 200+80
+    under_2w = 100+55
+    lu = rect.x+rect.width/2-upper_2w
+    ur = lu + upper_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+upper_2w
+    ld = rect.x+rect.width/2-under_2w
+    dr = ld + under_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+under_2w
+    taco_meter = [(ur,20),
+                  (dr,50 + 40*3+10),
+                  (ld,50 + 40*3+10),
+                  (lu,20)]
+    #p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
+    taco_color = rl.Color(int(0.96*0.7), int(0.51*0.7), int(0.12*0.7, 0.65)) #オレンジ
+    rl.draw_triangle_fan(taco_meter, len(taco_meter), taco_color)
+
     rl.end_blend_mode() #元のブレンドに戻す
 
     top_label_size=33
