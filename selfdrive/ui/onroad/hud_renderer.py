@@ -691,7 +691,7 @@ class HudRenderer(Widget):
     ur = lu + upper_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+upper_2w
     ld = rect.x+rect.width/2-under_2w
     dr = ld + under_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+under_2w
-    taco_y = rect.y-5
+    taco_y = rect.y-10
     taco_meter = [(lu,20+taco_y),
                   (ld,50 + 40*3+10+taco_y),
                   (dr,50 + 40*3+10+taco_y),
