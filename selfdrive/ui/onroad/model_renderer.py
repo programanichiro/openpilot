@@ -462,11 +462,12 @@ class ModelRenderer(Widget):
         #str_w2 = 200;
         font_size = 44
         #self._font_semi_bold
+
         color = rl.Color(0x0, 0x0, 0x0 , 200) #影
         lock_indicator_dx = 2 #下向きの十字照準を避ける。
         rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+2+lock_indicator_dx, y-50+2),font_size,0,color)#     painter.drawText(QRect(x+2+lock_indicator_dx, y-50+2, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
         kmph_size = measure_text_cached(self._font_semi_bold, kmph, int(font_size))
-        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+2-lock_indicator_dx-kmph_size.x-2, y-50+2),font_size,0,color)#     painter.drawText(QRect(x+2-lock_indicator_dx-str_w2-2, y-50+2, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
+        rl.draw_text_ex(self._font_semi_bold,kmph,rl.Vector2(x+2-lock_indicator_dx-kmph_size.x-2, y-50+2),font_size,0,color)#     painter.drawText(QRect(x+2-lock_indicator_dx-str_w2-2, y-50+2, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
 
         color = rl.Color(0xff, 0xff, 0xff , 255)#     painter.setPen(QColor(0xff, 0xff, 0xff));
         rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+lock_indicator_dx, y-50),font_size,0,color)#     painter.drawText(QRect(x+lock_indicator_dx, y-50, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
@@ -476,8 +477,7 @@ class ModelRenderer(Widget):
         else:
           self.global_a_rel_col = 0
           color = rl.Color(245, 0, 0, 255)
-
-        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x-lock_indicator_dx-kmph_size.x-2, y-50),font_size,0,color)#     painter.drawText(QRect(x-lock_indicator_dx-str_w2-2, y-50, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
+        rl.draw_text_ex(self._font_semi_bold,kmph,rl.Vector2(x-lock_indicator_dx-kmph_size.x-2, y-50),font_size,0,color)#     painter.drawText(QRect(x-lock_indicator_dx-str_w2-2, y-50, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
         pass
       num += 1
 
