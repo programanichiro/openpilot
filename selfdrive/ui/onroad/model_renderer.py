@@ -163,6 +163,34 @@ class ModelRenderer(Widget):
         if leads[i].prob > 0.2 and i < 2: # 信用度20%以上で表示。調整中。
           self._drawLockon(leads[i],lead_vertices[i], i, rect) #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
 
+# #if 1 //lane_widthを表示
+#   std::string lane_width_txt = util::read_file("/dev/shm/lane_width.txt");
+#   //std::string lane_width_txt = util::read_file("/tmp/debug_out_v");
+#   if(lane_width_txt.empty() == false){
+#     float lane_width = std::stof(lane_width_txt);
+#     if(lane_width > -99){
+#       QString lane_w = QString("lane:") + QString::number(lane_width,'f',2) + "m";
+#       //QString lane_w = QString("vEgo:") + QString::number(lane_width,'f',1) + "km/h";
+# #if 0
+#       painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
+#       painter.drawText(QRect(x+2-str_w2/2, y + sz + homebase_h + g_yo + 10+6+2, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+#       painter.setPen(QColor(0xff, 0xff, 0xff));
+#       painter.drawText(QRect(x-str_w2/2, y + sz + homebase_h + g_yo + 10+6, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+# #else
+#       int scr_x = surface_rect.width()/2;
+#       int scr_y = surface_rect.height() - 132;
+#       int str_wl = 800;
+#       painter.setFont(InterFont(44, QFont::Normal));
+#       painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
+#       painter.drawText(QRect(scr_x+2-str_wl/2, scr_y+2, str_wl, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+#       painter.setPen(QColor(0xff, 0xff, 0xff));
+#       painter.drawText(QRect(scr_x-str_wl/2, scr_y, str_wl, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+# #endif
+#       painter.setPen(Qt::NoPen);
+#     }
+#   }
+# #endif
+
   def _update_raw_points(self, model):
     """Update raw 3D points from model data"""
     self._path.raw_points = np.array([model.position.x, model.position.y, model.position.z], dtype=np.float32).T
@@ -411,12 +439,47 @@ class ModelRenderer(Widget):
 
   def _draw_lead_indicator(self):
     # Draw lead vehicles if available
+    num = 0
     for lead in self._lead_vehicles:
       if not lead.glow or not lead.chevron:
+        num += 1
         continue
 
       rl.draw_triangle_fan(lead.glow, len(lead.glow), rl.Color(218, 202, 37, 255))
       rl.draw_triangle_fan(lead.chevron, len(lead.chevron), rl.Color(201, 34, 49, lead.fill_alpha))
+
+      radar_state = ui_state.sm['radarState'] if ui_state.sm.valid['radarState'] else None
+      if num == 0 and radar_state: #0番のリードカーまでの距離を表示
+        x = lead_vertices[num].x
+        y = lead_vertices[num].y
+        #d_rel, y_rel, v_rel = radar_state.leadOne.dRel, radar_state.leadOne.yRel, radar_state.leadOne.vRel
+        d_rel, v_rel = radar_state.leadOne.dRel, radar_state.leadOne.vRel
+
+        dist = str(int(d_rel)) + "m"
+        #str_w = 200;
+        vc_speed = ui_state.sm['carState'].vEgo
+        kmph = str(int((v_rel + vc_speed)*3.6)) + "k"
+        #str_w2 = 200;
+        font_size = 44
+        #self._font_semi_bold
+        color = rl.Color(0x0, 0x0, 0x0 , 200) #影
+        lock_indicator_dx = 2 #下向きの十字照準を避ける。
+        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+2+lock_indicator_dx, y-50+2),font_size,0,color)#     painter.drawText(QRect(x+2+lock_indicator_dx, y-50+2, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
+        kmph_size = measure_text_cached(self._font_semi_bold, kmph, int(font_size))
+        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+2-lock_indicator_dx-kmph_size.x-2, y-50+2),font_size,0,color)#     painter.drawText(QRect(x+2-lock_indicator_dx-str_w2-2, y-50+2, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
+
+        color = rl.Color(0xff, 0xff, 0xff , 255)#     painter.setPen(QColor(0xff, 0xff, 0xff));
+        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+lock_indicator_dx, y-50),font_size,0,color)#     painter.drawText(QRect(x+lock_indicator_dx, y-50, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
+        if self.global_a_rel >= self.global_a_rel_col:
+          self.global_a_rel_col = -0.1 #散らつきを抑えるバッファ。
+          color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), 255)
+        else:
+          self.global_a_rel_col = 0
+          color = rl.Color(245, 0, 0, 255)
+
+        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x-lock_indicator_dx-kmph_size.x-2, y-50),font_size,0,color)#     painter.drawText(QRect(x-lock_indicator_dx-str_w2-2, y-50, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
+        pass
+      num += 1
 
   @staticmethod
   def _get_path_length_idx(pos_x_array: np.ndarray, path_distance: float) -> int:
