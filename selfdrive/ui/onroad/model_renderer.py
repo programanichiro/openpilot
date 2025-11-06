@@ -450,8 +450,8 @@ class ModelRenderer(Widget):
 
       radar_state = ui_state.sm['radarState'] if ui_state.sm.valid['radarState'] else None
       if num == 0 and radar_state: #0番のリードカーまでの距離を表示
-        x = lead.glow[0][0]
-        y = lead.glow[0][1]
+        x = lead.chevron[0][0]
+        y = lead.chevron[0][1]
         #d_rel, y_rel, v_rel = radar_state.leadOne.dRel, radar_state.leadOne.yRel, radar_state.leadOne.vRel
         d_rel, v_rel = radar_state.leadOne.dRel, radar_state.leadOne.vRel
 
