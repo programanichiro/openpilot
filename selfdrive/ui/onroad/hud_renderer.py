@@ -388,6 +388,12 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
 
+    self.ktsc_ct_n = 1
+    self.ktsc_ct = 0
+    n = 15+1 #タイミングの問題で画面外に一つ増やす
+    self.ktsc_t = [0.0] * n
+    self.dir0 = 1.0
+
     self.road_th_ct_ct = 0
     self.before_road_th_ct = 0
     self.road_info_txt_flag = False
@@ -650,6 +656,8 @@ class HudRenderer(Widget):
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
 
       rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
+
+    self.knightScanner(rect)
 
     #加速減速表示
     car_state = ui_state.sm['carState']
@@ -1545,3 +1553,138 @@ class HudRenderer(Widget):
 
     return text_size.x #続けて利用できるように幅を返す。（次の表示を左右の隣に出すために使える）
 
+  def knightScanner(self, rect: rl.Rectangle):
+    height = rect.height
+    width = rect.width
+#   extern int global_status; #ui_state.status == UIStatus.ENGAGED
+#   extern int Knight_scanner; #self.Knight_scanner
+
+    rect_w = width #rect().width();
+    rect_h = height #rect().height();
+
+    n = 15+1 #タイミングの問題で画面外に一つ増やす
+    t = self.ktsc_t #static float t[n];
+    t[(int)(self.ktsc_ct/self.ktsc_ct_n)] = 1.0
+    ww = rect_w / (n-1) #画面外の一つ分を外す。
+    hh = rect_h / 15 #ww
+
+    curve_value = self.limit_vc_info
+    if curve_value == 0:
+      dir = self.dir0 * 0.25
+      hh = hh / 3
+    elif curve_value < 145:
+      dir = self.dir0 * 1.0
+    else:
+      dir = self.dir0 * 0.5
+      hh = hh * 2 / 3
+
+#   UIState *s = uiState();
+#   bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
+#   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
+#   int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
+#   if(left_blinker || right_blinker){
+#     if(left_blinker == true){
+#       dir0 = -fabs(dir0);
+#     } else if(right_blinker == true){
+#       dir0 = fabs(dir0);
+#     }
+#     dir = dir0 * 1.0;
+#     hh = ww;
+#     hh = hh * 2 / 3;
+# #if 0
+#     if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //
+#       lane_change_height = 270;
+#     }
+# #elif 0 //メッセージUIの表示手法変更で、下の隙間から見えるので、lane_change_height持ち上げはひとまず取りやめ。
+#     auto lp = (*s->sm)["lateralPlan"].getLateralPlan();
+#     if( lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::PRE_LANE_CHANGE ||
+#         lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定
+#       lane_change_height = 270;
+#     } else { //stand_stillでもウインカーを上げる。
+#       std::string stand_still_txt = util::read_file("/dev/shm/stand_still.txt");
+#       bool stand_still = false;
+#       if(stand_still_txt.empty() == false){
+#         stand_still = std::stoi(stand_still_txt) ? true : false;
+#       }
+#       if(stand_still){
+#         lane_change_height = 270;
+#       }
+#     }
+# #endif
+#   }
+#   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
+
+#   //int h_pos = 0;
+#   int h_pos = rect_h - hh;
+
+#   //ct ++;
+#   //ct %= n * ct_n;
+#   ct += dir;
+#   if(ct <= 0 || ct >= n*ct_n-1){
+#     if(left_blinker || right_blinker){
+#       if(left_blinker == true && ct < 0){
+#         ct = n*ct_n-1;
+#       } else if(right_blinker == true && ct > n*ct_n-1){
+#         ct = 0;
+#       }
+#     } else {
+#       if(ct < 0 && dir < 0)ct = 0;
+#       if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
+#       dir0 = -dir0;
+#     }
+#     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
+#       std::string limit_vc_txt = util::read_file("/dev/shm/limit_vc_info.txt");
+#       if(limit_vc_txt.empty() == false){
+#         float cv = std::stof(limit_vc_txt);
+#         if(cv > 0){
+#           curve_value = cv;
+#         }
+#       }
+#     }
+#     std::string handle_center_txt = util::read_file("/dev/shm/handle_center_info.txt");
+#     if(handle_center_txt.empty() == false){
+#         handle_center = std::stof(handle_center_txt);
+#     } else {
+#       std::string handle_calibct_txt = util::read_file("/data/handle_calibct_info.txt");
+#       if(handle_calibct_txt.empty() == false){
+#         handle_calibct = std::stoi(handle_calibct_txt);
+#       }
+#     }
+#   }
+#   p.setCompositionMode(QPainter::CompositionMode_Plus);
+#   for(int i=0; i<(n-1); i++){
+#     //QRect rc(0, h_pos, ww, hh);
+#     if(t[i] > 0.01){
+#       //p.drawRoundedRect(rc, 0, 0);
+#       if(left_blinker || right_blinker){
+#         //流れるウインカー
+#         p.setBrush(QColor(192, 102, 0, 255 * t[i]));
+#       } else if(handle_center > -99){
+#         p.setBrush(QColor(200, 0, 0, 255 * t[i]));
+#       } else {
+#         p.setBrush(QColor(200, 200, 0, 255 * t[i])); //ハンドルセンターキャリブレーション中は色を緑に。
+#       }
+#       if(left_blinker || right_blinker){
+#         p.drawRect(rect_w * i / (n-1), h_pos - lane_change_height, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
+#       } else {
+#         if(Knight_scanner == 0){
+#           continue;
+#         }
+#         //ポリゴンで表示。
+#         float sx_a = rect_w * i / (n-1) - rect_w / 2;
+#         sx_a /= (rect_w / 2); // -1〜1
+#         float sx_b = rect_w * (i+1) / (n-1) - rect_w / 2;
+#         sx_b /= (rect_w / 2); // -1〜1
+#         float x0 = rect_w * i / (n-1);
+#         float x1 = x0 + ww;
+#         float y0 = h_pos;
+#         float y1 = y0 + hh;
+#         y0 -= ww/6; //少し持ち上げる。
+#         float y0_a = y0 + hh/2 * (1 - sx_a*sx_a); //関数の高さ計算に加減速を反省させればビヨビヨするはず。
+#         float y0_b = y0 + hh/2 * (1 - sx_b*sx_b);
+#         QPointF scaner[] = {{x0,y0_a},{x1,y0_b}, {x1,y1}, {x0,y1}};
+#         p.drawPolygon(scaner, std::size(scaner));
+#       }
+#     }
+#     t[i] *= 0.9;
+    pass
