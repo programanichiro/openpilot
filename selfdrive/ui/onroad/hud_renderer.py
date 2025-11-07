@@ -388,6 +388,7 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
 
+    self.global_engageable = False
     self.ktsc_ct_n = 1
     self.ktsc_ct = 0
     n = 15+1 #タイミングの問題で画面外に一つ増やす
@@ -824,8 +825,8 @@ class HudRenderer(Widget):
     # elif ui_state.status == UIStatus.OVERRIDE:
     #   status_col = rl.Color(0x89, 0x92, 0x8D, 0xFF)
 
-    # const auto ss = (*s.sm)["selfdriveState"].getSelfdriveState();
-    # global_engageable = (ss.getEngageable() || ss.getEnabled());
+    ss = ui_state.sm["selfdriveState"]
+    self.global_engageable = (ss.engageable or ss.enabled)
 
     self.brake_light = False
     all_brake_light = False
@@ -976,7 +977,7 @@ class HudRenderer(Widget):
       except Exception as e:
         self.blue_signal_chk = 0
 
-    if self.ip_update_state_ct % 10 == 1:
+    if self.ip_update_state_ct % 2 == 1:
       try:
         with open('/dev/shm/limit_vc_info.txt','r') as fp3:
           limit_vc_info = fp3.read()
@@ -1007,12 +1008,12 @@ class HudRenderer(Widget):
     self.a1 = 150
     self.a2 = 150
     self.a3 = 150
-    if not(ui_state.status == UIStatus.ENGAGED or ui_state.status == UIStatus.OVERRIDE):
+    if self.global_engageable and not(ui_state.status == UIStatus.ENGAGED or ui_state.status == UIStatus.OVERRIDE):
       self.a0 = 50
       self.a1 = 50
       self.a2 = 50
       self.a3 = 50
-    elif (ui_state.status == UIStatus.ENGAGED or ui_state.status == UIStatus.OVERRIDE):
+    elif self.global_engageable and (ui_state.status == UIStatus.ENGAGED or ui_state.status == UIStatus.OVERRIDE):
       self.a0 = 50
       self.a1 = 50
       self.a2 = 50
@@ -1572,7 +1573,7 @@ class HudRenderer(Widget):
     hh = rect_h / 15 #ww
 
     curve_value = self.limit_vc_info
-    if curve_value == 0:
+    if curve_value == 0 or self.global_engageable == False:
       dir = self.dir0 * 0.25
       hh = hh / 3
     elif curve_value < 145:
