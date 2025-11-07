@@ -18,7 +18,7 @@ SET_SPEED_NA = 255
 KM_TO_MILE = 0.621371
 CRUISE_DISABLED_CHAR = '–'
 
-y_ofs = 150
+y_ofs = 135
 th_tmp1 = 62; #ここから黄色
 th_tmp2 = 71; #ここから赤
 btn_size = 192
