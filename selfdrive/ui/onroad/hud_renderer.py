@@ -1591,7 +1591,7 @@ class HudRenderer(Widget):
       elif right_blinker == True:
         self.dir0 = abs(self.dir0)
       dir = self.dir0 * 1.0
-      # hh = ww
+      hh = rect_h / 15 #ww
       hh = hh * 2 / 3
 # #if 0
 #     if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //
@@ -1643,13 +1643,13 @@ class HudRenderer(Widget):
 
         if left_blinker and right_blinker:
           rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
-          rl.draw_rectangle_rounded(rc, 0, 1, kt_color)
+          rl.draw_rectangle_rounded(rc, 1.0, 10, kt_color)
         else: #単に上梅のフラットにする。
           if self.Knight_scanner == 0:
             continue
 
           rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
-          rl.draw_rectangle_rounded(rc, 0, 1, kt_color)
+          rl.draw_rectangle_rounded(rc, 0.5, 5, kt_color)
 #         //ポリゴンで表示。
 #         float sx_a = rect_w * i / (n-1) - rect_w / 2;
 #         sx_a /= (rect_w / 2); // -1〜1
