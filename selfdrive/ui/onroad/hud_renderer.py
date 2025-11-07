@@ -1578,19 +1578,17 @@ class HudRenderer(Widget):
       dir = self.dir0 * 0.5
       hh = hh * 2 / 3
 
-#   UIState *s = uiState();
-#   bool left_blinker = (*s->sm)["carState"].getCarState().getLeftBlinker();
-#   bool right_blinker = (*s->sm)["carState"].getCarState().getRightBlinker();
-#   int lane_change_height = 0; //280; //↓の下の尖りがウインカーの底辺になるように調整。
-#   if(left_blinker || right_blinker){
-#     if(left_blinker == true){
-#       dir0 = -fabs(dir0);
-#     } else if(right_blinker == true){
-#       dir0 = fabs(dir0);
-#     }
-#     dir = dir0 * 1.0;
-#     hh = ww;
-#     hh = hh * 2 / 3;
+    left_blinker = ui_state.sm["carState"].leftBlinker
+    right_blinker = ui_state.sm["carState"].rightBlinker
+    lane_change_height = 0 #280; //↓の下の尖りがウインカーの底辺になるように調整。
+    if left_blinker or right_blinker:
+      if left_blinker == True:
+        self.dir0 = -abs(self.dir0)
+      elif right_blinker == True:
+        self.dir0 = abs(self.dir0)
+      dir = self.dir0 * 1.0
+      # hh = ww
+      hh = hh * 2 / 3
 # #if 0
 #     if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //
 #       lane_change_height = 270;
@@ -1611,8 +1609,6 @@ class HudRenderer(Widget):
 #       }
 #     }
 # #endif
-#   }
-#   //bool hazard_flashers = left_blinker && right_blinker; //これはtrueにならない。ハザードではleft_blinkerとright_blinkerがfalseのようだ。
 
 #   //int h_pos = 0;
 #   int h_pos = rect_h - hh;
