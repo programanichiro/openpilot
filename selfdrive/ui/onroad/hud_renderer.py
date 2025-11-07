@@ -576,7 +576,7 @@ class HudRenderer(Widget):
       rl.Color(0x24, 0x57, 0xa1 , 255),
     )
 
-    temp_rc = rl.Rectangle(rect.x+65-27, rect.y+110+6, 233+27*2-5, 54)
+    temp_rc = rl.Rectangle(rect.x+65-27, rect.y+110+6-150+y_ofs, 233+27*2-5, 54)
     status_col = self.status_col
 
     if self.temperature < th_tmp1: #警告色の変化はサイドバーと違う。もっと早く警告される。
@@ -605,7 +605,10 @@ class HudRenderer(Widget):
 
       h_ang_i = int(self.global_angle_steer0-self.handle_center)
       h_ang_i = 99 if h_ang_i > 99 else (-99 if h_ang_i < -99 else h_ang_i)
-      h_ang = str(h_ang_i)+"°"
+      if h_ang_i >= 0:
+        h_ang = "+"+str(h_ang_i)+"°"
+      else:
+        h_ang = str(h_ang_i)+"°"
 
       self._drawText(font=self._font_bold,font_size=60,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height+3,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
     elif self.handle_center >= -99:
