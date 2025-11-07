@@ -1641,7 +1641,7 @@ class HudRenderer(Widget):
         else:
           kt_color = rl.Color(200, 200, 0, int(255 * t[i])) #ハンドルセンターキャリブレーション中は色を緑に。
 
-        if left_blinker and right_blinker:
+        if left_blinker or right_blinker:
           rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
           rl.draw_rectangle_rounded(rc, 1.0, 10, kt_color)
         else: #単に上梅のフラットにする。
