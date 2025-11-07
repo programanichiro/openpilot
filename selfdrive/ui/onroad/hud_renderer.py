@@ -393,6 +393,7 @@ class HudRenderer(Widget):
     n = 15+1 #タイミングの問題で画面外に一つ増やす
     self.ktsc_t = [0.0] * n
     self.dir0 = 1.0
+    self.Knight_scanner = 0
 
     self.road_th_ct_ct = 0
     self.before_road_th_ct = 0
@@ -595,7 +596,7 @@ class HudRenderer(Widget):
 
     calib_h = -33 -33 - 30 -10 #表示位置を上に
     rc2 =  rl.Rectangle(rect.x + rect.width - btn_size / 2 - UI_BORDER_SIZE * 2 - 100 + 36, rect.y -20 + btn_size / 2 + int(UI_BORDER_SIZE * 1.5)+y_ofs + calib_h -36, 200, 36)
-    if abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center > -99:
+    if abs(self.global_angle_steer0-self.handle_center) > 5 and self.handle_center >= -99:
       #ハンドル角度を表示
       #status_col = p.setBrush(bg_colors[status]);
       rc3 = rl.Rectangle(rc2.x+20,rc2.y-30,rc2.width-40,rc2.height+30)
@@ -606,7 +607,7 @@ class HudRenderer(Widget):
       h_ang = str(h_ang_i)+"°"
 
       self._drawText(font=self._font_bold,font_size=60,x=rc3.x+rc3.width/2,y=rc3.y+rc3.height+3,text=h_ang,alpha=200) #x,yを下段中心にtextを表示する
-    elif self.handle_center > -99:
+    elif self.handle_center >= -99:
       #ハンドルセンター値を表示
       #status_col = p.setBrush(bg_colors[status]);
       rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
@@ -959,7 +960,7 @@ class HudRenderer(Widget):
         if handle_center_info:
           self.handle_center = float(handle_center_info)
         else:
-          with open('/data/handle_calibct_info','r') as fp3:
+          with open('/data/handle_calibct_info.txt','r') as fp3:
             handle_calibct_info = fp3.read()
             if handle_calibct_info:
               self.handle_calibct = float(handle_calibct_info)
@@ -1317,6 +1318,8 @@ class HudRenderer(Widget):
     elif Knight_scanner == 7:
       self._knight_scanner_bit3_button.set_text("●●●")
 
+    self.Knight_scanner = Knight_scanner
+
     if Knight_scanner != 0:
       self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudUnder)
 
@@ -1610,62 +1613,42 @@ class HudRenderer(Widget):
 #     }
 # #endif
 
-#   //int h_pos = 0;
-#   int h_pos = rect_h - hh;
+    h_pos = rect.y + rect_h - hh
 
-#   //ct ++;
-#   //ct %= n * ct_n;
-#   ct += dir;
-#   if(ct <= 0 || ct >= n*ct_n-1){
-#     if(left_blinker || right_blinker){
-#       if(left_blinker == true && ct < 0){
-#         ct = n*ct_n-1;
-#       } else if(right_blinker == true && ct > n*ct_n-1){
-#         ct = 0;
-#       }
-#     } else {
-#       if(ct < 0 && dir < 0)ct = 0;
-#       if(ct > n*ct_n-1 && dir > 0)ct = n*ct_n-1;
-#       dir0 = -dir0;
-#     }
-#     if(vc_speed >= 1/3.6 && global_engageable && global_status == STATUS_ENGAGED) {
-#       std::string limit_vc_txt = util::read_file("/dev/shm/limit_vc_info.txt");
-#       if(limit_vc_txt.empty() == false){
-#         float cv = std::stof(limit_vc_txt);
-#         if(cv > 0){
-#           curve_value = cv;
-#         }
-#       }
-#     }
-#     std::string handle_center_txt = util::read_file("/dev/shm/handle_center_info.txt");
-#     if(handle_center_txt.empty() == false){
-#         handle_center = std::stof(handle_center_txt);
-#     } else {
-#       std::string handle_calibct_txt = util::read_file("/data/handle_calibct_info.txt");
-#       if(handle_calibct_txt.empty() == false){
-#         handle_calibct = std::stoi(handle_calibct_txt);
-#       }
-#     }
-#   }
-#   p.setCompositionMode(QPainter::CompositionMode_Plus);
-#   for(int i=0; i<(n-1); i++){
-#     //QRect rc(0, h_pos, ww, hh);
-#     if(t[i] > 0.01){
-#       //p.drawRoundedRect(rc, 0, 0);
-#       if(left_blinker || right_blinker){
-#         //流れるウインカー
-#         p.setBrush(QColor(192, 102, 0, 255 * t[i]));
-#       } else if(handle_center > -99){
-#         p.setBrush(QColor(200, 0, 0, 255 * t[i]));
-#       } else {
-#         p.setBrush(QColor(200, 200, 0, 255 * t[i])); //ハンドルセンターキャリブレーション中は色を緑に。
-#       }
-#       if(left_blinker || right_blinker){
-#         p.drawRect(rect_w * i / (n-1), h_pos - lane_change_height, ww, hh); //drawRectを使う利点は、角を取ったりできそうだ。
-#       } else {
-#         if(Knight_scanner == 0){
-#           continue;
-#         }
+    self.ktsc_ct += dir
+    if self.ktsc_ct <= 0 or self.ktsc_ct >= n*self.ktsc_ct_n-1:
+      if left_blinker or right_blinker:
+        if left_blinker == True and self.ktsc_ct < 0:
+          self.ktsc_ct = n*self.ktsc_ct_n-1
+        elif right_blinker == True and self.ktsc_ct > n*self.ktsc_ct_n-1:
+          self.ktsc_ct = 0
+      else:
+        if self.ktsc_ct < 0 and dir < 0:
+          self.ktsc_ct = 0
+        if self.ktsc_ct > n*self.ktsc_ct_n-1 and dir > 0:
+          self.ktsc_ct = n*self.ktsc_ct_n-1
+        self.dir0 = -self.dir0
+
+    #呼び出し元の状態からここは全て加算ブレンドになる。   p.setCompositionMode(QPainter::CompositionMode_Plus);
+    for i in range(n - 1): #for(int i=0; i<(n-1); i++){
+      if t[i] > 0.01:
+        if left_blinker or right_blinker:
+          #流れるウインカー
+          kt_color = rl.Color(192, 102, 0, int(255 * t[i]))
+        elif self.handle_center >= -99:
+          kt_color = rl.Color(200, 0, 0, int(255 * t[i]))
+        else:
+          kt_color = rl.Color(200, 200, 0, int(255 * t[i])) #ハンドルセンターキャリブレーション中は色を緑に。
+
+        if left_blinker and right_blinker:
+          rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
+          rl.draw_rectangle_rounded(rc, 0, 1, kt_color)
+        else: #単に上梅のフラットにする。
+          if self.Knight_scanner == 0:
+            continue
+
+          rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
+          rl.draw_rectangle_rounded(rc, 0, 1, kt_color)
 #         //ポリゴンで表示。
 #         float sx_a = rect_w * i / (n-1) - rect_w / 2;
 #         sx_a /= (rect_w / 2); // -1〜1
@@ -1682,5 +1665,5 @@ class HudRenderer(Widget):
 #         p.drawPolygon(scaner, std::size(scaner));
 #       }
 #     }
-#     t[i] *= 0.9;
+      t[i] *= 0.9
     pass
