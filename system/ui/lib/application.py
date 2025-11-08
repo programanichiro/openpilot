@@ -144,6 +144,7 @@ class MouseState:
 class GuiApplication:
   def __init__(self, width: int, height: int):
     self._fonts: dict[FontWeight, rl.Font] = {}
+    self._font_path: dict[rl.Font, str] = {}
     self._width = width
     self._height = height
 
@@ -465,6 +466,7 @@ class GuiApplication:
         if font_weight_file != FontWeight.UNIFONT:
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         self._fonts[font_weight_file] = font
+        self._font_path[font] = fnt_path.as_posix()
 
     from openpilot.system.ui.widgets.keyboard import KEYBOARD_LAYOUTS
 
@@ -489,6 +491,7 @@ class GuiApplication:
     jp_font = rl.load_font_ex(jp_font_path, 128, jp_codepoints, jp_codepoint_count[0])
     rl.set_texture_filter(jp_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP"] = jp_font
+    self._font_path[jp_font] = jp_font_path
     rl.unload_codepoints(jp_codepoints)
 
     # ===========================================================
@@ -508,6 +511,7 @@ class GuiApplication:
     jp2_font = rl.load_font_ex(jp2_font_path, 22, jp2_codepoints, jp2_codepoint_count[0])
     rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP2"] = jp2_font
+    self._font_path[jp2_font] = jp2_font_path
     rl.unload_codepoints(jp2_codepoints)
 
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
