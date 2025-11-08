@@ -785,7 +785,7 @@ class HudRenderer(Widget):
               fp3.write('%d' % (0))
           elif pr == 3: #デバッグ用。
             with open('/dev/shm/sound_py_request.txt','w') as fp2:
-              fp2.write('%d' % (1)) #po.wav
+              fp2.write('%d' % (1))
             with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
               fp3.write('%d' % (0))
     except Exception as e:
@@ -1098,6 +1098,13 @@ class HudRenderer(Widget):
         self.road_name = road_info_data[2]
         self.road_bear = road_info_data[3]
 
+  def _button_push_sound(self,onoff):
+    with open('/dev/shm/sound_py_request.txt','w') as fp2:
+      if onoff:
+        fp2.write('%d' % (102)) #pipo.wav
+      else:
+        fp2.write('%d' % (101)) #po.wav
+
   def _press_accel_engaged(self):
     accel_engaged = 0
     try:
@@ -1129,6 +1136,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(accel_engaged)
+
     with open('/dev/shm/accel_engaged.txt','w') as fp2:
       fp2.write("%d" % (accel_engaged))
     with open('/data/accel_engaged.txt','w') as fp3:
@@ -1156,6 +1165,8 @@ class HudRenderer(Widget):
 
     if self.button_style_only:
       return
+
+    self._button_push_sound(dexp_sw_mode)
 
     with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
       fp2.write("%d" % (dexp_sw_mode))
@@ -1185,6 +1196,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(1-long_speeddown_disable)
+
     with open('/dev/shm/long_speeddown_disable.txt','w') as fp2:
       fp2.write("%d" % (long_speeddown_disable))
     with open('/data/long_speeddown_disable.txt','w') as fp3:
@@ -1209,6 +1222,8 @@ class HudRenderer(Widget):
 
     if self.button_style_only:
       return
+
+    self._button_push_sound(lta_enable_sw)
 
     with open('/dev/shm/lta_enable_sw.txt','w') as fp2:
       fp2.write("%d" % (lta_enable_sw))
@@ -1236,6 +1251,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(start_accel_power_up_disp_enable)
+
     with open('/dev/shm/start_accel_power_up_disp_enable.txt','w') as fp2:
       fp2.write("%d" % (start_accel_power_up_disp_enable))
     with open('/data/start_accel_power_up_disp_enable.txt','w') as fp3:
@@ -1262,6 +1279,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(1-accel_ctrl_disable)
+
     with open('/dev/shm/accel_ctrl_disable.txt','w') as fp2:
       fp2.write("%d" % (accel_ctrl_disable))
     with open('/data/accel_ctrl_disable.txt','w') as fp3:
@@ -1287,6 +1306,8 @@ class HudRenderer(Widget):
 
     if self.button_style_only:
       return
+
+    self._button_push_sound(1-decel_ctrl_disable)
 
     with open('/dev/shm/decel_ctrl_disable.txt','w') as fp2:
       fp2.write("%d" % (decel_ctrl_disable))
@@ -1332,6 +1353,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(Knight_scanner)
+
     with open('/dev/shm/knight_scanner_bit3.txt','w') as fp2:
       fp2.write("%d" % (Knight_scanner))
     with open('/data/knight_scanner_bit3.txt','w') as fp3:
@@ -1366,6 +1389,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(limitspeed_sw)
+
     with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
       fp2.write("%d" % (limitspeed_sw))
     with open('/data/limitspeed_sw.txt','w') as fp3:
@@ -1390,6 +1415,8 @@ class HudRenderer(Widget):
 
     if self.button_style_only:
       return
+
+    self._button_push_sound(1)
 
     Params().put("LongitudinalPersonality", psn)
 
@@ -1419,6 +1446,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(1-lockon_disp_disable)
+
     with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
       fp2.write("%d" % (lockon_disp_disable))
     with open('/data/lockon_disp_disable.txt','w') as fp3:
@@ -1439,7 +1468,6 @@ class HudRenderer(Widget):
             fp.write('%d' % (1)) #これがセットされる条件をなるべく絞る。
         else:
           #⚫︎ボタンの代わりに動作する
-          #soundPo(); //操作不能音として鳴らす。
           self._press_limitspeed_sw() #MAX_touch()
       else:
         #MAX=1でタッチ(↑ボタン効果で",1"も含む)
@@ -1449,7 +1477,6 @@ class HudRenderer(Widget):
             fp.write('%d' % (1))
         else:
           #⚫︎ボタンの代わりに動作する
-          #soundPo(); //操作不能音として鳴らす。
           self._press_limitspeed_sw() #MAX_touch()
     else:
       #⚫︎ボタンの代わりに動作する
