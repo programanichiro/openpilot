@@ -623,12 +623,12 @@ class HudRenderer(Widget):
       self._drawText(font=self._font_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height,text=hc_str+"deg",alpha=200) #x,yを下段中心にtextを表示する
     else:
       calib_col = rl.Color(150, 150, 0, 0xf1)
-      rl.draw_rectangle_rounded(rc2, 1.0, 10, status_col)
+      rl.draw_rectangle_rounded(rc2, 1.0, 10, calib_col)
 
       if self.handle_calibct == 0:
         self._drawText(font=self._font_semi_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height,text="Calibrating",alpha=200) #x,yを下段中心にtextを表示する
       else:
-        self._drawText(font=self._font_semi_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height+1,text=str(self.handle_calibct)+"%",alpha=200) #x,yを下段中心にtextを表示する
+        self._drawText(font=self._font_bold,font_size=33,x=rc2.x+rc2.width/2,y=rc2.y+rc2.height+1,text=str(self.handle_calibct)+"%",alpha=200) #x,yを下段中心にtextを表示する
 
     font_size_debug_info = 44
     debug_disp_xpos = rect.x
@@ -660,7 +660,9 @@ class HudRenderer(Widget):
       else:
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
 
-      rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
+#      rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
+      rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1), int(h))
+      rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
 
     self.knightScanner(rect)
 
