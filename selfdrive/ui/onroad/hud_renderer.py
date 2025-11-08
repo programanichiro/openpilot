@@ -1307,22 +1307,22 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       Knight_scanner = (Knight_scanner + 1) % 8
     if Knight_scanner == 0:
-      self._knight_scanner_bit3_button.set_text("○○○")
+      self._knight_scanner_bit3_button.set_text("○ ○ ○")
       self._knight_scanner_bit3_button.set_button_style(ButtonStyle.HudUnder)
     elif Knight_scanner == 1:
-      self._knight_scanner_bit3_button.set_text("●○○")
+      self._knight_scanner_bit3_button.set_text("● ○ ○")
     elif Knight_scanner == 2:
-      self._knight_scanner_bit3_button.set_text("○●○")
+      self._knight_scanner_bit3_button.set_text("○ ● ○")
     elif Knight_scanner == 3:
-      self._knight_scanner_bit3_button.set_text("●●○")
+      self._knight_scanner_bit3_button.set_text("● ● ○")
     elif Knight_scanner == 4:
-      self._knight_scanner_bit3_button.set_text("○○●")
+      self._knight_scanner_bit3_button.set_text("○ ○ ●")
     elif Knight_scanner == 5:
-      self._knight_scanner_bit3_button.set_text("●○●")
+      self._knight_scanner_bit3_button.set_text("● ○ ●")
     elif Knight_scanner == 6:
-      self._knight_scanner_bit3_button.set_text("○●●")
+      self._knight_scanner_bit3_button.set_text("○ ● ●")
     elif Knight_scanner == 7:
-      self._knight_scanner_bit3_button.set_text("●●●")
+      self._knight_scanner_bit3_button.set_text("● ● ●")
 
     self.Knight_scanner = Knight_scanner
 
