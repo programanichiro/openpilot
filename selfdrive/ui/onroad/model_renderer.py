@@ -677,7 +677,7 @@ class ModelRenderer(Widget):
     ww = ww * 2 * 5 / d
     hh = hh * 2 * 5 / d
     #y = min(rect.height, y-dh) + dh #y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
-    y = min(rect.y+rect.height, y-dh) + dh
+    y = min(rect.y+rect.height-2, y-dh) + dh
     r = rl.Rectangle(x - ww/2, y - hh - dh, ww, hh) #QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
 
     #//y?ってわかりにくいな。横方向なんだが。getYは使えなさそうだし。
