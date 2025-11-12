@@ -33,6 +33,7 @@ SHOW_TOUCHES = os.getenv("SHOW_TOUCHES") == "1"
 STRICT_MODE = os.getenv("STRICT_MODE") == "1"
 SCALE = float(os.getenv("SCALE", "1.0"))
 PROFILE_RENDER = int(os.getenv("PROFILE_RENDER", "0"))
+PROFILE_STATS = int(os.getenv("PROFILE_STATS", "100"))  # Number of functions to show in profile output
 
 DEFAULT_TEXT_SIZE = 60
 DEFAULT_TEXT_COLOR = rl.WHITE
@@ -203,9 +204,6 @@ class GuiApplication:
         sys.exit(0)
       signal.signal(signal.SIGINT, _close)
       atexit.register(self.close)
-
-      HARDWARE.set_display_power(True)
-      HARDWARE.set_screen_brightness(65)
 
       self._set_log_callback()
       rl.set_trace_log_level(rl.TraceLogLevel.LOG_WARNING)
@@ -383,28 +381,9 @@ class GuiApplication:
           rl.clear_background(rl.BLACK)
 
         # Handle modal overlay rendering and input processing
-        if self._modal_overlay.overlay:
-          if hasattr(self._modal_overlay.overlay, 'render'):
-            result = self._modal_overlay.overlay.render(rl.Rectangle(0, 0, self.width, self.height))
-          elif callable(self._modal_overlay.overlay):
-            result = self._modal_overlay.overlay()
-          else:
-            raise Exception
-
-          # Send show event to Widget
-          if not self._modal_overlay_shown and hasattr(self._modal_overlay.overlay, 'show_event'):
-            self._modal_overlay.overlay.show_event()
-            self._modal_overlay_shown = True
-
-          if result >= 0:
-            # Clear the overlay and execute the callback
-            original_modal = self._modal_overlay
-            self._modal_overlay = ModalOverlay()
-            if original_modal.callback is not None:
-              original_modal.callback(result)
+        if self._handle_modal_overlay():
           yield False
         else:
-          self._modal_overlay_shown = False
           yield True
 
         if self._render_texture:
@@ -419,24 +398,7 @@ class GuiApplication:
           rl.draw_fps(10, 10)
 
         if self._show_touches:
-          current_time = time.monotonic()
-
-          for mouse_event in self._mouse_events:
-            if mouse_event.left_pressed:
-              self._mouse_history.clear()
-            self._mouse_history.append(MousePosWithTime(mouse_event.pos.x * self._scale, mouse_event.pos.y * self._scale, current_time))
-
-          # Remove old touch points that exceed the timeout
-          while self._mouse_history and (current_time - self._mouse_history[0].t) > TOUCH_HISTORY_TIMEOUT:
-            self._mouse_history.popleft()
-
-          if self._mouse_history:
-            mouse_pos = self._mouse_history[-1]
-            rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 15, rl.RED)
-            for idx, mouse_pos in enumerate(self._mouse_history):
-              perc = idx / len(self._mouse_history)
-              color = rl.Color(min(int(255 * (1.5 - perc)), 255), int(min(255 * (perc + 0.5), 255)), 50, 255)
-              rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 5, color)
+          self._draw_touch_points()
 
         rl.end_drawing()
         self._monitor_fps()
@@ -457,6 +419,31 @@ class GuiApplication:
   @property
   def height(self):
     return self._height
+
+  def _handle_modal_overlay(self) -> bool:
+    if self._modal_overlay.overlay:
+      if hasattr(self._modal_overlay.overlay, 'render'):
+        result = self._modal_overlay.overlay.render(rl.Rectangle(0, 0, self.width, self.height))
+      elif callable(self._modal_overlay.overlay):
+        result = self._modal_overlay.overlay()
+      else:
+        raise Exception
+
+      # Send show event to Widget
+      if not self._modal_overlay_shown and hasattr(self._modal_overlay.overlay, 'show_event'):
+        self._modal_overlay.overlay.show_event()
+        self._modal_overlay_shown = True
+
+      if result >= 0:
+        # Clear the overlay and execute the callback
+        original_modal = self._modal_overlay
+        self._modal_overlay = ModalOverlay()
+        if original_modal.callback is not None:
+          original_modal.callback(result)
+      return True
+    else:
+      self._modal_overlay_shown = False
+      return False
 
   def _load_fonts(self):
     for font_weight_file in FontWeight:
@@ -589,6 +576,26 @@ class GuiApplication:
       cloudlog.error(f"FPS dropped critically below {fps}. Shutting down UI.")
       os._exit(1)
 
+  def _draw_touch_points(self):
+    current_time = time.monotonic()
+
+    for mouse_event in self._mouse_events:
+      if mouse_event.left_pressed:
+        self._mouse_history.clear()
+      self._mouse_history.append(MousePosWithTime(mouse_event.pos.x * self._scale, mouse_event.pos.y * self._scale, current_time))
+
+    # Remove old touch points that exceed the timeout
+    while self._mouse_history and (current_time - self._mouse_history[0].t) > TOUCH_HISTORY_TIMEOUT:
+      self._mouse_history.popleft()
+
+    if self._mouse_history:
+      mouse_pos = self._mouse_history[-1]
+      rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 15, rl.RED)
+      for idx, mouse_pos in enumerate(self._mouse_history):
+        perc = idx / len(self._mouse_history)
+        color = rl.Color(min(int(255 * (1.5 - perc)), 255), int(min(255 * (perc + 0.5), 255)), 50, 255)
+        rl.draw_circle(int(mouse_pos.x), int(mouse_pos.y), 5, color)
+
   def _output_render_profile(self):
     import io
     import pstats
@@ -598,7 +605,7 @@ class GuiApplication:
     avg_frame_time = elapsed_ms / self._frame if self._frame > 0 else 0
 
     stats_stream = io.StringIO()
-    pstats.Stats(self._render_profiler, stream=stats_stream).sort_stats("cumtime").print_stats(25)
+    pstats.Stats(self._render_profiler, stream=stats_stream).sort_stats("cumtime").print_stats(PROFILE_STATS)
     print("\n=== Render loop profile ===")
     print(stats_stream.getvalue().rstrip())
 
