@@ -15,9 +15,7 @@ PATHS_TO_TRY = [
 ]
 def _try_dlopen_amd_comgr():
   library = ctypes.util.find_library("amd_comgr")
-  if library:
-    try: return ctypes.CDLL(library)
-    except OSError: pass
+  if library: return ctypes.CDLL(library)
   for candidate in PATHS_TO_TRY:
     try: return ctypes.CDLL(candidate)
     except OSError: pass
@@ -54,8 +52,6 @@ else:
     c_long_double_t = ctypes.c_ubyte*16
 
 class AsDictMixin:
-    import sys
-    if sys.version_info >= (3, 14): _layout_ = 'ms'
     @classmethod
     def as_dict(cls, self):
         result = {}

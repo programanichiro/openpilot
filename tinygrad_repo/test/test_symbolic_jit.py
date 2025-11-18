@@ -2,6 +2,7 @@ import unittest
 
 from test.helpers import assert_jit_cache_len
 from tinygrad import Variable, Tensor, TinyJit
+from tinygrad.helpers import RANGEIFY
 import numpy as np
 
 class TestSymbolicJit(unittest.TestCase):
@@ -26,7 +27,7 @@ class TestSymbolicJit(unittest.TestCase):
       symbolic = jf(a[:, :vi]).numpy()
       expected = f(a[:, :i]).numpy()
       np.testing.assert_allclose(symbolic, expected, atol=1e-6, rtol=1e-6)
-    assert_jit_cache_len(jf, 1)
+    assert_jit_cache_len(jf, 1 if RANGEIFY else 2) # one add and one pad, can be one kernel?
 
   def test_add(self):
     def f(a, b): return (a+b).realize()
@@ -79,7 +80,7 @@ class TestSymbolicJit(unittest.TestCase):
       symbolic = jf(q, k[:, :vi], v[:, :vi])[:2, :4, :1, :8].numpy()
       expected = f(q, k[:, :i], v[:, :i]).numpy()
       np.testing.assert_allclose(symbolic, expected, atol=1e-6, rtol=1e-6)
-    assert_jit_cache_len(jf, 4)
+    assert_jit_cache_len(jf, 4 if RANGEIFY else 5)
 
   def test_cat_dim0(self):
     def f(a, b): return a.cat(b, dim=0).realize()

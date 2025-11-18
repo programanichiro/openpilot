@@ -5,6 +5,7 @@ import time
 import signal
 import sys
 import pyray as rl
+import array
 import threading
 import platform
 from contextlib import contextmanager
@@ -182,6 +183,7 @@ class MouseState:
 class GuiApplication:
   def __init__(self, width: int, height: int):
     self._fonts: dict[FontWeight, rl.Font] = {}
+    self._font_path: dict[rl.Font, str] = {}
     self._width = width
     self._height = height
 
@@ -510,6 +512,54 @@ class GuiApplication:
         if font_weight_file != FontWeight.UNIFONT:
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         self._fonts[font_weight_file] = font
+        self._font_path[font] = fnt_path.as_posix()
+
+    from openpilot.system.ui.widgets.keyboard import KEYBOARD_LAYOUTS
+
+    base_chars = set()
+    for layout in KEYBOARD_LAYOUTS.values():
+      base_chars.update(key for row in layout for key in row)
+    base_chars |= set("–‑✓×°§•")
+
+    base_chars = "".join(base_chars)
+    # ===========================================================
+    # 日本語フォントをbase_charsだけグリフ読み込み
+    # ===========================================================
+    jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+
+    # BMP全体のコードポイント（0x0000～0xFFFF）
+    jp_codepoint_count = rl.ffi.new("int *", 1)
+
+    # BMP 全体（U+0000～U+FFFF）からサロゲート領域を除く
+    base_chars += "⇧↑↓★☆●○°C⚪︎⚫︎⬇︎□■⬆︎" #とりあえずUIで必要な固定記号をロード。
+    jp_codepoints = rl.load_codepoints(base_chars, jp_codepoint_count)
+
+    jp_font = rl.load_font_ex(jp_font_path, 128, jp_codepoints, jp_codepoint_count[0])
+    rl.set_texture_filter(jp_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    self._fonts["JP"] = jp_font
+    self._font_path[jp_font] = jp_font_path
+    rl.unload_codepoints(jp_codepoints)
+
+    # ===========================================================
+    # 日本語フォント（ASCII + 第一次水準漢字用）
+    # ===========================================================
+    jp2_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+    jp2_codepoint_count = rl.ffi.new("int *", 1)
+
+    ascii_kanji_chars  = ''.join(chr(cp) for cp in range(0x20, 0x7F))        # ASCII
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x3040, 0x309F))    # ひらがな
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x30A0, 0x30FF))    # カタカナ
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x4E00, 0x9FB0))    # 漢字
+
+    jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
+
+    # 22ピクセルフォントを生成
+    jp2_font = rl.load_font_ex(jp2_font_path, 22, jp2_codepoints, jp2_codepoint_count[0])
+    rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    self._fonts["JP2"] = jp2_font
+    self._font_path[jp2_font] = jp2_font_path
+    rl.unload_codepoints(jp2_codepoints)
+
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
 
   def _set_styles(self):

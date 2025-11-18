@@ -101,8 +101,7 @@ class TestResNet(unittest.TestCase):
 
   def test_chicken(self):
     labels = _infer(self.model, chicken_img)
-    # NOTE: logits for these two are close
-    self.assertIn(_LABELS[labels[0]], ("hen", "cock"))
+    self.assertEqual(_LABELS[labels[0]], "hen")
 
   def test_car(self):
     labels = _infer(self.model, car_img)

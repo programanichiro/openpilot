@@ -41,9 +41,7 @@ class DiskDevice(Compiled):
     if self.count == 0:
       if self.fd is not None:
         os.close(self.fd)
-      if hasattr(self, "mem"):
-        try: self.mem.close()
-        except BufferError: pass
+      if hasattr(self, "mem"): self.mem.close()
       self.size = None
   def _iouring_setup(self):
     DiskDevice._tried_io_uring_init = True
