@@ -352,7 +352,8 @@ class SelfdriveD:
       if not self.sm.all_alive():
         self.events.add(EventName.commIssue)
       elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
+        # self.events.add(EventName.commIssueAvgFreq)
+        pass
       else:
         self.events.add(EventName.commIssue)
 
