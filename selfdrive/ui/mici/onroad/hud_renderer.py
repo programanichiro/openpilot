@@ -138,6 +138,7 @@ class HudRenderer(Widget):
     self._wheel_y_filter = FirstOrderFilter(0, 0.1, 1 / gui_app.target_fps)
 
     self._set_speed_alpha_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
+    self._ip_button_init()
 
   def set_wheel_critical_icon(self, critical: bool):
     """Set the wheel icon to critical or normal state."""
@@ -180,6 +181,7 @@ class HudRenderer(Widget):
     v_ego = v_ego_cluster if self.v_ego_cluster_seen else car_state.vEgo
     speed_conversion = CV.MS_TO_KPH if ui_state.is_metric else CV.MS_TO_MPH
     self.speed = max(0.0, v_ego * speed_conversion)
+    self._ip_update_state(sm)
 
   def _render(self, rect: rl.Rectangle) -> None:
     """Render HUD elements to the screen."""
@@ -285,3 +287,45 @@ class HudRenderer(Widget):
     unit_text_size = measure_text_cached(self._font_medium, unit_text, FONT_SIZES.speed_unit)
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2)
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.white_translucent)
+
+  def _ip_button_init(self):
+    def copy_data2devshm(file_name):
+      try:
+        with open('/data/'+file_name, 'rb') as src, open('/dev/shm/'+file_name, 'wb') as dst:
+          dst.write(src.read())
+      except Exception as e:
+        pass
+    copy_data2devshm('accel_engaged.txt')
+    copy_data2devshm('dexp_sw_mode.txt')
+    copy_data2devshm('long_speeddown_disable.txt')
+    copy_data2devshm('lta_enable_sw.txt')
+    copy_data2devshm('start_accel_power_up_disp_enable.txt')
+    copy_data2devshm('accel_ctrl_disable.txt')
+    copy_data2devshm('decel_ctrl_disable.txt')
+    copy_data2devshm('knight_scanner_bit3.txt')
+    copy_data2devshm('limitspeed_sw.txt')
+
+
+  def _ip_update_state(self,sm):
+    try:
+      with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
+        signal_start_prompt_info_str = fp.read()
+        if signal_start_prompt_info_str:
+          pr = int(signal_start_prompt_info_str)
+          if pr == 1:
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (6)) #prompt.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+          elif pr == 2:
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (1)) #engage.wav
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+          elif pr == 3: #デバッグ用。
+            with open('/dev/shm/sound_py_request.txt','w') as fp2:
+              fp2.write('%d' % (1))
+            with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
+              fp3.write('%d' % (0))
+    except Exception as e:
+      pass
