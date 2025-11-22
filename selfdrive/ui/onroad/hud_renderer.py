@@ -1045,7 +1045,6 @@ class HudRenderer(Widget):
               self.red_signal_scan_flag = 0
         except Exception as e:
           pass
-      self.red_signal_scan_flag_txt_ct += 1
 
       if self.red_signal_scan_flag >= 2:
         self.night_mode_ct += 1 #VSCodeがウォルラス演算子(:=)の構文に対応してないので分けている。
@@ -1070,6 +1069,7 @@ class HudRenderer(Widget):
             global g_night_mode
             g_night_mode = self.clipped_brightness0 < (90 if g_night_mode == 1 else 75) #ばたつかないようにする。80程度でかなり夕方。
 
+    self.red_signal_scan_flag_txt_ct += 1
     self.road_info_txt_flag = False
     self.road_info_txt_ct += 1
     if self.road_info_txt_ct % 20 == 17:
