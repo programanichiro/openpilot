@@ -20,9 +20,10 @@ def main():
   else:
     main_layout = MiciMainLayout()
   main_layout.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
-
-  os.remove('/data/force_prebuild') #force_prebuild削除
-
+  try:
+    os.remove('/data/force_prebuild') #force_prebuild削除
+  except Exception as e:
+    pass
   for should_render in gui_app.render():
     ui_state.update()
     if should_render:
