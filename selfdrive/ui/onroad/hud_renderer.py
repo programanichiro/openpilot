@@ -1034,42 +1034,42 @@ class HudRenderer(Widget):
         if acc_speed > 0 and (acc_speed < (31 if self.tss_type <= 1 else 26.0)) or (acc_speed > 109.0 and self.phv_2019 == False and self.tss_type <= 1):
           self.a0 = 200
 
-      if self.red_signal_scan_flag_txt_ct % 7 == 0:
-        try:
-          with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
-            red_signal_scan_flag = fp.read()
-            if self.accel_engaged >= 3: #self.accel_engaged == mAccelEngagedButton
-              if red_signal_scan_flag:
-                self.red_signal_scan_flag = int(red_signal_scan_flag)
-            else:
-              self.red_signal_scan_flag = 0
-        except Exception as e:
-          pass
-
-      if self.red_signal_scan_flag >= 2:
-        self.night_mode_ct += 1 #VSCodeがウォルラス演算子(:=)の構文に対応してないので分けている。
-      if (self.red_signal_scan_flag >= 2 and (self.night_mode_ct) % 11 == 0) or self.red_signal_scan_flag_txt_ct % (20*5) == 1: #5秒に一回は更新
-        if ui_state.started:
-          clipped_brightness = ui_state.light_sensor
-
-          # CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
-          if clipped_brightness <= 8:
-            clipped_brightness = (clipped_brightness / 903.3)
+    if self.red_signal_scan_flag_txt_ct % 7 == 0:
+      try:
+        with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
+          red_signal_scan_flag = fp.read()
+          if self.accel_engaged >= 3: #self.accel_engaged == mAccelEngagedButton
+            if red_signal_scan_flag:
+              self.red_signal_scan_flag = int(red_signal_scan_flag)
           else:
-            clipped_brightness = ((clipped_brightness + 16) / 116) ** 3
-
-          # Scale back to 0% to 100%
-          clipped_brightness = max(0.0, min(100.0, 100.0 * clipped_brightness))
-
-          if self.clipped_brightness0 != clipped_brightness:
-            self.clipped_brightness0 = clipped_brightness
-            with open('/dev/shm/night_time_info.txt','w') as fp:
-              fp.write("%d" % int(clipped_brightness))
-
-            global g_night_mode
-            g_night_mode = self.clipped_brightness0 < (90 if g_night_mode == 1 else 75) #ばたつかないようにする。80程度でかなり夕方。
-
+            self.red_signal_scan_flag = 0
+      except Exception as e:
+        pass
     self.red_signal_scan_flag_txt_ct += 1
+
+    if self.red_signal_scan_flag >= 2:
+      self.night_mode_ct += 1 #VSCodeがウォルラス演算子(:=)の構文に対応してないので分けている。
+    if (self.red_signal_scan_flag >= 2 and (self.night_mode_ct) % 11 == 0) or self.red_signal_scan_flag_txt_ct % (20*5) == 1: #5秒に一回は更新
+      if ui_state.started:
+        clipped_brightness = ui_state.light_sensor
+
+        # CIE 1931 - https://www.photonstophotos.net/GeneralTopics/Exposure/Psychometric_Lightness_and_Gamma.htm
+        if clipped_brightness <= 8:
+          clipped_brightness = (clipped_brightness / 903.3)
+        else:
+          clipped_brightness = ((clipped_brightness + 16) / 116) ** 3
+
+        # Scale back to 0% to 100%
+        clipped_brightness = max(0.0, min(100.0, 100.0 * clipped_brightness))
+
+        if self.clipped_brightness0 != clipped_brightness:
+          self.clipped_brightness0 = clipped_brightness
+          with open('/dev/shm/night_time_info.txt','w') as fp:
+            fp.write("%d" % int(clipped_brightness))
+
+          global g_night_mode
+          g_night_mode = self.clipped_brightness0 < (90 if g_night_mode == 1 else 75) #ばたつかないようにする。80程度でかなり夕方。
+
     self.road_info_txt_flag = False
     self.road_info_txt_ct += 1
     if self.road_info_txt_ct % 20 == 17:
