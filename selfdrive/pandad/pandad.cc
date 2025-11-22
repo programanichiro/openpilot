@@ -365,14 +365,19 @@ void process_panda_state(std::vector<Panda *> &pandas, PubMaster *pm, bool engag
 }
 
 void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) {
+  static Params params;
   static SubMaster sm({"deviceState", "driverCameraState"});
 
   static uint64_t last_driver_camera_t = 0;
   static uint16_t prev_fan_speed = 999;
   static int ir_pwr = 0;
   static int prev_ir_pwr = 999;
+  static uint32_t prev_frame_id = UINT32_MAX;
+  static bool driver_view = false;
 
+  // TODO: can we merge these?
   static FirstOrderFilter integ_lines_filter(0, 30.0, 0.05);
+  static FirstOrderFilter integ_lines_filter_driver_view(0, 5.0, 0.05);
 
   {
     sm.update(0);
@@ -389,7 +394,15 @@ void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) 
       auto event = sm["driverCameraState"];
       int cur_integ_lines = event.getDriverCameraState().getIntegLines();
 
-      cur_integ_lines = integ_lines_filter.update(cur_integ_lines);
+      // reset the filter when camerad restarts
+      if (event.getDriverCameraState().getFrameId() < prev_frame_id) {
+        integ_lines_filter.reset(0);
+        integ_lines_filter_driver_view.reset(0);
+        driver_view = params.getBool("IsDriverViewEnabled");
+      }
+      prev_frame_id = event.getDriverCameraState().getFrameId();
+
+      cur_integ_lines = (driver_view ? integ_lines_filter_driver_view : integ_lines_filter).update(cur_integ_lines);
       last_driver_camera_t = event.getLogMonoTime();
 
       if (cur_integ_lines <= CUTOFF_IL) {
@@ -407,9 +420,9 @@ void process_peripheral_state(Panda *panda, PubMaster *pm, bool no_fan_control) 
     }
 
     if (ir_pwr != prev_ir_pwr || sm.frame % 100 == 0) {
-      int16_t ir_panda = util::map_val(ir_pwr, 0, 100, 0, MAX_IR_PANDA_VAL); 
+      int16_t ir_panda = util::map_val(ir_pwr, 0, 100, 0, MAX_IR_PANDA_VAL);
       panda->set_ir_pwr(ir_panda);
-      Hardware::set_ir_power(ir_pwr); 
+      Hardware::set_ir_power(ir_pwr);
       prev_ir_pwr = ir_pwr;
     }
   }
@@ -444,7 +457,27 @@ void pandad_run(std::vector<Panda *> &pandas) {
     // Process panda state at 10 Hz
     if (rk.frame() % 10 == 0) {
       sm.update(0);
-      engaged = sm.allAliveAndValid({"selfdriveState"}) && sm["selfdriveState"].getSelfdriveState().getEnabled();
+#if 1
+      bool steer_always = false;
+      bool cruise_available = false;
+      std::string steer_always_txt = util::read_file("/dev/shm/steer_always.txt");
+      if(steer_always_txt.empty() == false){
+        if(std::stoi(steer_always_txt) >= 1){
+          steer_always = true;
+        } else {
+          steer_always = false;
+        }
+      }
+      std::string cruise_available_txt = util::read_file("/dev/shm/cruise_available.txt");
+      if(cruise_available_txt.empty() == false){
+        if(std::stoi(cruise_available_txt) >= 1){
+          cruise_available = true;
+        } else {
+          cruise_available = false;
+        }
+      }
+#endif
+      engaged = sm.allAliveAndValid({"selfdriveState"}) && (sm["selfdriveState"].getSelfdriveState().getEnabled() || (steer_always && cruise_available));
       is_onroad = params.getBool("IsOnroad");
       process_panda_state(pandas, &pm, engaged, is_onroad, spoofing_started);
       panda_safety.configureSafetyMode(is_onroad);

@@ -20,6 +20,14 @@ def main():
   else:
     main_layout = MiciMainLayout()
   main_layout.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+  try:
+    os.rename('/data/force_prebuild', '/data/prev_force_prebuild') #元のforce_prebuildを残す。
+  except Exception as e:
+    pass
+  try:
+    os.remove('/data/agnos_update')
+  except Exception as e:
+    pass
   for should_render in gui_app.render():
     ui_state.update()
     if should_render:
