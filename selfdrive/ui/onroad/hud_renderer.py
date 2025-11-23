@@ -664,8 +664,6 @@ class HudRenderer(Widget):
       rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1), int(h))
       rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
 
-    self.knightScanner(rect)
-
     #加速減速表示
     car_state = ui_state.sm['carState']
     self.vc_accel += (car_state.aEgo - self.vc_accel) / 5
@@ -692,7 +690,6 @@ class HudRenderer(Widget):
                (rect.x+rect.width , rect.y+rect.height/2),
                (rect.x+rect.width - wp + wp/2 , rect.y+rect.height/2)]
       rl.draw_triangle_fan(meter,len(meter),va_color)
-
 
     #タコメーター
     taco_rpm = car_state.engineRpm
@@ -766,6 +763,10 @@ class HudRenderer(Widget):
     # next_x = self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220 , bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
     # self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
     # self._drawTextRight(self._font_semi_bold, 33, next_x-4, rect.y+rect.height - 4 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+    self.knightScanner(rect)
+    rl.end_blend_mode() #元のブレンドに戻す
 
   def _ip_update_state(self,sm):
     try:
