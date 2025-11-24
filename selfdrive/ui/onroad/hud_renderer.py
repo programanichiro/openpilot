@@ -1611,6 +1611,21 @@ class HudRenderer(Widget):
       hh = hh / 3
     elif curve_value < 145:
       dir = self.dir0 * 1.0
+      try:
+        with open('/dev/shm/steer_ang_predicate.txt','r') as fp: #md.position.yによる前方カーブ予測が急な時にTrue
+          steer_ang_predicate = fp.read()
+          if steer_ang_predicate and int(steer_ang_predicate) != 0:
+            pass
+          else:
+            if self.vc_speed < 0.1/3.6:
+              hh = hh / 3
+            else:
+              hh = hh * 2 / 3
+      except Exception as e:
+        if self.vc_speed < 0.1/3.6:
+          hh = hh / 3
+        else:
+          hh = hh * 2 / 3
     else:
       dir = self.dir0 * 0.5
       hh = hh * 2 / 3

@@ -803,12 +803,14 @@ class LongitudinalPlanner:
       except Exception as e:
         decel_lead_ctrl = True
 
+    steer_ang_predicate = False
     if decel_lead_ctrl == True and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
       #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       max_yp = 0
       for yp in md.position.y: #path_y
         max_yp = yp if abs(yp) > abs(max_yp) else max_yp
         if abs(steerAng) < abs(max_yp) / 2.5:
+          steer_ang_predicate = True
           steerAng = (-max_yp / 2.5)
       limit_vc = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_B else LIMIT_VC_A / (abs(steerAng) - LIMIT_VC_B) + LIMIT_VC_C
       limit_vc_h = V_CRUISE_MAX if abs(steerAng) <= LIMIT_VC_BH else LIMIT_VC_AH / (abs(steerAng) - LIMIT_VC_BH) + LIMIT_VC_CH
@@ -831,11 +833,9 @@ class LongitudinalPlanner:
     if CVS_FRAME % 5 == 1:
       with open('/dev/shm/car_vego.txt','w') as fp:
         fp.write('%.1f' % (vk_ego))
-    # if True: #CVS_FRAME % 5 == 1:
-    #   #os.environ['steer_ang_info'] = '%f' % (steerAng)
-    #   with open('/dev/shm/steer_ang_info.txt','w') as fp: #carstateに移動。
-    #    fp.write('%f' % (steerAng))
-    #    #fp.write('%f' % (-max_yp / 2.5))
+    if CVS_FRAME % 5 == 1:
+      with open('/dev/shm/steer_ang_predicate.txt','w') as fp: #md.position.yによる前方カーブ予測が急な時にTrue
+       fp.write('%d' % int(limit_vc < 145 and steer_ang_predicate == True))
     if CVS_FRAME % 5 == 0:
       with open('/dev/shm/cruise_info.txt','w') as fp:
         #fp.write('%d/%d' % (v_cruise_kph_org , (limit_vc if limit_vc < V_CRUISE_MAX else V_CRUISE_MAX)))
