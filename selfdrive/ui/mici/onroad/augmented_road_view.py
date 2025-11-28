@@ -226,7 +226,7 @@ class AugmentedRoadView(CameraView):
     self._hud_renderer.render(self._content_rect)
 
     # Draw fake rounded border
-    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02, 10, 50, rl.BLACK)
+    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * 0.05, 10, 50, rl.BLACK)
 
     # End clipping region
     rl.end_scissor_mode()
