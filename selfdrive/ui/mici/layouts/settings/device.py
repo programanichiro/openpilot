@@ -180,10 +180,13 @@ class UpdateOpenpilotBigButton(BigButton):
 
     def run():
       if self.get_value() == "download update":
+        os.system("echo 13 > /data/force_prebuild")
         os.system("pkill -SIGHUP -f system.updated.updated")
       elif self.get_value() == "update now":
+        os.system("echo 14 > /data/force_prebuild")
         ui_state.params.put_bool("DoReboot", True)
       else:
+        os.system("echo 15 > /data/force_prebuild")
         os.system("pkill -SIGUSR1 -f system.updated.updated")
 
     threading.Thread(target=run, daemon=True).start()
