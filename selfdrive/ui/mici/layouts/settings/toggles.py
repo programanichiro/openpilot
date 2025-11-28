@@ -36,6 +36,7 @@ class TogglesLayoutMici(NavWidget):
       record_front,
       record_mic,
       enable_openpilot,
+      C4UIOnC3X,
     ], snap_items=False)
 
     # Toggle lists
