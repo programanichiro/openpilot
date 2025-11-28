@@ -16,7 +16,8 @@ def main():
 
   gui_app.init_window("UI")
   if gui_app.big_ui():
-    main_layout = MainLayout()
+    #main_layout = MainLayout()
+    main_layout = MiciMainLayout()
   else:
     main_layout = MiciMainLayout()
   main_layout.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
