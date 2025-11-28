@@ -19,6 +19,7 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.system.hardware import HARDWARE, PC
 from openpilot.system.ui.lib.multilang import multilang
 from openpilot.common.realtime import Ratekeeper
+from openpilot.common.params import Params
 
 _DEFAULT_FPS = int(os.getenv("FPS", {'tizi': 20}.get(HARDWARE.get_device_type(), 60)))
 FPS_LOG_INTERVAL = 5  # Seconds between logging FPS drops
@@ -712,11 +713,11 @@ class GuiApplication:
 
   @staticmethod
   def _default_width() -> int:
-    return 2160 #if GuiApplication.big_ui() else 536
+    return 2160 if GuiApplication.big_ui() or Params().get_bool("C4UIOnC3X") == True else 536
 
   @staticmethod
   def _default_height() -> int:
-    return 1080 #SSif GuiApplication.big_ui() else 240
+    return 1080 if GuiApplication.big_ui() or Params().get_bool("C4UIOnC3X") == True else 240
 
   @staticmethod
   def big_ui() -> bool:

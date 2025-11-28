@@ -39,6 +39,7 @@ DESCRIPTIONS = {
   "DisableMaxSpeedModify": tr_noop("ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it."),
   "ForceHybridVehicle": tr_noop("Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash."),
   "IgnoreRerouteHarness": tr_noop("Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed."),
+  "C4UIOnC3X": tr_noop("This is a test switch for using the Comma 4 UI on C3X."),
 }
 
 
@@ -128,6 +129,12 @@ class TogglesLayout(Widget):
       #   "warning.png",
       #   True,
       # ),
+      "C4UIOnC3X": (
+        lambda: tr("Use the C4 UI in C3X"),
+        DESCRIPTIONS["C4UIOnC3X"],
+        "../icons/chffr_wheel.png",
+        False,
+      ),
     }
 
     # Edit tethering password

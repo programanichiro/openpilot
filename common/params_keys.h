@@ -86,6 +86,7 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"AccelMethodSwitch", {PERSISTENT, BOOL}},
     {"GpsAlwaysSwitch", {PERSISTENT, BOOL}},
     {"RaylibMode", {PERSISTENT, BOOL}},
+    {"C4UIOnC3X", {PERSISTENT, BOOL}},
     {"DisableMaxSpeedModify", {PERSISTENT, BOOL}},
     {"ForceHybridVehicle", {PERSISTENT, BOOL}},
     {"IgnoreRerouteHarness", {PERSISTENT, BOOL}},

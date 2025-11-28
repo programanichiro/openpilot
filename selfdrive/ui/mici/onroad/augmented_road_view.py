@@ -16,6 +16,7 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.common.filter_simple import BounceFilter
 from openpilot.common.transformations.camera import DEVICE_CAMERAS, DeviceCameraConfig, view_frame_from_device_frame
 from openpilot.common.transformations.orientation import rot_from_euler
+from openpilot.common.params import Params
 from enum import IntEnum
 
 OpState = log.SelfdriveState.OpenpilotState
@@ -226,7 +227,8 @@ class AugmentedRoadView(CameraView):
     self._hud_renderer.render(self._content_rect)
 
     # Draw fake rounded border
-    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * 0.05, 10, 50, rl.BLACK)
+    rr = 1.0 if Params().get_bool("C4UIOnC3X") == False else 0.05
+    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * rr, 10, 50, rl.BLACK)
 
     # End clipping region
     rl.end_scissor_mode()
