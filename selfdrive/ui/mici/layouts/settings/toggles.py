@@ -3,7 +3,7 @@ from collections.abc import Callable
 from cereal import log
 
 from openpilot.system.ui.widgets.scroller import Scroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
@@ -26,6 +26,7 @@ class TogglesLayoutMici(NavWidget):
     record_mic = BigParamControl("record & upload mic audio", "RecordAudio", toggle_callback=restart_needed_callback)
     enable_openpilot = BigParamControl("enable openpilot", "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
     C4UIOnC3X = BigParamControl("use c4 ui in c3x", "C4UIOnC3X", toggle_callback=restart_needed_callback)
+    self._accel_method_setting = BigMultiToggle("accel method", ["recommend", "official"], select_callback=self._accel_method_setting_callback, toggle_callback=restart_needed_callback)
 
     self._scroller = Scroller([
       self._personality_toggle,
@@ -37,6 +38,7 @@ class TogglesLayoutMici(NavWidget):
       record_mic,
       enable_openpilot,
       C4UIOnC3X,
+      self._accel_method_setting,
     ], snap_items=False)
 
     # Toggle lists
@@ -78,6 +80,12 @@ class TogglesLayoutMici(NavWidget):
   def _update_toggles(self):
     ui_state.update_params()
 
+    #self._accel_method_settingの設定処理
+    if ui_state.params.get_bool("AccelMethodSwitch") == False:
+      self._accel_method_setting.set_value("recommend") #直接文字列をセットする
+    else:
+      self._accel_method_setting.set_value("official") #直接文字列をセットする
+
     # CP gating for experimental mode
     if ui_state.CP is not None:
       if ui_state.has_longitudinal_control:
@@ -96,3 +104,11 @@ class TogglesLayoutMici(NavWidget):
 
   def _render(self, rect: rl.Rectangle):
     self._scroller.render(rect)
+
+  def _accel_method_setting_callback(self,str):
+    #self._accel_method_settingの変更処理
+    if str == "recommend":
+      ui_state.params.put_bool("AccelMethodSwitch",False) #indexを設定
+    else:
+      ui_state.params.put_bool("AccelMethodSwitch",True) #indexを設定
+
