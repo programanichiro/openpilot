@@ -40,6 +40,8 @@ class TogglesLayoutMici(NavWidget):
     #イチロウロング
     #MADS
     #標識レコードボタン（これだけはOnroadに追加したい）
+    #ロックオンOFFボタン（減速時にワンペダルに落ちない）
+    #●●● ナイトスキャナー
 
     self._scroller = Scroller([
       self._personality_toggle,
