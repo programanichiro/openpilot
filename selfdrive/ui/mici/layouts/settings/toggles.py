@@ -27,6 +27,19 @@ class TogglesLayoutMici(NavWidget):
     enable_openpilot = BigParamControl("enable openpilot", "OpenpilotEnabledToggle", toggle_callback=restart_needed_callback)
     C4UIOnC3X = BigParamControl("use c4 ui in c3x", "C4UIOnC3X", toggle_callback=restart_needed_callback)
     self._accel_method_setting = BigMultiToggle("accel method", ["recommend", "official"], select_callback=self._accel_method_setting_callback, toggle_callback=restart_needed_callback)
+    GpsAlwaysSwitch = BigParamControl("always receive GPS signals", "GpsAlwaysSwitch", toggle_callback=restart_needed_callback)
+    DisableMaxSpeedModify = BigParamControl("use TSSP acc over 115", "DisableMaxSpeedModify", toggle_callback=restart_needed_callback)
+    ForceHybridVehicle = BigParamControl("force hybrid vehicle", "ForceHybridVehicle", toggle_callback=restart_needed_callback)
+    IgnoreRerouteHarness = BigParamControl("ignore TSSP bypass harness", "IgnoreRerouteHarness", toggle_callback=restart_needed_callback)
+    #ハボタン
+    #dXボタン（できればOnroad）
+    #ターボブースト
+    #PedalMethod(N,A,AA,iP,eP)
+    #前走車追従（できればOnroad）
+    #カーブ減速（できればOnroad）
+    #イチロウロング
+    #MADS
+    #標識レコードボタン（これだけはOnroadに追加したい）
 
     self._scroller = Scroller([
       self._personality_toggle,
@@ -37,8 +50,12 @@ class TogglesLayoutMici(NavWidget):
       record_front,
       record_mic,
       enable_openpilot,
-      C4UIOnC3X,
       self._accel_method_setting,
+      GpsAlwaysSwitch,
+      DisableMaxSpeedModify,
+      ForceHybridVehicle,
+      IgnoreRerouteHarness,
+      C4UIOnC3X,
     ], snap_items=False)
 
     # Toggle lists
@@ -50,6 +67,10 @@ class TogglesLayoutMici(NavWidget):
       ("RecordFront", record_front),
       ("RecordAudio", record_mic),
       ("OpenpilotEnabledToggle", enable_openpilot),
+      ("GpsAlwaysSwitch", GpsAlwaysSwitch),
+      ("DisableMaxSpeedModify", DisableMaxSpeedModify),
+      ("ForceHybridVehicle", ForceHybridVehicle),
+      ("IgnoreRerouteHarness", IgnoreRerouteHarness),
       ("C4UIOnC3X", C4UIOnC3X),
     )
 
