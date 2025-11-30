@@ -100,6 +100,8 @@ class TogglesLayoutMici(NavWidget):
         self._personality_toggle.set_value(self._personality_toggle._options[personality])
       ui_state.personality = personality
 
+    self._ip_toggles_update() #ここでも呼ぶ
+
   def show_event(self):
     super().show_event()
     self._scroller.show_event()
@@ -124,7 +126,7 @@ class TogglesLayoutMici(NavWidget):
     for key, item in self._refresh_toggles:
       item.set_checked(ui_state.params.get_bool(key))
 
-    self._ip_toggles_update()
+    self._ip_toggles_update() #togglesに遷移した時にしか呼ばれない
 
   def _render(self, rect: rl.Rectangle):
     self._scroller.render(rect)
