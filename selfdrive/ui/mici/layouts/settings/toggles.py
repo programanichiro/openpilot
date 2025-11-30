@@ -38,8 +38,8 @@ class TogglesLayoutMici(NavWidget):
     self._dexp_sw_mode_button = BigToggle("dynamic experimental mode", "" ,toggle_callback=self._dexp_sw_mode_button_callback) #dXボタン（できればOnroadHudにも）
     self._start_accel_power_up_disp_enable_button = BigToggle("turbo boost", "" ,toggle_callback=self._start_accel_power_up_disp_enable_button_callback) #ターボブースト
     #PedalMethod(N,A,AA,iP,eP)
-    #前走車追従（できればOnroadHudにも）
-    #カーブ減速（できればOnroadHudにも）
+    self._accel_ctrl_disable_button = BigToggle("follow lead car", "" ,toggle_callback=self._accel_ctrl_disable_button_callback) #前走車追従（できればOnroadHudにも）
+    self._decel_ctrl_disable_button = BigToggle("tight curve slowdown", "" ,toggle_callback=self._decel_ctrl_disable_button_callback) #カーブ減速（できればOnroadHudにも）
     self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
     self._mads_button = BigToggle("MADS toggle", "" ,toggle_callback=self._mads_button_callback) #MADS
     #標識レコードボタン（これだけはOnroadに追加したい）
@@ -64,8 +64,8 @@ class TogglesLayoutMici(NavWidget):
       self._dexp_sw_mode_button,
       self._start_accel_power_up_disp_enable_button,
 
-
-
+      self._accel_ctrl_disable_button,
+      self._decel_ctrl_disable_button,
       self._long_speeddown_disable_button,
       self._mads_button,
       C4UIOnC3X,
@@ -141,9 +141,29 @@ class TogglesLayoutMici(NavWidget):
 
   def _ip_toggles_update(self):
 
+    accel_ctrl_disable = 0
+    try:
+      with open('/data/accel_ctrl_disable.txt','r') as fp: # /data/から取る
+        accel_ctrl_disable_str = fp.read()
+        if accel_ctrl_disable_str:
+          accel_ctrl_disable = int(accel_ctrl_disable_str)
+    except Exception as e:
+      pass
+    self._accel_ctrl_disable_button.set_checked(accel_ctrl_disable == 0)
+
+    decel_ctrl_disable = 0
+    try:
+      with open('/data/decel_ctrl_disable.txt','r') as fp: # /data/から取る
+        decel_ctrl_disable_str = fp.read()
+        if decel_ctrl_disable_str:
+          decel_ctrl_disable = int(decel_ctrl_disable_str)
+    except Exception as e:
+      pass
+    self._decel_ctrl_disable_button.set_checked(decel_ctrl_disable == 0)
+
     steer_always = 0
     try:
-      with open('/dev/shm/steer_always.txt','r') as fp:
+      with open('/dev/shm/steer_always.txt','r') as fp: # /dev/shmのまま
         steer_always_str = fp.read()
         if steer_always_str:
           if int(steer_always_str) >= 1:
@@ -241,4 +261,18 @@ class TogglesLayoutMici(NavWidget):
     mads_steer_always = int(onoff)
     with open('/dev/shm/steer_always.txt','w') as fp2:
       fp2.write("%d" % (mads_steer_always))
+
+  def _accel_ctrl_disable_button_callback(self,onoff):
+    accel_ctrl_disable = int(not onoff)
+    with open('/dev/shm/accel_ctrl_disable.txt','w') as fp2:
+      fp2.write("%d" % (accel_ctrl_disable))
+    with open('/data/accel_ctrl_disable.txt','w') as fp3:
+      fp3.write("%d" % (accel_ctrl_disable))
+
+  def _decel_ctrl_disable_button_callback(self,onoff):
+    decel_ctrl_disable = int(not onoff)
+    with open('/dev/shm/decel_ctrl_disable.txt','w') as fp2:
+      fp2.write("%d" % (decel_ctrl_disable))
+    with open('/data/decel_ctrl_disable.txt','w') as fp3:
+      fp3.write("%d" % (decel_ctrl_disable))
 
