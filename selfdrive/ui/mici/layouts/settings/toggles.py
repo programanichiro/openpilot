@@ -18,6 +18,7 @@ class TogglesLayoutMici(NavWidget):
     self.set_back_callback(back_callback)
 
     self.now_exp = ui_state.params.get_bool("ExperimentalMode")
+    self.now_exp_ct = 0
 
     self._personality_toggle = BigMultiParamToggle("driving personality", "LongitudinalPersonality", ["aggressive", "standard", "relaxed"])
     self._experimental_btn = BigParamControl("experimental mode", "ExperimentalMode")
@@ -129,6 +130,10 @@ class TogglesLayoutMici(NavWidget):
     self._scroller.render(rect)
 
   def _ip_toggles_update(self):
+
+    self.now_exp_ct += 1
+    with open('/tmp/dexp_sw_mode_ct.txt','w') as fp3:
+      fp3.write("%d,%d" % (self.now_exp_ct,int(self.now_exp)))
 
     if self.now_exp != ui_state.params.get_bool("ExperimentalMode"):
       self._dexp_sw_mode_button_callback(False) #ExperimentalModeを操作したらdX解除する
