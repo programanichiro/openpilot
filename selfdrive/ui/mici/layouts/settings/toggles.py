@@ -41,7 +41,7 @@ class TogglesLayoutMici(NavWidget):
     #前走車追従（できればOnroadHudにも）
     #カーブ減速（できればOnroadHudにも）
     self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
-    #MADS
+    self._mads_button = BigToggle("MADS toggle", "" ,toggle_callback=self._mads_button_callback) #MADS
     #標識レコードボタン（これだけはOnroadに追加したい）
     #ロックオンOFFボタン（減速時にワンペダルに落ちない）
     #●●● ナイトスキャナー
@@ -67,6 +67,7 @@ class TogglesLayoutMici(NavWidget):
 
 
       self._long_speeddown_disable_button,
+      self._mads_button,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -139,6 +140,17 @@ class TogglesLayoutMici(NavWidget):
     self._scroller.render(rect)
 
   def _ip_toggles_update(self):
+
+    steer_always = 0
+    try:
+      with open('/dev/shm/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2 #なぜ2なのか忘れた。
+    except Exception as e:
+      pass
+    self._mads_button.set_checked(steer_always != 0)
 
     long_speeddown_disable = 0
     try:
@@ -224,4 +236,9 @@ class TogglesLayoutMici(NavWidget):
       fp2.write("%d" % (long_speeddown_disable))
     with open('/data/long_speeddown_disable.txt','w') as fp3:
       fp3.write("%d" % (long_speeddown_disable))
+
+  def _mads_button_callback(self,onoff):
+    mads_steer_always = int(onoff)
+    with open('/dev/shm/steer_always.txt','w') as fp2:
+      fp2.write("%d" % (mads_steer_always))
 
