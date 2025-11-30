@@ -17,6 +17,8 @@ class TogglesLayoutMici(NavWidget):
     super().__init__()
     self.set_back_callback(back_callback)
 
+    self.now_exp = ui_state.params.get_bool("ExperimentalMode")
+
     self._personality_toggle = BigMultiParamToggle("driving personality", "LongitudinalPersonality", ["aggressive", "standard", "relaxed"])
     self._experimental_btn = BigParamControl("experimental mode", "ExperimentalMode")
     is_metric_toggle = BigParamControl("use metric units", "IsMetric")
@@ -32,11 +34,11 @@ class TogglesLayoutMici(NavWidget):
     ForceHybridVehicle = BigParamControl("force hybrid vehicle", "ForceHybridVehicle", toggle_callback=restart_needed_callback)
     IgnoreRerouteHarness = BigParamControl("ignore TSSP bypass harness", "IgnoreRerouteHarness", toggle_callback=restart_needed_callback)
     self._lta_enable_sw_button = BigToggle("return from edge of lane", "" ,toggle_callback=self._lta_enable_sw_button_callback) #ハボタン
-    #dXボタン（できればOnroad）
+    self._dexp_sw_mode_button = BigToggle("dynamic experimental mode", "" ,toggle_callback=self._dexp_sw_mode_button_callback) #dXボタン（できればOnroadHudにも）
     #ターボブースト
     #PedalMethod(N,A,AA,iP,eP)
-    #前走車追従（できればOnroad）
-    #カーブ減速（できればOnroad）
+    #前走車追従（できればOnroadHudにも）
+    #カーブ減速（できればOnroadHudにも）
     #イチロウロング
     #MADS
     #標識レコードボタン（これだけはOnroadに追加したい）
@@ -58,6 +60,7 @@ class TogglesLayoutMici(NavWidget):
       ForceHybridVehicle,
       IgnoreRerouteHarness,
       self._lta_enable_sw_button,
+      self._dexp_sw_mode_button,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -126,6 +129,21 @@ class TogglesLayoutMici(NavWidget):
     self._scroller.render(rect)
 
   def _ip_toggles_update(self):
+
+    if self.now_exp != ui_state.params.get_bool("ExperimentalMode"):
+      self._dexp_sw_mode_button_callback(False) #ExperimentalModeを操作したらdX解除する
+      self.now_exp = ui_state.params.get_bool("ExperimentalMode")
+
+    dexp_sw_mode = 0
+    try:
+      with open('/data/dexp_sw_mode.txt','r') as fp: # /data/から取る
+        dexp_sw_mode_str = fp.read()
+        if dexp_sw_mode_str:
+          dexp_sw_mode = int(dexp_sw_mode_str)
+    except Exception as e:
+      pass
+    self._dexp_sw_mode_button.set_checked(dexp_sw_mode != 0)
+
     lta_enable_sw = 0
     try:
       with open('/data/lta_enable_sw.txt','r') as fp: # /data/から取る
@@ -156,3 +174,9 @@ class TogglesLayoutMici(NavWidget):
     with open('/data/lta_enable_sw.txt','w') as fp3:
       fp3.write("%d" % (lta_enable_sw))
 
+  def _dexp_sw_mode_button_callback(self,onoff):
+    dexp_sw_mode = int(onoff)
+    with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
+      fp2.write("%d" % (dexp_sw_mode))
+    with open('/data/dexp_sw_mode.txt','w') as fp3:
+      fp3.write("%d" % (dexp_sw_mode))
