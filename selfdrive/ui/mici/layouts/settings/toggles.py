@@ -3,7 +3,7 @@ from collections.abc import Callable
 from cereal import log
 
 from openpilot.system.ui.widgets.scroller import Scroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
@@ -31,7 +31,7 @@ class TogglesLayoutMici(NavWidget):
     DisableMaxSpeedModify = BigParamControl("use TSSP acc over 115", "DisableMaxSpeedModify", toggle_callback=restart_needed_callback)
     ForceHybridVehicle = BigParamControl("force hybrid vehicle", "ForceHybridVehicle", toggle_callback=restart_needed_callback)
     IgnoreRerouteHarness = BigParamControl("ignore TSSP bypass harness", "IgnoreRerouteHarness", toggle_callback=restart_needed_callback)
-    #ハボタン
+    self._lta_enable_sw_button = BigToggle("return from edge of lane", "" ,toggle_callback=self._lta_enable_sw_button_callback) #ハボタン
     #dXボタン（できればOnroad）
     #ターボブースト
     #PedalMethod(N,A,AA,iP,eP)
@@ -57,6 +57,7 @@ class TogglesLayoutMici(NavWidget):
       DisableMaxSpeedModify,
       ForceHybridVehicle,
       IgnoreRerouteHarness,
+      self._lta_enable_sw_button,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -103,12 +104,6 @@ class TogglesLayoutMici(NavWidget):
   def _update_toggles(self):
     ui_state.update_params()
 
-    #self._accel_method_settingの設定処理
-    if ui_state.params.get_bool("AccelMethodSwitch") == False:
-      self._accel_method_setting.set_value("recommend") #直接文字列をセットする
-    else:
-      self._accel_method_setting.set_value("official") #直接文字列をセットする
-
     # CP gating for experimental mode
     if ui_state.CP is not None:
       if ui_state.has_longitudinal_control:
@@ -125,8 +120,27 @@ class TogglesLayoutMici(NavWidget):
     for key, item in self._refresh_toggles:
       item.set_checked(ui_state.params.get_bool(key))
 
+    self._ip_toggles_update()
+
   def _render(self, rect: rl.Rectangle):
     self._scroller.render(rect)
+
+  def _ip_toggles_update(self):
+    lta_enable_sw = 0
+    try:
+      with open('/data/lta_enable_sw.txt','r') as fp: # /data/から取る
+        lta_enable_sw_str = fp.read()
+        if lta_enable_sw_str:
+          lta_enable_sw = int(lta_enable_sw_str)
+    except Exception as e:
+      pass
+    self._lta_enable_sw_button.set_checked(lta_enable_sw != 0)
+
+    #self._accel_method_settingの設定処理
+    if ui_state.params.get_bool("AccelMethodSwitch") == False:
+      self._accel_method_setting.set_value("recommend") #直接文字列をセットする
+    else:
+      self._accel_method_setting.set_value("official") #直接文字列をセットする
 
   def _accel_method_setting_callback(self,str):
     #self._accel_method_settingの変更処理
@@ -134,4 +148,11 @@ class TogglesLayoutMici(NavWidget):
       ui_state.params.put_bool("AccelMethodSwitch",False) #indexを設定
     else:
       ui_state.params.put_bool("AccelMethodSwitch",True) #indexを設定
+
+  def _lta_enable_sw_button_callback(self,onoff):
+    lta_enable_sw = int(onoff)
+    with open('/dev/shm/lta_enable_sw.txt','w') as fp2:
+      fp2.write("%d" % (lta_enable_sw))
+    with open('/data/lta_enable_sw.txt','w') as fp3:
+      fp3.write("%d" % (lta_enable_sw))
 
