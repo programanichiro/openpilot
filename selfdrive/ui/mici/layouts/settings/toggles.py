@@ -40,7 +40,7 @@ class TogglesLayoutMici(NavWidget):
     #PedalMethod(N,A,AA,iP,eP)
     #前走車追従（できればOnroadHudにも）
     #カーブ減速（できればOnroadHudにも）
-    #イチロウロング
+    self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
     #MADS
     #標識レコードボタン（これだけはOnroadに追加したい）
     #ロックオンOFFボタン（減速時にワンペダルに落ちない）
@@ -63,6 +63,10 @@ class TogglesLayoutMici(NavWidget):
       self._lta_enable_sw_button,
       self._dexp_sw_mode_button,
       self._start_accel_power_up_disp_enable_button,
+
+
+
+      self._long_speeddown_disable_button,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -136,6 +140,16 @@ class TogglesLayoutMici(NavWidget):
 
   def _ip_toggles_update(self):
 
+    long_speeddown_disable = 0
+    try:
+      with open('/data/long_speeddown_disable.txt','r') as fp: # /data/から取る
+        long_speeddown_disable_str = fp.read()
+        if long_speeddown_disable_str:
+          long_speeddown_disable = int(long_speeddown_disable_str)
+    except Exception as e:
+      pass
+    self._long_speeddown_disable_button.set_checked(long_speeddown_disable == 0)
+
     start_accel_power_up_disp_enable = 0
     try:
       with open('/data/start_accel_power_up_disp_enable.txt','r') as fp: # /data/から取る
@@ -203,3 +217,11 @@ class TogglesLayoutMici(NavWidget):
       fp2.write("%d" % (start_accel_power_up_disp_enable))
     with open('/data/start_accel_power_up_disp_enable.txt','w') as fp3:
       fp3.write("%d" % (start_accel_power_up_disp_enable))
+
+  def _long_speeddown_disable_button_callback(self,onoff):
+    long_speeddown_disable = int(not onoff)
+    with open('/dev/shm/long_speeddown_disable.txt','w') as fp2:
+      fp2.write("%d" % (long_speeddown_disable))
+    with open('/data/long_speeddown_disable.txt','w') as fp3:
+      fp3.write("%d" % (long_speeddown_disable))
+
