@@ -43,7 +43,7 @@ class TogglesLayoutMici(NavWidget):
     self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
     self._mads_button = BigToggle("MADS toggle", "" ,toggle_callback=self._mads_button_callback) #MADS
     #標識レコードボタン（これだけはOnroadに追加したい）
-    #ロックオンOFFボタン（減速時にワンペダルに落ちない）
+    self._lockon_disp_disable_button = BigToggle("follow lead car", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
     #●●● ナイトスキャナー
 
     self._scroller = Scroller([
@@ -68,6 +68,8 @@ class TogglesLayoutMici(NavWidget):
       self._decel_ctrl_disable_button,
       self._long_speeddown_disable_button,
       self._mads_button,
+
+      self._lockon_disp_disable_button,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -140,6 +142,15 @@ class TogglesLayoutMici(NavWidget):
     self._scroller.render(rect)
 
   def _ip_toggles_update(self):
+    lockon_disp_disable = 0
+    try:
+      with open('/dev/shm/lockon_disp_disable.txt','r') as fp: # /dev/shmのまま
+        lockon_disp_disable_str = fp.read()
+        if lockon_disp_disable_str:
+          lockon_disp_disable = int(lockon_disp_disable_str)
+    except Exception as e:
+      pass
+    self._lockon_disp_disable_button.set_checked(lockon_disp_disable == 0)
 
     accel_ctrl_disable = 0
     try:
@@ -276,3 +287,9 @@ class TogglesLayoutMici(NavWidget):
     with open('/data/decel_ctrl_disable.txt','w') as fp3:
       fp3.write("%d" % (decel_ctrl_disable))
 
+  def _lockon_disp_disable_button_callback(self,onoff):
+    lockon_disp_disable = int(not onoff)
+    with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
+      fp2.write("%d" % (lockon_disp_disable))
+    # with open('/data/lockon_disp_disable.txt','w') as fp3:
+    #   fp3.write("%d" % (lockon_disp_disable))
