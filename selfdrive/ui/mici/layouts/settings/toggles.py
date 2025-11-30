@@ -36,7 +36,7 @@ class TogglesLayoutMici(NavWidget):
     IgnoreRerouteHarness = BigParamControl("ignore TSSP bypass harness", "IgnoreRerouteHarness", toggle_callback=restart_needed_callback)
     self._lta_enable_sw_button = BigToggle("return from edge of lane", "" ,toggle_callback=self._lta_enable_sw_button_callback) #ハボタン
     self._dexp_sw_mode_button = BigToggle("dynamic experimental mode", "" ,toggle_callback=self._dexp_sw_mode_button_callback) #dXボタン（できればOnroadHudにも）
-    #ターボブースト
+    self._start_accel_power_up_disp_enable_button = BigToggle("turbo boost", "" ,toggle_callback=self._start_accel_power_up_disp_enable_button_callback) #ターボブースト
     #PedalMethod(N,A,AA,iP,eP)
     #前走車追従（できればOnroadHudにも）
     #カーブ減速（できればOnroadHudにも）
@@ -62,6 +62,7 @@ class TogglesLayoutMici(NavWidget):
       IgnoreRerouteHarness,
       self._lta_enable_sw_button,
       self._dexp_sw_mode_button,
+      self._start_accel_power_up_disp_enable_button,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -135,6 +136,16 @@ class TogglesLayoutMici(NavWidget):
 
   def _ip_toggles_update(self):
 
+    start_accel_power_up_disp_enable = 0
+    try:
+      with open('/data/start_accel_power_up_disp_enable.txt','r') as fp: # /data/から取る
+        start_accel_power_up_disp_enable_str = fp.read()
+        if start_accel_power_up_disp_enable_str:
+          start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+    except Exception as e:
+      pass
+    self._start_accel_power_up_disp_enable_button.set_checked(start_accel_power_up_disp_enable != 0)
+
     if self.now_exp != ui_state.params.get_bool("ExperimentalMode"):
       self._dexp_sw_mode_button_callback(False) #ExperimentalModeを操作したらdX解除する
       self.now_exp = ui_state.params.get_bool("ExperimentalMode")
@@ -185,3 +196,10 @@ class TogglesLayoutMici(NavWidget):
       fp2.write("%d" % (dexp_sw_mode))
     with open('/data/dexp_sw_mode.txt','w') as fp3:
       fp3.write("%d" % (dexp_sw_mode))
+
+  def _start_accel_power_up_disp_enable_button_callback(self,onoff):
+    start_accel_power_up_disp_enable = int(onoff)
+    with open('/dev/shm/start_accel_power_up_disp_enable.txt','w') as fp2:
+      fp2.write("%d" % (start_accel_power_up_disp_enable))
+    with open('/data/start_accel_power_up_disp_enable.txt','w') as fp3:
+      fp3.write("%d" % (start_accel_power_up_disp_enable))
