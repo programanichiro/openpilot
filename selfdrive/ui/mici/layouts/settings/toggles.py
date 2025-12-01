@@ -42,8 +42,8 @@ class TogglesLayoutMici(NavWidget):
     self._decel_ctrl_disable_button = BigToggle("tight curve slowdown", "" ,toggle_callback=self._decel_ctrl_disable_button_callback) #カーブ減速（できればOnroadHudにも）
     self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
     self._mads_button = BigToggle("MADS toggle", "" ,toggle_callback=self._mads_button_callback) #MADS
-    #標識レコードボタン（これだけはOnroadに追加したい）
-    self._lockon_disp_disable_button = BigToggle("follow lead car", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
+    self._limitspeed_sw_button = BigMultiToggle("acc speed limit", ["manual", "auto", "record"], select_callback=self._limitspeed_sw_button_callback) #標識レコードボタン（これだけはOnroadに追加したい）
+    self._lockon_disp_disable_button = BigToggle("lockon erase", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
     #●●● ナイトスキャナー
 
     self._scroller = Scroller([
@@ -68,7 +68,7 @@ class TogglesLayoutMici(NavWidget):
       self._decel_ctrl_disable_button,
       self._long_speeddown_disable_button,
       self._mads_button,
-
+      self._limitspeed_sw_button,
       self._lockon_disp_disable_button,
       C4UIOnC3X,
     ], snap_items=False)
@@ -142,6 +142,23 @@ class TogglesLayoutMici(NavWidget):
     self._scroller.render(rect)
 
   def _ip_toggles_update(self):
+    limitspeed_sw = 0
+    try:
+      with open('/dev/shm/limitspeed_sw.txt','r') as fp:
+        limitspeed_sw_str = fp.read()
+        if limitspeed_sw_str:
+          limitspeed_sw = int(limitspeed_sw_str)
+    except Exception as e:
+      pass
+
+    if limitspeed_sw == 0:
+      self._limitspeed_sw_button.set_value("manual") #直接文字列をセットする
+    elif limitspeed_sw == 1:
+      self._limitspeed_sw_button.set_value("auto") #直接文字列をセットする
+    else: #limitspeed_sw == 2
+      self._limitspeed_sw_button.set_value("record") #直接文字列をセットする
+
+
     lockon_disp_disable = 0
     try:
       with open('/dev/shm/lockon_disp_disable.txt','r') as fp: # /dev/shmのまま
@@ -293,3 +310,10 @@ class TogglesLayoutMici(NavWidget):
       fp2.write("%d" % (lockon_disp_disable))
     # with open('/data/lockon_disp_disable.txt','w') as fp3:
     #   fp3.write("%d" % (lockon_disp_disable))
+
+  def _limitspeed_sw_button_callback(self,str):
+    limitspeed_sw = int(str)
+    with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
+      fp2.write("%d" % (limitspeed_sw))
+    with open('/data/limitspeed_sw.txt','w') as fp3:
+      fp3.write("%d" % (limitspeed_sw))
