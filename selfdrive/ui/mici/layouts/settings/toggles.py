@@ -312,7 +312,12 @@ class TogglesLayoutMici(NavWidget):
     #   fp3.write("%d" % (lockon_disp_disable))
 
   def _limitspeed_sw_button_callback(self,str):
-    limitspeed_sw = int(str)
+    if str == "manual":
+      limitspeed_sw = 0
+    elif str == "auto":
+      limitspeed_sw = 1
+    else: #str == "record":
+      limitspeed_sw = 2
     with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
       fp2.write("%d" % (limitspeed_sw))
     with open('/data/limitspeed_sw.txt','w') as fp3:
