@@ -37,7 +37,7 @@ class TogglesLayoutMici(NavWidget):
     self._lta_enable_sw_button = BigToggle("return from edge of lane", "" ,toggle_callback=self._lta_enable_sw_button_callback) #ハボタン
     self._dexp_sw_mode_button = BigToggle("dynamic experimental mode", "" ,toggle_callback=self._dexp_sw_mode_button_callback) #dXボタン（できればOnroadHudにも）
     self._start_accel_power_up_disp_enable_button = BigToggle("turbo boost", "" ,toggle_callback=self._start_accel_power_up_disp_enable_button_callback) #ターボブースト
-    self._accel_engaged_button = BigMultiToggleAA("pedal mode", ["disengage", "A", "AA", "iP", "eP"], select_callback=self._accel_engaged_button_callback) #PedalMethod(N,A,AA,iP,eP)
+    self._accel_engaged_button = BigMultiToggle("pedal mode", ["disengage", "A", "AA", "iP", "eP"], select_callback=self._accel_engaged_button_callback) #PedalMethod(N,A,AA,iP,eP)
     self._accel_ctrl_disable_button = BigToggle("follow lead car", "" ,toggle_callback=self._accel_ctrl_disable_button_callback) #前走車追従（できればOnroadHudにも）
     self._decel_ctrl_disable_button = BigToggle("tight curve slowdown", "" ,toggle_callback=self._decel_ctrl_disable_button_callback) #カーブ減速（できればOnroadHudにも）
     self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
