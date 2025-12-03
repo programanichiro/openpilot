@@ -326,10 +326,6 @@ class BigMultiToggle(BigToggle):
       y += 35
 
 class BigMultiToggleAA(BigMultiToggle):
-  def __init__(self, text: str, options: list[str], toggle_callback: Callable = None,
-               select_callback: Callable = None):
-    super().__init__(text, options, toggle_callback, select_callback)
-
   def _render(self, _):
     BigButton._render(self, _)
 
@@ -342,6 +338,19 @@ class BigMultiToggleAA(BigMultiToggle):
     for i in range(len(self._options)):
       if i > 0:
         self._draw_pill(x, y, checked_idx == i)
+      y += 35
+
+class BigMultiToggleKN(BigMultiToggle):
+  def _render(self, _):
+    BigButton._render(self, _)
+
+    checked_idx = self._options.index(self.value)
+
+    x = self._rect.x + self._rect.width - self._txt_enabled_toggle.width
+    y = self._rect.y
+
+    for i in range(3): #ビット的に点灯させる。
+      self._draw_pill(x, y, (checked_idx & (1 << i)) != 0)
       y += 35
 
 class BigMultiParamToggle(BigMultiToggle):

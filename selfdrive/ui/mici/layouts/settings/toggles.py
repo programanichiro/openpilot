@@ -3,7 +3,7 @@ from collections.abc import Callable
 from cereal import log
 
 from openpilot.system.ui.widgets.scroller import Scroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle, BigMultiToggleAA
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle, BigMultiToggleAA, BigMultiToggleKN
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
@@ -44,7 +44,7 @@ class TogglesLayoutMici(NavWidget):
     self._mads_button = BigToggle("MADS toggle", "" ,toggle_callback=self._mads_button_callback) #MADS
     self._limitspeed_sw_button = BigMultiToggle("acc speed limit", ["manual", "auto", "record"], select_callback=self._limitspeed_sw_button_callback) #標識レコードボタン（これだけはOnroadに追加したい）
     self._lockon_disp_disable_button = BigToggle("lockon erase", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
-    #●●● ナイトスキャナー
+    self._knight_scanner_bit3_button = BigMultiToggleKN("knight scanner", ["param_0", "param_1", "param_2", "param_3", "param_4", "param_5", "param_6", "param_7"], select_callback=self._knight_scanner_bit3_button_callback) #●●● ナイトスキャナー
 
     self._scroller = Scroller([
       self._personality_toggle,
@@ -70,6 +70,7 @@ class TogglesLayoutMici(NavWidget):
       self._mads_button,
       self._limitspeed_sw_button,
       self._lockon_disp_disable_button,
+      self._knight_scanner_bit3_button,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -142,6 +143,33 @@ class TogglesLayoutMici(NavWidget):
     self._scroller.render(rect)
 
   def _ip_toggles_update(self):
+    Knight_scanner = 0
+    try:
+      with open('/data/knight_scanner_bit3.txt','r') as fp: # /data/から取る
+        Knight_scanner_str = fp.read()
+        if Knight_scanner_str:
+          Knight_scanner = int(Knight_scanner_str)
+    except Exception as e:
+      pass
+
+    if Knight_scanner == 0:
+      self._knight_scanner_bit3_button.set_value("param_0") #直接文字列をセットする
+    elif accel_engaged == 1:
+      self._knight_scanner_bit3_button.set_value("param_1") #直接文字列をセットする
+    elif accel_engaged == 2:
+      self._knight_scanner_bit3_button.set_value("param_2") #直接文字列をセットする
+    elif accel_engaged == 3:
+      self._knight_scanner_bit3_button.set_value("param_3") #直接文字列をセットする
+    elif accel_engaged == 4:
+      self._knight_scanner_bit3_button.set_value("param_4") #直接文字列をセットする
+    elif accel_engaged == 5:
+      self._knight_scanner_bit3_button.set_value("param_5") #直接文字列をセットする
+    elif accel_engaged == 6:
+      self._knight_scanner_bit3_button.set_value("param_6") #直接文字列をセットする
+    else: #accel_engaged == 7
+      self._knight_scanner_bit3_button.set_value("param_7") #直接文字列をセットする
+
+
     accel_engaged = 0
     try:
       with open('/data/accel_engaged.txt','r') as fp: # /data/から取る
@@ -359,3 +387,25 @@ class TogglesLayoutMici(NavWidget):
     with open('/data/accel_engaged.txt','w') as fp3:
       fp3.write("%d" % (accel_engaged))
 
+  def _knight_scanner_bit3_button_callback(self,str):
+    Knight_scanner = 7
+    if str == "param_0":
+      Knight_scanner = 0
+    elif str == "param_1":
+      Knight_scanner = 1
+    elif str == "param_2":
+      Knight_scanner = 2
+    elif str == "param_3":
+      Knight_scanner = 3
+    elif str == "param_4":
+      Knight_scanner = 4
+    elif str == "param_5":
+      Knight_scanner = 5
+    elif str == "param_6":
+      Knight_scanner = 6
+    else: #str == "param_7":
+      Knight_scanner = 7
+    with open('/dev/shm/knight_scanner_bit3.txt','w') as fp2:
+      fp2.write("%d" % (Knight_scanner))
+    with open('/data/knight_scanner_bit3.txt','w') as fp3:
+      fp3.write("%d" % (Knight_scanner))
