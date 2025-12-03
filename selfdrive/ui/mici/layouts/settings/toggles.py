@@ -3,7 +3,7 @@ from collections.abc import Callable
 from cereal import log
 
 from openpilot.system.ui.widgets.scroller import Scroller
-from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle
+from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle, BigMultiToggleAA
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
@@ -37,7 +37,7 @@ class TogglesLayoutMici(NavWidget):
     self._lta_enable_sw_button = BigToggle("return from edge of lane", "" ,toggle_callback=self._lta_enable_sw_button_callback) #ハボタン
     self._dexp_sw_mode_button = BigToggle("dynamic experimental mode", "" ,toggle_callback=self._dexp_sw_mode_button_callback) #dXボタン（できればOnroadHudにも）
     self._start_accel_power_up_disp_enable_button = BigToggle("turbo boost", "" ,toggle_callback=self._start_accel_power_up_disp_enable_button_callback) #ターボブースト
-    #PedalMethod(N,A,AA,iP,eP)
+    self._accel_engaged_button = BigMultiToggleAA("pedal mode", ["disengage", "A", "AA", "iP", "eP"], select_callback=self._accel_engaged_button_callback) #PedalMethod(N,A,AA,iP,eP)
     self._accel_ctrl_disable_button = BigToggle("follow lead car", "" ,toggle_callback=self._accel_ctrl_disable_button_callback) #前走車追従（できればOnroadHudにも）
     self._decel_ctrl_disable_button = BigToggle("tight curve slowdown", "" ,toggle_callback=self._decel_ctrl_disable_button_callback) #カーブ減速（できればOnroadHudにも）
     self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
@@ -63,7 +63,7 @@ class TogglesLayoutMici(NavWidget):
       self._lta_enable_sw_button,
       self._dexp_sw_mode_button,
       self._start_accel_power_up_disp_enable_button,
-
+      self._accel_engaged_button,
       self._accel_ctrl_disable_button,
       self._decel_ctrl_disable_button,
       self._long_speeddown_disable_button,
@@ -142,6 +142,26 @@ class TogglesLayoutMici(NavWidget):
     self._scroller.render(rect)
 
   def _ip_toggles_update(self):
+    accel_engaged = 0
+    try:
+      with open('/dev/shm/accel_engaged.txt','r') as fp:
+        accel_engaged_str = fp.read()
+        if accel_engaged_str:
+          accel_engaged = int(accel_engaged_str)
+    except Exception as e:
+      pass
+
+    if accel_engaged == 0:
+      self._accel_engaged_button.set_value("disengage") #直接文字列をセットする
+    elif limitspeed_sw == 1:
+      self._accel_engaged_button.set_value("A") #直接文字列をセットする
+    elif limitspeed_sw == 2:
+      self._accel_engaged_button.set_value("AA") #直接文字列をセットする
+    elif limitspeed_sw == 3:
+      self._accel_engaged_button.set_value("iP") #直接文字列をセットする
+    else: #limitspeed_sw == 4
+      self._accel_engaged_button.set_value("eP") #直接文字列をセットする
+
     limitspeed_sw = 0
     try:
       with open('/dev/shm/limitspeed_sw.txt','r') as fp:
@@ -322,3 +342,20 @@ class TogglesLayoutMici(NavWidget):
       fp2.write("%d" % (limitspeed_sw))
     with open('/data/limitspeed_sw.txt','w') as fp3:
       fp3.write("%d" % (limitspeed_sw))
+
+  def _accel_engaged_button_callback(self,str):
+    if str == "disengage":
+      accel_engaged = 0
+    elif str == "A":
+      accel_engaged = 1
+    elif str == "AA":
+      accel_engaged = 2
+    elif str == "iP":
+      accel_engaged = 3
+    else: #str == "eP":
+      accel_engaged = 4
+    with open('/dev/shm/accel_engaged.txt','w') as fp2:
+      fp2.write("%d" % (accel_engaged))
+    with open('/data/accel_engaged.txt','w') as fp3:
+      fp3.write("%d" % (accel_engaged))
+

@@ -325,6 +325,21 @@ class BigMultiToggle(BigToggle):
       self._draw_pill(x, y, checked_idx == i)
       y += 35
 
+class BigMultiToggleAA(BigMultiToggle):
+
+  def _render(self, _):
+    BigButton._render(self, _)
+
+    checked_idx = self._options.index(self.value)
+
+    x = self._rect.x + self._rect.width - self._txt_enabled_toggle.width
+    y = self._rect.y
+
+    y -= 35
+    for i in range(len(self._options)):
+      if i > 0:
+        self._draw_pill(x, y, checked_idx == i)
+      y += 35
 
 class BigMultiParamToggle(BigMultiToggle):
   def __init__(self, text: str, param: str, options: list[str], toggle_callback: Callable = None,
