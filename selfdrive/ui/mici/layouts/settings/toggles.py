@@ -153,13 +153,13 @@ class TogglesLayoutMici(NavWidget):
 
     if accel_engaged == 0:
       self._accel_engaged_button.set_value("disengage") #直接文字列をセットする
-    elif limitspeed_sw == 1:
+    elif accel_engaged == 1:
       self._accel_engaged_button.set_value("A") #直接文字列をセットする
-    elif limitspeed_sw == 2:
+    elif accel_engaged == 2:
       self._accel_engaged_button.set_value("AA") #直接文字列をセットする
-    elif limitspeed_sw == 3:
+    elif accel_engaged == 3:
       self._accel_engaged_button.set_value("iP") #直接文字列をセットする
-    else: #limitspeed_sw == 4
+    else: #accel_engaged == 4
       self._accel_engaged_button.set_value("eP") #直接文字列をセットする
 
     limitspeed_sw = 0
