@@ -326,6 +326,9 @@ class BigMultiToggle(BigToggle):
       y += 35
 
 class BigMultiToggleAA(BigMultiToggle):
+  def __init__(self, text: str, options: list[str], toggle_callback: Callable = None,
+               select_callback: Callable = None):
+    super().__init__(text, options, toggle_callback, select_callback)
 
   def _render(self, _):
     BigButton._render(self, _)

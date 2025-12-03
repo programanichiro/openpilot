@@ -144,7 +144,7 @@ class TogglesLayoutMici(NavWidget):
   def _ip_toggles_update(self):
     accel_engaged = 0
     try:
-      with open('/dev/shm/accel_engaged.txt','r') as fp:
+      with open('/data/accel_engaged.txt','r') as fp: # /data/から取る
         accel_engaged_str = fp.read()
         if accel_engaged_str:
           accel_engaged = int(accel_engaged_str)
@@ -164,7 +164,7 @@ class TogglesLayoutMici(NavWidget):
 
     limitspeed_sw = 0
     try:
-      with open('/dev/shm/limitspeed_sw.txt','r') as fp:
+      with open('/data/limitspeed_sw.txt','r') as fp: # /data/から取る
         limitspeed_sw_str = fp.read()
         if limitspeed_sw_str:
           limitspeed_sw = int(limitspeed_sw_str)
