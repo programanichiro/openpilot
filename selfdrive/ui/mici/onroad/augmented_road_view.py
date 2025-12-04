@@ -297,7 +297,7 @@ class AugmentedRoadView(CameraView):
     if is_wide_camera:
       zoom = 0.7 * 1.5
     elif gui_app.big_ui():
-      zoom = 1.0
+      zoom = 0.7 * 1.5
     else:
       zoom = np.interp(ui_state.sm['carState'].vEgo, [10, 30], [0.8, 1.0])
 
