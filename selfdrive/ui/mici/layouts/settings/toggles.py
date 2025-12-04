@@ -43,7 +43,7 @@ class TogglesLayoutMici(NavWidget):
     self._long_speeddown_disable_button = BigToggle("chill mode signal detective", "" ,toggle_callback=self._long_speeddown_disable_button_callback) #イチロウロング
     self._mads_button = BigToggle("MADS toggle", "" ,toggle_callback=self._mads_button_callback) #MADS
     self._limitspeed_sw_button = BigMultiToggle("acc speed limit", ["manual", "auto", "record"], select_callback=self._limitspeed_sw_button_callback) #標識レコードボタン（これだけはOnroadに追加したい）
-    self._lockon_disp_disable_button = BigToggle("lockon erase", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
+    self._lockon_disp_disable_button = BigToggle("lockon indicator", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
     self._knight_scanner_bit3_button = BigMultiToggleKN("knight scanner", ["param_0", "param_1", "param_2", "param_3", "param_4", "param_5", "param_6", "param_7"], select_callback=self._knight_scanner_bit3_button_callback) #●●● ナイトスキャナー
 
     self._scroller = Scroller([
