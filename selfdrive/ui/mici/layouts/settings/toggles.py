@@ -154,19 +154,19 @@ class TogglesLayoutMici(NavWidget):
 
     if Knight_scanner == 0:
       self._knight_scanner_bit3_button.set_value("param_0") #直接文字列をセットする
-    elif accel_engaged == 1:
+    elif Knight_scanner == 1:
       self._knight_scanner_bit3_button.set_value("param_1") #直接文字列をセットする
-    elif accel_engaged == 2:
+    elif Knight_scanner == 2:
       self._knight_scanner_bit3_button.set_value("param_2") #直接文字列をセットする
-    elif accel_engaged == 3:
+    elif Knight_scanner == 3:
       self._knight_scanner_bit3_button.set_value("param_3") #直接文字列をセットする
-    elif accel_engaged == 4:
+    elif Knight_scanner == 4:
       self._knight_scanner_bit3_button.set_value("param_4") #直接文字列をセットする
-    elif accel_engaged == 5:
+    elif Knight_scanner == 5:
       self._knight_scanner_bit3_button.set_value("param_5") #直接文字列をセットする
-    elif accel_engaged == 6:
+    elif Knight_scanner == 6:
       self._knight_scanner_bit3_button.set_value("param_6") #直接文字列をセットする
-    else: #accel_engaged == 7
+    else: #Knight_scanner == 7
       self._knight_scanner_bit3_button.set_value("param_7") #直接文字列をセットする
 
 
