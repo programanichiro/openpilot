@@ -254,7 +254,7 @@ class HudRenderer(Widget):
     """Draw the MAX speed indicator box."""
     alpha = self._set_speed_alpha_filter.update(0 < rl.get_time() - self._set_speed_changed_time < SET_SPEED_PERSISTENCE and
                                                 self._can_draw_top_icons and self._engaged)
-    if self._can_draw_top_icons and self._engaged:
+    if self._can_draw_top_icons: #standstill状態でも表示したいから、self._engagedを除く。
       alpha = 1.0
     else:
       alpha = 0.0
@@ -283,7 +283,7 @@ class HudRenderer(Widget):
     rl.draw_text_ex(
       self._font_display,
       set_speed_text,
-      rl.Vector2(x + circle_radius*2 - set_speed_text_size.x, y + 3 - 8 - 3 + 4),
+      rl.Vector2(x -5 + circle_radius*2 - set_speed_text_size.x, y + 3 - 8 - 3 + 4),
       FONT_SIZES.set_speed,
       0,
       set_speed_color,
@@ -294,7 +294,7 @@ class HudRenderer(Widget):
     rl.draw_text_ex(
       self._font_semi_bold,
       max_text,
-      rl.Vector2(x + circle_radius*2 - max_text_size.x, y + FONT_SIZES.set_speed - 7 + 4),
+      rl.Vector2(x - 10 + circle_radius*2 - max_text_size.x, y + FONT_SIZES.set_speed - 7 + 4),
       FONT_SIZES.max_speed,
       0,
       max_color,
