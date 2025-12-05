@@ -177,7 +177,7 @@ class HudRenderer(Widget):
           if cruise_info_str.endswith(";"): #末尾セミコロンスタートBoost
             cruise_info_str = cruise_info_str[:-1]
             self.turbo_boost = True
-          self.set_speed = int(cruise_info_str)
+          set_speed = int(cruise_info_str)
     except Exception as e:
       pass
 
