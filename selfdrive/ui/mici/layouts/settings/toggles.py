@@ -269,7 +269,8 @@ class TogglesLayoutMici(NavWidget):
     self._start_accel_power_up_disp_enable_button.set_checked(start_accel_power_up_disp_enable != 0)
 
     if self.now_exp != ui_state.params.get_bool("ExperimentalMode"):
-      self._dexp_sw_mode_button_callback(False) #ExperimentalModeを操作したらdX解除する
+      #self._dexp_sw_mode_button_callback(False) #ExperimentalModeを操作したらdX解除する
+      #ここで解除するとボタン操作でない場合でも解除されてしまう。
       self.now_exp = ui_state.params.get_bool("ExperimentalMode")
 
     dexp_sw_mode = 0
