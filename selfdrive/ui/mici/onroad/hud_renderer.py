@@ -182,6 +182,14 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    self.db_rec_mode = False
+    if self.limit_speed_override == False:
+      # self.yellow_flag = False
+      if self.Limit_speed_mode == 2:
+        # rect_color = rl.Color(100, 0, 0, 250)
+        if self.set_speed >= 30:
+          self.db_rec_mode = True
+
     engaged = sm['selfdriveState'].enabled
     if (set_speed != self.set_speed and engaged) or (engaged and not self._engaged):
       self._set_speed_changed_time = rl.get_time()
@@ -290,6 +298,10 @@ class HudRenderer(Widget):
     )
 
     max_text = tr("MAX")
+    if self.limit_speed_override:
+      max_text = tr("AUTO")
+    if self.db_rec_mode:
+      max_text = tr("REC")
     max_text_size = measure_text_cached(self._font_semi_bold, max_text, FONT_SIZES.max_speed)
     rl.draw_text_ex(
       self._font_semi_bold,
@@ -333,7 +345,8 @@ class HudRenderer(Widget):
     self.add_v_by_lead = False
     self.curve_brake = False
     self.turbo_boost = False
-
+    self.db_rec_mode = False
+    self.Limit_speed_mode = 0
 
   def _ip_update_state(self,sm):
     try:
@@ -358,3 +371,14 @@ class HudRenderer(Widget):
               fp3.write('%d' % (0))
     except Exception as e:
       pass
+
+    limitspeed_sw = 0
+    try:
+      with open('/dev/shm/limitspeed_sw.txt','r') as fp:
+        limitspeed_sw_str = fp.read()
+        if limitspeed_sw_str:
+          limitspeed_sw = int(limitspeed_sw_str)
+    except Exception as e:
+      pass
+
+    self.Limit_speed_mode = limitspeed_sw
