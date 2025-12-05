@@ -283,7 +283,7 @@ class HudRenderer(Widget):
     rl.draw_text_ex(
       self._font_display,
       set_speed_text,
-      rl.Vector2(x + 13 + 4 + circle_radius*2 - set_speed_text_size.x, y + 3 - 8 - 3 + 4),
+      rl.Vector2(x + circle_radius*2 - set_speed_text_size.x, y + 3 - 8 - 3 + 4),
       FONT_SIZES.set_speed,
       0,
       set_speed_color,
