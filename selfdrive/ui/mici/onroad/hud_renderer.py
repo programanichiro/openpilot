@@ -254,7 +254,10 @@ class HudRenderer(Widget):
     """Draw the MAX speed indicator box."""
     alpha = self._set_speed_alpha_filter.update(0 < rl.get_time() - self._set_speed_changed_time < SET_SPEED_PERSISTENCE and
                                                 self._can_draw_top_icons and self._engaged)
-    alpha = 1.0
+    if self._can_draw_top_icons and self._engaged:
+      alpha = 1.0
+    else:
+      alpha = 0.0
     if alpha < 1e-2:
       return
 
@@ -276,20 +279,22 @@ class HudRenderer(Widget):
       set_speed *= KM_TO_MILE
 
     set_speed_text = CRUISE_DISABLED_CHAR if not self.is_cruise_set else str(round(set_speed))
+    set_speed_text_size = measure_text_cached(self._font_display, set_speed_text, FONT_SIZES.set_speed)
     rl.draw_text_ex(
       self._font_display,
       set_speed_text,
-      rl.Vector2(x + 13 + 4, y + 3 - 8 - 3 + 4),
+      rl.Vector2(x + 13 + 4 + circle_radius*2 - set_speed_text_size.x, y + 3 - 8 - 3 + 4),
       FONT_SIZES.set_speed,
       0,
       set_speed_color,
     )
 
     max_text = tr("MAX")
+    max_text_size = measure_text_cached(self._font_semi_bold, max_text, FONT_SIZES.max_speed)
     rl.draw_text_ex(
       self._font_semi_bold,
       max_text,
-      rl.Vector2(x + 25, y + FONT_SIZES.set_speed - 7 + 4),
+      rl.Vector2(x + circle_radius*2 - max_text_size.x, y + FONT_SIZES.set_speed - 7 + 4),
       FONT_SIZES.max_speed,
       0,
       max_color,
