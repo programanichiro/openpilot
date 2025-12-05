@@ -156,6 +156,31 @@ class HudRenderer(Widget):
     set_speed = (
       controls_state.vCruiseDEPRECATED if v_cruise_cluster == 0.0 else v_cruise_cluster
     )
+
+    try:
+      with open('/dev/shm/cruise_info.txt','r') as fp:
+        cruise_info_str = fp.read()
+        if cruise_info_str:
+          self.limit_speed_override = False
+          self.add_v_by_lead = False
+          self.curve_brake = False
+          self.turbo_boost = False
+          if cruise_info_str.startswith(";"): #先頭セミコロンで制限速度適用
+            cruise_info_str = cruise_info_str[1:]
+            self.limit_speed_override = True
+          if cruise_info_str.startswith(","): #先頭カンマで増速、前走車追従
+            cruise_info_str = cruise_info_str[1:]
+            self.add_v_by_lead = True
+          if cruise_info_str.endswith("."): #末尾ピリオドで減速
+            cruise_info_str = cruise_info_str[:-1]
+            self.curve_brake = True
+          if cruise_info_str.endswith(";"): #末尾セミコロンスタートBoost
+            cruise_info_str = cruise_info_str[:-1]
+            self.turbo_boost = True
+          self.set_speed = int(cruise_info_str)
+    except Exception as e:
+      pass
+
     engaged = sm['selfdriveState'].enabled
     if (set_speed != self.set_speed and engaged) or (engaged and not self._engaged):
       self._set_speed_changed_time = rl.get_time()
@@ -294,6 +319,11 @@ class HudRenderer(Widget):
     copy_data2devshm('decel_ctrl_disable.txt')
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
+
+    self.limit_speed_override = False
+    self.add_v_by_lead = False
+    self.curve_brake = False
+    self.turbo_boost = False
 
 
   def _ip_update_state(self,sm):
