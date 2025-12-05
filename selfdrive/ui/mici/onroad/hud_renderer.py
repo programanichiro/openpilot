@@ -215,6 +215,7 @@ class HudRenderer(Widget):
       self._draw_set_speed(rect)
 
     self._draw_steering_wheel(rect)
+    self._ip_draw(rect)
 
   def _draw_steering_wheel(self, rect: rl.Rectangle) -> None:
     wheel_txt = self._txt_wheel_critical if self._show_wheel_critical else self._txt_wheel
@@ -348,7 +349,19 @@ class HudRenderer(Widget):
     self.db_rec_mode = False
     self.Limit_speed_mode = 0
 
+    self.ktsc_ct_n = 1
+    self.ktsc_ct = 0
+    n = 15+1 #タイミングの問題で画面外に一つ増やす
+    self.ktsc_t = [0.0] * n
+    self.dir0 = 1.0
+    self.Knight_scanner = 0
+
+    self.limit_vc_info = 0
+    self.ip_update_state_ct = 0
+
   def _ip_update_state(self,sm):
+    self.ip_update_state_ct += 1
+
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
         signal_start_prompt_info_str = fp.read()
@@ -382,3 +395,149 @@ class HudRenderer(Widget):
       pass
 
     self.Limit_speed_mode = limitspeed_sw
+
+    if self.ip_update_state_ct % 2 == 1:
+      try:
+        with open('/dev/shm/limit_vc_info.txt','r') as fp3:
+          limit_vc_info = fp3.read()
+          if limit_vc_info:
+            self.limit_vc_info = float(limit_vc_info)
+      except Exception as e:
+        pass
+
+  def _ip_draw(self, rect: rl.Rectangle):
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+    self.knightScanner(rect)
+    rl.end_blend_mode() #元のブレンドに戻す
+
+
+  def knightScanner(self, rect: rl.Rectangle):
+    height = rect.height
+    width = rect.width
+#   extern int global_status; #ui_state.status == UIStatus.ENGAGED
+#   extern int Knight_scanner; #self.Knight_scanner
+
+    rect_w = width #rect().width();
+    rect_h = height #rect().height();
+
+    n = 15+1 #タイミングの問題で画面外に一つ増やす
+    t = self.ktsc_t #static float t[n];
+    t[(int)(self.ktsc_ct/self.ktsc_ct_n)] = 1.0
+    ww = rect_w / (n-1) #画面外の一つ分を外す。
+    hh = rect_h / 15 #ww
+
+    curve_value = self.limit_vc_info
+    if curve_value == 0 or self._engaged == False:
+      dir = self.dir0 * 0.25
+      hh = hh / 3
+    elif curve_value < 145:
+      try:
+        with open('/dev/shm/steer_ang_predicate.txt','r') as fp: #md.position.yによる前方カーブ予測が急な時にTrue
+          steer_ang_predicate = fp.read()
+          if steer_ang_predicate and int(steer_ang_predicate) != 0:
+            dir = self.dir0 * 1.0
+          else:
+            dir = self.dir0 * 0.5
+            if self.vc_speed < 0.1/3.6:
+              hh = hh / 3
+            else:
+              hh = hh * 2 / 3
+      except Exception as e:
+        dir = self.dir0 * 0.5
+        if self.vc_speed < 0.1/3.6:
+          hh = hh / 3
+        else:
+          hh = hh * 2 / 3
+    else:
+      dir = self.dir0 * 0.5
+      if self.vc_speed < 0.1/3.6:
+        hh = hh / 3
+      else:
+        hh = hh * 2 / 3
+
+    left_blinker = ui_state.sm["carState"].leftBlinker
+    right_blinker = ui_state.sm["carState"].rightBlinker
+    lane_change_height = 0 #280; //↓の下の尖りがウインカーの底辺になるように調整。
+    if left_blinker or right_blinker:
+      if left_blinker == True:
+        self.dir0 = -abs(self.dir0)
+      elif right_blinker == True:
+        self.dir0 = abs(self.dir0)
+      dir = self.dir0 * 1.0
+      hh = rect_h / 15 #ww
+      hh = hh * 2 / 3
+# #if 0
+#     if((*s->sm)["carState"].getCarState().getVEgo() >= 50/3.6){ //
+#       lane_change_height = 270;
+#     }
+# #elif 0 //メッセージUIの表示手法変更で、下の隙間から見えるので、lane_change_height持ち上げはひとまず取りやめ。
+#     auto lp = (*s->sm)["lateralPlan"].getLateralPlan();
+#     if( lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::PRE_LANE_CHANGE ||
+#         lp.getLaneChangeState() == cereal::LateralPlan::LaneChangeState::LANE_CHANGE_STARTING){ //レーンチェンジの表示で判定
+#       lane_change_height = 270;
+#     } else { //stand_stillでもウインカーを上げる。
+#       std::string stand_still_txt = util::read_file("/dev/shm/stand_still.txt");
+#       bool stand_still = false;
+#       if(stand_still_txt.empty() == false){
+#         stand_still = std::stoi(stand_still_txt) ? true : false;
+#       }
+#       if(stand_still){
+#         lane_change_height = 270;
+#       }
+#     }
+# #endif
+
+    h_pos = rect.y + rect_h - hh
+
+    self.ktsc_ct += dir
+    if self.ktsc_ct <= 0 or self.ktsc_ct >= n*self.ktsc_ct_n-1:
+      if left_blinker or right_blinker:
+        if left_blinker == True and self.ktsc_ct < 0:
+          self.ktsc_ct = n*self.ktsc_ct_n-1
+        elif right_blinker == True and self.ktsc_ct > n*self.ktsc_ct_n-1:
+          self.ktsc_ct = 0
+      else:
+        if self.ktsc_ct < 0 and dir < 0:
+          self.ktsc_ct = 0
+        if self.ktsc_ct > n*self.ktsc_ct_n-1 and dir > 0:
+          self.ktsc_ct = n*self.ktsc_ct_n-1
+        self.dir0 = -self.dir0
+
+    #呼び出し元の状態からここは全て加算ブレンドになる。   p.setCompositionMode(QPainter::CompositionMode_Plus);
+    for i in range(n - 1): #for(int i=0; i<(n-1); i++){
+      if t[i] > 0.01:
+        if left_blinker or right_blinker:
+          #流れるウインカー
+          kt_color = rl.Color(192, 102, 0, int(255 * t[i]))
+        elif self.handle_center >= -99:
+          kt_color = rl.Color(200, 0, 0, int(255 * t[i]))
+        else:
+          kt_color = rl.Color(200, 200, 0, int(255 * t[i])) #ハンドルセンターキャリブレーション中は色を緑に。
+
+        if left_blinker or right_blinker:
+          rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
+          rl.draw_rectangle_rounded(rc, 1.0, 10, kt_color)
+        else: #単に上梅のフラットにする。
+          if self.Knight_scanner == 0:
+            continue
+
+          rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
+          rl.draw_rectangle_rounded(rc, 0.5, 5, kt_color)
+#         //ポリゴンで表示。
+#         float sx_a = rect_w * i / (n-1) - rect_w / 2;
+#         sx_a /= (rect_w / 2); // -1〜1
+#         float sx_b = rect_w * (i+1) / (n-1) - rect_w / 2;
+#         sx_b /= (rect_w / 2); // -1〜1
+#         float x0 = rect_w * i / (n-1);
+#         float x1 = x0 + ww;
+#         float y0 = h_pos;
+#         float y1 = y0 + hh;
+#         y0 -= ww/6; //少し持ち上げる。
+#         float y0_a = y0 + hh/2 * (1 - sx_a*sx_a); //関数の高さ計算に加減速を反省させればビヨビヨするはず。
+#         float y0_b = y0 + hh/2 * (1 - sx_b*sx_b);
+#         QPointF scaner[] = {{x0,y0_a},{x1,y0_b}, {x1,y1}, {x0,y1}};
+#         p.drawPolygon(scaner, std::size(scaner));
+#       }
+#     }
+      t[i] *= 0.9
+    pass
