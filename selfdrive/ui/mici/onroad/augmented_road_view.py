@@ -168,7 +168,7 @@ class AugmentedRoadView(CameraView):
 
   def is_swiping_left(self) -> bool:
     """Check if currently swiping left (for scroller to disable)."""
-    return self._bookmark_icon.is_swiping_left() or not self._hud_renderer.user_interacting()
+    return self._bookmark_icon.is_swiping_left()
 
   def _update_state(self):
     super()._update_state()
