@@ -358,6 +358,8 @@ class HudRenderer(Widget):
 
     self.limit_vc_info = 0
     self.ip_update_state_ct = 0
+    self.handle_center = -100
+    self.handle_calibct = 0
 
   def _ip_update_state(self,sm):
     self.ip_update_state_ct += 1
@@ -404,6 +406,30 @@ class HudRenderer(Widget):
             self.limit_vc_info = float(limit_vc_info)
       except Exception as e:
         pass
+
+    try:
+      with open('/dev/shm/handle_center_info.txt','r') as fp3:
+        handle_center_info = fp3.read()
+        if handle_center_info:
+          self.handle_center = float(handle_center_info)
+        else:
+          with open('/data/handle_calibct_info.txt','r') as fp3:
+            handle_calibct_info = fp3.read()
+            if handle_calibct_info:
+              self.handle_calibct = float(handle_calibct_info)
+    except Exception as e:
+      pass
+
+    if self.ip_update_state_ct % 20 == 1:
+      Knight_scanner = 0
+      try:
+        with open('/dev/shm/knight_scanner_bit3.txt','r') as fp:
+          Knight_scanner_str = fp.read()
+          if Knight_scanner_str:
+            Knight_scanner = int(Knight_scanner_str)
+      except Exception as e:
+        pass
+      self.Knight_scanner = Knight_scanner
 
   def _ip_draw(self, rect: rl.Rectangle):
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
@@ -523,21 +549,6 @@ class HudRenderer(Widget):
 
           rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
           rl.draw_rectangle_rounded(rc, 0.5, 5, kt_color)
-#         //ポリゴンで表示。
-#         float sx_a = rect_w * i / (n-1) - rect_w / 2;
-#         sx_a /= (rect_w / 2); // -1〜1
-#         float sx_b = rect_w * (i+1) / (n-1) - rect_w / 2;
-#         sx_b /= (rect_w / 2); // -1〜1
-#         float x0 = rect_w * i / (n-1);
-#         float x1 = x0 + ww;
-#         float y0 = h_pos;
-#         float y1 = y0 + hh;
-#         y0 -= ww/6; //少し持ち上げる。
-#         float y0_a = y0 + hh/2 * (1 - sx_a*sx_a); //関数の高さ計算に加減速を反省させればビヨビヨするはず。
-#         float y0_b = y0 + hh/2 * (1 - sx_b*sx_b);
-#         QPointF scaner[] = {{x0,y0_a},{x1,y0_b}, {x1,y1}, {x0,y1}};
-#         p.drawPolygon(scaner, std::size(scaner));
-#       }
-#     }
+
       t[i] *= 0.9
     pass
