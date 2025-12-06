@@ -634,6 +634,13 @@ class HudRenderer(Widget):
       t[i] *= 0.9
     pass
 
+  def _button_push_sound(self,onoff):
+    with open('/dev/shm/sound_py_request.txt','w') as fp2:
+      if onoff:
+        fp2.write('%d' % (102)) #pipo.wav
+      else:
+        fp2.write('%d' % (101)) #po.wav
+
   def _press_accel_engaged(self): #本来ならボタンコールバック。必要な部分だけ抜き出し。
     accel_engaged = 0
     try:
@@ -692,6 +699,7 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._button_push_sound(limitspeed_sw)
     self._press_set_speed_MAX_ct = 3 #推したら数フレームはinteractingを継続
 
     #self._set_speed_MAX_button.set_text("ZZZ")
