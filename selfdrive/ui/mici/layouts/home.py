@@ -58,8 +58,6 @@ class DeviceStatus(Widget):
     network_type = NETWORK_TYPES[ui_state.sm['deviceState'].networkType.raw]
     self._network_status = f"{network_type} {strength_text}"
 
-    self._version_text = self._get_version_text()
-
   def _render(self, _):
     # draw status
     status_rect = rl.Rectangle(self._rect.x, self._rect.y, self._rect.width, 40)

@@ -370,11 +370,14 @@ class HudRenderer(Widget):
 
     self._press_accel_engaged()
     font_sz = 10 #ACC速度にかぶせる透明ボタン
-    self._set_speed_MAX_button = Button("",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.35*200/2)
+    self._set_speed_MAX_button = Button("QQQ",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.35*200/2)
     self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
 
     self.button_style_only = False
+
+  def user_interacting(self) -> bool:
+    return (self._press_set_speed_MAX.is_pressed)
 
   def _ip_update_state(self,sm):
     self.ip_update_state_ct += 1
