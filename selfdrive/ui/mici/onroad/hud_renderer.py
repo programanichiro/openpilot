@@ -636,7 +636,7 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
-    self._press_set_speed_MAX_ct = 20 #推したら1秒はinteractingを継続
+    self._press_set_speed_MAX_ct = 3 #推したら数フレームはinteractingを継続
 
     #self._set_speed_MAX_button.set_text("ZZZ")
 
