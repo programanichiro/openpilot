@@ -314,7 +314,7 @@ class HudRenderer(Widget):
       max_color,
     )
 
-    set_speed_rect = rl.Rectangle(x, y, circle_radius*2, circle_radius*2)
+    set_speed_rect = rl.Rectangle(x-50, y-50, circle_radius*2+100, circle_radius*2+50)
     self._set_speed_MAX_button.render(set_speed_rect)
 
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
@@ -370,7 +370,7 @@ class HudRenderer(Widget):
 
     self._press_accel_engaged()
     font_sz = 50 #ACC速度にかぶせる透明ボタン
-    self._set_speed_MAX_button = Button("QQQ",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.35*200/2)
+    self._set_speed_MAX_button = Button("",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.35*200/2)
     self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
 
@@ -631,7 +631,7 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
-    self._set_speed_MAX_button.set_text("ZZZ")
+    #self._set_speed_MAX_button.set_text("ZZZ")
 
     with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
       fp2.write("%d" % (limitspeed_sw))
