@@ -89,9 +89,6 @@ class BookmarkIcon(Widget):
     if not ui_state.started:
       return
 
-    if self._hud_renderer.user_interacting():
-      return
-
     if mouse_event.left_pressed:
       # Store relative position within widget
       self._swipe_start_x = mouse_event.pos.x
@@ -179,7 +176,7 @@ class AugmentedRoadView(CameraView):
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
     # Don't trigger click callback if bookmark was triggered
-    if not self._bookmark_icon.interacting():
+    if (not self._bookmark_icon.interacting()) and (not self._hud_renderer.user_interacting()):
       super()._handle_mouse_release(mouse_pos)
 
   def _render(self, _):

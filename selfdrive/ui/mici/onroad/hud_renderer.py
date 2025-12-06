@@ -631,6 +631,8 @@ class HudRenderer(Widget):
     if self.button_style_only:
       return
 
+    self._set_speed_MAX_button.set_text("ZZZ")
+
     with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
       fp2.write("%d" % (limitspeed_sw))
     with open('/data/limitspeed_sw.txt','w') as fp3:
