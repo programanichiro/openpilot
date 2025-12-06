@@ -592,7 +592,6 @@ class HudRenderer(Widget):
 
 
   def _press_set_speed_MAX(self):
-    self._press_set_speed_MAX_ct = 40 #推したら2秒はinteractingを継続
     sm = ui_state.sm
     cs = sm["selfdriveState"]
 
@@ -636,6 +635,8 @@ class HudRenderer(Widget):
 
     if self.button_style_only:
       return
+
+    self._press_set_speed_MAX_ct = 20 #推したら1秒はinteractingを継続
 
     #self._set_speed_MAX_button.set_text("ZZZ")
 
