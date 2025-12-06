@@ -7,6 +7,7 @@ from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
+from openpilot.system.ui.widgets.button import Button, ButtonStyle
 from openpilot.common.filter_simple import FirstOrderFilter
 from cereal import log
 
@@ -313,6 +314,9 @@ class HudRenderer(Widget):
       max_color,
     )
 
+    set_speed_rect = rl.Rectangle(x, y, secircle_radius*2, circle_radius*2)
+    self._set_speed_MAX_button.render(set_speed_rect)
+
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
     """Draw the current vehicle speed and unit."""
     speed_text = str(round(self.speed))
@@ -342,6 +346,8 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
 
+    self.button_style_only = True
+
     self.limit_speed_override = False
     self.add_v_by_lead = False
     self.curve_brake = False
@@ -361,6 +367,14 @@ class HudRenderer(Widget):
     self.handle_center = -100
     self.handle_calibct = 0
     self.vc_speed = 0
+
+    self._press_accel_engaged()
+    font_sz = 10 #ACC速度にかぶせる透明ボタン
+    self._set_speed_MAX_button = Button("",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=font_wt, border_radius=0.35*200/2)
+    self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
+    self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
+
+    self.button_style_only = False
 
   def _ip_update_state(self,sm):
     self.ip_update_state_ct += 1
@@ -555,3 +569,66 @@ class HudRenderer(Widget):
 
       t[i] *= 0.9
     pass
+
+  def _press_accel_engaged(self): #本来ならボタンコールバック。必要な部分だけ抜き出し。
+    accel_engaged = 0
+    try:
+      with open('/dev/shm/accel_engaged.txt','r') as fp:
+        accel_engaged_str = fp.read()
+        if accel_engaged_str:
+          accel_engaged = int(accel_engaged_str)
+    except Exception as e:
+      pass
+
+    self.accel_engaged = accel_engaged
+
+
+  def _press_set_speed_MAX(self):
+    sm = ui_state.sm
+    cs = sm["selfdriveState"]
+
+    accel_engaged = self.accel_engaged
+
+    if accel_engaged >= 3 and cs.enabled: #ワンペダルのみ
+      if int(self.set_speed) != 1: #MAXが1ではない時
+        if sm["carState"].vEgo < 0.1/3.6: #スピードが出ていない時
+          with open('/dev/shm/force_one_pedal.txt','w') as fp:
+            fp.write('%d' % (1)) #これがセットされる条件をなるべく絞る。
+        else:
+          #⚫︎ボタンの代わりに動作する
+          self._press_limitspeed_sw() #MAX_touch()
+      else:
+        #MAX=1でタッチ(↑ボタン効果で",1"も含む)
+        vego = sm["carState"].vEgo
+        if vego > 3/3.6 and vego <= 30/3.6: #スピードが3〜30km/hのとき
+          with open('/dev/shm/force_low_engage.txt','w') as fp:
+            fp.write('%d' % (1))
+        else:
+          #⚫︎ボタンの代わりに動作する
+          self._press_limitspeed_sw() #MAX_touch()
+    else:
+      #⚫︎ボタンの代わりに動作する
+      self._press_limitspeed_sw() #MAX_touch
+
+  def _press_limitspeed_sw(self):
+    limitspeed_sw = 0
+    try:
+      with open('/dev/shm/limitspeed_sw.txt','r') as fp:
+        limitspeed_sw_str = fp.read()
+        if limitspeed_sw_str:
+          limitspeed_sw = int(limitspeed_sw_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      limitspeed_sw = (limitspeed_sw + 1) % 3
+
+    self.Limit_speed_mode = limitspeed_sw
+
+    if self.button_style_only:
+      return
+
+    with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
+      fp2.write("%d" % (limitspeed_sw))
+    with open('/data/limitspeed_sw.txt','w') as fp3:
+      fp3.write("%d" % (limitspeed_sw))
