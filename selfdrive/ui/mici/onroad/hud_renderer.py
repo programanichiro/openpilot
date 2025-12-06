@@ -315,7 +315,7 @@ class HudRenderer(Widget):
     if self.add_v_by_lead and self.is_cruise_set:
       max_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
     if self.curve_brake and self.is_cruise_set:
-      set_speed_color = COLORS.black_translucent
+      #set_speed_color = COLORS.black_translucent
       max_color = rl.Color(0xff, 0, 0, 200) #減速時は赤
     if self.turbo_boost and self.is_cruise_set:
       max_color = rl.Color(0xff, 0xff, 0, 200) #スタートダッシュ時は黄色
