@@ -56,7 +56,6 @@ class BookmarkIcon(Widget):
     self._is_swiping = False
     self._is_swiping_left: bool = False
     self._triggered_time: float = 0.0
-    self._hud_renderer = None
 
   def is_swiping_left(self) -> bool:
     """Check if currently swiping left (for scroller to disable)."""
@@ -88,9 +87,6 @@ class BookmarkIcon(Widget):
 
   def _handle_mouse_event(self, mouse_event: MouseEvent):
     if not ui_state.started:
-      return
-
-    if self._hud_renderer and self._hud_renderer.user_interacting():
       return
 
     if mouse_event.left_pressed:
@@ -155,7 +151,6 @@ class AugmentedRoadView(CameraView):
 
     self._model_renderer = ModelRenderer()
     self._hud_renderer = HudRenderer()
-    self._bookmark_icon._hud_renderer = self._hud_renderer
     self._alert_renderer = AlertRenderer()
     self._driver_state_renderer = DriverStateRenderer()
     self._confidence_ball = ConfidenceBall()

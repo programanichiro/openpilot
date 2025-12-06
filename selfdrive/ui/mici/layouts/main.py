@@ -69,10 +69,13 @@ class MiciMainLayout(Widget):
   def _setup_callbacks(self):
     self._home_layout.set_callbacks(on_settings=self._on_settings_clicked)
     self._settings_layout.set_callbacks(on_close=self._on_settings_closed)
-#    self._onroad_layout.set_click_callback(lambda: self._scroll_to(self._home_layout))
+    self._onroad_layout.set_click_callback(lambda: self._scroll_to(self._home_layout))
     device.add_interactive_timeout_callback(self._set_mode_for_started)
 
   def _scroll_to(self, layout: Widget):
+    if self._onroad_layout._hud_renderer.user_interacting():
+      return
+
     layout_x = int(layout.rect.x)
     self._scroller.scroll_to(layout_x, smooth=True)
 

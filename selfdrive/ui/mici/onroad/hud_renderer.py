@@ -377,7 +377,8 @@ class HudRenderer(Widget):
     self.button_style_only = False
 
   def user_interacting(self) -> bool:
-    return (self._set_speed_MAX_button.is_pressed)
+    return True
+    #return (self._set_speed_MAX_button.is_pressed)
 
   def _ip_update_state(self,sm):
     self.ip_update_state_ct += 1
