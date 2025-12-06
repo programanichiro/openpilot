@@ -183,13 +183,13 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
-    self.db_rec_mode = False
-    if self.limit_speed_override == False:
-      # self.yellow_flag = False
-      if self.Limit_speed_mode == 2:
-        # rect_color = rl.Color(100, 0, 0, 250)
-        if self.set_speed >= 30:
-          self.db_rec_mode = True
+    # self.db_rec_mode = False
+    # if self.limit_speed_override == False:
+    #   # self.yellow_flag = False
+    #   if self.Limit_speed_mode == 2:
+    #     # rect_color = rl.Color(100, 0, 0, 250)
+    #     if self.set_speed >= 30:
+    #       self.db_rec_mode = True
 
     engaged = sm['selfdriveState'].enabled
     if (set_speed != self.set_speed and engaged) or (engaged and not self._engaged):
@@ -288,6 +288,38 @@ class HudRenderer(Widget):
     if self.is_cruise_set and not ui_state.is_metric:
       set_speed *= KM_TO_MILE
 
+    self.yellow_flash_ct += 1
+    self.db_rec_mode = False
+    if self.limit_speed_override == False:
+      self.yellow_flag = False
+      if self.Limit_speed_mode == 2:
+        set_speed_color = rl.Color(100, 0, 0, 250)
+        if self.set_speed >= 30:
+          self.db_rec_mode = True
+        self.yellow_flag = True
+      elif self.Limit_speed_mode == 1 and self.limit_speed_auto_detect == 1:
+        if self.maxspeed_org+12 <= self.set_speed and self.maxspeed_org+5 < self.vc_speed * 3.6:
+          if self.yellow_flash_ct % 6 < 3:
+            set_speed_color = rl.Color(255, 255, 0, 255) # 速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
+            self.yellow_flag = True
+    else:
+      if self.maxspeed_org+12 > self.set_speed or self.maxspeed_org+5 >= self.vc_speed * 3.6:
+        #g_night_modeは保留
+        pass #set_speed_color = rl.Color(235, 235, 235, 200)
+      elif self.is_cruise_set:
+        if self.yellow_flash_ct % 6 < 3:
+          set_speed_color = rl.Color(255, 255, 0, 255) # 速度がレバーより10km/h以上高いとギクシャクする警告、点滅させる。
+        else:
+          pass # set_speed_color = rl.Color(235, 235, 235, 200)
+
+    if self.add_v_by_lead and self.is_cruise_set:
+      max_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
+    if self.curve_brake and self.is_cruise_set:
+      set_speed_color = COLORS.black_translucent
+      max_color = rl.Color(0xff, 0, 0, 200) #減速時は赤
+    if self.turbo_boost and self.is_cruise_set:
+      max_color = rl.Color(0xff, 0xff, 0, 200) #スタートダッシュ時は黄色
+
     set_speed_text = CRUISE_DISABLED_CHAR if not self.is_cruise_set else str(round(set_speed))
     set_speed_text_size = measure_text_cached(self._font_display, set_speed_text, FONT_SIZES.set_speed)
     rl.draw_text_ex(
@@ -376,6 +408,12 @@ class HudRenderer(Widget):
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
     self.button_style_only = False
 
+    self.yellow_flag = False
+    self.limit_speed_auto_detect = False
+    self.maxspeed_org = 0
+    self.limit_speed_num = 0
+    self.yellow_flash_ct = 0
+
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
       return True
@@ -385,6 +423,7 @@ class HudRenderer(Widget):
     self.ip_update_state_ct += 1
     car_state = sm['carState']
     self.vc_speed = car_state.vEgo
+    self.maxspeed_org = car_state.vCruise #これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
 
     if self._press_set_speed_MAX_ct > 0:
       self._press_set_speed_MAX_ct -= 1
@@ -455,6 +494,23 @@ class HudRenderer(Widget):
       except Exception as e:
         pass
       self.Knight_scanner = Knight_scanner
+
+    try:
+      with open('/dev/shm/limitspeed_data.txt','r') as fp2:
+        limitspeed_data_str = fp2.read()
+        if limitspeed_data_str:
+          limitspeed_data = limitspeed_data_str.split(",")
+          limitspeed_flag = int(limitspeed_data[2]) #111,999
+          if limitspeed_flag != 999:
+            self.limit_speed_num = 0
+            self.limit_speed_auto_detect = 0
+          else:
+            self.limit_speed_num = int(limitspeed_data[0])
+            self.limit_speed_auto_detect = 1
+    except Exception as e:
+      self.limit_speed_num = 0
+      self.limit_speed_auto_detect = 0
+      pass
 
   def _ip_draw(self, rect: rl.Rectangle):
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
