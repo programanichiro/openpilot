@@ -360,9 +360,12 @@ class HudRenderer(Widget):
     self.ip_update_state_ct = 0
     self.handle_center = -100
     self.handle_calibct = 0
+    self.vc_speed = 0
 
   def _ip_update_state(self,sm):
     self.ip_update_state_ct += 1
+    car_state = sm['carState']
+    self.vc_speed = car_state.vEgo
 
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
