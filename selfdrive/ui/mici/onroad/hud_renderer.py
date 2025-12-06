@@ -378,7 +378,6 @@ class HudRenderer(Widget):
 
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
-      self._press_set_speed_MAX_ct -= 1
       return True
     return (self._set_speed_MAX_button.is_pressed)
 
@@ -386,6 +385,9 @@ class HudRenderer(Widget):
     self.ip_update_state_ct += 1
     car_state = sm['carState']
     self.vc_speed = car_state.vEgo
+
+    if self._press_set_speed_MAX_ct > 0:
+      self._press_set_speed_MAX_ct -= 1
 
     try:
       with open('/dev/shm/signal_start_prompt_info.txt','r') as fp:
