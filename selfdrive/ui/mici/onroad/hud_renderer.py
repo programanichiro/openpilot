@@ -369,7 +369,7 @@ class HudRenderer(Widget):
     self.vc_speed = 0
 
     self._press_accel_engaged()
-    font_sz = 10 #ACC速度にかぶせる透明ボタン
+    font_sz = 50 #ACC速度にかぶせる透明ボタン
     self._set_speed_MAX_button = Button("QQQ",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.35*200/2)
     self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
