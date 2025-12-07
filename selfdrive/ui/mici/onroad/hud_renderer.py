@@ -330,6 +330,19 @@ class HudRenderer(Widget):
       max_color = rl.Color(0xff, 0xff, 0, 200) #スタートダッシュ時は黄色
 
     set_speed_text = CRUISE_DISABLED_CHAR if not self.is_cruise_set else str(round(set_speed))
+
+    if set_speed_text == "1" and self.accel_engaged == 4: #MAXが1の時
+      red_signal_eP_iP_set = False
+      try:
+        with open('/dev/shm/red_signal_eP_iP_set.txt','r') as fp:
+          red_signal_eP_iP_set_txt = fp.read()
+          if red_signal_eP_iP_set_txt and int(red_signal_eP_iP_set_txt) == 1:
+            red_signal_eP_iP_set = True
+      except Exception as e:
+        pass
+      if red_signal_eP_iP_set == False:
+        set_speed_text = "8"
+
     set_speed_text_size = measure_text_cached(self._font_display, set_speed_text, FONT_SIZES.set_speed)
     if self.Limit_speed_mode == 2:
       rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
