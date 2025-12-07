@@ -249,6 +249,15 @@ class HudRenderer(Widget):
     dest_rect = rl.Rectangle(pos_x, pos_y, wheel_txt.width, wheel_txt.height)
     origin = (wheel_txt.width / 2, wheel_txt.height / 2)
 
+    if self.steer_always:
+      if self.cruise_available:
+        center = rl.Vector2(
+            dest_rect.x + dest_rect.width / 2,
+            dest_rect.y + dest_rect.height / 2
+        )
+        radius = dest_rect.width / 2  # 正円なら width/2 でOK
+        rl.draw_circle_v(center, radius, rl.Color(0x17, 0x86, 0x44, 224))
+
     # color and draw
     color = rl.Color(255, 255, 255, int(self._wheel_alpha_filter.x))
     rl.draw_texture_pro(wheel_txt, src_rect, dest_rect, origin, rotation, color)
@@ -414,6 +423,9 @@ class HudRenderer(Widget):
     self.limit_speed_num = 0
     self.yellow_flash_ct = 0
 
+    self.steer_always = False
+    self.cruise_available = False
+
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
       return True
@@ -511,6 +523,23 @@ class HudRenderer(Widget):
       self.limit_speed_num = 0
       self.limit_speed_auto_detect = 0
       pass
+
+    if self.ip_update_state_ct % 20 == 13:
+      try:
+        with open('/dev/shm/steer_always.txt','r') as fp:
+          steer_always_str = fp.read()
+          if steer_always_str and int(steer_always_str) >= 1:
+            self.steer_always = True
+          else:
+            self.steer_always = False
+        with open('/dev/shm/cruise_available.txt','r') as fp:
+          cruise_available_str = fp.read()
+          if cruise_available_str and int(cruise_available_str) >= 1:
+            self.cruise_available = True
+          else:
+            self.cruise_available = False
+      except Exception as e:
+        pass
 
   def _ip_draw(self, rect: rl.Rectangle):
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
