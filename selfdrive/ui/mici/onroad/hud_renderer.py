@@ -443,6 +443,22 @@ class HudRenderer(Widget):
     self.steer_always = False
     self.cruise_available = False
 
+    self.osm_frame_ct_ct = -1 #-1 or 100以上でosmへの通信が死んでいる。
+    self.osm_per = 0 #2Hzに対してosmの応答率。走行中ならだいたい50パーセントくらいになる。
+    self.osm_access_counter_txt = ""
+    #self.osm_access_counter_ct = 0
+    self.before_osm_frame_ct = 0
+
+    self.road_th_ct_ct = 0
+    self.before_road_th_ct = 0
+    self.road_info_txt_flag = False
+    #self.road_info_txt_ct = 0
+    self.road_info_txt = ""
+    self.kmh = "" #制限速度
+    self.road_name = "" #道路名
+    self.road_bear = "99999" #道路方位
+    #self.disp_ichiro_logo = False
+
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
       return True
@@ -568,6 +584,46 @@ class HudRenderer(Widget):
       except Exception as e:
         pass
       self.accel_engaged = accel_engaged
+
+    if self.ip_update_state_ct % 20 == 7:
+      try:
+        with open('/dev/shm/osm_access_counter.txt','r') as fp3:
+          self.osm_access_counter_txt = fp3.read()
+      except Exception as e:
+        pass
+
+    if self.osm_access_counter_txt:
+      osm_access_data = self.osm_access_counter_txt.split(",")
+      self.osm_per = int(osm_access_data[0])
+      osm_frame_ct2 = int(osm_access_data[1])
+      if osm_frame_ct2 == self.before_osm_frame_ct:
+        self.osm_frame_ct_ct += 1 #osm_frame_ct2が変化しなければカウントアップし続ける
+      else:
+        self.osm_frame_ct_ct = 0 #ゼロに戻らなければ、osmへの通信が死んでいる。
+      self.before_osm_frame_ct = osm_frame_ct2
+
+    self.road_info_txt_flag = False
+    if self.ip_update_state_ct % 20 == 4:
+      try:
+        with open('/dev/shm/road_info.txt','r') as fp:
+          self.road_info_txt = fp.read()
+      except Exception as e:
+        pass
+
+    self.disp_ichiro_logo = False
+    if self.road_info_txt:
+      road_info_data = self.road_info_txt.split(",")
+      if len(road_info_data) >=4:
+        road_th_ct = int(road_info_data[0])
+        if road_th_ct == self.before_road_th_ct:
+          self.road_th_ct_ct += 1 #road_th_ctが変化しなければカウントアップし続ける
+        else:
+          self.road_th_ct_ct = 0 #30秒以上ゼロに戻らなければ、road_info_txt_flag = falseにして、道路名は出さない。
+        self.before_road_th_ct = road_th_ct
+
+        self.kmh = road_info_data[1]
+        self.road_name = road_info_data[2]
+        self.road_bear = road_info_data[3]
 
   def _ip_draw(self, rect: rl.Rectangle):
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
