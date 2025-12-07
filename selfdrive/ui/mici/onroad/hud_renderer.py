@@ -251,11 +251,11 @@ class HudRenderer(Widget):
 
     if self.steer_always:
       if self.cruise_available:
-        center = rl.Vector2( #センター？
-            dest_rect.x,# + dest_rect.width / 2,
-            dest_rect.y #+ dest_rect.height / 2
+        center = rl.Vector2( #dest_rectの左上がセンター（draw_texture_proのoriginの影響を考慮）
+            dest_rect.x,
+            dest_rect.y
         )
-        radius = dest_rect.width / 2  # 正円なら width/2 でOK
+        radius = dest_rect.width / 2 + 5  # 正円なら width/2 でOK
         rl.draw_circle_v(center, radius, rl.Color(0x17, 0x86, 0x44, 224))
 
     # color and draw
