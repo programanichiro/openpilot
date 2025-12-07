@@ -302,7 +302,7 @@ class HudRenderer(Widget):
     if self.limit_speed_override == False:
       self.yellow_flag = False
       if self.Limit_speed_mode == 2:
-        set_speed_color = rl.Color(100, 0, 0, 250)
+        set_speed_color = rl.Color(180, 0, 0, 250)
         if self.set_speed >= 30:
           self.db_rec_mode = True
         self.yellow_flag = True
@@ -331,6 +331,8 @@ class HudRenderer(Widget):
 
     set_speed_text = CRUISE_DISABLED_CHAR if not self.is_cruise_set else str(round(set_speed))
     set_speed_text_size = measure_text_cached(self._font_display, set_speed_text, FONT_SIZES.set_speed)
+    if self.Limit_speed_mode == 2:
+      rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     rl.draw_text_ex(
       self._font_display,
       set_speed_text,
@@ -339,6 +341,8 @@ class HudRenderer(Widget):
       0,
       set_speed_color,
     )
+    if self.Limit_speed_mode == 2:
+      rl.end_blend_mode() #元のブレンドに戻す
 
     max_text = tr("MAX")
     if self.limit_speed_override:
