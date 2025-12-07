@@ -256,7 +256,7 @@ class HudRenderer(Widget):
             dest_rect.y + dest_rect.height / 2
         )
         radius = dest_rect.width / 2  # 正円なら width/2 でOK
-        rl.draw_circle_v(center, radius, rl.Color(0x17, 0x86, 0x44, 224))
+        rl.draw_circle(int(center.x), int(center.y), int(radius), rl.Color(0x17, 0x86, 0x44, 224))
 
     # color and draw
     color = rl.Color(255, 255, 255, int(self._wheel_alpha_filter.x))
