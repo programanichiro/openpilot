@@ -558,6 +558,17 @@ class HudRenderer(Widget):
       except Exception as e:
         pass
 
+    if self.ip_update_state_ct % 20 == 17:
+      accel_engaged = 0
+      try:
+        with open('/dev/shm/accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            accel_engaged = int(accel_engaged_str)
+      except Exception as e:
+        pass
+      self.accel_engaged = accel_engaged
+
   def _ip_draw(self, rect: rl.Rectangle):
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     self.knightScanner(rect)
