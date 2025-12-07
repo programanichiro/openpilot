@@ -115,6 +115,7 @@ class HudRenderer(Widget):
     self._font_medium: rl.Font = gui_app.font(FontWeight.MEDIUM)
     self._font_semi_bold: rl.Font = gui_app.font(FontWeight.SEMI_BOLD)
     self._font_display: rl.Font = gui_app.font(FontWeight.DISPLAY)
+    self._font_uni: rl.Font = gui_app.font("JP2")
 
     self._turn_intent = TurnIntent()
     self._torque_bar = TorqueBar()
@@ -626,10 +627,64 @@ class HudRenderer(Widget):
         self.road_bear = road_info_data[3]
 
   def _ip_draw(self, rect: rl.Rectangle):
+
+    if self.road_info_txt:
+      road_th_ct_ct_limit = 30 #30秒無通信チェック。
+      if self.speed < 0.1: #velo_for_trans = self.speed #km/h
+        road_th_ct_ct_limit = 180 #停止時は3分まで伸ばす。
+
+      if self.road_name == False or (self.road_name == "--" and self.kmh == "0") or self.road_th_ct_ct > road_th_ct_ct_limit * 20:
+        self.road_info_txt_flag = False
+      else:
+        self.road_info_txt_flag = True
+        right_margin = 150
+        font_size = 44
+        font_size_km = 33
+        #デバッグ用road_name = self.road_name + "&" + road_bear
+        #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
+        if self.kmh != "0":
+          next_x = self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, rect.y+rect.height+1 , self.road_name, 220, bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
+          self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, rect.y+rect.height+1 , self.road_name, 220) #2重描き
+          self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, rect.y+rect.height - 4 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+        else:
+          if self.road_name != "---":
+            self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, rect.y+rect.height+1 , self.road_name, 220, bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
+            self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, rect.y+rect.height+1 , self.road_name, 220) #2重描き
+          else:
+            self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
+
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     self.knightScanner(rect)
     rl.end_blend_mode() #元のブレンドに戻す
 
+  def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+    text_size = measure_text_cached(font, text, font_size)
+    x -= text_size.x #右寄せ
+
+    if bk_alp > 0:
+      #//バックを塗る。
+      bk_color = rl.Color(int(bk_red), int(bk_grn), int(bk_blu), int(bk_alp))
+      rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
+      rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
+
+    if brakeLight == False:
+      pen_color = rl.Color(int(red), int(grn), int(blu), int(alpha))
+    else:
+      alpha += 100
+      if alpha > 255:
+        alpha = 255
+      pen_color = rl.Color(0xff, 0, 0, int(alpha))
+
+    rl.draw_text_ex(
+      font,
+      text,
+      rl.Vector2(x, y-text_size.y),
+      font_size,
+      0,
+      pen_color,
+    )
+
+    return x #続けて並べるxposを返す。
 
   def knightScanner(self, rect: rl.Rectangle):
     height = rect.height
