@@ -681,6 +681,7 @@ class HudRenderer(Widget):
     pass
 
   def _button_push_sound(self,onoff):
+    self._press_set_speed_MAX_ct = 3 #推したら数フレームはinteractingを継続
     with open('/dev/shm/sound_py_request.txt','w') as fp2:
       if onoff:
         fp2.write('%d' % (102)) #pipo.wav
@@ -711,6 +712,7 @@ class HudRenderer(Widget):
         if sm["carState"].vEgo < 0.1/3.6: #スピードが出ていない時
           with open('/dev/shm/force_one_pedal.txt','w') as fp:
             fp.write('%d' % (1)) #これがセットされる条件をなるべく絞る。
+          self._button_push_sound(1)
         else:
           #⚫︎ボタンの代わりに動作する
           self._press_limitspeed_sw() #MAX_touch()
@@ -720,6 +722,7 @@ class HudRenderer(Widget):
         if vego > 3/3.6 and vego <= 30/3.6: #スピードが3〜30km/hのとき
           with open('/dev/shm/force_low_engage.txt','w') as fp:
             fp.write('%d' % (1))
+          self._button_push_sound(1)
         else:
           #⚫︎ボタンの代わりに動作する
           self._press_limitspeed_sw() #MAX_touch()
@@ -746,7 +749,6 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(limitspeed_sw)
-    self._press_set_speed_MAX_ct = 3 #推したら数フレームはinteractingを継続
 
     #self._set_speed_MAX_button.set_text("ZZZ")
 
