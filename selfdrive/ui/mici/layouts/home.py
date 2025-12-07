@@ -170,7 +170,9 @@ class MiciHomeLayout(Widget):
     if description is not None and len(description) > 0:
       # Expect "version / branch / commit / date"; be tolerant of other formats
       try:
-        version, branch, commit, date = description.split(" / ")
+        # version, branch, commit, date = description.split(" / ")
+        os_ver, version, branch, commit, date = description.split(" / ")
+        version = os_ver + ";" + version
         return version, branch, commit, date
       except Exception:
         return None
