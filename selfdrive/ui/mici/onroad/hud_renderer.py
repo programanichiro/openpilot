@@ -287,7 +287,7 @@ class HudRenderer(Widget):
     # draw drop shadow
     circle_radius = 162 // 2
     x += rect.width - circle_radius*2
-    y += rect.height - circle_radius*2 + 15
+    y += rect.height - circle_radius*2 + 7
     rl.draw_circle_gradient(int(x + circle_radius), int(y + circle_radius), circle_radius,
                             rl.Color(0, 0, 0, int(255 / 2 * alpha)), rl.BLANK)
 
