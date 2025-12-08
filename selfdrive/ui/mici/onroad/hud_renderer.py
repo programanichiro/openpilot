@@ -627,10 +627,16 @@ class HudRenderer(Widget):
         self.road_bear = road_info_data[3]
 
   def _ip_draw(self, rect: rl.Rectangle):
-
-    right_margin = 150
-    font_size = 44
-    font_size_km = 33
+    if False:
+      right_margin = 120
+      font_size = 44
+      font_size_km = 33
+      y_pos = rect.y+rect.height
+    else:
+      right_margin = 0
+      font_size = 22
+      font_size_km = 17
+      y_pos = rect.y+font_size+3
     if self.road_info_txt:
       road_th_ct_ct_limit = 30 #30秒無通信チェック。
       if self.speed < 0.1: #velo_for_trans = self.speed #km/h
@@ -643,19 +649,19 @@ class HudRenderer(Widget):
         #デバッグ用road_name = self.road_name + "&" + road_bear
         #road_info_baering = int(self.road_bear) #ドットフォントでも漢字出るか？UNIFONTにしないとダメかな。
         if self.kmh != "0":
-          next_x = self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, rect.y+rect.height+1 , self.road_name, 220, bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
-          self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, rect.y+rect.height+1 , self.road_name, 220) #2重描き
-          self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, rect.y+rect.height - 4 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+          next_x = self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, y_pos+1 , self.road_name, 220, bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
+          self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, y_pos+1 , self.road_name, 220) #2重描き
+          self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, y_pos - 4 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
         else:
           if self.road_name != "---":
-            self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, rect.y+rect.height+1 , self.road_name, 220, bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
-            self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, rect.y+rect.height+1 , self.road_name, 220) #2重描き
+            self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, y_pos+1 , self.road_name, 220, bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
+            self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, y_pos+1 , self.road_name, 220) #2重描き
           else:
             self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
 
-    next_x = self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, rect.y+rect.height+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220 , bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
-    self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, rect.y+rect.height+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
-    self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, rect.y+rect.height - 4 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+    next_x = self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, y_pos+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220 , bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
+    self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, y_pos+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
+    self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, y_pos - 4 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     self.knightScanner(rect)
