@@ -628,7 +628,7 @@ class HudRenderer(Widget):
 
   def _ip_draw(self, rect: rl.Rectangle):
 
-    if False:
+    if gui_app.big_ui():
       right_margin = 120
       font_size = 44
       font_size_km = 33
@@ -662,9 +662,9 @@ class HudRenderer(Widget):
           else:
             self.disp_ichiro_logo = True #速度ゼロの---は表示しない。(road_info_baeringは利用するのでroad_info_txt_flagはtrueとする。)
 
-    next_x = self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, y_pos+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220 , bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
-    self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, y_pos+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
-    self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, y_pos2 - 4 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
+    # next_x = self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin, y_pos+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220 , bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
+    # self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, y_pos+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
+    # self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, y_pos2 - 4 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     self.knightScanner(rect)
