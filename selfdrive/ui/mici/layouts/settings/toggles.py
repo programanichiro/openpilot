@@ -47,7 +47,7 @@ class TogglesLayoutMici(NavWidget):
     self._lockon_disp_disable_button = BigToggle("lockon indicator", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
     self._knight_scanner_bit3_button = BigMultiToggleKN("knight scanner", ["param_0", "param_1", "param_2", "param_3", "param_4", "param_5", "param_6", "param_7"], select_callback=self._knight_scanner_bit3_button_callback) #●●● ナイトスキャナー
 
-    icon_car_weight = gui_app.texture("offroad/icon_car_weight.png")
+    icon_car_weight = gui_app.texture("offroad/icon_car_weight.png",64,64)
     self._vehicle_mass_btn = BigButton("Vehicle weight", "", icon_car_weight)
     try:
       with open('/data/vehicle_mass.txt','r') as fp:
