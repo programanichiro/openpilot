@@ -48,15 +48,26 @@ class TogglesLayoutMici(NavWidget):
     self._knight_scanner_bit3_button = BigMultiToggleKN("knight scanner", ["param_0", "param_1", "param_2", "param_3", "param_4", "param_5", "param_6", "param_7"], select_callback=self._knight_scanner_bit3_button_callback) #●●● ナイトスキャナー
 
     icon_car_weight = gui_app.texture("offroad/icon_car_weight.png",64,64)
-    self._vehicle_mass_btn = BigButton("Vehicle weight", "", icon_car_weight)
+    self._vehicle_mass_btn = BigButton("vehicle weight  ", "", icon_car_weight)
     try:
       with open('/data/vehicle_mass.txt','r') as fp:
-        vehicle_mass_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        vehicle_mass_str = fp.read()
         if vehicle_mass_str:
           self._vehicle_mass_btn.set_value(vehicle_mass_str+" [kg]")
     except Exception as e:
       pass
     self._vehicle_mass_btn.set_click_callback(self._vehicle_mass_btn_callback)
+
+    icon_car_key = gui_app.texture("offroad/icon_car_key.png",64,64)
+    self._auto_door_lock_btn = BigButton("auto door lock ", "", icon_car_key)
+    try:
+      with open('/data/run_auto_lock.txt','r') as fp:
+        auto_door_lock_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        if auto_door_lock_str:
+          self._auto_door_lock_btn.set_value(auto_door_lock_str+" [kg]")
+    except Exception as e:
+      pass
+    self._auto_door_lock_btn.set_click_callback(self._auto_door_lock_btn_callback)
 
     self._scroller = Scroller([
       self._personality_toggle,
@@ -84,6 +95,7 @@ class TogglesLayoutMici(NavWidget):
       self._lockon_disp_disable_button,
       self._knight_scanner_bit3_button,
       self._vehicle_mass_btn,
+      self._auto_door_lock_btn,
       C4UIOnC3X,
     ], snap_items=False)
 
@@ -425,8 +437,8 @@ class TogglesLayoutMici(NavWidget):
       fp3.write("%d" % (Knight_scanner))
 
   def _vehicle_mass_btn_callback(self):
-    _vehicle_mass = self._vehicle_mass_btn.value
-    _vehicle_mass = _vehicle_mass.removesuffix(" [kg]")
+    vehicle_mass = self._vehicle_mass_btn.value
+    vehicle_mass = vehicle_mass.removesuffix(" [kg]")
 
     def vehicle_mass_callback(weight: str):
       if weight:
@@ -442,5 +454,27 @@ class TogglesLayoutMici(NavWidget):
         else:
           self._vehicle_mass_btn.set_value(weight+" [kg]")
 
-    dlg = BigInputDialog("Vehicle weight", _vehicle_mass, confirm_callback=vehicle_mass_callback)
+    dlg = BigInputDialog("Vehicle weight", vehicle_mass, confirm_callback=vehicle_mass_callback)
     gui_app.set_modal_overlay(dlg)
+
+  def _auto_door_lock_btn_callback(self):
+    lock_speed = self._auto_door_lock_btn.value
+    lock_speed = lock_speed.removesuffix(" [km/h]")
+
+    def lock_speed_callback(lock: str):
+      if lock:
+        try:
+          with open('/data/run_auto_lock.txt','w') as fp:
+            fp.write("%s" % (lock))
+        except Exception as e:
+          self._auto_door_lock_btn.set_value("")
+          return
+
+        if lock == "0" or not lock:
+          self._auto_door_lock_btn.set_value("")
+        else:
+          self._auto_door_lock_btn.set_value(lock+" [km/h]")
+
+    dlg = BigInputDialog("Auto door lock", lock_speed, confirm_callback=lock_speed_callback)
+    gui_app.set_modal_overlay(dlg)
+
