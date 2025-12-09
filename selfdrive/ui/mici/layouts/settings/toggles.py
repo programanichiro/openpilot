@@ -53,7 +53,7 @@ class TogglesLayoutMici(NavWidget):
       with open('/data/vehicle_mass.txt','r') as fp:
         vehicle_mass_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
         if vehicle_mass_str:
-          self._vehicle_mass_btn.action_item.set_value(vehicle_mass_str+" [kg]")
+          self._vehicle_mass_btn.set_value(vehicle_mass_str+" [kg]")
     except Exception as e:
       pass
     self._vehicle_mass_btn.set_click_callback(self._vehicle_mass_btn_callback)
@@ -425,7 +425,7 @@ class TogglesLayoutMici(NavWidget):
       fp3.write("%d" % (Knight_scanner))
 
   def _vehicle_mass_btn_callback(self):
-    _vehicle_mass = self._vehicle_mass_btn.action_item.value
+    _vehicle_mass = self._vehicle_mass_btn.value
     _vehicle_mass = _vehicle_mass.removesuffix(" [kg]")
 
     # _vehicle_mass = ""
@@ -443,13 +443,13 @@ class TogglesLayoutMici(NavWidget):
           with open('/data/vehicle_mass.txt','w') as fp:
             fp.write("%s" % (weight))
         except Exception as e:
-          self._vehicle_mass_btn.action_item.set_value("")
+          self._vehicle_mass_btn.set_value("")
           return
 
         if weight == "0" or not weight:
-          self._vehicle_mass_btn.action_item.set_value("")
+          self._vehicle_mass_btn.set_value("")
         else:
-          self._vehicle_mass_btn.action_item.set_value(weight+" [kg]")
+          self._vehicle_mass_btn.set_value(weight+" [kg]")
 
     dlg = BigInputDialog("Vehicle weight", _vehicle_mass, confirm_callback=vehicle_mass_callback)
     gui_app.set_modal_overlay(dlg)
