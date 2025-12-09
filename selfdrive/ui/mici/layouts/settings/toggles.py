@@ -47,7 +47,7 @@ class TogglesLayoutMici(NavWidget):
     self._lockon_disp_disable_button = BigToggle("lockon indicator", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
     self._knight_scanner_bit3_button = BigMultiToggleKN("knight scanner", ["param_0", "param_1", "param_2", "param_3", "param_4", "param_5", "param_6", "param_7"], select_callback=self._knight_scanner_bit3_button_callback) #●●● ナイトスキャナー
 
-    icon_car_weight = gui_app.texture("../offroad/icon_car_weight.png")
+    icon_car_weight = gui_app.texture("offroad/icon_car_weight.png")
     self._vehicle_mass_btn = BigButton("Vehicle weight", "", icon_car_weight)
     try:
       with open('/data/vehicle_mass.txt','r') as fp:
@@ -428,15 +428,6 @@ class TogglesLayoutMici(NavWidget):
     _vehicle_mass = self._vehicle_mass_btn.value
     _vehicle_mass = _vehicle_mass.removesuffix(" [kg]")
 
-    # _vehicle_mass = ""
-    # try:
-    #   with open('/data/vehicle_mass.txt','r') as fp:
-    #     vehicle_mass_str = fp.read() #重量やロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0で設定無し。
-    #     if vehicle_mass_str:
-    #       _vehicle_mass = vehicle_mass_str
-    # except Exception as e:
-    #   pass
-
     def vehicle_mass_callback(weight: str):
       if weight:
         try:
@@ -453,29 +444,3 @@ class TogglesLayoutMici(NavWidget):
 
     dlg = BigInputDialog("Vehicle weight", _vehicle_mass, confirm_callback=vehicle_mass_callback)
     gui_app.set_modal_overlay(dlg)
-
-    pass
-
-  # def _____edit_vehicle_mass(self):
-  #   def update_mass(result):
-  #     if result != 1:
-  #       return
-
-  #     try:
-  #       with open('/data/vehicle_mass.txt','w') as fp:
-  #         fp.write("%s" % (self._keyboard.text))
-  #     except Exception as e:
-  #       self._vehicle_mass_btn.action_item.set_value("")
-  #       return
-
-  #     if self._keyboard.text == "0" or not self._keyboard.text:
-  #       self._vehicle_mass_btn.action_item.set_value("")
-  #     else:
-  #       self._vehicle_mass_btn.action_item.set_value(self._keyboard.text+" [kg]")
-
-  #   self._keyboard.reset(min_text_size=0)
-  #   self._keyboard.set_title("Vehicle weight", "")
-  #   s = self._vehicle_mass_btn.action_item.value
-  #   s = s.removesuffix(" [kg]")
-  #   self._keyboard.set_text(s)
-  #   gui_app.set_modal_overlay(self._keyboard, update_mass)
