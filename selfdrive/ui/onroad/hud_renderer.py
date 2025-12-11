@@ -50,20 +50,20 @@ class FontSizes:
 
 @dataclass(frozen=True)
 class Colors:
-  white: rl.Color = rl.WHITE
-  disengaged: rl.Color = rl.Color(145, 155, 149, 255)
-  override: rl.Color = rl.Color(145, 155, 149, 255)  # Added
-  engaged: rl.Color = rl.Color(128, 216, 166, 255)
-  disengaged_bg: rl.Color = rl.Color(0, 0, 0, 153)
-  override_bg: rl.Color = rl.Color(145, 155, 149, 204)
-  engaged_bg: rl.Color = rl.Color(128, 216, 166, 204)
-  grey: rl.Color = rl.Color(166, 166, 166, 255)
-  dark_grey: rl.Color = rl.Color(114, 114, 114, 255)
-  black_translucent: rl.Color = rl.Color(0, 0, 0, 166)
-  white_translucent: rl.Color = rl.Color(255, 255, 255, 200)
-  border_translucent: rl.Color = rl.Color(255, 255, 255, 75)
-  header_gradient_start: rl.Color = rl.Color(0, 0, 0, 114)
-  header_gradient_end: rl.Color = rl.BLANK
+  WHITE = rl.WHITE
+  DISENGAGED = rl.Color(145, 155, 149, 255)
+  OVERRIDE = rl.Color(145, 155, 149, 255)  # Added
+  ENGAGED = rl.Color(128, 216, 166, 255)
+  DISENGAGED_BG = rl.Color(0, 0, 0, 153)
+  OVERRIDE_BG = rl.Color(145, 155, 149, 204)
+  ENGAGED_BG = rl.Color(128, 216, 166, 204)
+  GREY = rl.Color(166, 166, 166, 255)
+  DARK_GREY = rl.Color(114, 114, 114, 255)
+  BLACK_TRANSLUCENT = rl.Color(0, 0, 0, 166)
+  WHITE_TRANSLUCENT = rl.Color(255, 255, 255, 200)
+  BORDER_TRANSLUCENT = rl.Color(255, 255, 255, 75)
+  HEADER_GRADIENT_START = rl.Color(0, 0, 0, 114)
+  HEADER_GRADIENT_END = rl.BLANK
 
 
 UI_CONFIG = UIConfig()
@@ -156,8 +156,8 @@ class HudRenderer(Widget):
       int(rect.y),
       int(rect.width),
       UI_CONFIG.header_height + y_ofs,
-      COLORS.header_gradient_start,
-      COLORS.header_gradient_end,
+      COLORS.HEADER_GRADIENT_START,
+      COLORS.HEADER_GRADIENT_END,
     )
 
     if self.is_cruise_available:
@@ -195,8 +195,8 @@ class HudRenderer(Widget):
 
     set_speed_rect = rl.Rectangle(x, y, set_speed_width, UI_CONFIG.set_speed_height)
     #SetSpeedの色
-    rect_color = COLORS.black_translucent
-    rect_border_color = COLORS.border_translucent
+    rect_color = COLORS.BLACK_TRANSLUCENT
+    rect_border_color = COLORS.BORDER_TRANSLUCENT
 
     if self.limit_speed_override:
       # self.limit_speed_num = int(limitspeed_data[0])
@@ -230,7 +230,7 @@ class HudRenderer(Widget):
     if self.add_v_by_lead and self.is_cruise_set:
       rect_border_color = rl.Color(0, 0xff, 0, 200) #前走車追従時は緑
     if self.curve_brake and self.is_cruise_set:
-      rect_color = COLORS.black_translucent
+      rect_color = COLORS.BLACK_TRANSLUCENT
       rect_border_color = rl.Color(0xff, 0, 0, 200) #減速時は赤
     if self.turbo_boost and self.is_cruise_set:
       rect_border_color = rl.Color(0xff, 0xff, 0, 200) #スタートダッシュ時は黄色
@@ -246,16 +246,16 @@ class HudRenderer(Widget):
 
     rl.draw_rectangle_rounded_lines_ex(set_speed_rect, 0.35, 10, 6, rect_border_color)
 
-    max_color = COLORS.grey
-    set_speed_color = COLORS.dark_grey
+    max_color = COLORS.GREY
+    set_speed_color = COLORS.DARK_GREY
     if self.is_cruise_set:
-      set_speed_color = COLORS.white
+      set_speed_color = COLORS.WHITE
       if ui_state.status == UIStatus.ENGAGED:
-        max_color = COLORS.engaged
+        max_color = COLORS.ENGAGED
       elif ui_state.status == UIStatus.DISENGAGED:
-        max_color = COLORS.disengaged
+        max_color = COLORS.DISENGAGED
       elif ui_state.status == UIStatus.OVERRIDE:
-        max_color = COLORS.override
+        max_color = COLORS.OVERRIDE
 
     if self.limit_speed_override:
       max_color = rl.Color(0x24, 0x57, 0xa1 , 255)
@@ -336,7 +336,7 @@ class HudRenderer(Widget):
       speed_pos_1 = rl.Vector2(speed_pos.x,speed_pos.y+7)
       rl.draw_text_ex(self._font_bold, speed_text, speed_pos_1, FONT_SIZES.current_speed, 0, speed_waku)
 
-    speed_num_color = COLORS.white
+    speed_num_color = COLORS.WHITE
     if self.red_signal_scan_flag >= 2 and self.red_signal_scan_flag_txt_ct %6 < 3:
       speed_num_color = rl.Color(0xff, 100, 100 , 255) #赤信号認識中は点滅。
       if self.red_signal_scan_flag_2 == False and str(round(self.set_speed)) != "1":
@@ -359,7 +359,7 @@ class HudRenderer(Widget):
     unit_pos = rl.Vector2(rect.x + rect.width / 2 - unit_text_size.x / 2, 290 - unit_text_size.y / 2 + y_ofs)
     longitudinal_control = ui_state.sm["carParams"].openpilotLongitudinalControl
     if longitudinal_control:
-      rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, speed_num_color if velo_for_trans < velo_for_trans_limit else COLORS.white_translucent)
+      rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, speed_num_color if velo_for_trans < velo_for_trans_limit else COLORS.WHITE_TRANSLUCENT)
     else:
       COLOR_STATUS_WARNING = rl.Color(0xDA, 0x6F, 0x25, 0xf1)
       rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLOR_STATUS_WARNING)
