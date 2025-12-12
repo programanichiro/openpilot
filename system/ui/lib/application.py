@@ -203,6 +203,9 @@ class GuiApplication:
       self._scale = self._calculate_auto_scale()
     else:
       self._scale = SCALE
+      if GuiApplication.big_ui() == True:
+        if Params().get_bool("C4UIOnC3X") == True:
+          self._scale = 2 #4でそのまま？
 
     # Scale, then ensure dimensions are even
     self._scaled_width = int(self._width * self._scale)
