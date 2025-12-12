@@ -307,7 +307,7 @@ class AugmentedRoadView(CameraView):
     intrinsic = device_camera.ecam.intrinsics if is_wide_camera else device_camera.fcam.intrinsics
     calibration = self.view_from_wide_calib if is_wide_camera else self.view_from_calib
     if is_wide_camera:
-      zoom = 0.7 * 1.5 / gui_app._scale
+      zoom = 0.7 * 1.5 / (gui_app._scale ** 0.5) #_scale==1がたまたま変化しないことを利用しているので、危険コード。
     elif gui_app.big_ui():
       zoom = 0.7 * 1.5 / gui_app._scale
     else:
