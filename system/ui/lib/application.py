@@ -773,11 +773,19 @@ class GuiApplication:
 
   @staticmethod
   def _default_width() -> int:
-    return 2160 if GuiApplication.big_ui() else 536
+    scale = SCALE
+    if GuiApplication.big_ui() == True:
+      if Params().get_bool("C4UIOnC3X") == True:
+        scale = 2 #4でそのまま？
+    return 2160/scale if GuiApplication.big_ui() else 536
 
   @staticmethod
   def _default_height() -> int:
-    return 1080 if GuiApplication.big_ui() else 240
+    scale = SCALE
+    if GuiApplication.big_ui() == True:
+      if Params().get_bool("C4UIOnC3X") == True:
+        scale = 2 #4でそのまま？
+    return 1080/scale if GuiApplication.big_ui() else 240
 
   @staticmethod
   def big_ui() -> bool:
