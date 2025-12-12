@@ -307,9 +307,9 @@ class AugmentedRoadView(CameraView):
     intrinsic = device_camera.ecam.intrinsics if is_wide_camera else device_camera.fcam.intrinsics
     calibration = self.view_from_wide_calib if is_wide_camera else self.view_from_calib
     if is_wide_camera:
-      zoom = 0.7 * 1.5
+      zoom = 0.7 * 1.5 / gui_app._scale
     elif gui_app.big_ui():
-      zoom = 0.7 * 1.5
+      zoom = 0.7 * 1.5 / gui_app._scale
     else:
       zoom = np.interp(ui_state.sm['carState'].vEgo, [10, 30], [0.8, 1.0])
 
