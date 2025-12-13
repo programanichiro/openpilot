@@ -563,20 +563,24 @@ class GuiApplication:
     all_codepoints = loaded_codepoints | missing_codepoints
 
     # Unicode文字列に戻す（LoadCodepoints 用）
-    all_chars = ''.join(chr(cp) for cp in all_codepoints)
+    # all_chars = ''.join(chr(cp) for cp in all_codepoints)
 
     # ⑤ codepoints を raylib に作らせる
-    codepoint_count = rl.ffi.new("int *", 1)
-    codepoints = rl.load_codepoints(all_chars, codepoint_count)
+    # codepoint_count = rl.ffi.new("int *", 1)
+    # codepoints = rl.load_codepoints(all_chars, codepoint_count)
+
+    codepoints_buf = rl.ffi.new("int[]", all_codepoints) #文字列に戻さないでcodepointsを生成。
 
     new_font = rl.load_font_ex(
       font_path,
       int(font_size),
-      codepoints,
-      codepoint_count[0]
+      # codepoints,
+      rl.ffi.cast("int *", codepoints_buf),
+      # codepoint_count[0]
+      len(all_codepoints)
     )
 
-    rl.unload_codepoints(codepoints)
+    #rl.unload_codepoints(codepoints) #不要
 
     return new_font
 
