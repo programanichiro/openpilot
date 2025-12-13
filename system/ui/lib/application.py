@@ -569,7 +569,7 @@ class GuiApplication:
     # codepoint_count = rl.ffi.new("int *", 1)
     # codepoints = rl.load_codepoints(all_chars, codepoint_count)
 
-    codepoints_buf = rl.ffi.new("int[]", all_codepoints) #文字列に戻さないでcodepointsを生成。
+    codepoints_buf = rl.ffi.new("int[]", list(all_codepoints)) #文字列に戻さないでcodepointsを生成。
 
     new_font = rl.load_font_ex(
       font_path,
