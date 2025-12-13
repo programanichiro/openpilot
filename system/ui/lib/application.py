@@ -626,7 +626,7 @@ class GuiApplication:
     jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
 
     # 22ピクセルフォントを生成
-    jp2_font = rl.load_font_ex(jp2_font_path, int(22*self._scale), jp2_codepoints, jp2_codepoint_count[0])
+    jp2_font = rl.load_font_ex(jp2_font_path, int(44*self._scale), jp2_codepoints, jp2_codepoint_count[0])
     rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP2"] = jp2_font
     self._font_path[jp2_font] = jp2_font_path
@@ -638,7 +638,7 @@ class GuiApplication:
     chars = set()
 
     # Shift-JIS 第1・第2水準相当
-    for high in list(range(0x81, 0x9F + 1)) + list(range(0xE0, 0xEF + 1)):
+    for high in list(range(0x81, 0x9F + 1)) #+ list(range(0xE0, 0xEF + 1)):
       for low in range(0x40, 0xFC + 1):
         try:
           ch = bytes([high, low]).decode("shift_jis")
