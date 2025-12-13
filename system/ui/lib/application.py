@@ -537,28 +537,33 @@ class GuiApplication:
     except KeyboardInterrupt:
       pass
 
-  def ensure_chars_in_font(self,old_font, chars: str, font_path: str, font_size):
+  def ensure_chars_in_font(self,old_font, chars: str, font_path: str):
     # ① 既存フォントからロード済み codepoints を取得
     loaded_codepoints = {
       old_font.glyphs[i].value for i in range(old_font.glyphCount)
     }
 
     # ② chars から不足している codepoints を抽出
-    missing_codepoints = {
-      ord(c) for c in chars if ord(c) not in loaded_codepoints
-    }
+    # missing_codepoints = {
+    #   ord(c) for c in chars if ord(c) not in loaded_codepoints
+    # }
+    missing_codepoints = set()
+    for c in chars:
+        if ord(c) not in loaded_codepoints:
+            missing_codepoints.add(ord(c))
 
     # ③ 追加が不要ならそのまま返す
     if not missing_codepoints:
       return old_font
 
+    font_size = old_font.baseSize
     rl.unload_font(old_font)
 
     # ④ 再ロード用の全 codepoints を構築
     all_codepoints = loaded_codepoints | missing_codepoints
 
     # Unicode文字列に戻す（LoadCodepoints 用）
-    all_chars = ''.join(chr(cp) for cp in sorted(all_codepoints))
+    all_chars = ''.join(chr(cp) for cp in all_codepoints)
 
     # ⑤ codepoints を raylib に作らせる
     codepoint_count = rl.ffi.new("int *", 1)
@@ -576,11 +581,10 @@ class GuiApplication:
     return new_font
 
   def font(self, font_weight: FontWeight = FontWeight.NORMAL, new_str: str=None) -> rl.Font:
-    if False and new_str:
+    if new_str:
       #新しい文字があればfont作り直し
       if self._font_path[font_weight]:
-        size = self._fonts[font_weight].baseSize
-        self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight], size)
+        self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight])
     return self._fonts[font_weight]
 
   @property
