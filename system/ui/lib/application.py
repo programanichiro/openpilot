@@ -638,7 +638,7 @@ class GuiApplication:
     chars = set()
 
     # Shift-JIS 第1・第2水準相当
-    for high in list(range(0x81, 0x9F + 1)) #+ list(range(0xE0, 0xEF + 1)):
+    for high in list(range(0x81, 0x9F + 1)): #+ list(range(0xE0, 0xEF + 1)):
       for low in range(0x40, 0xFC + 1):
         try:
           ch = bytes([high, low]).decode("shift_jis")
