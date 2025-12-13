@@ -537,7 +537,46 @@ class GuiApplication:
     except KeyboardInterrupt:
       pass
 
-  def font(self, font_weight: FontWeight = FontWeight.NORMAL) -> rl.Font:
+  def ensure_chars_in_font(self,old_font, chars: str, font_path: str, font_size):
+    # ① 既存フォントからロード済み codepoints を取得
+    loaded_codepoints = {
+      old_font.glyphs[i].value for i in range(old_font.glyphCount)
+    }
+
+    # ② chars から不足している codepoints を抽出
+    missing_codepoints = {
+      ord(c) for c in chars if ord(c) not in loaded_codepoints
+    }
+
+    # ③ 追加が不要ならそのまま返す
+    if not missing_codepoints:
+      return old_font
+
+    # ④ 新しい codepoints（既存 + 追加）
+    all_codepoints = list(loaded_codepoints | missing_codepoints)
+
+    # ⑤ フォント再ロード
+    codepoint_count = rl.ffi.new("int *", 1)
+    codepoints = rl.ffi.new("int[]", all_codepoints)
+    codepoint_count[0] = len(all_codepoints)
+
+    new_font = rl.load_font_ex(
+      font_path,
+      int(font_size),
+      codepoints,
+      codepoint_count[0]
+    )
+
+    # ⑥ 後始末
+    rl.unload_font(old_font)
+    return new_font
+
+  def font(self, font_weight: FontWeight = FontWeight.NORMAL, new_str: str=None) -> rl.Font:
+    if new_str:
+      #新しい文字があればfont作り直し
+      if self._font_path[font_weight]:
+        size = self._fonts[font_weight].baseSize
+        self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight], size)
     return self._fonts[font_weight]
 
   @property
@@ -583,7 +622,7 @@ class GuiApplication:
         if font_weight_file != FontWeight.UNIFONT:
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
         self._fonts[font_weight_file] = font
-        self._font_path[font] = fnt_path.as_posix()
+        self._font_path[font_weight_file] = fnt_path.as_posix()
 
     from openpilot.system.ui.widgets.keyboard import KEYBOARD_LAYOUTS
 
@@ -608,7 +647,7 @@ class GuiApplication:
     jp_font = rl.load_font_ex(jp_font_path, 128, jp_codepoints, jp_codepoint_count[0])
     rl.set_texture_filter(jp_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP"] = jp_font
-    self._font_path[jp_font] = jp_font_path
+    self._font_path["JP"] = jp_font_path
     rl.unload_codepoints(jp_codepoints)
 
     # ===========================================================
@@ -621,7 +660,7 @@ class GuiApplication:
     ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x3040, 0x309F))    # ひらがな
     ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x30A0, 0x30FF))    # カタカナ
     #ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x4E00, 0x9FB0))    # 漢字
-    ascii_kanji_chars += self.load_jis1_jis2_chars()    # 漢字
+    #ascii_kanji_chars += self.load_jis1_jis2_chars()    # 漢字 , 動的ロード
 
     jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
 
@@ -629,7 +668,7 @@ class GuiApplication:
     jp2_font = rl.load_font_ex(jp2_font_path, int(44*self._scale), jp2_codepoints, jp2_codepoint_count[0])
     rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP2"] = jp2_font
-    self._font_path[jp2_font] = jp2_font_path
+    self._font_path["JP2"] = jp2_font_path
     rl.unload_codepoints(jp2_codepoints)
 
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
