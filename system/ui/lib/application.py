@@ -108,6 +108,7 @@ class FontWeight(StrEnum):
 def font_fallback(font: rl.Font) -> rl.Font:
   """Fall back to unifont for languages that require it."""
   if multilang.requires_unifont():
+    #multilang._language == "ja"で日本語かどうか判定できる。ここでJP3の128サイズフォントをダイナミックロードで差し替えれば綺麗になる？
     return gui_app.font(FontWeight.UNIFONT)
   return font
 
