@@ -756,7 +756,7 @@ class HudRenderer(Widget):
           self._drawTextRight(self._font_semi_bold, 33, next_x-4, rect.y+rect.height - 4 , self.kmh , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
         else:
           if self.road_name != "---":
-          self._font_uni = gui_app.font("JP2", self.road_name) #動的ロード
+            self._font_uni = gui_app.font("JP2", self.road_name) #動的ロード
             self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10, rect.y+rect.height+1 , self.road_name, 220, bk_alp=128, bk_corner_r= 0.2, bk_yofs=7,bk_add_h=-10,bk_add_w=0)
             self._drawTextRight(self._font_uni, 44 , rect.x+rect.width-10-1, rect.y+rect.height+1 , self.road_name, 220) #2重描き
           else:
