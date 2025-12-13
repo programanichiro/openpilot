@@ -634,7 +634,7 @@ class GuiApplication:
 
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
 
-  def load_jis1_jis2_chars():
+  def load_jis1_jis2_chars(self):
     chars = set()
 
     # Shift-JIS 第1・第2水準相当
