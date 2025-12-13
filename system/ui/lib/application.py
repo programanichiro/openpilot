@@ -620,7 +620,8 @@ class GuiApplication:
     ascii_kanji_chars  = ''.join(chr(cp) for cp in range(0x20, 0x7F))        # ASCII
     ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x3040, 0x309F))    # ひらがな
     ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x30A0, 0x30FF))    # カタカナ
-    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x4E00, 0x9FB0))    # 漢字
+    #ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x4E00, 0x9FB0))    # 漢字
+    ascii_kanji_chars += self.load_jis1_jis2_chars()    # 漢字
 
     jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
 
@@ -632,6 +633,20 @@ class GuiApplication:
     rl.unload_codepoints(jp2_codepoints)
 
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
+
+  def load_jis1_jis2_chars():
+    chars = set()
+
+    # Shift-JIS 第1・第2水準相当
+    for high in list(range(0x81, 0x9F + 1)) + list(range(0xE0, 0xEF + 1)):
+      for low in range(0x40, 0xFC + 1):
+        try:
+          ch = bytes([high, low]).decode("shift_jis")
+          chars.add(ch)
+        except:
+          pass
+
+    return "".join(sorted(chars))
 
   def _set_styles(self):
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.BORDER_WIDTH, 0)
