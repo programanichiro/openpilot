@@ -576,7 +576,7 @@ class GuiApplication:
     return new_font
 
   def font(self, font_weight: FontWeight = FontWeight.NORMAL, new_str: str=None) -> rl.Font:
-    if new_str:
+    if False and new_str:
       #新しい文字があればfont作り直し
       if self._font_path[font_weight]:
         size = self._fonts[font_weight].baseSize
