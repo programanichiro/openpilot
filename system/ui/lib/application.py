@@ -552,13 +552,17 @@ class GuiApplication:
     if not missing_codepoints:
       return old_font
 
-    # ④ 新しい codepoints（既存 + 追加）
-    all_codepoints = list(loaded_codepoints | missing_codepoints)
+    rl.unload_font(old_font)
 
-    # ⑤ フォント再ロード
+    # ④ 再ロード用の全 codepoints を構築
+    all_codepoints = loaded_codepoints | missing_codepoints
+
+    # Unicode文字列に戻す（LoadCodepoints 用）
+    all_chars = ''.join(chr(cp) for cp in sorted(all_codepoints))
+
+    # ⑤ codepoints を raylib に作らせる
     codepoint_count = rl.ffi.new("int *", 1)
-    codepoints = rl.ffi.new("int[]", all_codepoints)
-    codepoint_count[0] = len(all_codepoints)
+    codepoints = rl.load_codepoints(all_chars, codepoint_count)
 
     new_font = rl.load_font_ex(
       font_path,
@@ -567,8 +571,8 @@ class GuiApplication:
       codepoint_count[0]
     )
 
-    # ⑥ 後始末
-    rl.unload_font(old_font)
+    rl.unload_codepoints(codepoints)
+
     return new_font
 
   def font(self, font_weight: FontWeight = FontWeight.NORMAL, new_str: str=None) -> rl.Font:
