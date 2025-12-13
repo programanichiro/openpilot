@@ -105,10 +105,15 @@ class FontWeight(StrEnum):
   DISPLAY = "Inter-Bold.fnt"
 
 
-def font_fallback(font: rl.Font) -> rl.Font:
+def font_fallback(font: rl.Font, text: str) -> rl.Font:
   """Fall back to unifont for languages that require it."""
-  if multilang.requires_unifont():
-    #multilang._language == "ja"で日本語かどうか判定できる。ここでJP3の128サイズフォントをダイナミックロードで差し替えれば綺麗になる？
+  if multilang.requires_unifont() and font != gui_app.font(FontWeight.UNIFONT) and font != gui_app.font("JP") and font != gui_app.font("JP2") and not text.isascii(): #UNIFONTなどを要求していないこと、全てAsciiの場合も除外。
+    #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
+    if multilang._language == "ja":
+      jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JP128"), text, jp_font_path, 100) #["JP128"]だと初回に例外吐く。
+      gui_app._fonts["JP128"] = exchg_font
+      return exchg_font
     return gui_app.font(FontWeight.UNIFONT)
   return font
 
@@ -538,27 +543,35 @@ class GuiApplication:
     except KeyboardInterrupt:
       pass
 
-  def ensure_chars_in_font(self,old_font, chars: str, font_path: str):
-    # ① 既存フォントからロード済み codepoints を取得
-    loaded_codepoints = {
-      old_font.glyphs[i].value for i in range(old_font.glyphCount)
-    }
+  def ensure_chars_in_font(self,old_font, chars: str, font_path: str, init_size = 128):
+    if old_font == None:
+      # ① 既存フォントからロード済み codepoints を取得
+      loaded_codepoints = {
+        old_font.glyphs[i].value for i in range(old_font.glyphCount)
+      }
 
-    # ② chars から不足している codepoints を抽出
-    missing_codepoints = set()
-    for c in chars:
-        if ord(c) not in loaded_codepoints:
-            missing_codepoints.add(ord(c))
+      # ② chars から不足している codepoints を抽出
+      missing_codepoints = set()
+      for c in chars:
+          if ord(c) not in loaded_codepoints:
+              missing_codepoints.add(ord(c))
 
-    # ③ 追加が不要ならそのまま返す
-    if not missing_codepoints:
-      return old_font
+      # ③ 追加が不要ならそのまま返す
+      if not missing_codepoints:
+        return old_font
 
-    font_size = old_font.baseSize
-    rl.unload_font(old_font)
+      font_size = old_font.baseSize
+      rl.unload_font(old_font)
 
-    # ④ 再ロード用の全 codepoints を構築
-    all_codepoints = loaded_codepoints | missing_codepoints
+      # ④ 再ロード用の全 codepoints を構築
+      all_codepoints = loaded_codepoints | missing_codepoints
+    else:
+      #元のfontが無ければ作成する。
+      all_codepoints = set()
+      for c in chars:
+        all_codepoints.add(ord(c))
+      font_size = init_size
+
     codepoints_buf = rl.ffi.new("int[]", list(all_codepoints)) #文字列に戻さないでcodepointsを生成。
 
     new_font = rl.load_font_ex(
@@ -698,7 +711,7 @@ class GuiApplication:
       rl._orig_draw_text_ex = rl.draw_text_ex
 
     def _draw_text_ex_scaled(font, text, position, font_size, spacing, tint):
-      font = font_fallback(font)
+      font = font_fallback(font, text)
       return rl._orig_draw_text_ex(font, text, position, font_size * FONT_SCALE, spacing, tint)
 
     rl.draw_text_ex = _draw_text_ex_scaled
