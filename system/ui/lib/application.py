@@ -111,8 +111,11 @@ def font_fallback(font: rl.Font, text: str) -> rl.Font:
     #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
     if multilang._language == "ja":
       jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
-      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JP128"), text, jp_font_path, 100) #["JP128"]だと初回に例外吐く。
+      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JP128"), text, jp_font_path, 128) #["JP128"]だと初回に例外吐く。
       gui_app._fonts["JP128"] = exchg_font
+      with open('/tmp/dynamic_font_count.txt','w') as fp:
+       fp.write('font_count:%d' % int(exchg_font.glyphCount))
+      exchg_font.glyphCount
       return exchg_font
     return gui_app.font(FontWeight.UNIFONT)
   return font
