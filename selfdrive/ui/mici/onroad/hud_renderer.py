@@ -270,6 +270,8 @@ class HudRenderer(Widget):
       exclamation_pos_y = pos_y - self._txt_exclamation_point.height / 2
       rl.draw_texture(self._txt_exclamation_point, int(exclamation_pos_x), int(exclamation_pos_y), rl.WHITE)
 
+    self._mads_button.render(self._turn_intent)
+
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
     """Draw the MAX speed indicator box."""
     alpha = self._set_speed_alpha_filter.update(0 < rl.get_time() - self._set_speed_changed_time < SET_SPEED_PERSISTENCE and
@@ -433,6 +435,12 @@ class HudRenderer(Widget):
     self._set_speed_MAX_button = Button("",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.35*200/2)
     self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
+
+    font_sz = 50 #ハンドルにかぶせるMADS切り替え用透明ボタン
+    self._mads_button = Button("",click_callback=self._press_mads,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.2)
+    self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
+    self._press_mads()
+
     self.button_style_only = False
 
     self.yellow_flag = False
@@ -463,7 +471,9 @@ class HudRenderer(Widget):
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
       return True
-    return (self._set_speed_MAX_button.is_pressed)
+    return (self._set_speed_MAX_button.is_pressed
+            or self._mads_button.is_pressed
+            )
 
   def _ip_update_state(self,sm):
     self.ip_update_state_ct += 1
@@ -888,9 +898,26 @@ class HudRenderer(Widget):
 
     self._button_push_sound(limitspeed_sw)
 
-    #self._set_speed_MAX_button.set_text("ZZZ")
-
     with open('/dev/shm/limitspeed_sw.txt','w') as fp2:
       fp2.write("%d" % (limitspeed_sw))
     with open('/data/limitspeed_sw.txt','w') as fp3:
       fp3.write("%d" % (limitspeed_sw))
+
+  def _press_mads(self):
+    try:
+      with open('/dev/shm/steer_always.txt','r') as fp:
+        steer_always = fp.read()
+        if steer_always:
+          self.steer_always = int(steer_always)
+    except Exception as e:
+      pass
+
+    if self.button_style_only:
+      return
+
+    self.steer_always = not self.steer_always
+    self._button_push_sound(self.steer_always)
+
+    with open('/dev/shm/steer_always.txt','w') as fp:
+      fp.write('%d' % (1 if self.steer_always else 0))
+    return
