@@ -111,7 +111,7 @@ def font_fallback(font: rl.Font, text: str) -> rl.Font:
     #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
     if multilang._language == "ja":
       jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
-      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JPH"), text, jp_font_path, 128) #["JPH"]だと初回に例外吐く。
+      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JPH"), text, jp_font_path, 100) #["JPH"]だと初回に例外吐く。
       gui_app._fonts["JPH"] = exchg_font
       # with open('/tmp/dynamic_font_count.txt','w') as fp:
       #  fp.write('font_count:%d' % int(exchg_font.glyphCount)) #全UIラベルで300程度。この程度なら増え過ぎ対策必須ではない。
@@ -684,7 +684,7 @@ class GuiApplication:
 
     jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
 
-    jp2_font = rl.load_font_ex(jp2_font_path, int(64*self._scale), jp2_codepoints, jp2_codepoint_count[0])
+    jp2_font = rl.load_font_ex(jp2_font_path, int(44*self._scale), jp2_codepoints, jp2_codepoint_count[0])
     rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP2"] = jp2_font
     self._font_path["JP2"] = jp2_font_path
