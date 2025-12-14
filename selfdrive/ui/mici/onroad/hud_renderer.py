@@ -270,7 +270,7 @@ class HudRenderer(Widget):
       exclamation_pos_y = pos_y - self._txt_exclamation_point.height / 2
       rl.draw_texture(self._txt_exclamation_point, int(exclamation_pos_x), int(exclamation_pos_y), rl.WHITE)
 
-    mads_margin = 50
+    mads_margin = 25
     mads_rect = rl.Rectangle(
       pos_x - wheel_txt.width / 2 - mads_margin,
       pos_y - wheel_txt.height / 2 - mads_margin,
@@ -444,7 +444,7 @@ class HudRenderer(Widget):
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
 
     font_sz = 50 #ハンドルにかぶせるMADS切り替え用透明ボタン
-    self._mads_button = Button("",click_callback=self._press_mads,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.2)
+    self._mads_button = Button("",click_callback=self._press_mads,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=20)
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
 
