@@ -270,7 +270,14 @@ class HudRenderer(Widget):
       exclamation_pos_y = pos_y - self._txt_exclamation_point.height / 2
       rl.draw_texture(self._txt_exclamation_point, int(exclamation_pos_x), int(exclamation_pos_y), rl.WHITE)
 
-    self._mads_button.render(self._turn_intent)
+    mads_margin = 50
+    mads_rect = rl.Rectangle(
+      pos_x - wheel_txt.width / 2 - mads_margin,
+      pos_y - wheel_txt.height / 2 - mads_margin,
+      wheel_txt.width + mads_margin * 2,
+      wheel_txt.height + mads_margin * 2,
+    )
+    self._mads_button.render(mads_rect)
 
   def _draw_set_speed(self, rect: rl.Rectangle) -> None:
     """Draw the MAX speed indicator box."""
