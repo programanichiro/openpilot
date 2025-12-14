@@ -111,10 +111,10 @@ def font_fallback(font: rl.Font, text: str) -> rl.Font:
     #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
     if multilang._language == "ja":
       jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
-      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JP128"), text, jp_font_path, 128) #["JP128"]だと初回に例外吐く。
-      gui_app._fonts["JP128"] = exchg_font
+      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JPH"), text, jp_font_path, 100) #["JPH"]だと初回に例外吐く。
+      gui_app._fonts["JPH"] = exchg_font
       with open('/tmp/dynamic_font_count.txt','w') as fp:
-       fp.write('font_count:%d' % int(exchg_font.glyphCount))
+       fp.write('font_count:%d' % int(exchg_font.glyphCount)) #全UIラベルで300程度。この程度なら増え過ぎ対策必須ではない。
       exchg_font.glyphCount
       return exchg_font
     return gui_app.font(FontWeight.UNIFONT)
@@ -549,9 +549,14 @@ class GuiApplication:
   def ensure_chars_in_font(self,old_font, chars: str, font_path: str, init_size = 128):
     if old_font != None:
       # ① 既存フォントからロード済み codepoints を取得
-      loaded_codepoints = {
-        old_font.glyphs[i].value for i in range(old_font.glyphCount)
-      }
+      if old_font.glyphCount > 200: #増え過ぎたら間引く。日本語なら実質300文字ちょっとなので働かない。
+        loaded_codepoints = {
+            old_font.glyphs[i].value for i in range(1, old_font.glyphCount, 2) #偶数番目を飛ばす。
+        }
+      else:
+        loaded_codepoints = {
+          old_font.glyphs[i].value for i in range(old_font.glyphCount)
+        }
 
       # ② chars から不足している codepoints を抽出
       missing_codepoints = set()
