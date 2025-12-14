@@ -544,7 +544,7 @@ class GuiApplication:
       pass
 
   def ensure_chars_in_font(self,old_font, chars: str, font_path: str, init_size = 128):
-    if old_font == None:
+    if old_font != None:
       # ① 既存フォントからロード済み codepoints を取得
       loaded_codepoints = {
         old_font.glyphs[i].value for i in range(old_font.glyphCount)
