@@ -88,10 +88,10 @@ class ConfidenceBall(Widget):
       self._LongitudinalPersonality = int(Params().get("LongitudinalPersonality"))
 
     if self._LongitudinalPersonality == 0:
-      rl.draw_texture(self._lp1,content_rect.x,content_rect.y + content_rect.height -self._lp1.height)
+      rl.draw_texture(self._lp1,content_rect.x,content_rect.y + content_rect.height -self._lp1.height, rl.WHITE)
     elif self._LongitudinalPersonality == 1:
-      rl.draw_texture(self._lp2,content_rect.x,content_rect.y + content_rect.height -self._lp2.height)
+      rl.draw_texture(self._lp2,content_rect.x,content_rect.y + content_rect.height -self._lp2.height, rl.WHITE)
     else: #if self._LongitudinalPersonality == 2:
-      rl.draw_texture(self._lp3,content_rect.x,content_rect.y + content_rect.height -self._lp3.height)
+      rl.draw_texture(self._lp3,content_rect.x,content_rect.y + content_rect.height -self._lp3.height, rl.WHITE)
 
     self._LongitudinalPersonality_ct += 1
