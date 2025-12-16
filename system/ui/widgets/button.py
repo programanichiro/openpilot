@@ -94,7 +94,7 @@ BUTTON_PRESSED_BACKGROUND_COLORS = {
   ButtonStyle.HudSOn: rl.Color(0x30, 0x30, 0x30, 0x40),
   ButtonStyle.HudUnder: rl.Color(0, 0, 0, 0x40),
   ButtonStyle.HudBOff: rl.Color(0x30, 0x30, 0x30, 0x40),
-  ButtonStyle.HudBOn: rl.Color(0x17, 0x86, 0x44, 256),
+  ButtonStyle.HudBOn: rl.Color(0x17, 0x86, 0x44, 255),
 }
 
 BUTTON_DISABLED_BACKGROUND_COLORS = {
