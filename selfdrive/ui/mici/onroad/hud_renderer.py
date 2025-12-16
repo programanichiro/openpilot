@@ -884,6 +884,8 @@ class HudRenderer(Widget):
 
   def _button_push_sound(self,onoff):
     self._press_set_speed_MAX_ct = 3 #推したら数フレームはinteractingを継続
+    if self._disp_button_ct < 20 * 3:
+      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
     with open('/dev/shm/sound_py_request.txt','w') as fp2:
       if onoff:
         fp2.write('%d' % (102)) #pipo.wav
