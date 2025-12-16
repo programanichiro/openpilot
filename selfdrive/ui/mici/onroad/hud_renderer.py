@@ -449,14 +449,17 @@ class HudRenderer(Widget):
     self._press_mads()
 
     dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=64,height=64)
+    #rl.image_color_tint(dx_icon, rl.Color(255, 255, 255, int(255*0.85)))
     self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=dx_icon)
     self._press_dexp_sw_mode()
 
     lane_icon = gui_app.texture("icons_mici/onroad/lane_keep_w.png",width=64,height=64)
+    rl.image_color_tint(lane_icon, rl.Color(255, 255, 255, int(255*0.85)))
     self._lta_enable_sw_button = Button("",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=lane_icon)
     self._press_lta_enable_sw()
 
     arrow_up = gui_app.texture("icons_mici/onroad/arrow_up.png",width=64,height=64)
+    rl.image_color_tint(arrow_up, rl.Color(255, 255, 255, int(255*0.85)))
     self._accel_ctrl_disable_button = Button("",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=arrow_up)
     self._press_accel_ctrl_disable()
 
