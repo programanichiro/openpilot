@@ -697,10 +697,8 @@ class HudRenderer(Widget):
     rl.end_blend_mode() #元のブレンドに戻す
 
     dX_rect = rl.Rectangle(
-      70,
-      20,
-      90,
-      90,
+      # 70, 20, 90, 90,
+      70, int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
     )
     self._dexp_sw_mode_button.render(dX_rect)
 
