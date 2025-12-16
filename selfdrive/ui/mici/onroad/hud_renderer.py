@@ -488,6 +488,7 @@ class HudRenderer(Widget):
     #self.disp_ichiro_logo = False
 
     self.dexp_sw_mode = 0
+    self._disp_button_ct = 0
 
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
@@ -704,21 +705,35 @@ class HudRenderer(Widget):
     self.knightScanner(rect)
     rl.end_blend_mode() #元のブレンドに戻す
 
-    dX_rect = rl.Rectangle(
-      # 70, 20, 90, 90,
-      70, int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
-    )
-    self._dexp_sw_mode_button.render(dX_rect)
+    sm = ui_state.sm
 
-    lane_rect = rl.Rectangle(
-      70, 20, 90, 90, #右上のいい感じの位置
-    )
-    self._lta_enable_sw_button.render(lane_rect)
+    # Get monitoring state
+    dm_state = sm["driverMonitoringState"]
+    self._is_active = dm_state.isActiveMode
+    self._face_detected = dm_state.faceDetected
 
-    accel_ctrl_disable_rect = rl.Rectangle(
-      int(rect.x+rect.width-90-20), 20, 90, 90, #右上のいい感じの位置
-    )
-    self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
+    if self._is_active and not self._face_detected:
+      self._disp_button_ct = 20 * 5
+
+    if self._disp_button_ct > 0:
+      self._disp_button_ct -= 1
+
+    if self._disp_button_ct > 0:
+      dX_rect = rl.Rectangle(
+        # 70, 20, 90, 90,
+        70, int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+      )
+      self._dexp_sw_mode_button.render(dX_rect)
+
+      lane_rect = rl.Rectangle(
+        70, 20, 90, 90, #右上のいい感じの位置
+      )
+      self._lta_enable_sw_button.render(lane_rect)
+
+      accel_ctrl_disable_rect = rl.Rectangle(
+        int(rect.x+rect.width-90-20), 20, 90, 90, #右上のいい感じの位置
+      )
+      self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
