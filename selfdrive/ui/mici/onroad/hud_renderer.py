@@ -448,7 +448,7 @@ class HudRenderer(Widget):
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
 
-    dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=64,height=64)
+    dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=60,height=60)
     self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=dx_icon)
     self._press_dexp_sw_mode()
 
@@ -884,8 +884,6 @@ class HudRenderer(Widget):
 
   def _button_push_sound(self,onoff):
     self._press_set_speed_MAX_ct = 3 #推したら数フレームはinteractingを継続
-    if self._disp_button_ct < 20 * 3:
-      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
     with open('/dev/shm/sound_py_request.txt','w') as fp2:
       if onoff:
         fp2.write('%d' % (102)) #pipo.wav
@@ -1001,6 +999,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(dexp_sw_mode)
+    if self._disp_button_ct < 20 * 3:
+      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
 
     with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
       fp2.write("%d" % (dexp_sw_mode))
@@ -1028,6 +1028,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(lta_enable_sw)
+    if self._disp_button_ct < 20 * 3:
+      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
 
     with open('/dev/shm/lta_enable_sw.txt','w') as fp2:
       fp2.write("%d" % (lta_enable_sw))
@@ -1056,6 +1058,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(1-accel_ctrl_disable)
+    if self._disp_button_ct < 20 * 3:
+      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
 
     with open('/dev/shm/accel_ctrl_disable.txt','w') as fp2:
       fp2.write("%d" % (accel_ctrl_disable))
