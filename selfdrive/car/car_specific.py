@@ -96,8 +96,8 @@ class CarSpecificEvents:
       else:
         self.engage_time = 0
       if self.CP.openpilotLongitudinalControl:
-        if CS.cruiseState.standstill and not CS.brakePressed:
-          # new_stand_still = True
+        # Only can leave standstill when planner wants to move
+        if CS.cruiseState.standstill and not CS.brakePressed and CC.cruiseControl.resume:
           events.add(EventName.resumeRequired)
           self.engage_time = 0
         if CS.vEgo < self.CP.minEnableSpeed:
