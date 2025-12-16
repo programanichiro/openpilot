@@ -712,10 +712,10 @@ class HudRenderer(Widget):
     self._is_active = dm_state.isActiveMode
     self._face_detected = dm_state.faceDetected
 
-    with open('/tmp/debug_out_w','w') as fp:
-      fp.write("_is_active:%d , _face_detected:%d" % (int(self._is_active),int(self._face_detected)))
+    # with open('/tmp/debug_out_w','w') as fp:
+    #   fp.write("_is_active:%d , _face_detected:%d" % (int(self._is_active),int(self._face_detected)))
 
-    if self._is_active and not self._face_detected:
+    if not self._is_active or not self._face_detected:
       self._disp_button_ct = 20 * 5
 
     if self._disp_button_ct > 0:
