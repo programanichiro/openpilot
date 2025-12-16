@@ -90,6 +90,9 @@ class DriverStateRenderer(Widget):
     rl.draw_texture(self._dm_person, int(self._rect.x), int(self._rect.y),
                     rl.Color(255, 255, 255, int(255 * 0.9 * self._fade_filter.x)))
 
+    with open('/tmp/debug_out_v','w') as fp:
+      fp.write("effective_active:%d" % (int(self.effective_active)))
+
     if self.effective_active:
       source_rect = rl.Rectangle(0, 0, self._dm_cone.width, self._dm_cone.height)
       dest_rect = rl.Rectangle(
