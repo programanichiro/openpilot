@@ -712,7 +712,7 @@ class HudRenderer(Widget):
     self._is_active = dm_state.isActiveMode
     self._face_detected = dm_state.faceDetected
 
-    if self._is_active and not self._face_detected:
+    if self._is_active:
       self._disp_button_ct = 20 * 5
 
     if self._disp_button_ct > 0:
