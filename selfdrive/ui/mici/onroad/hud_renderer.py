@@ -452,6 +452,14 @@ class HudRenderer(Widget):
     self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=dx_icon)
     self._press_dexp_sw_mode()
 
+    lane_icon = gui_app.texture("icons_mici/onroad/lane_keep_w.png",width=64,height=64)
+    self._lta_enable_sw_button = Button("",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=lane_icon)
+    self._press_lta_enable_sw()
+
+    arrow_up = gui_app.texture("icons_mici/onroad/arrow_up.png",width=64,height=64)
+    self._accel_ctrl_disable_button = Button("",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=arrow_up)
+    self._press_accel_ctrl_disable()
+
     self.button_style_only = False
 
     self.yellow_flag = False
@@ -702,6 +710,15 @@ class HudRenderer(Widget):
     )
     self._dexp_sw_mode_button.render(dX_rect)
 
+    lane_rect = rl.Rectangle(
+      70, 20, 90, 90, #右上のいい感じの位置
+    )
+    self._lta_enable_sw_button.render(lane_rect)
+
+    accel_ctrl_disable_rect = rl.Rectangle(
+      int(rect.x+rect.width-90-20), 20, 90, 90, #右上のいい感じの位置
+    )
+    self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
@@ -971,3 +988,57 @@ class HudRenderer(Widget):
     with open('/data/dexp_sw_mode.txt','w') as fp3:
       fp3.write("%d" % (dexp_sw_mode))
 
+  def _press_lta_enable_sw(self):
+    lta_enable_sw = 0
+    try:
+      with open('/dev/shm/lta_enable_sw.txt','r') as fp:
+        lta_enable_sw_str = fp.read()
+        if lta_enable_sw_str:
+          lta_enable_sw = int(lta_enable_sw_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      lta_enable_sw = (lta_enable_sw + 1) % 2
+    if lta_enable_sw == 0:
+      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudBOff)
+    else:
+      self._lta_enable_sw_button.set_button_style(ButtonStyle.HudBOn)
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(lta_enable_sw)
+
+    with open('/dev/shm/lta_enable_sw.txt','w') as fp2:
+      fp2.write("%d" % (lta_enable_sw))
+    with open('/data/lta_enable_sw.txt','w') as fp3:
+      fp3.write("%d" % (lta_enable_sw))
+
+
+  def _press_accel_ctrl_disable(self):
+    accel_ctrl_disable = 0
+    try:
+      with open('/dev/shm/accel_ctrl_disable.txt','r') as fp:
+        accel_ctrl_disable_str = fp.read()
+        if accel_ctrl_disable_str:
+          accel_ctrl_disable = int(accel_ctrl_disable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      accel_ctrl_disable = (accel_ctrl_disable + 1) % 2
+    if accel_ctrl_disable == 0:
+      self._accel_ctrl_disable_button.set_button_style(ButtonStyle.HudBOn)
+    else:
+      self._accel_ctrl_disable_button.set_button_style(ButtonStyle.HudBOff)
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(1-accel_ctrl_disable)
+
+    with open('/dev/shm/accel_ctrl_disable.txt','w') as fp2:
+      fp2.write("%d" % (accel_ctrl_disable))
+    with open('/data/accel_ctrl_disable.txt','w') as fp3:
+      fp3.write("%d" % (accel_ctrl_disable))
