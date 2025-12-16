@@ -448,8 +448,8 @@ class HudRenderer(Widget):
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
 
-    dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_256.png",width=64,height=64)
-    self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=50, icon=dx_icon)
+    dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=64,height=64)
+    self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=dx_icon)
     self._press_dexp_sw_mode()
 
     self.button_style_only = False
@@ -697,10 +697,10 @@ class HudRenderer(Widget):
     rl.end_blend_mode() #元のブレンドに戻す
 
     dX_rect = rl.Rectangle(
-      100,
+      70,
       20,
-      100,
-      100,
+      90,
+      90,
     )
     self._dexp_sw_mode_button.render(dX_rect)
 
@@ -957,9 +957,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       dexp_sw_mode = (dexp_sw_mode + 1) % 2
     if dexp_sw_mode == 0:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOff)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOff)
     else:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOn)
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOn)
 
     self.dexp_sw_mode = dexp_sw_mode
 
