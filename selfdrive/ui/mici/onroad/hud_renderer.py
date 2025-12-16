@@ -658,6 +658,11 @@ class HudRenderer(Widget):
         self.road_name = road_info_data[2]
         self.road_bear = road_info_data[3]
 
+    if(self.ip_update_state_ct % 10 == 5):
+      self.button_style_only = True
+      self._press_accel_ctrl_disable()
+      self.button_style_only = False
+
   def _ip_draw(self, rect: rl.Rectangle):
 
     if gui_app.big_ui():
