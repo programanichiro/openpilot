@@ -443,10 +443,14 @@ class HudRenderer(Widget):
     self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
 
-    font_sz = 50 #ハンドルにかぶせるMADS切り替え用透明ボタン
+    #ハンドルにかぶせるMADS切り替え用透明ボタン
     self._mads_button = Button("",click_callback=self._press_mads,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=20)
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
+
+    dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_256.png",width=64,height=64)
+    self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=50, icon=dx_icon)
+    self._press_dexp_sw_mode()
 
     self.button_style_only = False
 
@@ -474,6 +478,8 @@ class HudRenderer(Widget):
     self.road_name = "" #道路名
     self.road_bear = "99999" #道路方位
     #self.disp_ichiro_logo = False
+
+    self.dexp_sw_mode = 0
 
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
@@ -689,6 +695,15 @@ class HudRenderer(Widget):
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     self.knightScanner(rect)
     rl.end_blend_mode() #元のブレンドに戻す
+
+    dX_rect = rl.Rectangle(
+      100,
+      20,
+      100,
+      100,
+    )
+    self._dexp_sw_mode_button.render(dX_rect)
+
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
@@ -928,3 +943,33 @@ class HudRenderer(Widget):
     with open('/dev/shm/steer_always.txt','w') as fp:
       fp.write('%d' % (1 if self.steer_always else 0))
     return
+
+  def _press_dexp_sw_mode(self):
+    dexp_sw_mode = 0
+    try:
+      with open('/dev/shm/dexp_sw_mode.txt','r') as fp:
+        dexp_sw_mode_str = fp.read()
+        if dexp_sw_mode_str:
+          dexp_sw_mode = int(dexp_sw_mode_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      dexp_sw_mode = (dexp_sw_mode + 1) % 2
+    if dexp_sw_mode == 0:
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOff)
+    else:
+      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOn)
+
+    self.dexp_sw_mode = dexp_sw_mode
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(dexp_sw_mode)
+
+    with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
+      fp2.write("%d" % (dexp_sw_mode))
+    with open('/data/dexp_sw_mode.txt','w') as fp3:
+      fp3.write("%d" % (dexp_sw_mode))
+
