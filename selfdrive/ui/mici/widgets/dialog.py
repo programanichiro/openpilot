@@ -327,7 +327,8 @@ class BigMultiOptionDialog(BigDialogBase):
     self._selected_option: str = self._default_option or (options[0] if len(options) > 0 else "")
     self._last_selected_option: str = self._selected_option
 
-    self._scroller = Scroller([], horizontal=False, pad_start=100, pad_end=100, spacing=0, snap_items=True)
+    pad = 100 if gui_app.big_ui() == False else 200
+    self._scroller = Scroller([], horizontal=False, pad_start=pad, pad_end=pad, spacing=0, snap_items=True)
     self.set_touch_valid_callback(self._scroller.scroll_panel.is_touch_valid)
     if self._right_btn is not None:
       self._scroller.set_enabled(lambda: not cast(Widget, self._right_btn).is_pressed)
