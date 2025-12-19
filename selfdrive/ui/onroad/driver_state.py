@@ -4,7 +4,7 @@ from cereal import log
 from dataclasses import dataclass
 from openpilot.selfdrive.ui import UI_BORDER_SIZE
 from openpilot.selfdrive.ui.ui_state import ui_state
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.widgets import Widget
 
 AlertSize = log.SelfdriveState.AlertSize
@@ -81,6 +81,8 @@ class DriverStateRenderer(Widget):
     self.set_visible(lambda: (ui_state.sm["selfdriveState"].alertSize == AlertSize.none and
                               ui_state.sm.recv_frame["driverStateV2"] > ui_state.started_frame))
 
+    self.r_font = gui_app.font(FontWeight.BOLD)
+
   def _render(self, rect):
     # Set opacity based on active state
     opacity = 0.65 if self.is_active else 0.2
@@ -105,6 +107,11 @@ class DriverStateRenderer(Widget):
       rl.draw_spline_linear(self.h_arc_lines, len(self.h_arc_lines), self.h_arc_data.thickness, self.arc_color)
     if self.v_arc_data:
       rl.draw_spline_linear(self.v_arc_lines, len(self.v_arc_lines), self.v_arc_data.thickness, self.arc_color)
+
+    #"R"を表示
+    if self.is_rhd:
+      pos = rl.Vector2(self.position_x - (BTN_SIZE // 2) -20, self.position_y - (BTN_SIZE // 2) -20)
+      rl.draw_text_ex(self.r_font, "R", pos, 70, 0, rl.Color(255, 255, 255, 200))
 
   def _update_state(self):
     """Update the driver monitoring state based on model data"""
@@ -165,7 +172,7 @@ class DriverStateRenderer(Widget):
     # Calculate icon position (bottom-left or bottom-right)
     width, height = self._rect.width, self._rect.height
     offset = UI_BORDER_SIZE + BTN_SIZE // 2
-    self.position_x = self._rect.x + (width - offset if self.is_rhd else offset)
+    self.position_x = self._rect.x + (width - offset if False else offset) #self.is_rhd->False,常に顔アイコンを左側に出す。
     self.position_y = self._rect.y + height - offset
 
     # Pre-calculate the face lines positions
