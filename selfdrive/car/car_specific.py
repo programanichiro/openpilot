@@ -98,7 +98,7 @@ class CarSpecificEvents:
       if self.CP.openpilotLongitudinalControl:
         # Only can leave standstill when planner wants to move
         with open('/tmp/debug_out_v','w') as fp:
-          fp.write("standstill:%d" % (int(CS.cruiseState.standstill)))
+          fp.write("standstill:%d,%d,%d" % (int(CS.cruiseState.standstill),int(CS.brakePressed),int(CC.cruiseControl.resume)))
         if CS.cruiseState.standstill and not CS.brakePressed and CC.cruiseControl.resume:
           events.add(EventName.resumeRequired)
           self.engage_time = 0
