@@ -460,12 +460,29 @@ class DriverMonitoring:
       car_speed=highway_speed,
     )
 
+    steer_always = 0
+    cruise_available = 0
+    try:
+      with open('/dev/shm/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+      with open('/dev/shm/cruise_available.txt','r') as fp:
+        cruise_available_str = fp.read()
+        if cruise_available_str:
+          if int(cruise_available_str) >= 1:
+            cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
+    except Exception as e:
+      pass
+
     # Parse data from dmonitoringmodeld
     self._update_states(
       driver_state=sm['driverStateV2'],
       cal_rpy=rpyCalib,
       car_speed=highway_speed,
-      op_engaged=enabled,
+      #op_engaged=enabled
+      op_engaged=enabled or (steer_always != 0 and cruise_available != 0 and sm['carState'].vEgo > 2),
       standstill=standstill,
       demo_mode=demo,
     )
@@ -473,7 +490,8 @@ class DriverMonitoring:
     # Update distraction events
     self._update_events(
       driver_engaged=driver_engaged,
-      op_engaged=enabled,
+      #op_engaged=enabled,
+      op_engaged=enabled or (steer_always != 0 and cruise_available != 0 and sm['carState'].vEgo > 2),
       standstill=standstill,
       wrong_gear=wrong_gear,
       car_speed=highway_speed
