@@ -382,7 +382,7 @@ class HudRenderer(Widget):
       max_color,
     )
 
-    set_speed_rect = rl.Rectangle(x+50, y, circle_radius*2-50, circle_radius*2+20)
+    set_speed_rect = rl.Rectangle(x+50, y, circle_radius*2-50+30, circle_radius*2+20)
     self._set_speed_MAX_button.render(set_speed_rect)
 
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
