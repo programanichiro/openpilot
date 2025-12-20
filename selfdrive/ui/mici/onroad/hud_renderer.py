@@ -460,6 +460,14 @@ class HudRenderer(Widget):
     self._accel_ctrl_disable_button = Button("",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=arrow_up)
     self._press_accel_ctrl_disable()
 
+    arrow_down = gui_app.texture("icons_mici/onroad/arrow_down.png",width=60,height=60)
+    self._decel_ctrl_disable_button = Button("",click_callback=self._press_decel_ctrl_disable,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=arrow_down)
+    self._press_decel_ctrl_disable()
+
+    arrow_up2 = gui_app.texture("icons_mici/onroad/arrow_up2.png",width=57,height=57)
+    self._start_accel_power_up_disp_enable_button = Button("",click_callback=self._press_start_accel_power_up_disp_enable,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=arrow_up2)
+    self._press_start_accel_power_up_disp_enable()
+
     self.button_style_only = False
 
     self.yellow_flag = False
@@ -741,6 +749,19 @@ class HudRenderer(Widget):
         int(rect.x+rect.width-90-20), 20, 90, 90, #右上のいい感じの位置
       )
       self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
+
+      #右下はSETSPEEDがあるので、使わない。
+
+      decel_ctrl_disable_rect = rl.Rectangle(
+        int(rect.x+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
+      )
+      self._decel_ctrl_disable_button.render(decel_ctrl_disable_rect)
+
+      start_accel_power_up_disp_enable_rect = rl.Rectangle(
+        int(rect.x+rect.width-90-90-20), 20, 90, 90, #右上中央寄りのいい感じの位置
+      )
+      self._start_accel_power_up_disp_enable_button.render(start_accel_power_up_disp_enable_rect)
+
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
@@ -1070,3 +1091,62 @@ class HudRenderer(Widget):
       fp2.write("%d" % (accel_ctrl_disable))
     with open('/data/accel_ctrl_disable.txt','w') as fp3:
       fp3.write("%d" % (accel_ctrl_disable))
+
+  def _press_start_accel_power_up_disp_enable(self):
+    start_accel_power_up_disp_enable = 0
+    try:
+      with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
+        start_accel_power_up_disp_enable_str = fp.read()
+        if start_accel_power_up_disp_enable_str:
+          start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      start_accel_power_up_disp_enable = (start_accel_power_up_disp_enable + 1) % 2
+    if start_accel_power_up_disp_enable == 0:
+      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudBOff)
+    else:
+      self._start_accel_power_up_disp_enable_button.set_button_style(ButtonStyle.HudBOn)
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(start_accel_power_up_disp_enable)
+    if self._disp_button_ct < 20 * 3:
+      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+
+    with open('/dev/shm/start_accel_power_up_disp_enable.txt','w') as fp2:
+      fp2.write("%d" % (start_accel_power_up_disp_enable))
+    with open('/data/start_accel_power_up_disp_enable.txt','w') as fp3:
+      fp3.write("%d" % (start_accel_power_up_disp_enable))
+
+  def _press_decel_ctrl_disable(self):
+    decel_ctrl_disable = 0
+    try:
+      with open('/dev/shm/decel_ctrl_disable.txt','r') as fp:
+        decel_ctrl_disable_str = fp.read()
+        if decel_ctrl_disable_str:
+          decel_ctrl_disable = int(decel_ctrl_disable_str)
+    except Exception as e:
+      pass
+
+    if self.button_style_only == False:
+      decel_ctrl_disable = (decel_ctrl_disable + 1) % 2
+    if decel_ctrl_disable == 0:
+      self._decel_ctrl_disable_button.set_button_style(ButtonStyle.HudBOn)
+    else:
+      self._decel_ctrl_disable_button.set_button_style(ButtonStyle.HudBOff)
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(1-decel_ctrl_disable)
+    if self._disp_button_ct < 20 * 3:
+      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+
+    with open('/dev/shm/decel_ctrl_disable.txt','w') as fp2:
+      fp2.write("%d" % (decel_ctrl_disable))
+    with open('/data/decel_ctrl_disable.txt','w') as fp3:
+      fp3.write("%d" % (decel_ctrl_disable))
+
