@@ -1041,7 +1041,7 @@ if HARDWARE.get_device_type() == 'mici':
       ET.WARNING: Alert(
         "Press Resume",
         "",
-        AlertStatus.userPrompt, AlertSize.small,
+        AlertStatus.normal, AlertSize.small,
         Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
     },
     EventName.preLaneChangeLeft: {
