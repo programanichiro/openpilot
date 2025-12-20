@@ -382,7 +382,7 @@ class HudRenderer(Widget):
       max_color,
     )
 
-    set_speed_rect = rl.Rectangle(x-50, y-50, circle_radius*2+100, circle_radius*2+50)
+    set_speed_rect = rl.Rectangle(x+50, y, circle_radius*2-50, circle_radius*2+20)
     self._set_speed_MAX_button.render(set_speed_rect)
 
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
@@ -503,6 +503,11 @@ class HudRenderer(Widget):
       return True
     return (self._set_speed_MAX_button.is_pressed
             or self._mads_button.is_pressed
+            or self._dexp_sw_mode_button.is_pressed
+            or self._lta_enable_sw_button.is_pressed
+            or self._accel_ctrl_disable_button.is_pressed
+            or self._decel_ctrl_disable_button.is_pressed
+            or self._start_accel_power_up_disp_enable_button.is_pressed
             )
 
   def _ip_update_state(self,sm):
