@@ -1,6 +1,6 @@
 from cereal import car, log
-import cereal.messaging as messaging
 from opendbc.car import DT_CTRL, structs
+from opendbc.car.car_helpers import interfaces
 from opendbc.car.interfaces import MAX_CTRL_SPEED
 
 from openpilot.selfdrive.selfdrived.events import Events
@@ -9,33 +9,6 @@ ButtonType = structs.CarState.ButtonEvent.Type
 GearShifter = structs.CarState.GearShifter
 EventName = log.OnroadEvent.EventName
 NetworkLocation = structs.CarParams.NetworkLocation
-
-
-# TODO: the goal is to abstract this file into the CarState struct and make events generic
-class MockCarState:
-  def __init__(self):
-    self.sm = messaging.SubMaster(['gpsLocation', 'gpsLocationExternal'])
-
-  def update(self, CS: car.CarState):
-    self.sm.update(0)
-    gps_sock = 'gpsLocationExternal' if self.sm.recv_frame['gpsLocationExternal'] > 1 else 'gpsLocation'
-
-    CS.vEgo = self.sm[gps_sock].speed
-    CS.vEgoRaw = self.sm[gps_sock].speed
-
-    return CS
-
-
-BRAND_EXTRA_GEARS = {
-  'ford': [GearShifter.low, GearShifter.manumatic],
-  'nissan': [GearShifter.brake],
-  'chrysler': [GearShifter.low],
-  'honda': [GearShifter.sport],
-  'toyota': [GearShifter.sport],
-  'gm': [GearShifter.sport, GearShifter.low, GearShifter.eco, GearShifter.manumatic],
-  'volkswagen': [GearShifter.eco, GearShifter.sport, GearShifter.manumatic],
-  'hyundai': [GearShifter.sport, GearShifter.manumatic]
-}
 
 
 class CarSpecificEvents:
@@ -49,7 +22,7 @@ class CarSpecificEvents:
     self.engage_time = -1
 
   def update(self, CS: car.CarState, CS_prev: car.CarState, CC: car.CarControl):
-    extra_gears = BRAND_EXTRA_GEARS.get(self.CP.brand, None)
+    extra_gears = interfaces[self.CP.carFingerprint].DRIVABLE_GEARS
 
     if self.CP.brand in ('body', 'mock'):
       events = Events()
@@ -147,7 +120,7 @@ class CarSpecificEvents:
 
     return events
 
-  def create_common_events(self, CS: structs.CarState, CS_prev: car.CarState, extra_gears: list | None = None, pcm_enable=True,
+  def create_common_events(self, CS: structs.CarState, CS_prev: car.CarState, extra_gears: tuple = (), pcm_enable=True,
                            allow_button_cancel=True):
     events = Events()
 
@@ -155,8 +128,7 @@ class CarSpecificEvents:
       events.add(EventName.doorOpen)
     if CS.seatbeltUnlatched:
       events.add(EventName.seatbeltNotLatched)
-    if CS.gearShifter != GearShifter.drive and (extra_gears is None or
-       CS.gearShifter not in extra_gears):
+    if CS.gearShifter != GearShifter.drive and CS.gearShifter not in extra_gears:
       events.add(EventName.wrongGear)
     if CS.gearShifter == GearShifter.reverse:
       one_pedal = False
