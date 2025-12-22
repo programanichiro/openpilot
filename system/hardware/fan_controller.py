@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 import numpy as np
-from abc import ABC, abstractmethod
 import os
 import sqlite3
 import datetime
@@ -8,23 +7,13 @@ import threading
 import requests
 import math
 
-from openpilot.common.realtime import DT_HW
-from openpilot.common.swaglog import cloudlog
 from openpilot.common.pid import PIDController
 
-class BaseFanController(ABC):
-  @abstractmethod
-  def update(self, cur_temp: float, ignition: bool) -> int:
-    pass
 
-
-class TiciFanController(BaseFanController):
-  def __init__(self) -> None:
-    super().__init__()
-    cloudlog.info("Setting up TICI fan handler")
-
+class FanController:
+  def __init__(self, rate: int) -> None:
     self.last_ignition = False
-    self.controller = PIDController(k_p=0, k_i=4e-3, rate=(1 / DT_HW))
+    self.controller = PIDController(k_p=0, k_i=4e-3, rate=rate)
 
     #ここが2Hzだから、limitspeed.db操作に利用する。
     self.db_path = "../../../limitspeed.db" #例によって遅くないか？
@@ -395,15 +384,16 @@ class TiciFanController(BaseFanController):
 
     if ignition != self.last_ignition:
       self.controller.reset()
-
-    error = cur_temp - 75
-    fan_pwr_out = int(self.controller.update(
-                      error=error,
-                      feedforward=np.interp(cur_temp, [60.0, 100.0], [0, 100])
-                    ))
-
     self.last_ignition = ignition
 
+    self.osm_proc()
+
+    return int(self.controller.update(
+                 error=(cur_temp - 75),  # temperature setpoint in C
+                 feedforward=np.interp(cur_temp, [60.0, 100.0], [0, 100])
+              ))
+
+  def osm_proc(self):
     # if self.tss_type == 0:
     #   try:
     #     with open('../../../tss_type_info.txt','r') as fp:
@@ -672,6 +662,3 @@ class TiciFanController(BaseFanController):
     #   fp.write('up:%d(%d/%d) %.5f, %.5f' % (int(per * 100),self.frame_ct2,self.frame_ct,self.latitude,self.longitude))
     with open('/dev/shm/osm_access_counter.txt','w') as fp:
       fp.write('%d,%d,%d' % (int(per * 100),self.frame_ct2,self.frame_ct))
-
-    return fan_pwr_out
-
