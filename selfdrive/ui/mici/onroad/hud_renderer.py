@@ -1,4 +1,5 @@
 import pyray as rl
+import time
 from dataclasses import dataclass
 from openpilot.common.constants import CV
 from openpilot.selfdrive.ui.mici.onroad.torque_bar import TorqueBar
@@ -414,6 +415,10 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
 
+    self.dt = 50 #フレームタイム
+    self.distance_traveled = 0
+    self.prev_draw_t = time.monotonic_ns() / 1_000_000
+
     self.button_style_only = True
 
     self.limit_speed_override = False
@@ -676,6 +681,12 @@ class HudRenderer(Widget):
       self._press_accel_ctrl_disable()
       self.button_style_only = False
 
+    cur_draw_t = time.monotonic_ns() / 1_000_000  # ナノ秒→ミリ秒 #millis_since_boot();
+    self.dt = cur_draw_t - self.prev_draw_t #フレームタイム
+    self.distance_traveled += abs(car_state.vEgo) * self.dt / 1000
+    self.prev_draw_t = cur_draw_t
+
+
   def _ip_draw(self, rect: rl.Rectangle):
 
     if gui_app.big_ui():
@@ -874,6 +885,8 @@ class HudRenderer(Widget):
 # #endif
 
     h_pos = rect.y + rect_h - hh
+
+    dir *= self.dt / 50 #20fpsよりリフレッシュレートが速いc4対策。
 
     self.ktsc_ct += dir
     if self.ktsc_ct <= 0 or self.ktsc_ct >= n*self.ktsc_ct_n-1:
