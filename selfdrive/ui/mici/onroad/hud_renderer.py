@@ -516,7 +516,7 @@ class HudRenderer(Widget):
             )
 
   def _ip_update_state(self,sm):
-    self.ip_update_state_ct += 1
+    self.ip_update_state_ct += 1 #c4は60fpsなのでファイルアクセス頻度が3倍になる。self.dtで補正できるが、今のところKnightScannerしかタイミングが早まるのを加味していない。
     car_state = sm['carState']
     self.vc_speed = car_state.vEgo
     self.maxspeed_org = car_state.vCruise #これで元の41〜 , v_cruise; //レバー値の元の値。黄色点滅警告にはマッチしてる気がする。
