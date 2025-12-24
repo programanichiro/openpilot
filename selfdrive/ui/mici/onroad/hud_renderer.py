@@ -887,6 +887,10 @@ class HudRenderer(Widget):
     h_pos = rect.y + rect_h - hh
 
     dir *= self.dt / 50 #20fpsよりリフレッシュレートが速いc4対策。
+    if dir > 1.0: #飛び飛びになるのを防ぐ。
+      dir = 1
+    elif dir < -1.0:
+      dir = -1
 
     self.ktsc_ct += dir
     if self.ktsc_ct <= 0 or self.ktsc_ct >= n*self.ktsc_ct_n-1:
