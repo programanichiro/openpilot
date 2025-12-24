@@ -886,7 +886,7 @@ class HudRenderer(Widget):
 
     h_pos = rect.y + rect_h - hh
 
-    dir *= self.dt / 50 #20fpsよりリフレッシュレートが速いc4対策。
+    dir *= self.dt / 50 #20fpsよりリfpsが速いc4対策。
     if dir > 1.0: #飛び飛びになるのを防ぐ。
       dir = 1
     elif dir < -1.0:
@@ -907,6 +907,11 @@ class HudRenderer(Widget):
         self.dir0 = -self.dir0
 
     #呼び出し元の状態からここは全て加算ブレンドになる。   p.setCompositionMode(QPainter::CompositionMode_Plus);
+    k_d = self.dt / 50 #20fpsよりfpsが速いc4対策。
+    if k_d > 1.0:
+      k_t = 0.9
+    else:
+      k_t = 0.9 ** k_d
     for i in range(n - 1): #for(int i=0; i<(n-1); i++){
       if t[i] > 0.01:
         if left_blinker or right_blinker:
@@ -927,7 +932,7 @@ class HudRenderer(Widget):
           rc = rl.Rectangle(rect.x+rect_w * i / (n-1),h_pos - lane_change_height,ww,hh) #drawRectを使う利点は、角を取ったりできそうだ。
           rl.draw_rectangle_rounded(rc, 0.5, 5, kt_color)
 
-      t[i] *= 0.9
+      t[i] *= k_t
     pass
 
   def _button_push_sound(self,onoff):
