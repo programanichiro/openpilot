@@ -271,7 +271,7 @@ class HudRenderer(Widget):
       exclamation_pos_y = pos_y - self._txt_exclamation_point.height / 2
       rl.draw_texture(self._txt_exclamation_point, int(exclamation_pos_x), int(exclamation_pos_y), rl.WHITE)
 
-    mads_margin = 25
+    mads_margin = 5
     mads_rect = rl.Rectangle(
       pos_x - wheel_txt.width / 2 - mads_margin,
       pos_y - wheel_txt.height / 2 - mads_margin,
@@ -449,7 +449,7 @@ class HudRenderer(Widget):
     self._press_set_speed_MAX() #_press_accel_engagedより後に呼ぶこと。
 
     #ハンドルにかぶせるMADS切り替え用透明ボタン
-    self._mads_button = Button("",click_callback=self._press_mads,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=20)
+    self._mads_button = Button("",click_callback=self._press_mads,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=30)
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
 
@@ -752,17 +752,17 @@ class HudRenderer(Widget):
 
       dX_rect = rl.Rectangle(
         # 70, 20, 90, 90,
-        70, int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+        int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
       )
       self._dexp_sw_mode_button.render(dX_rect)
 
       lane_rect = rl.Rectangle(
-        70, 20, 90, 90, #右上のいい感じの位置
+        int(rect.x+70), int(rect.y+20), 90, 90, #右上のいい感じの位置
       )
       self._lta_enable_sw_button.render(lane_rect)
 
       accel_ctrl_disable_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-20), 20, 90, 90, #右上のいい感じの位置
+        int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
       )
       self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
 
@@ -774,7 +774,7 @@ class HudRenderer(Widget):
       self._decel_ctrl_disable_button.render(decel_ctrl_disable_rect)
 
       start_accel_power_up_disp_enable_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-90-20), 20, 90, 90, #右上中央寄りのいい感じの位置
+        int(rect.x+rect.width-90-90-20), int(rect.y+20), 90, 90, #右上中央寄りのいい感じの位置
       )
       self._start_accel_power_up_disp_enable_button.render(start_accel_power_up_disp_enable_rect)
 
