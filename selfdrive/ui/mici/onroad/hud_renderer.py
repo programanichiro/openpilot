@@ -757,7 +757,7 @@ class HudRenderer(Widget):
       self._dexp_sw_mode_button.render(dX_rect)
 
       lane_rect = rl.Rectangle(
-        int(rect.x+70), int(rect.y+20), 90, 90, #右上のいい感じの位置
+        int(rect.x+70), int(rect.y+20), 90, 90, #左上のいい感じの位置
       )
       self._lta_enable_sw_button.render(lane_rect)
 
@@ -769,7 +769,8 @@ class HudRenderer(Widget):
       #右下はSETSPEEDがあるので、使わない。
 
       decel_ctrl_disable_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
+        #int(rect.x+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
+        int(rect.x+90+70), int(rect.y+rect.height-90-20), 90, 90, #左下中央寄りのいい感じの位置
       )
       self._decel_ctrl_disable_button.render(decel_ctrl_disable_rect)
 
