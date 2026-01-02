@@ -969,7 +969,7 @@ class HudRenderer(Widget):
     elif accel_engaged == 1:
       self._accel_engaged_button.set_text("A")
     elif accel_engaged == 2:
-      self._accel_engaged_button.set_text("Aa") #AA->Aa改行対策
+      self._accel_engaged_button.set_text("aa") #AA->aa改行対策
     elif accel_engaged == 3:
       self._accel_engaged_button.set_text("iP")
     elif accel_engaged == 4:
