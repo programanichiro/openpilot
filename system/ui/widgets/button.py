@@ -49,7 +49,7 @@ BUTTON_TEXT_COLOR = {
   ButtonStyle.HudSOff: rl.Color(0x90, 0x90, 0x90, 0xd0),
   ButtonStyle.HudSOn: rl.Color(0x37, 0xb8, 0x68, 0xe0),
   ButtonStyle.HudUnder: rl.Color(228, 228, 228, 255),
-  ButtonStyle.HudBOff: rl.Color(0x90, 0x90, 0x90, 0xd0),
+  ButtonStyle.HudBOff: rl.Color(228, 228, 228, 255),
   ButtonStyle.HudBOn: rl.Color(228, 228, 228, 255),
 }
 
