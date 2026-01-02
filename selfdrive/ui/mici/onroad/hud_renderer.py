@@ -442,7 +442,7 @@ class HudRenderer(Widget):
     self.vc_speed = 0
     self._press_set_speed_MAX_ct = 0
 
-    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=45,font_weight=FontWeight.BOLD, border_radius=45)
+    self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=35,font_weight=FontWeight.BOLD, border_radius=45)
     self._press_accel_engaged()
 
     font_sz = 50 #ACC速度にかぶせる透明ボタン
