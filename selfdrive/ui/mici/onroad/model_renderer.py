@@ -138,7 +138,24 @@ class ModelRenderer(Widget):
       self._transform_dirty = False
 
     # Draw elements (hide when disengaged)
-    if ui_state.status != UIStatus.DISENGAGED:
+    steer_always = 0
+    cruise_available = 0
+    if ui_state.status == UIStatus.DISENGAGED:
+      try:
+        with open('/dev/shm/steer_always.txt','r') as fp:
+          steer_always_str = fp.read()
+          if steer_always_str:
+            if int(steer_always_str) >= 1:
+              steer_always = 2
+        with open('/dev/shm/cruise_available.txt','r') as fp:
+          cruise_available_str = fp.read()
+          if cruise_available_str:
+            if int(cruise_available_str) >= 1:
+              cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
+      except Exception as e:
+        pass
+
+    if ui_state.status != UIStatus.DISENGAGED or (steer_always != 0 and cruise_available):
       self._draw_lane_lines()
       self._draw_path(sm)
 
