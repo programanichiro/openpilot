@@ -65,7 +65,7 @@ class CarSpecificEvents:
         self.engage_time = 0
       if self.CP.openpilotLongitudinalControl:
         # Only can leave standstill when planner wants to move
-        if CS.cruiseState.standstill and not CS.brakePressed #and (CC.cruiseControl.resume or self.CP.flags & ToyotaFlags.HYBRID.value): #standstillが機械スイッチなので、その確認にはplannerの意思を見ない方がいい。
+        if CS.cruiseState.standstill and not CS.brakePressed: #and (CC.cruiseControl.resume or self.CP.flags & ToyotaFlags.HYBRID.value): #standstillが機械スイッチなので、その確認にはplannerの意思を見ない方がいい。
           events.add(EventName.resumeRequired)
           self.engage_time = 0
         if CS.vEgo < self.CP.minEnableSpeed:
