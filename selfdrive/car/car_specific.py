@@ -2,6 +2,7 @@ from cereal import car, log
 from opendbc.car import DT_CTRL, structs
 from opendbc.car.car_helpers import interfaces
 from opendbc.car.interfaces import MAX_CTRL_SPEED
+from opendbc.car.toyota.values import ToyotaFlags
 
 from openpilot.selfdrive.selfdrived.events import Events
 
@@ -64,7 +65,7 @@ class CarSpecificEvents:
         self.engage_time = 0
       if self.CP.openpilotLongitudinalControl:
         # Only can leave standstill when planner wants to move
-        if CS.cruiseState.standstill and not CS.brakePressed: #and CC.cruiseControl.resume: #standstillが機械スイッチなので、その確認にはplannerの意思を見ない方がいい。
+        if CS.cruiseState.standstill and not CS.brakePressed #and (CC.cruiseControl.resume or self.CP.flags & ToyotaFlags.HYBRID.value): #standstillが機械スイッチなので、その確認にはplannerの意思を見ない方がいい。
           events.add(EventName.resumeRequired)
           self.engage_time = 0
         if CS.vEgo < self.CP.minEnableSpeed:
