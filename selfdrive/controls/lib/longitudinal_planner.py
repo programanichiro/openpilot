@@ -12,7 +12,7 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
 from openpilot.selfdrive.modeld.constants import ModelConstants
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc
+from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, SOURCES
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
@@ -77,7 +77,6 @@ one_pedal_chenge_restrict_time = 0
 START_DASH_CUT    = [0, 27/3.6, 35/3.6, 43/3.6, 51/3.6, 60/3.6, 69/3.6, 78/3.6, 86/3.6,  95/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
 
-LON_MPC_STEP = 0.2  # first step is 0.2s
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
@@ -95,7 +94,6 @@ def get_max_accel(v_ego):
 
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
-
 
 def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
   """
@@ -115,8 +113,6 @@ class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
     self.mpc = LongitudinalMpc(dt=dt)
-    # TODO remove mpc modes when TR released
-    self.mpc.mode = 'acc'
     self.fcw = False
     self.dt = dt
     self.allow_throttle = True
@@ -130,7 +126,6 @@ class LongitudinalPlanner:
     self.v_desired_trajectory = np.zeros(CONTROL_N)
     self.a_desired_trajectory = np.zeros(CONTROL_N)
     self.j_desired_trajectory = np.zeros(CONTROL_N)
-    self.solverExecutionTime = 0.0
 
     self.red_signals = np.zeros(10)
     self.red_signal_path_xs = np.zeros(5)
@@ -189,8 +184,6 @@ class LongitudinalPlanner:
     return x, v, a, j, throttle_prob
 
   def update(self, sm):
-    mode = 'blended' if sm['selfdriveState'].experimentalMode else 'acc'
-
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
     else:
@@ -221,7 +214,7 @@ class LongitudinalPlanner:
       self.hasLead_1s_frame = 0
 
     if dexp_mode:
-      if mode == 'acc':
+      if not sm['selfdriveState'].experimentalMode:
         with open('/dev/shm/long_speeddown_disable.txt','w') as fp:
           if self.hasLead_1s:
             fp.write('%d' % (1)) #前走車がいるからイチロウロング無効
@@ -514,7 +507,7 @@ class LongitudinalPlanner:
         except Exception as e:
           pass
       red_stop_immediately = False
-      if long_speeddown_flag == False and mode == 'acc': #公式ロングではelseへ強制遷移する追加条件
+      if long_speeddown_flag == False and not sm['selfdriveState'].experimentalMode: #公式ロングではelseへ強制遷移する追加条件
         if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
           stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
         else: #夜
@@ -941,12 +934,9 @@ class LongitudinalPlanner:
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-    if mode == 'acc':
-      accel_clip = [ACCEL_MIN, get_max_accel(v_ego)]
-      steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
-      accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
-    else:
-      accel_clip = [ACCEL_MIN, ACCEL_MAX]
+    accel_clip = [ACCEL_MIN, get_max_accel(v_ego)]
+    steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
+    accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
 
     if reset_state:
       self.v_desired_filter.x = v_ego
@@ -961,7 +951,7 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
     if tss_type < 2 and phv_2019 == False and self.v_desired_filter.x > v_117 / 3.6:
       self.v_desired_filter.x = v_117 / 3.6
-    x, v, a, j, throttle_prob = self.parse_model(sm['modelV2'])
+    _, _, _, _, throttle_prob = self.parse_model(sm['modelV2'])
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
 
@@ -1044,9 +1034,7 @@ class LongitudinalPlanner:
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    self.mpc.update(sm['radarState'], v_cruise, x, v, a, j, personality=sm['selfdriveState'].personality)
-    # with open('/tmp/debug_out_v','w') as fp:
-    #   fp.write("v_desired=%.2f,%.2fkm/h(%.4f)%d/%d" % (self.v_desired_filter.x*3.6,v_cruise*3.6,self.a_desired,sm['carState'].cruiseState.standstill,force_slow_decel))
+    self.mpc.update(sm['radarState'], v_cruise, personality=sm['selfdriveState'].personality)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
@@ -1077,12 +1065,13 @@ class LongitudinalPlanner:
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    if mode == 'acc':
+    if (output_a_target_e2e < output_a_target_mpc) and sm['selfdriveState'].experimentalMode:
+      output_a_target = output_a_target_e2e
+      self.output_should_stop = output_should_stop_e2e
+      self.mpc.source = SOURCES[3]
+    else:
       output_a_target = output_a_target_mpc
       self.output_should_stop = output_should_stop_mpc
-    else:
-      output_a_target = min(output_a_target_mpc, output_a_target_e2e)
-      self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
 
     for idx in range(2):
       accel_clip[idx] = np.clip(accel_clip[idx], self.prev_accel_clip[idx] - 0.05, self.prev_accel_clip[idx] + 0.05)
