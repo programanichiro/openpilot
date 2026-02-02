@@ -252,7 +252,7 @@ class LongitudinalPlanner:
           fp.write('%d' % (1))
     else:
       tss_type = 2
-      min_acc_speed = 26
+      min_acc_speed = 27
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('../../../tss_type_info.txt','w') as fp:
           fp.write('%d' % (2))
