@@ -8,6 +8,7 @@ from openpilot.system.ui.lib.application import gui_app
 from openpilot.selfdrive.ui.layouts.main import MainLayout
 from openpilot.selfdrive.ui.mici.layouts.main import MiciMainLayout
 from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.common.params import Params
 
 
 def main():
@@ -15,11 +16,19 @@ def main():
   config_realtime_process(0, 51)
 
   gui_app.init_window("UI")
-  if gui_app.big_ui():
+  if gui_app.big_ui() and Params().get_bool("C4UIOnC3X") == False:
     main_layout = MainLayout()
   else:
     main_layout = MiciMainLayout()
   main_layout.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+  try:
+    os.rename('/data/force_prebuild', '/data/prev_force_prebuild') #元のforce_prebuildを残す。
+  except Exception as e:
+    pass
+  try:
+    os.remove('/data/agnos_update')
+  except Exception as e:
+    pass
   for should_render in gui_app.render():
     ui_state.update()
     if should_render:

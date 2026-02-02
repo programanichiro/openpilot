@@ -43,7 +43,7 @@ class DeviceStatus(Widget):
     self._version_text = self._get_version_text()
 
   def _get_version_text(self) -> str:
-    brand = "openpilot"
+    brand = "ichiropilot"
     description = ui_state.params.get("UpdaterCurrentDescription")
     return f"{brand} {description}" if description else brand
 
@@ -109,7 +109,7 @@ class MiciHomeLayout(Widget):
     self._cell_high_txt = gui_app.texture("icons_mici/settings/network/cell_strength_high.png", 54, 36)
     self._cell_full_txt = gui_app.texture("icons_mici/settings/network/cell_strength_full.png", 54, 36)
 
-    self._openpilot_label = MiciLabel("openpilot", font_size=96, color=rl.Color(255, 255, 255, int(255 * 0.9)), font_weight=FontWeight.DISPLAY)
+    self._openpilot_label = MiciLabel("ichiropilot", font_size=96, color=rl.Color(255, 255, 255, int(255 * 0.9)), font_weight=FontWeight.DISPLAY)
     self._version_label = MiciLabel("", font_size=36, font_weight=FontWeight.ROMAN)
     self._large_version_label = MiciLabel("", font_size=64, color=rl.GRAY, font_weight=FontWeight.ROMAN)
     self._date_label = MiciLabel("", font_size=36, color=rl.GRAY, font_weight=FontWeight.ROMAN)
@@ -170,7 +170,9 @@ class MiciHomeLayout(Widget):
     if description is not None and len(description) > 0:
       # Expect "version / branch / commit / date"; be tolerant of other formats
       try:
-        version, branch, commit, date = description.split(" / ")
+        # version, branch, commit, date = description.split(" / ")
+        os_ver, version, branch, commit, date = description.split(" / ")
+        version = os_ver + ";" + version
         return version, branch, commit, date
       except Exception:
         return None

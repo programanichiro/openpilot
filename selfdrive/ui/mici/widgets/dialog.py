@@ -329,8 +329,8 @@ class BigMultiOptionDialog(BigDialogBase):
 
     # Widget doesn't differentiate between click and drag
     self._can_click = True
-
-    self._scroller = Scroller([], horizontal=False, pad_start=100, pad_end=100, spacing=0, snap_items=True)
+    pad = 100 if gui_app.big_ui() == False else 200
+    self._scroller = Scroller([], horizontal=False, pad_start=pad, pad_end=pad, spacing=0, snap_items=True)
     if self._right_btn is not None:
       self._scroller.set_enabled(lambda: not cast(Widget, self._right_btn).is_pressed)
 

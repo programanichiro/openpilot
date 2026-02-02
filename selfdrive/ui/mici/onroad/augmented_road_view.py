@@ -17,6 +17,7 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.common.filter_simple import BounceFilter
 from openpilot.common.transformations.camera import DEVICE_CAMERAS, DeviceCameraConfig, view_frame_from_device_frame
 from openpilot.common.transformations.orientation import rot_from_euler
+from openpilot.common.params import Params
 from enum import IntEnum
 
 OpState = log.SelfdriveState.OpenpilotState
@@ -184,7 +185,7 @@ class AugmentedRoadView(CameraView):
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
     # Don't trigger click callback if bookmark was triggered
-    if not self._bookmark_icon.interacting():
+    if (not self._bookmark_icon.interacting()) and (not self._hud_renderer.user_interacting()):
       super()._handle_mouse_release(mouse_pos)
 
   def _render(self, _):
@@ -218,12 +219,14 @@ class AugmentedRoadView(CameraView):
     self._model_renderer.render(self._content_rect)
 
     # Fade out bottom of overlays for looks
-    rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)
+    if gui_app.big_ui() == False:
+      #c3Xではこの_fade_texture要らない。
+      rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)
 
     alert_to_render, not_animating_out = self._alert_renderer.will_render()
 
     # Hide DMoji when disengaged unless AlwaysOnDM is enabled
-    should_draw_dmoji = (not self._hud_renderer.drawing_top_icons() and ui_state.is_onroad() and
+    should_draw_dmoji = ((True or not self._hud_renderer.drawing_top_icons()) and ui_state.is_onroad() and
                          (ui_state.status != UIStatus.DISENGAGED or ui_state.always_on_dm))
     self._driver_state_renderer.set_should_draw(should_draw_dmoji)
     self._driver_state_renderer.set_position(self._rect.x + 16, self._rect.y + 10)
@@ -238,7 +241,8 @@ class AugmentedRoadView(CameraView):
     self._hud_renderer.render(self._content_rect)
 
     # Draw fake rounded border
-    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02, 10, 50, rl.BLACK)
+    rr = 1.0 if Params().get_bool("C4UIOnC3X") == False else 0.05
+    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * rr, 10, 50, rl.BLACK)
 
     # End clipping region
     rl.end_scissor_mode()
@@ -308,7 +312,9 @@ class AugmentedRoadView(CameraView):
     intrinsic = device_camera.ecam.intrinsics if is_wide_camera else device_camera.fcam.intrinsics
     calibration = self.view_from_wide_calib if is_wide_camera else self.view_from_calib
     if is_wide_camera:
-      zoom = 0.7 * 1.5
+      zoom = 0.7 * 1.5 / (gui_app._scale ** 0.5) #_scale==1がたまたま変化しないことを利用しているので、危険コード。
+    elif gui_app.big_ui():
+      zoom = 0.7 * 1.5 / gui_app._scale
     else:
       zoom = np.interp(ui_state.sm['carState'].vEgo, [10, 30], [0.8, 1.0])
 
