@@ -414,6 +414,7 @@ class HudRenderer(Widget):
     copy_data2devshm('decel_ctrl_disable.txt')
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
+    copy_data2devshm('steer_always.txt')
 
     self.dt = 50 #フレームタイム
     self.distance_traveled = 0
@@ -1060,8 +1061,10 @@ class HudRenderer(Widget):
     self.steer_always = not self.steer_always
     self._button_push_sound(self.steer_always)
 
-    with open('/dev/shm/steer_always.txt','w') as fp:
-      fp.write('%d' % (1 if self.steer_always else 0))
+    with open('/dev/shm/steer_always.txt','w') as fp2:
+      fp2.write('%d' % (1 if self.steer_always else 0))
+    with open('/data/steer_always.txt','w') as fp3:
+      fp3.write('%d' % (1 if self.steer_always else 0))
     return
 
   def _press_dexp_sw_mode(self):

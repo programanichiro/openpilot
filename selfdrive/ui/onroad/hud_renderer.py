@@ -387,6 +387,7 @@ class HudRenderer(Widget):
     copy_data2devshm('decel_ctrl_disable.txt')
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
+    copy_data2devshm('steer_always.txt')
 
     self.global_engageable = False
     self.ktsc_ct_n = 1

@@ -264,7 +264,7 @@ class TogglesLayoutMici(NavWidget):
 
     steer_always = 0
     try:
-      with open('/dev/shm/steer_always.txt','r') as fp: # /dev/shmのまま
+      with open('/data/steer_always.txt','r') as fp: # /data/から取る
         steer_always_str = fp.read()
         if steer_always_str:
           if int(steer_always_str) >= 1:
@@ -363,6 +363,8 @@ class TogglesLayoutMici(NavWidget):
     mads_steer_always = int(onoff)
     with open('/dev/shm/steer_always.txt','w') as fp2:
       fp2.write("%d" % (mads_steer_always))
+    with open('/data/steer_always.txt','w') as fp3:
+      fp3.write("%d" % (mads_steer_always))
 
   def _accel_ctrl_disable_button_callback(self,onoff):
     accel_ctrl_disable = int(not onoff)

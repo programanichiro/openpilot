@@ -96,8 +96,10 @@ class ExpButton(Widget):
     if release_time_ms - self._press_time_ms > 1000:
       #1秒以上長押し後に離すとここ。
       self.steer_always = not self.steer_always
-      with open('/dev/shm/steer_always.txt','w') as fp:
-        fp.write('%d' % (1 if self.steer_always else 0))
+      with open('/dev/shm/steer_always.txt','w') as fp2:
+        fp2.write('%d' % (1 if self.steer_always else 0))
+      with open('/data/steer_always.txt','w') as fp3:
+        fp3.write('%d' % (1 if self.steer_always else 0))
       return
 
     if self._is_toggle_allowed():
