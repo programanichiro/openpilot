@@ -847,6 +847,8 @@ class LongitudinalPlanner:
             vo = v_cruise_kph_org
             if int(vo) == 59 or int(vo) == 61:
               vo += 0.5 #メーター表示誤差補正
+            if tss_type >= 2 and (int(vo) == 29 or int(vo) == 30):
+              vo += 0.5 #メーター表示誤差補正
             if cruise_info_power_up:
               fp.write('%d;' % (vo))
             elif limitspeed_set == True:
