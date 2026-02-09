@@ -907,7 +907,9 @@ class LongitudinalPlanner:
       if ePedal == False or sm['carState'].cruiseState.standstill or self.red_signal_eP_iP_flag == 1:
         #クリープ中にここを通してはいけない。AI判断でやたら停止してしまう。self.red_signal_eP_iP_flag == 1なら一時的iPモード。
         v_cruise = 0 #ワンペダル停止処理,冬タイヤはこれで良い？
-        self.v_cruise_onep_k = np.interp(vk_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
+        self.v_cruise_onep_k = (np.interp(vk_ego*3.6,[0,5,10,20,40,60],[1.0,0.96,0.93,0.9,0.87,0.85]) #もう少し滑らかに
+                                if tss_type < 2 else
+                                np.interp(vk_ego*3.6,[0,5,10,20,40,60],[1.0,0.98,0.96,0.94,0.92,0.90])) #TSS2は早めに強く踏む
       else:
         t_v = 9/3.6  #m/s完全停止しない。クリープ速度。
         v_cruise = t_v
