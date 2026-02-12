@@ -1057,7 +1057,7 @@ class LongitudinalPlanner:
       if self.a_desired < 0:
         tss2_amul = np.interp(vk_ego,[0,10/3.6],[1.1,1.0]) #減速を強める
         if accel_engaged_str:
-          if int(accel_engaged_str) >= 3: #ワンペダルモード
+          if int(accel_engaged_str) >= 3 and v_cruise_kph <= 1.2: #ワンペダルモードで実際にMAX=1のとき
             a2 = 1.05
             if a2 > tss2_amul:
               tss2_amul = a2
