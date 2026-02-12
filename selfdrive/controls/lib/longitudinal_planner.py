@@ -1052,8 +1052,16 @@ class LongitudinalPlanner:
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
-    if self.a_desired < 0:
-      self.a_desired *= np.interp(vk_ego,[0,30/3.6],[1.2,1.0]) #減速を強めるテストコード
+    if tss_type == 2:
+      tss2_amul = 1.0
+      if self.a_desired < 0:
+        tss2_amul = np.interp(vk_ego,[0,10/3.6],[1.1,1.0]) #減速を強める
+        if accel_engaged_str:
+          if int(accel_engaged_str) >= 3: #ワンペダルモード
+            a2 = 1.05
+            if a2 > tss2_amul:
+              tss2_amul = a2
+      self.a_desired *= tss2_amul
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
