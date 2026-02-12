@@ -1052,13 +1052,13 @@ class LongitudinalPlanner:
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
-    if tss_type == 2:
+    if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
       tss2_amul = 1.0
       if self.a_desired < 0:
         tss2_amul = np.interp(vk_ego,[0,10/3.6],[1.1,1.0]) #減速を強める
         if accel_engaged_str:
           if int(accel_engaged_str) >= 3 and v_cruise_kph <= 1.2: #ワンペダルモードで実際にMAX=1のとき
-            a2 = 1.05
+            a2 = 1.04
             if a2 > tss2_amul:
               tss2_amul = a2
       self.a_desired *= tss2_amul
