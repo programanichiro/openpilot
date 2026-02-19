@@ -10,7 +10,7 @@ from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.selfdrive.ui.lib.prime_state import PrimeType
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import NavWidget
-from openpilot.system.ui.lib.wifi_manager import WifiManager, Network, MeteredType
+from openpilot.system.ui.lib.wifi_manager import WifiManager, Network, MeteredType, ConnectStatus
 
 
 class NetworkPanelType(IntEnum):
@@ -36,6 +36,7 @@ class NetworkLayoutMici(NavWidget):
     # ******** Tethering ********
     def tethering_toggle_callback(checked: bool):
       self._tethering_toggle_btn.set_enabled(False)
+      self._tethering_password_btn.set_enabled(False)
       self._network_metered_btn.set_enabled(False)
       self._wifi_manager.set_tethering_active(checked)
 
@@ -43,6 +44,8 @@ class NetworkLayoutMici(NavWidget):
 
     def tethering_password_callback(password: str):
       if password:
+        self._tethering_toggle_btn.set_enabled(False)
+        self._tethering_password_btn.set_enabled(False)
         self._wifi_manager.set_tethering_password(password)
 
     def tethering_password_clicked():
@@ -120,6 +123,27 @@ class NetworkLayoutMici(NavWidget):
     self._apn_btn.set_visible(show_cell_settings)
     self._cellular_metered_btn.set_visible(show_cell_settings)
 
+    # Update wi-fi button with ssid and ip address
+    # TODO: make sure we handle hidden ssids
+    wifi_state = self._wifi_manager.wifi_state
+    display_network = next((n for n in self._wifi_manager.networks if n.ssid == wifi_state.ssid), None)
+    if wifi_state.status == ConnectStatus.CONNECTING:
+      self._wifi_button.set_text(normalize_ssid(wifi_state.ssid or "wi-fi"))
+      self._wifi_button.set_value("connecting...")
+    elif wifi_state.status == ConnectStatus.CONNECTED:
+      self._wifi_button.set_text(normalize_ssid(wifi_state.ssid or "wi-fi"))
+      self._wifi_button.set_value(self._wifi_manager.ipv4_address or "obtaining IP...")
+    else:
+      display_network = None
+      self._wifi_button.set_text("wi-fi")
+      self._wifi_button.set_value("not connected")
+
+    if display_network is not None:
+      strength = WifiIcon.get_strength_icon_idx(display_network.strength)
+      self._wifi_button.set_icon(self._wifi_full_txt if strength == 2 else self._wifi_medium_txt if strength == 1 else self._wifi_low_txt)
+    else:
+      self._wifi_button.set_icon(self._wifi_slash_txt)
+
   def show_event(self):
     super().show_event()
     self._current_panel = NetworkPanelType.NONE
@@ -155,31 +179,9 @@ class NetworkLayoutMici(NavWidget):
     tethering_active = self._wifi_manager.is_tethering_active()
     # TODO: use real signals (like activated/settings changed, etc.) to speed up re-enabling buttons
     self._tethering_toggle_btn.set_enabled(True)
+    self._tethering_password_btn.set_enabled(True)
     self._network_metered_btn.set_enabled(lambda: not tethering_active and bool(self._wifi_manager.ipv4_address))
     self._tethering_toggle_btn.set_checked(tethering_active)
-
-    # Update wi-fi button with ssid and ip address
-    # TODO: make sure we handle hidden ssids
-    connecting_ssid = self._wifi_manager.connecting_to_ssid
-    connected_network = next((network for network in networks if network.is_connected), None)
-    if connecting_ssid:
-      display_network = next((n for n in networks if n.ssid == connecting_ssid), None)
-      self._wifi_button.set_text(normalize_ssid(connecting_ssid))
-      self._wifi_button.set_value("connecting...")
-    elif connected_network is not None:
-      display_network = connected_network
-      self._wifi_button.set_text(normalize_ssid(connected_network.ssid))
-      self._wifi_button.set_value(self._wifi_manager.ipv4_address or "not connected")
-    else:
-      display_network = None
-      self._wifi_button.set_text("wi-fi")
-      self._wifi_button.set_value("not connected")
-
-    if display_network is not None:
-      strength = WifiIcon.get_strength_icon_idx(display_network.strength)
-      self._wifi_button.set_icon(self._wifi_full_txt if strength == 2 else self._wifi_medium_txt if strength == 1 else self._wifi_low_txt)
-    else:
-      self._wifi_button.set_icon(self._wifi_slash_txt)
 
     # Update network metered
     self._network_metered_btn.set_value(
