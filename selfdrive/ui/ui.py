@@ -10,17 +10,21 @@ from openpilot.selfdrive.ui.mici.layouts.main import MiciMainLayout
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.common.params import Params
 
+BIG_UI = (gui_app.big_ui() and Params().get_bool("C4UIOnC3X") == False)
+
 
 def main():
   cores = {5, }
   config_realtime_process(0, 51)
 
-  gui_app.init_window("UI")
-  if gui_app.big_ui() and Params().get_bool("C4UIOnC3X") == False:
+  if BIG_UI:
+    gui_app.init_window("UI", new_modal=True)
     main_layout = MainLayout()
   else:
+    gui_app.init_window("UI")
     main_layout = MiciMainLayout()
-  main_layout.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+    main_layout.set_rect(rl.Rectangle(0, 0, gui_app.width, gui_app.height))
+
   try:
     os.rename('/data/force_prebuild', '/data/prev_force_prebuild') #元のforce_prebuildを残す。
   except Exception as e:
@@ -29,10 +33,12 @@ def main():
     os.remove('/data/agnos_update')
   except Exception as e:
     pass
+
   for should_render in gui_app.render():
     ui_state.update()
     if should_render:
-      main_layout.render()
+      if not BIG_UI:
+        main_layout.render()
 
       # reaffine after power save offlines our core
       if TICI and os.sched_getaffinity(0) != cores:
