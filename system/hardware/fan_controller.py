@@ -17,16 +17,17 @@ SERVERS = [
     "https://overpass.openstreetmap.ru/api/interpreter"
 ]
 
-def overpass_request(query, retries=3):
-    for _ in range(retries):
-        url = random.choice(SERVERS)
-        try:
-            r = requests.get(url, params={"data": query}, timeout=5)
-            r.raise_for_status()
-            return r.json()
-        except Exception:
-            continue
-    raise Exception("All Overpass servers failed")
+def overpass_request(query, timeout=2.5):
+  shuffled = random.sample(SERVERS, len(SERVERS))  # 重複なしシャッフル
+  for url in shuffled:
+      try:
+          r = requests.get(url, params={"data": query}, timeout=timeout)
+          r.raise_for_status()
+          return r.json()
+      except Exception:
+          continue
+
+  raise Exception("All Overpass servers failed")
 
 class FanController:
   def __init__(self, rate: int) -> None:
