@@ -619,7 +619,7 @@ class LongitudinalPlanner:
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
     if vk_ego > 3/3.6 and vk_ego < min_acc_speed/3.6 and sm['carState'].gasPressed and sm['selfdriveState'].enabled: #oneペダル操作中にアクセル踏みながら31(min_acc_speed)km/h未満の走行時にレバーを上に入れたら、一旦車体速度にエクストラエンゲージし直す。
-      if before_v_cruise_kph_max_1 <= (37 if tss_type < 2 else 47) and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
+      if before_v_cruise_kph_max_1 <= (37 if tss_type < 2 else 57) and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = vk_ego
         OP_ENABLE_ACCEL_RELEASE = False #このあとのアクセルコントロールを許可する
