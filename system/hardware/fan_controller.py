@@ -6,9 +6,27 @@ import datetime
 import threading
 import requests
 import math
+import random
 
 from openpilot.common.pid import PIDController
 
+SERVERS = [
+    "https://overpass-api.de/api/interpreter",
+    "https://overpass.private.coffee/api/interpreter",
+    "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    "https://overpass.openstreetmap.ru/api/interpreter"
+]
+
+def overpass_request(query, retries=3):
+    for _ in range(retries):
+        url = random.choice(SERVERS)
+        try:
+            r = requests.get(url, params={"data": query}, timeout=5)
+            r.raise_for_status()
+            return r.json()
+        except Exception:
+            continue
+    raise Exception("All Overpass servers failed")
 
 class FanController:
   def __init__(self, rate: int) -> None:
@@ -110,14 +128,15 @@ class FanController:
     self.frame_net_off = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
-    overpass_url = "https://overpass.private.coffee/api/interpreter"
+    #overpass_url = "https://overpass.private.coffee/api/interpreter"
     query = f"""
     [out:json];
     way({lat_min},{lon_min},{lat_max},{lon_max})["highway"];
     out body;
     """
-    response = requests.get(overpass_url, params={'data': query}, timeout=10)
-    data = response.json()
+    #response = requests.get(overpass_url, params={'data': query}, timeout=10)
+    #data = response.json()
+    data = overpass_request(query)
     return data
 
   def get_node_coordinates(self,node_ids):
@@ -125,7 +144,7 @@ class FanController:
     Overpass APIを使用して、指定されたノードIDの座標を取得する関数
     """
     # Overpass APIのエンドポイントURL
-    overpass_url = "https://overpass.private.coffee/api/interpreter"
+    #overpass_url = "https://overpass.private.coffee/api/interpreter"
 
     # ノードIDをunionで結合して文字列に変換。うまくいった？
     union_query = "".join(f"node({node_id});" for node_id in node_ids)
@@ -140,8 +159,9 @@ class FanController:
     """
 
     # Overpass APIにリクエストを送信してデータを取得
-    response = requests.get(overpass_url, params={"data": overpass_query}, timeout=10)
-    data = response.json()
+    # response = requests.get(overpass_url, params={"data": overpass_query}, timeout=10)
+    # data = response.json()
+    data = overpass_request(overpass_query)
 
     # ノードの情報を処理して座標を取得
     coordinates = []
