@@ -1,5 +1,4 @@
 import pyray as rl
-from collections.abc import Callable
 from cereal import log
 
 from openpilot.system.ui.widgets.scroller import Scroller
@@ -14,9 +13,9 @@ PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
 
 class TogglesLayoutMici(NavWidget):
-  def __init__(self, back_callback: Callable):
+  def __init__(self):
     super().__init__()
-    self.set_back_callback(back_callback)
+    self.set_back_callback(gui_app.pop_widget)
 
     self.now_exp = ui_state.params.get_bool("ExperimentalMode")
     self.state_update_ct = 0

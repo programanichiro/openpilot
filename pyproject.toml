@@ -20,25 +20,20 @@ dependencies = [
   # core
   "cffi",
   "scons",
-  "pycapnp==2.1.0",
+  "pycapnp",
   "Cython",
   "setuptools",
   "numpy >=2.0",
 
   # body / webrtcd
+  "av",
   "aiohttp",
   "aiortc",
-  # aiortc does not put an upper bound on pyopenssl and is now incompatible
-  # with the latest release
-  "pyopenssl < 24.3.0",
   "pyaudio",
 
   # panda
   "libusb1",
   "spidev; platform_system == 'Linux'",
-
-  # modeld
-  "onnx >= 1.14.0",
 
   # logging
   "pyzmq",
@@ -67,7 +62,6 @@ dependencies = [
   # ui
   "raylib > 5.5.0.3",
   "qrcode",
-  "mapbox-earcut",
   "jeepney",
 ]
 
@@ -94,7 +88,6 @@ testing = [
 ]
 
 dev = [
-  "av",
   "matplotlib",
   "opencv-python-headless",
 ]
