@@ -19,8 +19,6 @@ concurrency:
 
 env:
   CI: 1
-  PYTHONPATH: ${{ github.workspace }}
-  PYTEST: pytest --continue-on-collection-errors --durations=0 -n logical
 
 jobs:
   build_release:
@@ -60,21 +58,6 @@ jobs:
       if: github.repository == 'commaai/openpilot'
       timeout-minutes: 3
       run: release/check-submodules.sh
-
-  build:
-    runs-on: ${{
-      (github.repository == 'commaai/openpilot') &&
-      ((github.event_name != 'pull_request') ||
-      (github.event.pull_request.head.repo.full_name == 'commaai/openpilot'))
-      && fromJSON('["namespace-profile-amd64-8x16", "namespace-experiments:docker.builds.local-cache=separate"]')
-      || fromJSON('["ubuntu-24.04"]') }}
-    steps:
-    - uses: actions/checkout@v6
-      with:
-        submodules: true
-    - uses: ./.github/workflows/setup-with-retry
-    - uses: ./.github/workflows/compile-openpilot
-      timeout-minutes: 30
 
   build_mac:
     name: build macOS
@@ -146,8 +129,8 @@ jobs:
       run: |
         source selfdrive/test/setup_xvfb.sh
         # Pre-compile Python bytecode so each pytest worker doesn't need to
-        $PYTEST --collect-only -m 'not slow' -qq
-        MAX_EXAMPLES=1 $PYTEST -m 'not slow'
+        pytest --collect-only -m 'not slow' -qq
+        MAX_EXAMPLES=1 pytest -m 'not slow'
 
   process_replay:
     name: process replay
@@ -210,7 +193,7 @@ jobs:
       timeout-minutes: 4
       env:
         ONNXCPU: 1
-      run: $PYTEST selfdrive/test/process_replay/test_regen.py
+      run: pytest selfdrive/test/process_replay/test_regen.py
 
   simulator_driving:
     name: simulator driving
@@ -233,7 +216,6 @@ jobs:
       timeout-minutes: ${{ (steps.setup-step.outputs.duration < 18) && 1 || 2 }}
       run: |
         source selfdrive/test/setup_xvfb.sh
-        source selfdrive/test/setup_vsound.sh
         pytest -s tools/sim/tests/test_metadrive_bridge.py
 
   create_ui_report:

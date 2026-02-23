@@ -5,7 +5,7 @@ from openpilot.system.ui.widgets.scroller import Scroller
 from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle, BigMultiToggleAA, BigMultiToggleKN, BigButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigInputDialog
 from openpilot.system.ui.lib.application import gui_app
-from openpilot.system.ui.widgets import NavWidget
+from openpilot.system.ui.widgets.nav_widget import NavWidget
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
 from openpilot.selfdrive.ui.ui_state import ui_state
 
@@ -96,7 +96,7 @@ class TogglesLayoutMici(NavWidget):
       self._vehicle_mass_btn,
       self._auto_door_lock_btn,
       C4UIOnC3X,
-    ], snap_items=False)
+    ])
 
     # Toggle lists
     self._refresh_toggles = (
