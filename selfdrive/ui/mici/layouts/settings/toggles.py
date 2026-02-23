@@ -456,7 +456,7 @@ class TogglesLayoutMici(NavWidget):
           self._vehicle_mass_btn.set_value(weight+" [kg]")
 
     dlg = BigInputDialog("Vehicle weight", vehicle_mass, confirm_callback=vehicle_mass_callback)
-    gui_app.set_modal_overlay(dlg)
+    gui_app.push_widget(dlg)
 
   def _auto_door_lock_btn_callback(self):
     lock_speed = self._auto_door_lock_btn.value
@@ -477,5 +477,5 @@ class TogglesLayoutMici(NavWidget):
           self._auto_door_lock_btn.set_value(lock+" [km/h]")
 
     dlg = BigInputDialog("Auto door lock", lock_speed, confirm_callback=lock_speed_callback)
-    gui_app.set_modal_overlay(dlg)
+    gui_app.push_widget(dlg)
 

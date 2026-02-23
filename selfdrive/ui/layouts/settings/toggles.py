@@ -355,7 +355,8 @@ class TogglesLayout(Widget):
     s = self._auto_door_lock_btn.action_item.value
     s = s.removesuffix(" [km/h]")
     self._keyboard.set_text(s)
-    gui_app.set_modal_overlay(self._keyboard, update_door_lock)
+    self._keyboard.set_callback(update_door_lock)
+    gui_app.push_widget(self._keyboard)
 
   def _edit_vehicle_mass(self):
     def update_mass(result):
@@ -379,4 +380,5 @@ class TogglesLayout(Widget):
     s = self._vehicle_mass_btn.action_item.value
     s = s.removesuffix(" [kg]")
     self._keyboard.set_text(s)
-    gui_app.set_modal_overlay(self._keyboard, update_mass)
+    self._keyboard.set_callback(update_mass)
+    gui_app.push_widget(self._keyboard)
