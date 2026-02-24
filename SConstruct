@@ -38,6 +38,21 @@ assert arch in [
   "Darwin",   # macOS arm64 (x86 not supported)
 ]
 
+if arch != "larch64":
+  import capnproto
+  import eigen
+  import ffmpeg as ffmpeg_pkg
+  import ncurses
+  import python3_dev
+  import zeromq
+  import zstd
+  pkgs = [capnproto, eigen, ffmpeg_pkg, ncurses, zeromq, zstd]
+  py_include = python3_dev.INCLUDE_DIR
+else:
+  # TODO: remove when AGNOS has our new vendor pkgs
+  pkgs = []
+  py_include = sysconfig.get_paths()['include']
+
 env = Environment(
   ENV={
     "PATH": os.environ['PATH'],
@@ -46,15 +61,13 @@ env = Environment(
     "ACADOS_PYTHON_INTERFACE_PATH": Dir("#third_party/acados/acados_template").abspath,
     "TERA_PATH": Dir("#").abspath + f"/third_party/acados/{arch}/t_renderer"
   },
-  CC='clang',
-  CXX='clang++',
   CCFLAGS=[
     "-g",
     "-fPIC",
     "-O2",
     "-Wunused",
     "-Werror",
-    "-Wshadow",
+    "-Wshadow" if arch in ("Darwin", "larch64") else "-Wshadow=local",
     "-Wno-unknown-warning-option",
     "-Wno-inconsistent-missing-override",
     "-Wno-c99-designator",
@@ -74,6 +87,7 @@ env = Environment(
     "#third_party/acados/include/hpipm/include",
     "#third_party/catch2/include",
     "#third_party/libyuv/include",
+    [x.INCLUDE_DIR for x in pkgs],
   ],
   LIBPATH=[
     "#common",
@@ -83,6 +97,7 @@ env = Environment(
     "#rednose/helpers",
     f"#third_party/libyuv/{arch}/lib",
     f"#third_party/acados/{arch}/lib",
+    [x.LIB_DIR for x in pkgs],
   ],
   RPATH=[],
   CYTHONCFILESUFFIX=".cpp",
@@ -94,6 +109,8 @@ env = Environment(
 
 # Arch-specific flags and paths
 if arch == "larch64":
+  env["CC"] = "clang"
+  env["CXX"] = "clang++"
   env.Append(LIBPATH=[
     "/usr/local/lib",
     "/system/vendor/lib64",
@@ -106,7 +123,6 @@ elif arch == "Darwin":
   env.Append(LIBPATH=[
     f"{brew_prefix}/lib",
     f"{brew_prefix}/opt/openssl@3.0/lib",
-    f"{brew_prefix}/opt/llvm/lib/c++",
     "/System/Library/Frameworks/OpenGL.framework/Libraries",
   ])
   env.Append(CCFLAGS=["-DGL_SILENCE_DEPRECATION"])
@@ -148,10 +164,9 @@ if os.environ.get('SCONS_PROGRESS'):
   Progress(progress_function, interval=node_interval)
 
 # ********** Cython build environment **********
-py_include = sysconfig.get_paths()['include']
 envCython = env.Clone()
 envCython["CPPPATH"] += [py_include, np.get_include()]
-envCython["CCFLAGS"] += ["-Wno-#warnings", "-Wno-shadow", "-Wno-deprecated-declarations"]
+envCython["CCFLAGS"] += ["-Wno-#warnings", "-Wno-cpp", "-Wno-shadow", "-Wno-deprecated-declarations"]
 envCython["CCFLAGS"].remove("-Werror")
 
 envCython["LIBS"] = []
