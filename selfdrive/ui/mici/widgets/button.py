@@ -317,8 +317,8 @@ class BigMultiToggle(BigToggle):
       y += 35
 
 class BigMultiToggleAA(BigMultiToggle):
-  def _render(self, _):
-    BigButton._render(self, _)
+  def _draw_content(self, _):
+    BigButton._draw_content(self, _)
 
     checked_idx = self._options.index(self.value)
 
@@ -332,8 +332,8 @@ class BigMultiToggleAA(BigMultiToggle):
       y += 35
 
 class BigMultiToggleKN(BigMultiToggle):
-  def _render(self, _):
-    BigButton._render(self, _)
+  def _draw_content(self, _):
+    BigButton._draw_content(self, _)
 
     checked_idx = self._options.index(self.value)
 
