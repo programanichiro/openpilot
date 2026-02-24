@@ -350,5 +350,9 @@ class DeviceLayoutMici(NavWidget):
     super().show_event()
     self._scroller.show_event()
 
+  def hide_event(self):
+    super().hide_event()
+    self._scroller.hide_event()
+
   def _render(self, rect: rl.Rectangle):
     self._scroller.render(rect)
