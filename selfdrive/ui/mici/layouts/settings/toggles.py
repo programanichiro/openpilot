@@ -1,18 +1,16 @@
-import pyray as rl
 from cereal import log
 
-from openpilot.system.ui.widgets.scroller import Scroller
+from openpilot.system.ui.widgets.scroller import NavScroller
 from openpilot.selfdrive.ui.mici.widgets.button import BigParamControl, BigMultiParamToggle, BigMultiToggle, BigToggle, BigMultiToggleAA, BigMultiToggleKN, BigButton
-from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigInputDialog
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigInputDialog
 from openpilot.system.ui.lib.application import gui_app
-from openpilot.system.ui.widgets.nav_widget import NavWidget
 from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
 from openpilot.selfdrive.ui.ui_state import ui_state
 
 PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
 
-class TogglesLayoutMici(NavWidget):
+class TogglesLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
     self.set_back_callback(gui_app.pop_widget)
@@ -68,7 +66,7 @@ class TogglesLayoutMici(NavWidget):
       pass
     self._auto_door_lock_btn.set_click_callback(self._auto_door_lock_btn_callback)
 
-    self._scroller = Scroller([
+    self._scroller.add_widgets([
       self._personality_toggle,
       self._experimental_btn,
       is_metric_toggle,
@@ -139,12 +137,7 @@ class TogglesLayoutMici(NavWidget):
 
   def show_event(self):
     super().show_event()
-    self._scroller.show_event()
     self._update_toggles()
-
-  def hide_event(self):
-    super().hide_event()
-    self._scroller.hide_event()
 
   def _update_toggles(self):
     ui_state.update_params()
@@ -166,9 +159,6 @@ class TogglesLayoutMici(NavWidget):
       item.set_checked(ui_state.params.get_bool(key))
 
     self._ip_toggles_update() #togglesに遷移した時にしか呼ばれない
-
-  def _render(self, rect: rl.Rectangle):
-    self._scroller.render(rect)
 
   def _ip_toggles_update(self):
     Knight_scanner = 0
