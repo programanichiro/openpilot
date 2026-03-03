@@ -220,8 +220,18 @@ if __name__ == "__main__":
     cloudlog.exception("Manager failed to start")
 
     try:
-      managed_processes['ui'].stop()
+      if Params().get_bool("RaylibMode"): #切り替え時は逆が使われる
+        managed_processes['raylib_ui'].stop()
+      else:
+        managed_processes['ui'].stop()
     except Exception:
+      try:
+        if Params().get_bool("RaylibMode"): #切り替え時に失敗した時のため逆にする
+          managed_processes['ui'].stop()
+        else:
+          managed_processes['raylib_ui'].stop()
+      except Exception:
+        pass
       pass
 
     # Show last 3 lines of traceback

@@ -21,6 +21,8 @@ try:
 except ImportError:
   raylib = None
 
+raylib = None #強制
+
 if GetOption('extras') and arch == "larch64" and raylib is not None:
   # build installers
   if arch != "Darwin":

@@ -92,7 +92,22 @@ class StateMachine:
     # Check if openpilot is engaged and actuators are enabled
     enabled = self.state in ENABLED_STATES
     active = self.state in ACTIVE_STATES
-    if active:
+    steer_always = 0
+    cruise_available = 0
+    try:
+      with open('/dev/shm/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+      with open('/dev/shm/cruise_available.txt','r') as fp:
+        cruise_available_str = fp.read()
+        if cruise_available_str:
+          if int(cruise_available_str) >= 1:
+            cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
+    except Exception as e:
+      pass
+    if active or (steer_always != 0 and cruise_available != 0):
       self.current_alert_types.append(ET.WARNING)
     return enabled, active
 

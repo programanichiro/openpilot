@@ -153,6 +153,7 @@ class SoftwareLayout(Widget):
   def _on_download_update(self):
     # Check if we should start checking or start downloading
     self._download_btn.action_item.set_enabled(False)
+    os.system("echo 3 > /data/force_prebuild")
     if self._download_btn.action_item.text == tr("CHECK"):
       # Start checking for updates
       self._waiting_for_updater = True
@@ -194,6 +195,7 @@ class SoftwareLayout(Widget):
       # Confirmed selection
       if result == DialogResult.CONFIRM and self._branch_dialog is not None and self._branch_dialog.selection:
         selection = self._branch_dialog.selection
+        os.system("echo 4 > /data/force_prebuild")
         ui_state.params.put("UpdaterTargetBranch", selection)
         self._branch_btn.action_item.set_value(selection)
         os.system("pkill -SIGUSR1 -f system.updated.updated")

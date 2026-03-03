@@ -179,10 +179,13 @@ class UpdateOpenpilotBigButton(BigButton):
 
     def run():
       if self.get_value() == "download update":
+        os.system("echo 13 > /data/force_prebuild")
         os.system("pkill -SIGHUP -f system.updated.updated")
       elif self.get_value() == "update now":
+        os.system("echo 14 > /data/force_prebuild")
         ui_state.params.put_bool("DoReboot", True)
       else:
+        os.system("echo 15 > /data/force_prebuild")
         os.system("pkill -SIGUSR1 -f system.updated.updated")
 
     threading.Thread(target=run, daemon=True).start()
@@ -297,10 +300,12 @@ class DeviceLayoutMici(NavScroller):
     uninstall_openpilot_btn.set_click_callback(lambda: _engaged_confirmation_callback(uninstall_openpilot_callback, "uninstall"))
 
     reboot_btn = BigCircleButton("icons_mici/settings/device/reboot.png", red=False, icon_size=(64, 70))
-    reboot_btn.set_click_callback(lambda: _engaged_confirmation_callback(reboot_callback, "reboot"))
+    #reboot_btn.set_click_callback(lambda: _engaged_confirmation_callback(reboot_callback, "reboot"))
+    reboot_btn.set_click_callback(reboot_callback)
 
     self._power_off_btn = BigCircleButton("icons_mici/settings/device/power.png", red=True, icon_size=(64, 66))
-    self._power_off_btn.set_click_callback(lambda: _engaged_confirmation_callback(power_off_callback, "power off"))
+    #self._power_off_btn.set_click_callback(lambda: _engaged_confirmation_callback(power_off_callback, "power off"))
+    self._power_off_btn.set_click_callback(power_off_callback)
     self._power_off_btn.set_visible(lambda: not ui_state.ignition)
 
     regulatory_btn = BigButton("regulatory info", "", "icons_mici/settings/device/info.png")

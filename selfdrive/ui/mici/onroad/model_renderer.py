@@ -138,7 +138,24 @@ class ModelRenderer(Widget):
       self._transform_dirty = False
 
     # Draw elements (hide when disengaged)
-    if ui_state.status != UIStatus.DISENGAGED:
+    steer_always = 0
+    cruise_available = 0
+    if ui_state.status == UIStatus.DISENGAGED:
+      try:
+        with open('/dev/shm/steer_always.txt','r') as fp:
+          steer_always_str = fp.read()
+          if steer_always_str:
+            if int(steer_always_str) >= 1:
+              steer_always = 2
+        with open('/dev/shm/cruise_available.txt','r') as fp:
+          cruise_available_str = fp.read()
+          if cruise_available_str:
+            if int(cruise_available_str) >= 1:
+              cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
+      except Exception as e:
+        pass
+
+    if ui_state.status != UIStatus.DISENGAGED or (steer_always != 0 and cruise_available):
       self._draw_lane_lines()
       self._draw_path(sm)
 
@@ -299,8 +316,8 @@ class ModelRenderer(Widget):
     else:
       color = rl.Color(255, 255, 255, int(alpha * 255))
 
-    if ui_state.status == UIStatus.DISENGAGED:
-      color = rl.Color(0, 0, 0, int(alpha * 255))
+    # if ui_state.status == UIStatus.DISENGAGED:
+    #   color = rl.Color(0, 0, 0, int(alpha * 255))
 
     return color
 
@@ -332,7 +349,7 @@ class ModelRenderer(Widget):
 
     if self._experimental_mode:
       # Draw with acceleration coloring
-      if ui_state.status == UIStatus.DISENGAGED:
+      if False and ui_state.status == UIStatus.DISENGAGED:
         draw_polygon(self._rect, self._path.projected_points, rl.Color(0, 0, 0, 90))
       elif len(self._exp_gradient.colors) > 1:
         draw_polygon(self._rect, self._path.projected_points, gradient=self._exp_gradient)
@@ -349,7 +366,7 @@ class ModelRenderer(Widget):
         stops=[0.0, 0.5, 1.0],
       )
 
-      if ui_state.status == UIStatus.DISENGAGED:
+      if False and ui_state.status == UIStatus.DISENGAGED:
         draw_polygon(self._rect, self._path.projected_points, rl.Color(0, 0, 0, 90))
       else:
         draw_polygon(self._rect, self._path.projected_points, gradient=gradient)

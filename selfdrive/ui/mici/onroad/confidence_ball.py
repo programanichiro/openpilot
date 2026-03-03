@@ -5,6 +5,7 @@ from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.common.filter_simple import FirstOrderFilter
+from openpilot.common.params import Params
 
 
 def draw_circle_gradient(center_x: float, center_y: float, radius: int,
@@ -26,6 +27,11 @@ class ConfidenceBall(Widget):
     super().__init__()
     self._demo = demo
     self._confidence_filter = FirstOrderFilter(-0.5, 0.5, 1 / gui_app.target_fps)
+    self._LongitudinalPersonality = 0
+    self._LongitudinalPersonality_ct = 0
+    self._lp1 = gui_app.texture("icons_mici/onroad/acc_dist1_w2.png",width=SIDE_PANEL_WIDTH-5,height=256) #幅をSIDE_PANEL_WIDTH程度に
+    self._lp2 = gui_app.texture("icons_mici/onroad/acc_dist2_w2.png",width=SIDE_PANEL_WIDTH-5,height=256)
+    self._lp3 = gui_app.texture("icons_mici/onroad/acc_dist3_w2.png",width=SIDE_PANEL_WIDTH-5,height=256)
 
   def update_filter(self, value: float):
     self._confidence_filter.update(value)
@@ -76,3 +82,17 @@ class ConfidenceBall(Widget):
     draw_circle_gradient(content_rect.x + content_rect.width - status_dot_radius,
                          dot_height, status_dot_radius,
                          top_dot_color, bottom_dot_color)
+
+    #ここにACC距離アイコン、描けそう
+    if self._LongitudinalPersonality_ct % 5 == 0:
+      self._LongitudinalPersonality = int(Params().get("LongitudinalPersonality"))
+
+    y_ofs = 10
+    if self._LongitudinalPersonality == 0:
+      rl.draw_texture(self._lp1,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp1.width)/2),int(content_rect.y + content_rect.height -self._lp1.height-y_ofs), rl.Color(240,240,240,230))
+    elif self._LongitudinalPersonality == 1:
+      rl.draw_texture(self._lp2,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp2.width)/2),int(content_rect.y + content_rect.height -self._lp2.height-y_ofs), rl.Color(240,240,240,230))
+    else: #if self._LongitudinalPersonality == 2:
+      rl.draw_texture(self._lp3,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp3.width)/2),int(content_rect.y + content_rect.height -self._lp3.height-y_ofs), rl.Color(240,240,240,230))
+
+    self._LongitudinalPersonality_ct += 1

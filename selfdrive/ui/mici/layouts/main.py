@@ -63,6 +63,9 @@ class MiciMainLayout(Scroller):
     device.add_interactive_timeout_callback(self._on_interactive_timeout)
 
   def _scroll_to(self, layout: Widget):
+    if self._onroad_layout._hud_renderer.user_interacting():
+      return
+
     layout_x = int(layout.rect.x)
     self._scroller.scroll_to(layout_x, smooth=True)
 
