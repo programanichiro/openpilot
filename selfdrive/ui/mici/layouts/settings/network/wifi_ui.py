@@ -215,6 +215,8 @@ class WifiButton(BigButton):
     return self._wifi_manager.connected_ssid == self._network.ssid
 
   def _update_state(self):
+    super()._update_state()
+
     if any((self._network_missing, self._is_connecting, self._is_connected, self._network_forgetting,
             self._network.security_type == SecurityType.UNSUPPORTED)):
       self.set_enabled(False)
@@ -271,9 +273,6 @@ class ForgetButton(Widget):
 class WifiUIMici(NavScroller):
   def __init__(self, wifi_manager: WifiManager):
     super().__init__()
-
-    # Set up back navigation
-    self.set_back_callback(gui_app.pop_widget)
 
     self._loading_animation = LoadingAnimation()
 

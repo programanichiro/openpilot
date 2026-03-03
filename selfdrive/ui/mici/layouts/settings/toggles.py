@@ -13,7 +13,6 @@ PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 class TogglesLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
-    self.set_back_callback(gui_app.pop_widget)
 
     self.now_exp = ui_state.params.get_bool("ExperimentalMode")
     self.state_update_ct = 0
