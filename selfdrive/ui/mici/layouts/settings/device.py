@@ -16,10 +16,31 @@ from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsP
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets import Widget
-from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.ui_state import device, ui_state
 from openpilot.system.ui.widgets.label import MiciLabel
 from openpilot.system.ui.widgets.html_render import HtmlModal, HtmlRenderer
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
+
+
+class ReviewTermsPage(TermsPage, NavScroller):
+  """TermsPage with NavWidget swipe-to-dismiss for reviewing in device settings."""
+  def __init__(self):
+    super().__init__(on_accept=self.dismiss, on_decline=self.dismiss)
+    self._terms_header.set_visible(False)
+    self._must_accept_card.set_visible(False)
+    self._accept_button.set_visible(False)
+    self._decline_button.set_visible(False)
+
+
+class ReviewTrainingGuide(TrainingGuide):
+  def show_event(self):
+    super().show_event()
+    device.set_override_interactive_timeout(300)
+
+  def hide_event(self):
+    super().hide_event()
+    device.set_override_interactive_timeout(None)
+    ui_state.params.put_bool_nonblocking("IsDriverViewEnabled", False)
 
 
 class MiciFccModal(NavRawScrollPanel):
@@ -316,12 +337,11 @@ class DeviceLayoutMici(NavScroller):
     driver_cam_btn.set_enabled(lambda: ui_state.is_offroad())
 
     review_training_guide_btn = BigButton("review\ntraining guide", "", "icons_mici/settings/device/info.png")
-    review_training_guide_btn.set_click_callback(lambda: gui_app.push_widget(TrainingGuide(completed_callback=gui_app.pop_widget)))
+    review_training_guide_btn.set_click_callback(lambda: gui_app.push_widget(ReviewTrainingGuide(completed_callback=lambda: gui_app.pop_widgets_to(self))))
     review_training_guide_btn.set_enabled(lambda: ui_state.is_offroad())
 
     terms_btn = BigButton("terms &\nconditions", "", "icons_mici/settings/device/info.png")
-    terms_btn.set_click_callback(lambda: gui_app.push_widget(TermsPage(on_accept=gui_app.pop_widget)))
-    terms_btn.set_enabled(lambda: ui_state.is_offroad())
+    terms_btn.set_click_callback(lambda: gui_app.push_widget(ReviewTermsPage()))
 
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
