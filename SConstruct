@@ -39,9 +39,6 @@ assert arch in [
   "Darwin",   # macOS arm64 (x86 not supported)
 ]
 
-# pkg_names = ['bzip2', 'capnproto', 'eigen', 'ffmpeg', 'libjpeg', 'libyuv', 'ncurses', 'zeromq', 'zstd']
-# pkgs = [importlib.import_module(name) for name in pkg_names]
-# py_include = importlib.import_module('python3_dev').INCLUDE_DIR
 if arch != "larch64":
   import bzip2
   import capnproto
@@ -59,6 +56,8 @@ else:
   # TODO: remove when AGNOS has our new vendor pkgs
   pkgs = []
   py_include = sysconfig.get_paths()['include']
+# pkg_names = ['bzip2', 'capnproto', 'eigen', 'ffmpeg', 'libjpeg', 'libyuv', 'ncurses', 'zeromq', 'zstd']
+# pkgs = [importlib.import_module(name) for name in pkg_names]
 
 env = Environment(
   ENV={
@@ -180,7 +179,7 @@ if os.environ.get('SCONS_PROGRESS'):
 
 # ********** Cython build environment **********
 envCython = env.Clone()
-envCython["CPPPATH"] += [py_include, np.get_include()]
+envCython["CPPPATH"] += [sysconfig.get_paths()['include'], np.get_include()]
 envCython["CCFLAGS"] += ["-Wno-#warnings", "-Wno-cpp", "-Wno-shadow", "-Wno-deprecated-declarations"]
 envCython["CCFLAGS"].remove("-Werror")
 
