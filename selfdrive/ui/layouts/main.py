@@ -10,6 +10,7 @@ from openpilot.selfdrive.ui.ui_state import device, ui_state
 from openpilot.system.ui.widgets import Widget
 from openpilot.selfdrive.ui.layouts.onboarding import OnboardingWindow
 
+from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
 
 class MainState(IntEnum):
   HOME = 0
@@ -20,6 +21,7 @@ class MainState(IntEnum):
 class MainLayout(Widget):
   def __init__(self):
     super().__init__()
+    self.params = Params()
 
     self._pm = messaging.PubMaster(['bookmarkButton'])
 
@@ -70,7 +72,10 @@ class MainLayout(Widget):
       self._set_mode_for_state()
 
   def _set_mode_for_state(self):
-    if ui_state.started:
+    branch = self.params.get("GitBranch")
+    dongleId = self.params.get("DongleId")
+    ok = "release" in branch or "debug" in branch or "d9000cf782e6" in dongleId
+    if ui_state.started and ok:
       # Don't hide sidebar from interactive timeout
       if self._current_mode != MainState.ONROAD:
         self._sidebar.set_visible(False)

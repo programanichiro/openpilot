@@ -8,8 +8,14 @@ cd $DIR
 source ./setup.sh
 
 # *** build ***
-scons
+scons -j8
 
-# *** lint + test ***
+# *** lint ***
 ruff check .
-pytest
+mypy python/
+
+
+# *** test ***
+
+# TODO: make randomly work
+pytest --randomly-dont-reorganize tests/

@@ -103,7 +103,7 @@ class MiciHomeLayout(Widget):
       self._mic_icon,
     ], spacing=18)
 
-    self._openpilot_label = UnifiedLabel("openpilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
+    self._openpilot_label = UnifiedLabel("ichiropilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
     self._version_label = UnifiedLabel("", font_size=36, font_weight=FontWeight.ROMAN, max_width=480, wrap_text=False)
     self._large_version_label = UnifiedLabel("", font_size=64, text_color=rl.GRAY, font_weight=FontWeight.ROMAN, max_width=480, wrap_text=False)
     self._date_label = UnifiedLabel("", font_size=36, text_color=rl.GRAY, font_weight=FontWeight.ROMAN, max_width=480, wrap_text=False)
@@ -155,9 +155,19 @@ class MiciHomeLayout(Widget):
     branch = ui_state.params.get("GitBranch")
     commit = ui_state.params.get("GitCommit")
 
-    if not all((version, branch, commit)):
+    description = ui_state.params.get("UpdaterCurrentDescription")
+    if description is not None and len(description) > 0:
+      # Expect "version / branch / commit / date"; be tolerant of other formats
+      try:
+        # version, branch, commit, date = description.split(" / ")
+        os_ver, versionZ, branchZ, commitZ, date = description.split(" / ")
+      except Exception:
+        os_ver = "XY.Z"
+
+    if not all((os_ver, version, branch, commit)):
       return None
 
+    version = os_ver + ";" + version
     commit_date_raw = ui_state.params.get("GitCommitDate")
     try:
       # GitCommitDate format from get_commit_date(): '%ct %ci' e.g. "'1708012345 2024-02-15 ...'"

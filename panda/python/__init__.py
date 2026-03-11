@@ -6,7 +6,6 @@ import usb1
 import struct
 import hashlib
 import binascii
-import ctypes
 from functools import wraps, partial
 from itertools import accumulate
 
@@ -18,14 +17,6 @@ from .dfu import PandaDFU
 from .spi import PandaSpiHandle, PandaSpiException, PandaProtocolMismatch
 from .usb import PandaUsbHandle
 from .utils import logger
-
-# load libusb from pip package
-try:
-  import libusb_package
-  usb1._libusb1.loadLibrary(ctypes.CDLL(str(libusb_package.get_library_path())))
-except ImportError:
-  # TODO: remove this on next AGNOS update
-  pass
 
 __version__ = '0.0.10'
 

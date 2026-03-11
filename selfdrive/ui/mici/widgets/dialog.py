@@ -241,7 +241,6 @@ class BigInputDialog(BigDialogBase):
       # handle enter icon click
       self._confirm_callback()
 
-
 class BigDialogButton(BigButton):
   def __init__(self, text: str, value: str = "", icon: Union[str, rl.Texture] = "", description: str = ""):
     super().__init__(text, value, icon)

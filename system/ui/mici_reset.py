@@ -2,7 +2,6 @@
 import os
 import sys
 import time
-import threading
 from enum import IntEnum
 
 import pyray as rl
@@ -106,8 +105,6 @@ class Reset(Scroller):
       self._reset_button,
     ])
 
-    gui_app.add_nav_stack_tick(self._nav_stack_tick)
-
   def _do_erase(self):
     if PC:
       return
@@ -123,13 +120,12 @@ class Reset(Scroller):
       self._reset_failed = True
 
   def _start_reset(self):
-    def do_erase_thread():
-      threading.Thread(target=self._do_erase, daemon=True).start()
-
-    self._resetting_page.set_shown_callback(do_erase_thread)
+    self._resetting_page.set_shown_callback(self._do_erase)
     gui_app.push_widget(self._resetting_page)
 
-  def _nav_stack_tick(self):
+  def _update_state(self):
+    super()._update_state()
+
     if self._reset_failed:
       self._reset_failed = False
       gui_app.pop_widgets_to(self, lambda: gui_app.push_widget(self._reset_failed_page))

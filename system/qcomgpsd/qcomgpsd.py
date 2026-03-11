@@ -7,11 +7,12 @@ import math
 import time
 import requests
 import shutil
-from serial import Serial
+import subprocess
 import datetime
 from multiprocessing import Process, Event
 from typing import NoReturn
 from struct import unpack_from, calcsize, pack
+from opendbc.car import structs
 
 from cereal import log
 import cereal.messaging as messaging
@@ -90,24 +91,9 @@ measurementStatusGlonassFields = {
 def try_setup_logs(diag, logs):
   return setup_logs(diag, logs)
 
-AT_PORT = "/dev/modem_at0"
-
-@retry(attempts=5, delay=1.0)
-def at_cmd(cmd: str) -> str:
-  with Serial(AT_PORT, baudrate=115200, timeout=5) as ser:
-    ser.reset_input_buffer()
-    ser.write(f"{cmd}\r".encode())
-    lines = []
-    while True:
-      line = ser.readline()
-      if not line:
-        raise RuntimeError(f"AT command timeout: {cmd}")
-      line = line.decode('utf-8', errors='replace').strip()
-      if line in ("OK", "ERROR") or line.startswith("+CME ERROR"):
-        break
-      if line and line != cmd:
-        lines.append(line)
-  return '\n'.join(lines)
+@retry(attempts=3, delay=1.0)
+def at_cmd(cmd: str) -> str | None:
+  return subprocess.check_output(f"mmcli -m any --timeout 30 --command='{cmd}'", shell=True, encoding='utf8')
 
 def gps_enabled() -> bool:
   return "QGPS: 1" in at_cmd("AT+QGPS?")
@@ -146,7 +132,6 @@ def downloader_loop(event):
 
 @retry(attempts=5, delay=0.2, ignore_failure=True)
 def inject_assistance():
-  import subprocess
   cmd = f"mmcli -m any --timeout 30 --location-inject-assistance-data={ASSIST_DATA_FILE}"
   subprocess.check_output(cmd, stderr=subprocess.PIPE, shell=True)
   cloudlog.info("successfully loaded assistance data")
@@ -223,19 +208,13 @@ def teardown_quectel(diag):
   try_setup_logs(diag, [])
 
 
-def wait_for_modem():
+def wait_for_modem(cmd="AT+QGPS?"):
   cloudlog.warning("waiting for modem to come up")
-  while not os.path.exists(AT_PORT):
-    time.sleep(0.5)
-  # wait until the modem GNSS subsystem responds
   while True:
-    try:
-      resp = at_cmd("AT+QGPS?")
-      if "+QGPS:" in resp:
-        return
-    except Exception:
-      pass
-    time.sleep(0.5)
+    ret = subprocess.call(f"mmcli -m any --timeout 10 --command=\"{cmd}\"", stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL, shell=True)
+    if ret == 0:
+      return
+    time.sleep(0.1)
 
 
 def main() -> NoReturn:
@@ -285,6 +264,12 @@ def main() -> NoReturn:
   gpio_set(GPIO.GNSS_PWR_EN, True)
 
   pm = messaging.PubMaster(['qcomGnss', 'gpsLocation'])
+  sm = messaging.SubMaster(['carState'])
+
+  with open('/dev/shm/gps_axs_data.txt','w') as fp:
+    fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (0,0,0,0,0,0))
+
+  reverse_bearingDeg = 0 #バックに入れてスピード出たら180度にセット。
 
   while 1:
     if os.path.exists(ASSIST_DATA_FILE) and want_assistance:
@@ -368,6 +353,23 @@ def main() -> NoReturn:
       gps.speed = math.sqrt(sum([x**2 for x in vNED]))
       gps.bearingDeg = report["q_FltHeadingRad"] * 180/math.pi
 
+      sm.update()
+      # with open('/tmp/debug_out_v','w') as fp:
+      #   # fp.write("vEgo<%d>:%f" % (int(sm['carState'].gearShifter),sm['carState'].vEgo/3.6))
+      #   fp.write("%.1f" % (sm['carState'].vEgo*3.6))
+
+      if sm['carState'].gearShifter == structs.CarState.GearShifter.reverse:
+        if sm['carState'].vEgo > 1.0/3.6:
+          reverse_bearingDeg = 180
+      else:
+        if sm['carState'].vEgo > 0.1/3.6:
+          reverse_bearingDeg = 0
+
+      if reverse_bearingDeg > 0:
+        gps.bearingDeg += reverse_bearingDeg
+        if gps.bearingDeg >= 360:
+          gps.bearingDeg -= 360
+
       # TODO needs update if there is another leap second, after june 2024?
       dt_timestamp = (datetime.datetime(1980, 1, 6, 0, 0, 0, 0, datetime.UTC) +
                       datetime.timedelta(weeks=report['w_GpsWeekNumber']) +
@@ -384,6 +386,25 @@ def main() -> NoReturn:
         want_assistance = False
         stop_download_event.set()
       pm.send('gpsLocation', msg)
+
+      locationd_valid = 1
+      if gps.vNED[0] == 0 and gps.vNED[1] == 0 and gps.vNED[2] == 0:
+        locationd_valid = 0
+      # if gps.bearingAccuracyDeg > 60:
+      #   locationd_valid = 0
+
+      car_vego = gps.speed
+      try:
+        with open('/dev/shm/car_vego.txt','r') as fp:
+          car_vego_str = fp.read()
+          if car_vego_str:
+            car_vego = float(car_vego_str)
+      except Exception as e:
+        pass
+
+      with open('/dev/shm/gps_axs_data.txt','w') as fp:
+        #fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,avr_bear/*(double)sum_bear/BEAR_BUF_MAX*/,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+        fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (gps.latitude,gps.longitude,gps.bearingDeg,car_vego,gps.unixTimestampMillis,locationd_valid))
 
     elif log_type == LOG_GNSS_OEMDRE_SVPOLY_REPORT:
       msg = messaging.new_message('qcomGnss', valid=True)

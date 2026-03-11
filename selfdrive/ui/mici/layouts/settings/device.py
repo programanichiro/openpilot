@@ -82,6 +82,7 @@ class EngagedConfirmationCircleButton(BigCircleButton):
                red: bool = False, icon_offset: tuple[int, int] = (0, 0)):
     super().__init__(icon, red, icon_offset)
     self.set_click_callback(lambda: _engaged_confirmation_click(callback, title, icon, exit_on_confirm=exit_on_confirm, red=red))
+    #self.set_click_callback(callback) #操作不能であればこちら
 
 
 class EngagedConfirmationButton(BigButton):
@@ -198,10 +199,13 @@ class UpdateOpenpilotBigButton(BigButton):
 
     def run():
       if self.get_value() == "download update":
+        os.system("echo 13 > /data/force_prebuild")
         os.system("pkill -SIGHUP -f system.updated.updated")
       elif self.get_value() == "update now":
+        os.system("echo 14 > /data/force_prebuild")
         ui_state.params.put_bool("DoReboot", True)
       else:
+        os.system("echo 15 > /data/force_prebuild")
         os.system("pkill -SIGUSR1 -f system.updated.updated")
 
     threading.Thread(target=run, daemon=True).start()
