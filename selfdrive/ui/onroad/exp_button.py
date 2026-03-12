@@ -131,7 +131,7 @@ class ExpButton(Widget):
       else:
         bg_color = self._mads_off_bg
     rl.draw_circle(center_x, center_y, self._rect.width / 2, bg_color)
-#    rl.draw_texture(texture, center_x - texture.width // 2, center_y - texture.height // 2, self._white_color)
+#    rl.draw_texture_ex(texture, rl.Vector2(center_x - texture.width / 2, center_y - texture.height / 2), 0.0, 1.0, self._white_color)
     #画像を中心で回転させて描画する
     src_rect = rl.Rectangle(0, 0, texture.width, texture.height)  # テクスチャ全体を使用
     dest_rect = rl.Rectangle(center_x, center_y, texture.width, texture.height)  # 描画先の中心座標
