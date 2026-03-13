@@ -488,15 +488,17 @@ class GuiApplication:
       rl.image_alpha_premultiply(image)
 
     # Scale up load size for sharper rendering, capped at source resolution
-    if self._scale != 1.0 and width is not None and height is not None:
-      width = min(int(width * self._scale), image.width)
-      height = min(int(height * self._scale), image.height)
-
     if width is not None and height is not None:
+
+      # 判定用（scale前）
       same_dimensions = image.width == width and image.height == height
 
+      if self._scale != 1.0:
+        width = min(int(width * self._scale), image.width)
+        height = min(int(height * self._scale), image.height)
+
       # Resize with aspect ratio preservation if requested
-      if not same_dimensions or self._scale != 1.0:
+      if not same_dimensions:
         if keep_aspect_ratio:
           orig_width = image.width
           orig_height = image.height
@@ -504,7 +506,6 @@ class GuiApplication:
           scale_width = width / orig_width
           scale_height = height / orig_height
 
-          # Calculate new dimensions
           scale = min(scale_width, scale_height)
           new_width = int(orig_width * scale)
           new_height = int(orig_height * scale)
