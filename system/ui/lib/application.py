@@ -488,9 +488,9 @@ class GuiApplication:
       rl.image_alpha_premultiply(image)
 
     # Scale up load size for sharper rendering, capped at source resolution
-    # if self._scale != 1.0 and width is not None and height is not None:
-    #   width = min(int(width * self._scale), image.width)
-    #   height = min(int(height * self._scale), image.height)
+    if self._scale != 1.0 and width is not None and height is not None:
+      width = min(int(width * self._scale), image.width)
+      height = min(int(height * self._scale), image.height)
 
     if width is not None and height is not None:
       same_dimensions = image.width == width and image.height == height
