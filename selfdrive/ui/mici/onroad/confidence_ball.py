@@ -29,9 +29,9 @@ class ConfidenceBall(Widget):
     self._confidence_filter = FirstOrderFilter(-0.5, 0.5, 1 / gui_app.target_fps)
     self._LongitudinalPersonality = 0
     self._LongitudinalPersonality_ct = 0
-    self._lp1 = gui_app.texture("icons_mici/onroad/acc_dist1_w2.png",width=SIDE_PANEL_WIDTH-5,height=256*(SIDE_PANEL_WIDTH-5)/191) #幅をSIDE_PANEL_WIDTH程度に
-    self._lp2 = gui_app.texture("icons_mici/onroad/acc_dist2_w2.png",width=SIDE_PANEL_WIDTH-5,height=256*(SIDE_PANEL_WIDTH-5)/191)
-    self._lp3 = gui_app.texture("icons_mici/onroad/acc_dist3_w2.png",width=SIDE_PANEL_WIDTH-5,height=256*(SIDE_PANEL_WIDTH-5)/191)
+    self._lp1 = gui_app.texture("icons_mici/onroad/acc_dist1_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191)) #幅をSIDE_PANEL_WIDTH程度に
+    self._lp2 = gui_app.texture("icons_mici/onroad/acc_dist2_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
+    self._lp3 = gui_app.texture("icons_mici/onroad/acc_dist3_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
 
   def update_filter(self, value: float):
     self._confidence_filter.update(value)
