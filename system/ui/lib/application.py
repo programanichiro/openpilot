@@ -496,7 +496,7 @@ class GuiApplication:
       same_dimensions = image.width == width and image.height == height
 
       # Resize with aspect ratio preservation if requested
-      if not same_dimensions:
+      if not same_dimensions or self._scale != 1.0:
         if keep_aspect_ratio:
           orig_width = image.width
           orig_height = image.height
