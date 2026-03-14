@@ -180,6 +180,10 @@ class MouseState:
       self._rk.keep_time()
 
   def _handle_mouse_event(self):
+    # TODO: read touch events from evdev directly to get real kernel timestamps.
+    #  Polling at 140Hz with time.monotonic() causes timing jitter that makes scroll
+    #  velocity oscillate (alternating high/low). Real timestamps would also let us
+    #  detect swipe-stop-lift via event gaps instead of the fragile decel heuristic.
     for slot in range(MAX_TOUCH_SLOTS):
       mouse_pos = rl.get_touch_position(slot)
       x = mouse_pos.x / self._scale if self._scale != 1.0 else mouse_pos.x
@@ -310,7 +314,7 @@ class GuiApplication:
           '-vf', 'vflip,format=yuv420p',  # Flip vertically and convert to yuv420p
           '-r', str(output_fps),    # Output frame rate (for speed multiplier)
           '-c:v', 'libx264',
-          '-preset', 'ultrafast',
+          '-preset', 'veryfast',
           '-crf', str(RECORD_QUALITY)
         ]
         if RECORD_BITRATE:
