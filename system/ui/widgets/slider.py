@@ -90,6 +90,8 @@ class SliderBase(Widget, abc.ABC):
         self._circle_bg_txt.width + self.HORIZONTAL_PADDING * 2,
         self._rect.height,
       )
+      if gui_app.big_ui() and gui_app._scale == 2.0:
+        circle_button_rect.x -= self._circle_bg_txt.width #スケール2倍で少し左に寄せる状況決め打ちワークアラウンド
       if rl.check_collision_point_rec(mouse_event.pos, circle_button_rect):
         self._start_x_circle = mouse_event.pos.x
         self._is_dragging_circle = True
