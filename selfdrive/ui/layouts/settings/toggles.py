@@ -33,7 +33,6 @@ DESCRIPTIONS = {
   'RecordFront': tr_noop("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
-#  "RaylibMode": tr_noop("Switching to a user interface built with raylib."),
   "AccelMethodSwitch": tr_noop("Switch Accel Method to Official version or recommendation. A reboot is required."),
   "GpsAlwaysSwitch": tr_noop("GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary."),
   "DisableMaxSpeedModify": tr_noop("ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it."),
@@ -123,12 +122,6 @@ class TogglesLayout(Widget):
         "../icons/calibration.png",
         False,
       ),
-      # "RaylibMode": (
-      #   tr("Use Raylib UI"),
-      #   DESCRIPTIONS["RaylibMode"],
-      #   "warning.png",
-      #   True,
-      # ),
       "C4UIOnC3X": (
         lambda: tr("Use the C4 UI in C3X"),
         DESCRIPTIONS["C4UIOnC3X"],
