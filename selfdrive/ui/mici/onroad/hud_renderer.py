@@ -749,6 +749,8 @@ class HudRenderer(Widget):
 
     if not self._is_active or not self._face_detected:
       self._disp_button_ct = 20 * 5
+      if self.dt > 0:
+        self._disp_button_ct *= 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
     if self._disp_button_ct > 0:
       self._disp_button_ct -= 1
