@@ -688,6 +688,8 @@ class HudRenderer(Widget):
     self.dt = cur_draw_t - self.prev_draw_t #フレームタイム
     self.distance_traveled += abs(car_state.vEgo) * self.dt / 1000
     self.prev_draw_t = cur_draw_t
+    if self.dt == 0:
+      self.dt = 1 #0割り算対策
 
 
   def _ip_draw(self, rect: rl.Rectangle):
@@ -748,9 +750,7 @@ class HudRenderer(Widget):
     #   fp.write("_is_active:%d , _face_detected:%d" % (int(self._is_active),int(self._face_detected)))
 
     if not self._is_active or not self._face_detected:
-      self._disp_button_ct = 20 * 5
-      if self.dt > 0:
-        self._disp_button_ct *= 50 / self.dt #20fpsよりリfpsが速いc4対策。
+      self._disp_button_ct = 20 * 5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
     if self._disp_button_ct > 0:
       self._disp_button_ct -= 1
@@ -985,8 +985,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(accel_engaged)
-    if self._disp_button_ct < 20 * 3:
-      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
 
     with open('/dev/shm/accel_engaged.txt','w') as fp2:
       fp2.write("%d" % (accel_engaged))
@@ -1091,8 +1091,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(dexp_sw_mode)
-    if self._disp_button_ct < 20 * 3:
-      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
 
     with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
       fp2.write("%d" % (dexp_sw_mode))
@@ -1120,8 +1120,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(lta_enable_sw)
-    if self._disp_button_ct < 20 * 3:
-      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
 
     with open('/dev/shm/lta_enable_sw.txt','w') as fp2:
       fp2.write("%d" % (lta_enable_sw))
@@ -1150,8 +1150,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(1-accel_ctrl_disable)
-    if self._disp_button_ct < 20 * 3:
-      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
 
     with open('/dev/shm/accel_ctrl_disable.txt','w') as fp2:
       fp2.write("%d" % (accel_ctrl_disable))
@@ -1179,8 +1179,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(start_accel_power_up_disp_enable)
-    if self._disp_button_ct < 20 * 3:
-      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
 
     with open('/dev/shm/start_accel_power_up_disp_enable.txt','w') as fp2:
       fp2.write("%d" % (start_accel_power_up_disp_enable))
@@ -1208,8 +1208,8 @@ class HudRenderer(Widget):
       return
 
     self._button_push_sound(1-decel_ctrl_disable)
-    if self._disp_button_ct < 20 * 3:
-      self._disp_button_ct = 20 * 3 #ボタン操作したら3秒延長
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
 
     with open('/dev/shm/decel_ctrl_disable.txt','w') as fp2:
       fp2.write("%d" % (decel_ctrl_disable))
