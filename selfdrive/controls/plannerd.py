@@ -25,7 +25,10 @@ def main():
   while True:
     sm.update()
     if sm.updated['modelV2']:
-      longitudinal_planner.update(sm)
+      try:
+        longitudinal_planner.update(sm)
+      except Exception as e:
+        pass
       longitudinal_planner.publish(sm, pm)
 
       ldw.update(sm.frame, sm['modelV2'], sm['carState'], sm['carControl'])
