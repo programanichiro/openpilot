@@ -1,21 +1,6 @@
 import numpy as np
-#import os
-#from openpilot.common.params import Params
-#from cereal import log
-#from openpilot.common.filter_simple import FirstOrderFilter
-#from openpilot.common.realtime import DT_MDL
-# from openpilot.system.swaglog import cloudlog
+from openpilot.selfdrive.modeld.constants import ModelConstants
 
-#このファイルは廃止です。削除予定。-> chillモード時に復活してみる。昔の小細工は働かないようにしている。
-#params = Params()
-
-#STEER_SAME_DIRECTION_CT = 0
-#STEER_OLD_ANGLE = 0
-#STEERING_CENTER = -4.3
-#DCM_FRAME = 0
-#dcm_handle_ctrl = False
-
-TRAJECTORY_SIZE = 33
 # camera offset is meters from center car to camera
 # model path is in the frame of the camera
 PATH_OFFSET = 0.00
@@ -24,9 +9,9 @@ CAMERA_OFFSET = 0.04
 
 class LanePlanner:
   def __init__(self, wide_camera=False):
-    self.ll_x = np.zeros((TRAJECTORY_SIZE,))
-    self.lll_y = np.zeros((TRAJECTORY_SIZE,))
-    self.rll_y = np.zeros((TRAJECTORY_SIZE,))
+    self.ll_x = np.zeros((ModelConstants.IDX_N,))
+    self.lll_y = np.zeros((ModelConstants.IDX_N,))
+    self.rll_y = np.zeros((ModelConstants.IDX_N,))
 
     self.lll_prob = 0.
     self.rll_prob = 0.
@@ -62,7 +47,7 @@ class LanePlanner:
       return
 
     lane_lines = md.laneLines
-    if len(lane_lines) == 4 and len(lane_lines[0].x) == TRAJECTORY_SIZE:
+    if len(lane_lines) == 4 and len(lane_lines[0].x) == ModelConstants.IDX_N:
       self.ll_x = lane_lines[1].x
       self.lll_y = np.array(lane_lines[1].y) + self.camera_offset
       self.rll_y = np.array(lane_lines[2].y) + self.camera_offset

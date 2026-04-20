@@ -4,7 +4,7 @@ import numpy as np
 from cereal import log
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
 from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
-TRAJECTORY_SIZE = 33
+
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
 try:
@@ -122,7 +122,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
-  if len(modelV2.position.x) == TRAJECTORY_SIZE and len(modelV2.orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
+  if len(modelV2.position.x) == ModelConstants.IDX_N and len(modelV2.orientation.x) == ModelConstants.IDX_N: #ワンペダルならある程度ハンドルが正面を向いていること。
     LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
     position = modelV2.position
     path_xyz = np.column_stack([position.x, position.y, position.z])

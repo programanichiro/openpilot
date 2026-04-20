@@ -19,7 +19,6 @@ from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 
 from opendbc.car.toyota.values import TSS2_CAR,ToyotaFlags
-TRAJECTORY_SIZE = 33
 params = Params()
 #g_tss_type = 0
 CVS_FRAME = 0
@@ -367,24 +366,24 @@ class LongitudinalPlanner:
       #速度ゼロでエンゲージ中、前走車なしでアクセル踏んでない。
       steer_ang = sm['carState'].steeringAngleDeg - handle_center
       # 停止時の青信号発進抑制、一時的に緩和、15->50度
-      if (abs(steer_ang) < 50 or one_pedal == False) and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #ワンペダルならある程度ハンドルが正面を向いていること。
+      if (abs(steer_ang) < 50 or one_pedal == False) and len(md.position.x) == ModelConstants.IDX_N and len(md.orientation.x) == ModelConstants.IDX_N: #ワンペダルならある程度ハンドルが正面を向いていること。
         #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
         path_x = md.position.x #path_xyz[:,0]
         # with open('/tmp/debug_out_k','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
-        #   fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[TRAJECTORY_SIZE -1],signal_scan_ct,path_x_old_signal_check,vk_ego))
+        #   fp.write('x:%.2f,ct:%d,px:%.1f,v:%.1f' % (path_x[ModelConstants.IDX_N -1],signal_scan_ct,path_x_old_signal_check,vk_ego))
         #   #fp.write('{0}\n'.format(['%0.2f' % i for i in path_x]))
-        #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[TRAJECTORY_SIZE -1]))
+        #   fp.write('l:%d(%.2f),%.2f[m],x:%.2f' % (hasLead ,sm['radarState'].leadOne.modelProb , sm['radarState'].leadOne.dRel , path_x[ModelConstants.IDX_N -1]))
         with open('/dev/shm/blue_signal_chk.txt','w') as fp: #path_xの中を解析して、ビュンと伸びる瞬間を判断したい。
-          fp.write('%d' % (int(path_x[TRAJECTORY_SIZE -1])))
+          fp.write('%d' % (int(path_x[ModelConstants.IDX_N -1])))
         half_limit = 25 #40
-        if (path_x_old_signal < 2) and path_x[TRAJECTORY_SIZE -1] > half_limit:
-          path_x_old_signal_check = path_x[TRAJECTORY_SIZE -1] #ゆっくり立ち上がったらこれはTrueにならない。
+        if (path_x_old_signal < 2) and path_x[ModelConstants.IDX_N -1] > half_limit:
+          path_x_old_signal_check = path_x[ModelConstants.IDX_N -1] #ゆっくり立ち上がったらこれはTrueにならない。
         path_x_base_limit = 30 #64.0 #70.0 , この座標値超で青信号スタート発火。
-        if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or path_x_old_signal_check > half_limit: #青信号判定の瞬間
-          path_x_old_signal_check += path_x[TRAJECTORY_SIZE -1] #最初の立ち上がりは2倍される
+        if path_x[ModelConstants.IDX_N -1] > path_x_base_limit or path_x_old_signal_check > half_limit: #青信号判定の瞬間
+          path_x_old_signal_check += path_x[ModelConstants.IDX_N -1] #最初の立ち上がりは2倍される
           signal_scan_ct += 1 #横道からの進入車でパスが伸びたのを勘違いするので、バッファを設ける。
-          limit_8 = 8 if path_x[TRAJECTORY_SIZE -1] > path_x_base_limit else 16
-          if signal_scan_ct > limit_8 and signal_scan_ct < 100 and (path_x[TRAJECTORY_SIZE -1] > path_x_base_limit or (path_x_old_signal_check-half_limit) > 1.25*limit_8 * half_limit): #path_x_old_signal_check-half_limitの20倍程度
+          limit_8 = 8 if path_x[ModelConstants.IDX_N -1] > path_x_base_limit else 16
+          if signal_scan_ct > limit_8 and signal_scan_ct < 100 and (path_x[ModelConstants.IDX_N -1] > path_x_base_limit or (path_x_old_signal_check-half_limit) > 1.25*limit_8 * half_limit): #path_x_old_signal_check-half_limitの20倍程度
             with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
               if sm['driverMonitoringState'].isActiveMode == True: #よそ見をしていたら発進しない。
                 if OP_ENABLE_v_cruise_kph > 0: #MAX==1の状態。
@@ -405,7 +404,7 @@ class LongitudinalPlanner:
         else:
           signal_scan_ct = 0 if signal_scan_ct < 4 else signal_scan_ct - 4
           path_x_old_signal_check = 0
-        path_x_old_signal = path_x[TRAJECTORY_SIZE -1]
+        path_x_old_signal = path_x[ModelConstants.IDX_N -1]
     else:
       signal_scan_ct = 0 if signal_scan_ct < 4 else signal_scan_ct - 4
     if path_x_old_signal < 20:
@@ -436,19 +435,19 @@ class LongitudinalPlanner:
     red_signal_speed_down = 1.0
     desired_path_x_rate = 1.0 #一般的な減速制御
     set_red_signal_scan_flag_3 = False
-    if len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE: #これがFalseのケースは想定外
+    if len(md.position.x) == ModelConstants.IDX_N and len(md.orientation.x) == ModelConstants.IDX_N: #これがFalseのケースは想定外
       path_x = md.position.x #path_xyz[:,0]
       red_signal_v_ego = 4/3.6 #この速度超で赤信号認識。
       if (hasLead == False or distLead_near == False) and (OP_ENABLE_v_cruise_kph == 0 or OP_ENABLE_gas_speed > red_signal_v_ego):
         if red_signal_scan_flag_1 != 3 and vk_ego > red_signal_v_ego:
           red_signal_scan_flag_1 = 1 #赤信号センシング
 
-      # path_x[TRAJECTORY_SIZE -1]が増加方向の時は弾きたい。
-      self.red_signal_path_xs = np.append(self.red_signal_path_xs,path_x[TRAJECTORY_SIZE -1])
+      # path_x[ModelConstants.IDX_N -1]が増加方向の時は弾きたい。
+      self.red_signal_path_xs = np.append(self.red_signal_path_xs,path_x[ModelConstants.IDX_N -1])
       self.red_signal_path_xs = np.delete(self.red_signal_path_xs , [0])
       sum_red_signal_path_xs = np.sum(self.red_signal_path_xs)
 
-      if (hasLead == False or distLead_near == False) and path_x[TRAJECTORY_SIZE -1] < np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
+      if (hasLead == False or distLead_near == False) and path_x[ModelConstants.IDX_N -1] < np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [20,30,50,70,80,90,105,120]): #60
         red_signal = "●"
         self.red_signals = np.append(self.red_signals,1)
       else:
@@ -476,7 +475,7 @@ class LongitudinalPlanner:
         red_signals_mark = "□"
 
       desired_path_x_by_speed = np.interp(vk_ego*3.6,desired_path_x_speeds,desired_path_x_by_speeds)
-      desired_path_x_rate = 0 if desired_path_x_by_speed <= 0.01 else path_x[TRAJECTORY_SIZE -1]/desired_path_x_by_speed
+      desired_path_x_rate = 0 if desired_path_x_by_speed <= 0.01 else path_x[ModelConstants.IDX_N -1]/desired_path_x_by_speed
       self.desired_path_x_rates = np.append(self.desired_path_x_rates,desired_path_x_rate)
       self.desired_path_x_rates = np.delete(self.desired_path_x_rates , [0])
       desired_path_x_rate = np.sum(self.desired_path_x_rates) / self.desired_path_x_rates.size
@@ -489,12 +488,12 @@ class LongitudinalPlanner:
       #   if hasLead == False or distLead_near == False:
       #     lead_mark = "△"
       # #   #fp.write('{0}\n'.format(['%0.2f' % i for i in self.desired_path_x_rates]))
-      # #   #fp.write('@@@%f,%f,%f' % (vk_ego,desired_path_x_by_speed,path_x[TRAJECTORY_SIZE -1]))
+      # #   #fp.write('@@@%f,%f,%f' % (vk_ego,desired_path_x_by_speed,path_x[ModelConstants.IDX_N -1]))
       # #   #fp.write('***%.2f,[%.2f],%d' % (np.sum(self.desired_path_x_rates),desired_path_x_rate,self.desired_path_x_rates.size))
-      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
-      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
-      #   fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
-      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[TRAJECTORY_SIZE -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,[%d%%]%.2f' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[ModelConstants.IDX_N -1] ,lead_mark , sm['radarState'].leadOne.dRel,desired_path_x_rate*100,a_ego))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s%dm,↓%.2f,%d' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[ModelConstants.IDX_N -1] ,lead_mark , sm['radarState'].leadOne.dRel,red_signal_speed_down,red_signal_scan_span))
+      #   fp.write('%02dk<%d>%s%s(%.1f)%s%dm,%d' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[ModelConstants.IDX_N -1] ,lead_mark , sm['radarState'].leadOne.dRel,self.night_time))
+      # #   #fp.write('%02dk<%d>%s%s(%.1f)%s(%.2f,%.2f)' % (vk_ego*3.6,red_signal_scan_flag,red_signals_mark , red_signal , path_x[ModelConstants.IDX_N -1] ,lead_mark ,sm['radarState'].leadOne.modelProb,sm['radarState'].leadTwo.modelProb))
       red_signal_scan_ct += 1 #音を鳴らした後の緩衝処理になっているだけで、信号検出のあと徐々に加算されるロジックではないようだ。
 
       self.night_time_refresh_ct += 1
@@ -512,14 +511,14 @@ class LongitudinalPlanner:
           stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
         else: #夜
           stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [10,19,28,39,53,75,85,99]) #まあまあ,60km/hでも止まれる！？
-        if path_x[TRAJECTORY_SIZE -1] < stop_threshold:
+        if path_x[ModelConstants.IDX_N -1] < stop_threshold:
           red_stop_immediately = True #停止せよ。
       else:
         if True: #self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
           stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,60] , [15,20,23,28,43,57,66]) #事前減速で40km/h以下になることを期待している。昼
         # else: #夜
         #   stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50] , [15,20,23,27,38,52]) #事前減速で40km/h以下になることを期待している。夜
-        if path_x[TRAJECTORY_SIZE -1] < stop_threshold or desired_path_x_rate < 0.11:
+        if path_x[ModelConstants.IDX_N -1] < stop_threshold or desired_path_x_rate < 0.11:
           red_stop_immediately = True #停止せよ。
         # stop_threshold_r = np.interp(vk_ego*3.6 , [0   ,10  ,20  ,25  ,30  ,40  ,50  ]
         #                                     , [0.25,0.30,0.33,0.35,0.38,0.41,0.43]) #さらに減速度の強さa_egoを加味。弱ければより小さくできる？
@@ -797,7 +796,7 @@ class LongitudinalPlanner:
         decel_lead_ctrl = True
 
     steer_ang_predicate = False
-    if decel_lead_ctrl == True and len(md.position.x) == TRAJECTORY_SIZE and len(md.orientation.x) == TRAJECTORY_SIZE:
+    if decel_lead_ctrl == True and len(md.position.x) == ModelConstants.IDX_N and len(md.orientation.x) == ModelConstants.IDX_N:
       #path_xyz = np.column_stack([md.position.x, md.position.y, md.position.z])
       max_yp = 0
       for yp in md.position.y: #path_y
