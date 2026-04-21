@@ -28,12 +28,9 @@ def main():
     sm.update()
     if sm.updated['modelV2']:
       try:
-        sys.stderr.write("eeeeee:\n")
-        sys.stderr.flush()
         longitudinal_planner.update(sm)
       except Exception:
-        # Avoid sending exceptions to cloudlog (external server).
-        # Write traceback only to stderr so it's visible in tmux. No files created.
+        # Write traceback only to stderr so it's visible in tmux.
         tb = traceback.format_exc()
         try:
           sys.stderr.write("Exception in LongitudinalPlanner.update():\n" + tb + "\n")
