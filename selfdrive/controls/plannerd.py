@@ -6,6 +6,8 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.selfdrive.controls.lib.ldw import LaneDepartureWarning
 from openpilot.selfdrive.controls.lib.longitudinal_planner import LongitudinalPlanner
 import cereal.messaging as messaging
+import traceback
+import sys
 
 
 def main():
@@ -26,9 +28,18 @@ def main():
     sm.update()
     if sm.updated['modelV2']:
       try:
+        sys.stderr.write("eeeeee:\n")
+        sys.stderr.flush()
         longitudinal_planner.update(sm)
-      except Exception as e:
-        pass
+      except Exception:
+        # Avoid sending exceptions to cloudlog (external server).
+        # Write traceback only to stderr so it's visible in tmux. No files created.
+        tb = traceback.format_exc()
+        try:
+          sys.stderr.write("Exception in LongitudinalPlanner.update():\n" + tb + "\n")
+          sys.stderr.flush()
+        except Exception:
+          pass
       longitudinal_planner.publish(sm, pm)
 
       ldw.update(sm.frame, sm['modelV2'], sm['carState'], sm['carControl'])
