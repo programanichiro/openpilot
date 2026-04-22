@@ -385,7 +385,7 @@ class LongitudinalPlanner:
           limit_8 = 8 if path_x[ModelConstants.IDX_N -1] > path_x_base_limit else 16
           if signal_scan_ct > limit_8 and signal_scan_ct < 100 and (path_x[ModelConstants.IDX_N -1] > path_x_base_limit or (path_x_old_signal_check-half_limit) > 1.25*limit_8 * half_limit): #path_x_old_signal_check-half_limitの20倍程度
             with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
-              if sm['driverMonitoringState'].activePolicy == log.DriverMonitoringState.MonitoringPolicy.vision: #sm['driverMonitoringState'].isActiveMode == True: #よそ見をしていたら発進しない。
+              if sm['driverMonitoringState'].activePolicy == log.DriverMonitoringState.MonitoringPolicy.vision and sm['driverMonitoringState'].alertLevel == log.DriverMonitoringState.AlertLevel.none: #よそ見をしていたら発進しない。
                 if OP_ENABLE_v_cruise_kph > 0: #MAX==1の状態。
                   fp.write('%d' % (2)) #engage.wavを鳴らす。
                 else:
