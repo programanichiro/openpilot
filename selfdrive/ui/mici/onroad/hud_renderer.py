@@ -702,8 +702,8 @@ class HudRenderer(Widget):
       y_pos2 = rect.y+rect.height
     else:
       right_margin = 0
-      font_size = 44
-      font_size_km = 33
+      font_size = 38
+      font_size_km = 29
       y_pos = rect.y+font_size+3-2
       y_pos2 = rect.y+font_size+3 #速度用
     if self.road_info_txt:
