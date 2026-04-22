@@ -27,16 +27,7 @@ def main():
   while True:
     sm.update()
     if sm.updated['modelV2']:
-      try:
-        longitudinal_planner.update(sm)
-      except Exception:
-        # Write traceback only to stderr so it's visible in tmux.
-        tb = traceback.format_exc()
-        try:
-          sys.stderr.write("Exception in LongitudinalPlanner.update():\n" + tb + "\n")
-          sys.stderr.flush()
-        except Exception:
-          pass
+      longitudinal_planner.update(sm)
       longitudinal_planner.publish(sm, pm)
 
       ldw.update(sm.frame, sm['modelV2'], sm['carState'], sm['carControl'])

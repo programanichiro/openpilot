@@ -743,8 +743,8 @@ class HudRenderer(Widget):
 
     # Get monitoring state
     dm_state = sm["driverMonitoringState"]
-    self._is_active = dm_state.isActiveMode
-    self._face_detected = dm_state.faceDetected
+    self._is_active = dm_state.activePolicy == log.DriverMonitoringState.MonitoringPolicy.vision
+    self._face_detected = dm_state.visionPolicyState.faceDetected
 
     # with open('/tmp/debug_out_w','w') as fp:
     #   fp.write("_is_active:%d , _face_detected:%d" % (int(self._is_active),int(self._face_detected)))
