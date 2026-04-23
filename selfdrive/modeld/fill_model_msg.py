@@ -34,7 +34,7 @@ class PublishState:
 def fill_xyzt(builder, t, x, y, z, x_std=None, y_std=None, z_std=None, y_ofs=0.0):
   builder.t = t
   builder.x = x.tolist()
-  builder.y = (np.asarray(y) + y_ofs).tolist()
+  builder.y = (y + y_ofs).tolist()
   builder.z = z.tolist()
   if x_std is not None:
     builder.xStd = x_std.tolist()
@@ -46,7 +46,7 @@ def fill_xyzt(builder, t, x, y, z, x_std=None, y_std=None, z_std=None, y_ofs=0.0
 def fill_xyvat(builder, t, x, y, v, a, x_std=None, y_std=None, v_std=None, a_std=None, y_ofs=0.0):
   builder.t = t
   builder.x = x.tolist()
-  builder.y = (np.asarray(y) + y_ofs).tolist()
+  builder.y = (y + y_ofs).tolist()
   builder.v = v.tolist()
   builder.a = a.tolist()
   if x_std is not None:
