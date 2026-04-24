@@ -65,6 +65,17 @@ class TogglesLayoutMici(NavScroller):
       pass
     self._auto_door_lock_btn.set_click_callback(self._auto_door_lock_btn_callback)
 
+    icon_device_offset = gui_app.texture("icon_mici/settings/device_icon.png",64,64)
+    self._device_offset_btn = BigButton("device offset   ", "", icon_device_offset)
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read()
+        if device_offset_str:
+          self._device_offset_btn.set_value(device_offset_str+" [cm]")
+    except Exception as e:
+      pass
+    self._device_offset_btn.set_click_callback(self._device_offset_btn_callback)
+
     self._scroller.add_widgets([
       self._personality_toggle,
       self._experimental_btn,
@@ -92,6 +103,7 @@ class TogglesLayoutMici(NavScroller):
       self._knight_scanner_bit3_button,
       self._vehicle_mass_btn,
       self._auto_door_lock_btn,
+      self._device_offset_btn,
       C4UIOnC3X,
     ])
 
@@ -470,5 +482,26 @@ class TogglesLayoutMici(NavScroller):
           self._auto_door_lock_btn.set_value(lock+" [km/h]")
 
     dlg = BigInputDialog("Auto door lock", lock_speed, confirm_callback=lock_speed_callback)
+    gui_app.push_widget(dlg)
+
+  def _device_offset_btn_callback(self):
+    device_offset = self._device_offset_btn.value
+    device_offset = device_offset.removesuffix(" [cm]")
+
+    def device_offset_callback(offset: str):
+      if offset:
+        try:
+          with open('/data/device_offset.txt','w') as fp:
+            fp.write("%s" % (offset))
+        except Exception as e:
+          self._device_offset_btn.set_value("")
+          return
+
+        if offset == "0" or not offset:
+          self._device_offset_btn.set_value("")
+        else:
+          self._device_offset_btn.set_value(offset+" [cm]")
+
+    dlg = BigInputDialog("Device offset", device_offset, confirm_callback=device_offset_callback)
     gui_app.push_widget(dlg)
 

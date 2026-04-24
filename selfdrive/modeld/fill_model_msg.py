@@ -7,6 +7,8 @@ from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
 
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
+DEVICE_OFFSET_update_count = 0
+device_y_offset = 0
 try:
   with open('/data/handle_center_info.txt','r') as fp:
     handle_center_info_str = fp.read()
@@ -106,7 +108,18 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   fill_xyzt(modelV2.orientationRate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
 
   # poly path (apply same lateral offset so controllers use shifted path)
-  y_offset = 0.10 #デバイスを右に10cmずらす
+  global DEVICE_OFFSET_update_count,device_y_offset
+  if DEVICE_OFFSET_update_count % 50 == 0: #10回に1回、テキストから読み込んで反映する。頻度は多すぎるとファイルI/Oが増えるし、少なすぎると反映が遅れる。10回に1回くらいがちょうどいいかも。
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+        if device_offset_str:
+          device_y_offset = float(device_offset_str)
+          device_y_offset /= 100.0 #cmからmへ変換
+    except Exception as e:
+      pass
+  DEVICE_OFFSET_update_count += 1
+  y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
   pos_x, pos_y, pos_z = net_output_data['plan'][0,:,Plan.POSITION].T
   fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
 

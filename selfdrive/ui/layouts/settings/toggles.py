@@ -213,6 +213,19 @@ class TogglesLayout(Widget):
           pass
         self._toggles["VehicleMass"] = self._vehicle_mass_btn
 
+        self._device_offset_action = ButtonAction(text="EDIT")
+        self._device_offset_action.set_enabled(True)
+        self._device_offset_btn = ListItem(title="Device offset(R+L-)", icon="../icon_mici/settings/device_icon.png", action_item=self._device_offset_action, callback=self._edit_device_offset)
+        self._device_offset_btn.action_item.set_value("")
+        try:
+          with open('/data/device_offset.txt','r') as fp:
+            device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+            if device_offset_str:
+              self._device_offset_btn.action_item.set_value(device_offset_str+" [cm]")
+        except Exception as e:
+          pass
+        self._toggles["DeviceOffset"] = self._device_offset_btn
+
     self._update_experimental_mode_icon()
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
 
@@ -375,4 +388,29 @@ class TogglesLayout(Widget):
     s = s.removesuffix(" [kg]")
     self._keyboard.set_text(s)
     self._keyboard.set_callback(update_mass)
+    gui_app.push_widget(self._keyboard)
+
+  def _edit_device_offset(self):
+    def update_offset(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/device_offset.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._device_offset_btn.action_item.set_value("")
+        return
+
+      if self._keyboard.text == "0" or not self._keyboard.text:
+        self._device_offset_btn.action_item.set_value("")
+      else:
+        self._device_offset_btn.action_item.set_value(self._keyboard.text+" [cm]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("Device offset(R+L-)", "")
+    s = self._device_offset_btn.action_item.value
+    s = s.removesuffix(" [cm]")
+    self._keyboard.set_text(s)
+    self._keyboard.set_callback(update_offset)
     gui_app.push_widget(self._keyboard)
