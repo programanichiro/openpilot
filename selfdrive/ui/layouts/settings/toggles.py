@@ -215,7 +215,7 @@ class TogglesLayout(Widget):
 
         self._device_offset_action = ButtonAction(text="EDIT")
         self._device_offset_action.set_enabled(True)
-        self._device_offset_btn = ListItem(title="Device offset(R+L-)", icon="../icon_mici/settings/device_icon.png", action_item=self._device_offset_action, callback=self._edit_device_offset)
+        self._device_offset_btn = ListItem(title="Device offset(R+L-)", icon="../icons_mici/settings/device_icon.png", action_item=self._device_offset_action, callback=self._edit_device_offset)
         self._device_offset_btn.action_item.set_value("")
         try:
           with open('/data/device_offset.txt','r') as fp:
