@@ -55,7 +55,7 @@ class TogglesLayoutMici(NavScroller):
     self._vehicle_mass_btn.set_click_callback(self._vehicle_mass_btn_callback)
 
     icon_car_key = gui_app.texture("offroad/icon_car_key.png",64,64)
-    self._auto_door_lock_btn = BigButton("auto door lock        ", "", icon_car_key)
+    self._auto_door_lock_btn = BigButton("auto door lock          ", "", icon_car_key)
     try:
       with open('/data/run_auto_lock.txt','r') as fp:
         auto_door_lock_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。

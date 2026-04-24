@@ -314,7 +314,7 @@ class DeviceLayoutMici(NavScroller):
       ui_state.params.put_bool("DoUninstall", True)
 
     def device_offset_btn_callback():
-      device_offset = self._device_offset_btn.value
+      device_offset = device_offset_btn.value
       device_offset = device_offset.removesuffix(" [cm]")
 
       def device_offset_callback(offset: str):
@@ -323,13 +323,13 @@ class DeviceLayoutMici(NavScroller):
             with open('/data/device_offset.txt','w') as fp:
               fp.write("%s" % (offset))
           except Exception as e:
-            self._device_offset_btn.set_value("")
+            device_offset_btn.set_value("")
             return
 
           if offset == "0" or not offset:
-            self._device_offset_btn.set_value("")
+            device_offset_btn.set_value("")
           else:
-            self._device_offset_btn.set_value(offset+" [cm]")
+            device_offset_btn.set_value(offset+" [cm]")
 
       dlg = BigInputDialog("Device offset", device_offset, confirm_callback=device_offset_callback)
       gui_app.push_widget(dlg)
