@@ -9,7 +9,7 @@ from openpilot.common.params import Params
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.ui.widgets.scroller import NavRawScrollPanel, NavScroller
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton
-from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog, BigInputDialog
 from openpilot.selfdrive.ui.mici.widgets.pairing_dialog import PairingDialog
 from openpilot.selfdrive.ui.mici.onroad.driver_camera_dialog import DriverCameraDialog
 from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage
@@ -313,6 +313,27 @@ class DeviceLayoutMici(NavScroller):
     def uninstall_openpilot_callback():
       ui_state.params.put_bool("DoUninstall", True)
 
+    def device_offset_btn_callback():
+      device_offset = self._device_offset_btn.value
+      device_offset = device_offset.removesuffix(" [cm]")
+
+      def device_offset_callback(offset: str):
+        if offset:
+          try:
+            with open('/data/device_offset.txt','w') as fp:
+              fp.write("%s" % (offset))
+          except Exception as e:
+            self._device_offset_btn.set_value("")
+            return
+
+          if offset == "0" or not offset:
+            self._device_offset_btn.set_value("")
+          else:
+            self._device_offset_btn.set_value(offset+" [cm]")
+
+      dlg = BigInputDialog("Device offset", device_offset, confirm_callback=device_offset_callback)
+      gui_app.push_widget(dlg)
+
     reset_calibration_btn = EngagedConfirmationButton("reset calibration", "reset", gui_app.texture("icons_mici/settings/device/lkas.png", 122, 64),
                                                       reset_calibration_callback)
 
@@ -341,6 +362,17 @@ class DeviceLayoutMici(NavScroller):
     terms_btn = BigButton("terms &\nconditions", "", gui_app.texture("icons_mici/settings/device/info.png", 64, 64))
     terms_btn.set_click_callback(lambda: gui_app.push_widget(ReviewTermsPage()))
 
+    icon_device_offset = gui_app.texture("icons_mici/settings/device_icon.png",64,64)
+    device_offset_btn = BigButton("device offset          ", "", icon_device_offset)
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read()
+        if device_offset_str:
+          device_offset_btn.set_value(device_offset_str+" [cm]")
+    except Exception as e:
+      pass
+    device_offset_btn.set_click_callback(device_offset_btn_callback)
+
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
       UpdateOpenpilotBigButton(),
@@ -349,6 +381,7 @@ class DeviceLayoutMici(NavScroller):
       driver_cam_btn,
       terms_btn,
       regulatory_btn,
+      device_offset_btn,
       reset_calibration_btn,
       uninstall_openpilot_btn,
       reboot_btn,
