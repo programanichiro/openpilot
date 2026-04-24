@@ -66,7 +66,7 @@ class TogglesLayoutMici(NavScroller):
     self._auto_door_lock_btn.set_click_callback(self._auto_door_lock_btn_callback)
 
     icon_device_offset = gui_app.texture("icons_mici/settings/device_icon.png",64,64)
-    self._device_offset_btn = BigButton("device offset   ", "", icon_device_offset)
+    self._device_offset_btn = BigButton("device offset     ", "", icon_device_offset)
     try:
       with open('/data/device_offset.txt','r') as fp:
         device_offset_str = fp.read()
