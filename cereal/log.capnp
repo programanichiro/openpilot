@@ -133,6 +133,8 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     excessiveActuation @96;
     audioFeedback @97;
 
+    hazardWarningLights @10000;
+
     soundsUnavailableDEPRECATED @47;
   }
 }
