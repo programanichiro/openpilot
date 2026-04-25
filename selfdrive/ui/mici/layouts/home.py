@@ -205,7 +205,7 @@ class MiciHomeLayout(Widget):
     commit = ui_state.params.get("GitCommit")
 
     description = ui_state.params.get("UpdaterCurrentDescription")
-    os_ver = "XY.Z"
+    os_ver = "--.-" # タイミング的にdescriptionが取れない場合あり？の対策。
     if description is not None and len(description) > 0:
       # Expect "version / branch / commit / date"; be tolerant of other formats
       try:
