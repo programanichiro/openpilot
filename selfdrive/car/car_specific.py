@@ -135,16 +135,16 @@ class CarSpecificEvents:
         events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前(7km/h未満)でも可)にバックに入れたらディスエンゲージ
       else:
         events.add(EventName.reverseGear)
-
-    try:
-      with open('/tmp/hazard_light.txt','r') as fp:
-        hazard_light_str = fp.read()
-        if hazard_light_str:
-          hazard_light = int(hazard_light_str)
-          if hazard_light > 0:
-            events.add(EventName.hazardWarningLights)
-    except Exception as e:
-      pass
+    if (CS.leftBlinker or CS.rightBlinker) and CS.vEgo < 10.0/3.6: #ハザードつけっぱなしでウインカー出して時速10キロ以下スタートしようとしたら警告する。
+      try:
+        with open('/tmp/hazard_light.txt','r') as fp:
+          hazard_light_str = fp.read()
+          if hazard_light_str:
+            hazard_light = int(hazard_light_str)
+            if hazard_light > 0:
+              events.add(EventName.hazardWarningLights)
+      except Exception as e:
+        pass
 
     if not CS.cruiseState.available:
       events.add(EventName.wrongCarMode)

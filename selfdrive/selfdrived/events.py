@@ -980,7 +980,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       "Hazard\nLights",
       "",
       AlertStatus.userPrompt, AlertSize.full,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.promptRepeat, 2.),
+      Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
   },
 
   # On cars that use stock ACC the car can decide to cancel ACC for various reasons.
@@ -1107,7 +1107,7 @@ if HARDWARE.get_device_type() == 'mici':
         "hazard lights",
         "hazard warning lights",
         AlertStatus.userPrompt, AlertSize.full,
-        Priority.LOW, VisualAlert.steerRequired, AudibleAlert.promptRepeat, 2.),
+        Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
     },
   })
 
