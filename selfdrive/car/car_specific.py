@@ -135,6 +135,17 @@ class CarSpecificEvents:
         events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前(7km/h未満)でも可)にバックに入れたらディスエンゲージ
       else:
         events.add(EventName.reverseGear)
+
+    try:
+      with open('/tmp/hazard_light.txt','r') as fp:
+        hazard_light_str = fp.read()
+        if hazard_light_str:
+          hazard_light = int(hazard_light_str)
+          if hazard_light > 0:
+            events.add(EventName.hazardWarningLights)
+    except Exception as e:
+      pass
+
     if not CS.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if CS.espDisabled:
