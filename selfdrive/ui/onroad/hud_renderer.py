@@ -940,11 +940,11 @@ class HudRenderer(Widget):
     self.temperature = 0 #温度が取れなくなったので目安。
     ts = deviceState.thermalStatus
     ThermalStatus = log.DeviceState.ThermalStatus
-    if ts == ThermalStatus.green:
+    if ts == ThermalStatus.ok:
       self.temperature = 55 #色変化のための参照値
-    elif ts == ThermalStatus.yellow:
+    elif ts == ThermalStatus.overheated:
       self.temperature = 65 #色変化のための参照値
-    else:
+    else: #critical
       self.temperature = 75 #色変化のための参照値
 
     max_temp = int(deviceState.maxTempC) #表示はこれを使う。
