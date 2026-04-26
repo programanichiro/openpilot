@@ -398,6 +398,8 @@ class HudRenderer(Widget):
     rl.draw_text_ex(self._font_medium, unit_text, unit_pos, FONT_SIZES.speed_unit, 0, COLORS.WHITE_TRANSLUCENT)
 
   def _ip_button_init(self):
+    self.ui_freeze_flag = False
+
     def copy_data2devshm(file_name):
       try:
         with open('/data/'+file_name, 'rb') as src, open('/dev/shm/'+file_name, 'wb') as dst:
@@ -975,7 +977,12 @@ class HudRenderer(Widget):
       else:
         fp2.write('%d' % (101)) #po.wav
 
+  def ui_freeze(self, freeze):
+    self.ui_freeze_flag = freeze
+
   def _press_accel_engaged(self):
+    if self.ui_freeze_flag:
+      return
     accel_engaged = 0
     try:
       with open('/dev/shm/accel_engaged.txt','r') as fp:
@@ -1016,6 +1023,8 @@ class HudRenderer(Widget):
       fp3.write("%d" % (accel_engaged))
 
   def _press_long_speeddown_disable(self):
+    if self.ui_freeze_flag:
+      return
     long_speeddown_disable = 0
     try:
       with open('/dev/shm/long_speeddown_disable.txt','r') as fp:
@@ -1048,6 +1057,8 @@ class HudRenderer(Widget):
       fp3.write("%d" % (long_speeddown_disable))
 
   def _press_set_speed_MAX(self):
+    if self.ui_freeze_flag:
+      return
     sm = ui_state.sm
     cs = sm["selfdriveState"]
 
@@ -1076,7 +1087,7 @@ class HudRenderer(Widget):
       #⚫︎ボタンの代わりに動作する
       self._press_limitspeed_sw() #MAX_touch
 
-  def _press_limitspeed_sw(self):
+  def _press_limitspeed_sw(self): #これは実ボタンではない
     limitspeed_sw = 0
     try:
       with open('/dev/shm/limitspeed_sw.txt','r') as fp:
@@ -1102,6 +1113,8 @@ class HudRenderer(Widget):
       fp3.write("%d" % (limitspeed_sw))
 
   def _press_mads(self):
+    if self.ui_freeze_flag:
+      return
     try:
       with open('/dev/shm/steer_always.txt','r') as fp:
         steer_always = fp.read()
@@ -1123,6 +1136,8 @@ class HudRenderer(Widget):
     return
 
   def _press_dexp_sw_mode(self):
+    if self.ui_freeze_flag:
+      return
     dexp_sw_mode = 0
     try:
       with open('/dev/shm/dexp_sw_mode.txt','r') as fp:
@@ -1164,6 +1179,8 @@ class HudRenderer(Widget):
       fp3.write("%d" % (dexp_sw_mode))
 
   def _press_lta_enable_sw(self):
+    if self.ui_freeze_flag:
+      return
     lta_enable_sw = 0
     try:
       with open('/dev/shm/lta_enable_sw.txt','r') as fp:
@@ -1194,6 +1211,8 @@ class HudRenderer(Widget):
 
 
   def _press_accel_ctrl_disable(self):
+    if self.ui_freeze_flag:
+      return
     accel_ctrl_disable = 0
     try:
       with open('/dev/shm/accel_ctrl_disable.txt','r') as fp:
@@ -1223,6 +1242,8 @@ class HudRenderer(Widget):
       fp3.write("%d" % (accel_ctrl_disable))
 
   def _press_start_accel_power_up_disp_enable(self):
+    if self.ui_freeze_flag:
+      return
     start_accel_power_up_disp_enable = 0
     try:
       with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
@@ -1252,6 +1273,8 @@ class HudRenderer(Widget):
       fp3.write("%d" % (start_accel_power_up_disp_enable))
 
   def _press_decel_ctrl_disable(self):
+    if self.ui_freeze_flag:
+      return
     decel_ctrl_disable = 0
     try:
       with open('/dev/shm/decel_ctrl_disable.txt','r') as fp:
