@@ -690,6 +690,16 @@ class HudRenderer(Widget):
       self._press_accel_ctrl_disable()
       self.button_style_only = False
 
+    if(self.ip_update_state_ct % 10 == 9):
+      self.button_style_only = True
+      self._press_long_speeddown_disable()
+      self.button_style_only = False
+
+    if(self.ip_update_state_ct % 10 == 2):
+      self.button_style_only = True
+      self._press_dexp_sw_mode()
+      self.button_style_only = False
+
     cur_draw_t = time.monotonic_ns() / 1_000_000  # ナノ秒→ミリ秒 #millis_since_boot();
     self.dt = cur_draw_t - self.prev_draw_t #フレームタイム
     self.distance_traveled += abs(car_state.vEgo) * self.dt / 1000
