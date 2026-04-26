@@ -37,24 +37,7 @@ assert arch in [
   "Darwin",   # macOS arm64 (x86 not supported)
 ]
 
-# if arch != "larch64":
-#   import bzip2
-#   import capnproto
-#   import eigen
-#   import ffmpeg as ffmpeg_pkg
-#   import libjpeg
-#   import libyuv
-#   import ncurses
-#   import python3_dev
-#   import zeromq
-#   import zstd
-#   pkgs = [bzip2, capnproto, eigen, ffmpeg_pkg, libjpeg, libyuv, ncurses, zeromq, zstd]
-#   py_include = python3_dev.INCLUDE_DIR
-# else:
-#   # TODO: remove when AGNOS has our new vendor pkgs
-#   pkgs = []
-#   py_include = sysconfig.get_paths()['include']
-pkg_names = ['bzip2', 'capnproto', 'eigen', 'ffmpeg', 'libjpeg', 'libyuv', 'ncurses', 'zeromq', 'zstd']
+pkg_names = ['bzip2', 'capnproto', 'catch2', 'eigen', 'ffmpeg', 'libjpeg', 'libyuv', 'ncurses', 'zeromq', 'zstd']
 pkgs = [importlib.import_module(name) for name in pkg_names]
 
 
@@ -128,7 +111,6 @@ env = Environment(
     "#third_party/acados/include",
     "#third_party/acados/include/blasfeo/include",
     "#third_party/acados/include/hpipm/include",
-    "#third_party/catch2/include",
     [x.INCLUDE_DIR for x in pkgs],
   ],
   LIBPATH=[
