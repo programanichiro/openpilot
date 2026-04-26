@@ -145,6 +145,10 @@ class Label(Widget):
     self._font_size = size
     self._update_text(self._text)
 
+  def set_icon(self, icon):
+    self._icon = icon
+    self._update_text(self._text)
+
   def _update_text(self, text):
     self._emojis = []
     self._text_size = []

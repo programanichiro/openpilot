@@ -131,6 +131,9 @@ class Button(Widget):
   def set_text(self, text):
     self._label.set_text(text)
 
+  def set_icon(self, icon):
+    self._label.set_icon(icon)
+
   def set_button_style(self, button_style: ButtonStyle):
     self._button_style = button_style
     self._background_color = BUTTON_BACKGROUND_COLORS[self._button_style]

@@ -456,6 +456,8 @@ class HudRenderer(Widget):
     self._press_mads()
 
     dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=60,height=60)
+    self.dx_icon_chill = gui_app.texture("icons_mici/wheel.png",width=60,height=60)
+    self.dx_icon_exp = gui_app.texture("icons_mici/experimental_mode.png",width=60,height=60)
     self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=dx_icon)
     self._press_dexp_sw_mode()
 
@@ -1084,6 +1086,8 @@ class HudRenderer(Widget):
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOff)
     else:
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOn)
+
+    self._dexp_sw_mode_button.set_icon(self.dx_icon_chill if dexp_sw_mode == 0 else self.dx_icon_exp)
 
     self.dexp_sw_mode = dexp_sw_mode
 
