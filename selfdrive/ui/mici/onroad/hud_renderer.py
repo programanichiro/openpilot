@@ -1021,9 +1021,9 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       long_speeddown_disable = (long_speeddown_disable + 1) % 2
     if long_speeddown_disable == 0:
-      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOn)
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudBOn)
     else:
-      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOff)
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudBOff)
 
     if self.button_style_only:
       return
