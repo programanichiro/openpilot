@@ -237,7 +237,7 @@ class AugmentedRoadView(CameraView):
       self._alert_renderer.render(self._content_rect)
     self._hud_renderer.render(self._content_rect)
 
-    if self._bookmark_icon.interacting():
+    if self._bookmark_icon._interacting:
       self._hud_renderer.ui_freeze(True) #ブックマークスワイプ中はHUDのタップ反応を止める
     else:
       self._hud_renderer.ui_freeze(False)
