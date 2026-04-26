@@ -1081,7 +1081,15 @@ class HudRenderer(Widget):
       pass
 
     if self.button_style_only == False:
-      dexp_sw_mode = (dexp_sw_mode + 1) % 2
+      #dX(OFF){chill->exp}->dX(ON)というフローにする
+      if dexp_sw_mode != 0:
+        dexp_sw_mode = (dexp_sw_mode + 1) % 2
+        ui_state.params.put_bool("ExperimentalMode",False)
+      else:
+        if ui_state.params.get_bool("ExperimentalMode"):
+          dexp_sw_mode = (dexp_sw_mode + 1) % 2
+        else:
+          ui_state.params.put_bool("ExperimentalMode",True)
     if dexp_sw_mode == 0:
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOff)
     else:
