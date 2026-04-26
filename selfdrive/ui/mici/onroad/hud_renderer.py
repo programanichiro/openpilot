@@ -445,6 +445,9 @@ class HudRenderer(Widget):
     self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=40,font_weight=FontWeight.BOLD, border_radius=45)
     self._press_accel_engaged()
 
+    self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable,font_size=40,font_weight=FontWeight.BOLD, border_radius=45)
+    self._press_long_speeddown_disable()
+
     font_sz = 50 #ACC速度にかぶせる透明ボタン
     self._set_speed_MAX_button = Button("",click_callback=self._press_set_speed_MAX,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=0.35*200/2)
     self._set_speed_MAX_button.set_button_style(ButtonStyle.HudUnder) #バック透明
@@ -518,6 +521,7 @@ class HudRenderer(Widget):
             or self._decel_ctrl_disable_button.is_pressed
             or self._start_accel_power_up_disp_enable_button.is_pressed
             or self._accel_engaged_button.is_pressed
+            or self._long_speeddown_disable_button.is_pressed
             )
 
   def _ip_update_state(self,sm):
@@ -791,6 +795,12 @@ class HudRenderer(Widget):
       )
       self._accel_engaged_button.render(accel_engaged_rect)
 
+      long_speeddown_disable_rect = rl.Rectangle(
+        int(rect.x+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
+      )
+      self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
+
+
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
     x -= text_size.x #右寄せ
@@ -994,6 +1004,38 @@ class HudRenderer(Widget):
       fp2.write("%d" % (accel_engaged))
     with open('/data/accel_engaged.txt','w') as fp3:
       fp3.write("%d" % (accel_engaged))
+
+  def _press_long_speeddown_disable(self):
+    long_speeddown_disable = 0
+    try:
+      with open('/dev/shm/long_speeddown_disable.txt','r') as fp:
+        long_speeddown_disable_str = fp.read()
+        if long_speeddown_disable_str:
+          long_speeddown_disable = int(long_speeddown_disable_str)
+    except Exception as e:
+      pass
+
+    # global long_speeddown_disable00
+    # long_speeddown_disable00 = long_speeddown_disable
+
+    if self.button_style_only == False:
+      long_speeddown_disable = (long_speeddown_disable + 1) % 2
+    if long_speeddown_disable == 0:
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOn)
+    else:
+      self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudSOff)
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(1-long_speeddown_disable)
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
+
+    with open('/dev/shm/long_speeddown_disable.txt','w') as fp2:
+      fp2.write("%d" % (long_speeddown_disable))
+    with open('/data/long_speeddown_disable.txt','w') as fp3:
+      fp3.write("%d" % (long_speeddown_disable))
 
   def _press_set_speed_MAX(self):
     sm = ui_state.sm
