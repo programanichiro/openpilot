@@ -1087,7 +1087,8 @@ class HudRenderer(Widget):
     else:
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOn)
 
-    self._dexp_sw_mode_button.set_icon(self.dx_icon_chill if dexp_sw_mode == 0 else self.dx_icon_exp)
+    sm = ui_state.sm
+    self._dexp_sw_mode_button.set_icon(self.dx_icon_exp if sm['selfdriveState'].experimentalMode else self.dx_icon_chill)
 
     self.dexp_sw_mode = dexp_sw_mode
 
