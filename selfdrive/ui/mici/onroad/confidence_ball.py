@@ -106,21 +106,17 @@ class ConfidenceBall(Widget):
     except Exception as e:
       pass
 
-    if gui_app.big_ui():
-      alp_add = 30
-    else:
-      alp_add = 10
+    alp_add = 30 if gui_app.big_ui() else 10 #c4は60Hz
     if brake_flag:
       self.brake_light_alpha += alp_add
-      if self.brake_light_alpha > 200:
-        self.brake_light_alpha = 200
+      if self.brake_light_alpha > 170:
+        self.brake_light_alpha = 170
     else:
       self.brake_light_alpha -= alp_add
       if self.brake_light_alpha < 0:
         self.brake_light_alpha = 0
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
-    # rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, self.brake_light_alpha))
-    rl.draw_rectangle_rounded(content_rect,0.35,10,rl.Color(255, 0, 0, self.brake_light_alpha)) #角丸の赤いオーバーレイ
+    rl.draw_rectangle_rounded(content_rect,0.5,10,rl.Color(255, 0, 0, self.brake_light_alpha)) #角丸の赤いオーバーレイ
     rl.end_blend_mode() #元のブレンドに戻す
 
     self._LongitudinalPersonality_ct += 1
