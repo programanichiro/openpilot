@@ -70,15 +70,15 @@ class ConfidenceBall(Widget):
       alp_add = 21
     else:
       alp_add = 7
-    if self.brake_light_alpha >= 0: #brake_flag:
+    if brake_flag:
       self.brake_light_alpha += alp_add
       if self.brake_light_alpha > 200:
-        self.brake_light_alpha = -200
+        self.brake_light_alpha = 200
     else:
-      self.brake_light_alpha += alp_add
-      if self.brake_light_alpha > 0:
+      self.brake_light_alpha -= alp_add
+      if self.brake_light_alpha < 0:
         self.brake_light_alpha = 0
-    rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, abs(self.brake_light_alpha)))
+    rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, self.brake_light_alpha))
 
     status_dot_radius = 24
     dot_height = (1 - self._confidence_filter.x) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
