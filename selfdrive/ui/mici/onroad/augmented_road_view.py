@@ -183,7 +183,8 @@ class AugmentedRoadView(CameraView):
   def _handle_mouse_release(self, mouse_pos: MousePos):
     # Don't trigger click callback if bookmark was triggered
     if (not self._bookmark_icon.interacting()) and (not self._hud_renderer.user_interacting()):
-      pass #onroadタップでhomeに戻るのをやめる
+      self._hud_renderer.appear_btn() #ボタンを出す
+      #pass #onroadタップでhomeに戻るのをやめる
       #super()._handle_mouse_release(mouse_pos)
 
   def _render(self, _):

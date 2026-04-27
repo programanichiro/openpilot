@@ -709,6 +709,8 @@ class HudRenderer(Widget):
     if self.dt == 0:
       self.dt = 1 #0割り算対策
 
+  def appear_btn(self): #ボタンを出す。
+    self._disp_button_ct = 20 * 5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
   def _ip_draw(self, rect: rl.Rectangle):
 
