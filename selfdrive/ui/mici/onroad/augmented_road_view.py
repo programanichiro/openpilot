@@ -37,6 +37,7 @@ ROAD_CAM_MIN_SPEED = 10  # m/s (25 mph)
 
 CAM_Y_OFFSET = 20
 
+g_wide_cam = False
 
 class BookmarkIcon(Widget):
   PEEK_THRESHOLD = 50  # If icon peeks out this much, snap it fully visible
@@ -313,6 +314,8 @@ class AugmentedRoadView(CameraView):
     current_dims = (self._content_rect.width, self._content_rect.height)
     device_camera = self.device_camera or DEFAULT_DEVICE_CAMERA
     is_wide_camera = self.stream_type == WIDE_CAM
+    global g_wide_cam
+    g_wide_cam = is_wide_camera
     intrinsic = device_camera.ecam.intrinsics if is_wide_camera else device_camera.fcam.intrinsics
     calibration = self.view_from_wide_calib if is_wide_camera else self.view_from_calib
     if is_wide_camera:
