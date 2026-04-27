@@ -60,11 +60,10 @@ class ConfidenceBall(Widget):
         brake_light_state = fp3.read()
         if brake_light_state and int(brake_light_state) != 0:
           #エンゲージしていなくてもセットされる。
-          #rl.draw_rectangle(content_rect.x, content_rect.y, content_rect.width, content_rect.height, rl.Color(255, 0, 0, 200))
           pass
     except Exception as e:
       pass
-    rl.draw_rectangle(content_rect.x, content_rect.y, content_rect.width, content_rect.height, rl.Color(255, 0, 0, 200))
+    rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, 200))
 
     status_dot_radius = 24
     dot_height = (1 - self._confidence_filter.x) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
