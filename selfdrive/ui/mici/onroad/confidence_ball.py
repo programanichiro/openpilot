@@ -56,30 +56,6 @@ class ConfidenceBall(Widget):
       self.rect.height,
     )
 
-    brake_flag = False
-    try:
-      with open('/dev/shm/brake_light_state.txt','r') as fp3:
-        brake_light_state = fp3.read()
-        if brake_light_state and int(brake_light_state) != 0:
-          #エンゲージしていなくてもセットされる。
-          brake_flag = True
-    except Exception as e:
-      pass
-
-    if gui_app.big_ui():
-      alp_add = 21
-    else:
-      alp_add = 7
-    if brake_flag:
-      self.brake_light_alpha += alp_add
-      if self.brake_light_alpha > 200:
-        self.brake_light_alpha = 200
-    else:
-      self.brake_light_alpha -= alp_add
-      if self.brake_light_alpha < 0:
-        self.brake_light_alpha = 0
-    rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, self.brake_light_alpha))
-
     status_dot_radius = 24
     dot_height = (1 - self._confidence_filter.x) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
     dot_height = self._rect.y + dot_height
@@ -120,4 +96,32 @@ class ConfidenceBall(Widget):
     else: #if self._LongitudinalPersonality == 2:
       rl.draw_texture(self._lp3,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp3.width)/2),int(content_rect.y + content_rect.height -self._lp3.height-y_ofs), rl.Color(240,240,240,230))
 
+    brake_flag = False
+    try:
+      with open('/dev/shm/brake_light_state.txt','r') as fp3:
+        brake_light_state = fp3.read()
+        if brake_light_state and int(brake_light_state) != 0:
+          #エンゲージしていなくてもセットされる。
+          brake_flag = True
+    except Exception as e:
+      pass
+
+    if gui_app.big_ui():
+      alp_add = 30
+    else:
+      alp_add = 10
+    if brake_flag:
+      self.brake_light_alpha += alp_add
+      if self.brake_light_alpha > 200:
+        self.brake_light_alpha = 200
+    else:
+      self.brake_light_alpha -= alp_add
+      if self.brake_light_alpha < 0:
+        self.brake_light_alpha = 0
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+    # rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, self.brake_light_alpha))
+    rl.draw_rectangle_rounded(content_rect,0.35,10,rl.Color(255, 0, 0, self.brake_light_alpha)) #角丸の赤いオーバーレイ
+    rl.end_blend_mode() #元のブレンドに戻す
+
     self._LongitudinalPersonality_ct += 1
+
