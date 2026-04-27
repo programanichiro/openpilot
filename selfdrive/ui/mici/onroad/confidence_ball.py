@@ -66,13 +66,16 @@ class ConfidenceBall(Widget):
     except Exception as e:
       pass
 
-    if self.brake_light_alpha >= 0: #brake_flag:
-      self.brake_light_alpha += 3
-      if self.brake_light_alpha < 200:
-        self.brake_light_alpha = -200
-
+    if gui_app.big_ui():
+      alp_add = 9
     else:
-      self.brake_light_alpha += 3
+      alp_add = 3
+    if self.brake_light_alpha >= 0: #brake_flag:
+      self.brake_light_alpha += alp_add
+      if self.brake_light_alpha > 200:
+        self.brake_light_alpha = -200
+    else:
+      self.brake_light_alpha += alp_add
       if self.brake_light_alpha > 0:
         self.brake_light_alpha = 0
     rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, abs(self.brake_light_alpha)))
