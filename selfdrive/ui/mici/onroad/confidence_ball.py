@@ -67,9 +67,9 @@ class ConfidenceBall(Widget):
       pass
 
     if gui_app.big_ui():
-      alp_add = 9
+      alp_add = 21
     else:
-      alp_add = 3
+      alp_add = 7
     if self.brake_light_alpha >= 0: #brake_flag:
       self.brake_light_alpha += alp_add
       if self.brake_light_alpha > 200:
