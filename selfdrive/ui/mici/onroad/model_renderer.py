@@ -8,9 +8,10 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.selfdrive.locationd.calibrationd import HEIGHT_INIT
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.selfdrive.ui.mici.onroad import blend_colors
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.shader_polygon import draw_polygon, Gradient
 from openpilot.system.ui.widgets import Widget
+from openpilot.system.ui.lib.text_measure import measure_text_cached
 
 CLIP_MARGIN = 500
 MIN_DRAW_DISTANCE = 10.0
@@ -103,6 +104,10 @@ class ModelRenderer(Widget):
       colors=[],
       stops=[],
     )
+
+    self.global_a_rel = 0
+    self.global_a_rel_col = 0
+    self._font_semi_bold: rl.Font = gui_app.font(FontWeight.SEMI_BOLD)
 
     # Get longitudinal control setting from car parameters
     if car_params := Params().get("CarParams"):
@@ -606,14 +611,14 @@ class ModelRenderer(Widget):
     y0 = leadcar_lockon[0].x * leadcar_lockon[0].d #こうなったら画面座標から逆算。
     y1 = leadcar_lockon[1].x * leadcar_lockon[1].d
 
-    pen_font_size = 38
+    pen_font_size = int(38 * 1 / gui_app._scale)
     # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
     #import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     hud_g_lockon_disp_disable = False #仮にFalseにしておく。= hud.g_lockon_disp_disable;
     if num == 0 and hud_g_lockon_disp_disable == False:
       #推論1番
       pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
-      c_r = 15 / (r.width/2)
+      c_r = 15 / (r.width/2) * 1 / gui_app._scale
       rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
 
       if leadcar_lockon[0].x > leadcar_lockon[1].x - 20:
@@ -761,7 +766,7 @@ class ModelRenderer(Widget):
         pass #else
 
       if num < 2:
-        c_r = 15 / (r.width/2)
+        c_r = 15 / (r.width/2) * 1 / gui_app._scale
         rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
       else:
         #3番目のサークル描画は一旦保留
