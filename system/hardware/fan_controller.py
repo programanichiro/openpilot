@@ -17,7 +17,7 @@ SERVERS = [
     "https://overpass.openstreetmap.ru/api/interpreter"
 ]
 
-def overpass_request(query, timeout=2.5):
+def overpass_request(query, timeout=5.0):
   shuffled = random.sample(SERVERS, len(SERVERS))  # 重複なしシャッフル
   for url in shuffled:
       try:
