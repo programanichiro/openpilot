@@ -32,6 +32,7 @@ class ConfidenceBall(Widget):
     self._lp1 = gui_app.texture("icons_mici/onroad/acc_dist1_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191)) #幅をSIDE_PANEL_WIDTH程度に
     self._lp2 = gui_app.texture("icons_mici/onroad/acc_dist2_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
     self._lp3 = gui_app.texture("icons_mici/onroad/acc_dist3_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
+    self.brake_light_alpha = 0
 
   def update_filter(self, value: float):
     self._confidence_filter.update(value)
@@ -55,15 +56,26 @@ class ConfidenceBall(Widget):
       self.rect.height,
     )
 
+    brake_flag = False
     try:
       with open('/dev/shm/brake_light_state.txt','r') as fp3:
         brake_light_state = fp3.read()
         if brake_light_state and int(brake_light_state) != 0:
           #エンゲージしていなくてもセットされる。
-          pass
+          brake_flag = True
     except Exception as e:
       pass
-    rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, 200))
+
+    if self.brake_light_alpha >= 0: #brake_flag:
+      self.brake_light_alpha += 3
+      if self.brake_light_alpha < 200:
+        self.brake_light_alpha = -200
+
+    else:
+      self.brake_light_alpha += 3
+      if self.brake_light_alpha > 0:
+        self.brake_light_alpha = 0
+    rl.draw_rectangle(int(content_rect.x), int(content_rect.y), int(content_rect.width), int(content_rect.height), rl.Color(255, 0, 0, abs(self.brake_light_alpha)))
 
     status_dot_radius = 24
     dot_height = (1 - self._confidence_filter.x) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
