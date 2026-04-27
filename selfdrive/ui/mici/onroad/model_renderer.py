@@ -34,6 +34,25 @@ LANE_LINE_COLORS = {
   UIStatus.ENGAGED: rl.Color(0, 255, 64, 255),
 }
 
+@dataclass
+class LeadcarLockon:
+  x: float = 0.0
+  y: float = 0.0
+  d: float = 0.0
+  a: float = 0.0
+  lxt: float = 0.0
+  lxf: float = 0.0
+  lockOK: float = 0.0
+
+LeadcarLockon_MAX = 3 #5
+leadcar_lockon = [LeadcarLockon() for _ in range(LeadcarLockon_MAX)]
+
+@dataclass
+class LeadVertices:
+  x: float = 0.0
+  y: float = 0.0
+
+lead_vertices = [LeadVertices() for _ in range(LeadcarLockon_MAX)]
 
 @dataclass
 class ModelPoints:
@@ -59,6 +78,7 @@ class ModelRenderer(Widget):
     self._road_edge_stds = np.zeros(2, dtype=np.float32)
     self._lead_vehicles = [LeadVehicle(), LeadVehicle()]
     self._path_offset_z = HEIGHT_INIT[0]
+    self._enable_lead_indicator = False
 
     # Initialize ModelPoints objects
     self._path = ModelPoints()
@@ -88,6 +108,9 @@ class ModelRenderer(Widget):
     if car_params := Params().get("CarParams"):
       cp = messaging.log_from_bytes(car_params, car.CarParams)
       self._longitudinal_control = cp.openpilotLongitudinalControl
+
+  def toggle_lead_indicator(self):
+    self._enable_lead_indicator = not self._enable_lead_indicator
 
   def set_transform(self, transform: np.ndarray):
     self._car_space_transform = transform.astype(np.float32)
@@ -159,8 +182,8 @@ class ModelRenderer(Widget):
       self._draw_lane_lines()
       self._draw_path(sm)
 
-    # if render_lead_indicator and radar_state:
-    #   self._draw_lead_indicator()
+    if self._enable_lead_indicator and render_lead_indicator and radar_state:
+      self._draw_lead_indicator()
 
   def _update_raw_points(self, model):
     """Update raw 3D points from model data"""
@@ -190,6 +213,8 @@ class ModelRenderer(Widget):
         z = self._path.raw_points[idx, 2] if idx < len(self._path.raw_points) else 0.0
         point = self._map_to_screen(d_rel, -y_rel, z + self._path_offset_z)
         if point:
+          lead_vertices[i].x = point[0]
+          lead_vertices[i].y = point[1]
           self._lead_vehicles[i] = self._update_lead_vehicle(d_rel, v_rel, point, self._rect)
 
   def _update_model(self, lead, path_x_array):
