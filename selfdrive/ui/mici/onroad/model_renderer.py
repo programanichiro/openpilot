@@ -556,13 +556,17 @@ class ModelRenderer(Widget):
     pen_size = 2
     pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
 
-    ww = 300; hh = 300
+    l_300 = 300 * gui_app._scale/4
+    ww = l_300; hh = l_300
     if True:
        ww *= 1.25
        hh *= 1.25
 
-    ww *= gui_app._scale/4
-    hh *= gui_app._scale/4
+    l_40 = 40 * gui_app._scale/4
+    l_15 = 15 * gui_app._scale/4
+    l_10 = 10 * gui_app._scale/4
+    l_8 = 8 * gui_app._scale/4
+    l_1 = 1 # * gui_app._scale/4
 
     d = d_rel #距離をロックターケットの大きさに反映させる。
     if d < 1:
@@ -621,7 +625,7 @@ class ModelRenderer(Widget):
     if num == 0 and hud_g_lockon_disp_disable == False:
       #推論1番
       pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
-      c_r = 15 / (r.width/2) * gui_app._scale/4
+      c_r = l_15 / (r.width/2)
       rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
 
       if leadcar_lockon[0].x > leadcar_lockon[1].x - 20:
@@ -644,15 +648,15 @@ class ModelRenderer(Widget):
         lxt = r.x+r.width
       rl.draw_line_ex(rl.Vector2(lxt, r.y), rl.Vector2(leadcar_lockon[num].lxf, rect.y), 2, pen_color)#painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
 
-      if ww >= 40:
+      if ww >= l_40:
         #painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
 
         #num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
         wwa = ww * 0.15
-        if wwa > 40:
-          wwa = 40
-        elif wwa < 10:
-          wwa = 10
+        if wwa > l_40:
+          wwa = l_40
+        elif wwa < l_10:
+          wwa = l_10
         if wwa > ww:
           wwa = ww
 
@@ -693,7 +697,7 @@ class ModelRenderer(Widget):
 # #endif
           pass
 
-      if abs(y0 - y1) <= 300: #大きく横にずれた→逆
+      if abs(y0 - y1) <= l_300: #大きく横にずれた→逆
         leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (40 - leadcar_lockon[num].lockOK) / 5
       else:
         leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (0 - leadcar_lockon[num].lockOK) / 5
@@ -702,15 +706,15 @@ class ModelRenderer(Widget):
       #d:10〜100->1〜3へ変換
       if td >= 3:
         dd = leadcar_lockon[num].d
-        if dd < 10:
-          dd = 10
+        if dd < l_10:
+          dd = l_10
 
-        dd -= 10 #dd=0〜90
+        dd -= l_10 #dd=0〜90
         dd /= (90.0/2) #dd=0〜2
-        dd += 1 #dd=1〜3
+        dd += l_1 #dd=1〜3
         td /= dd
 
-        tlw = 8
+        tlw = l_8
         tlw_2 = tlw / 2
         pen_size = tlw
         pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
@@ -725,7 +729,7 @@ class ModelRenderer(Widget):
       if num == 1:
         #推論2番
         #邪魔な前右寄りを走るバイクを認識したい。
-        if abs(y0 - y1) > 300: #大きく横にずれた
+        if abs(y0 - y1) > l_300: #大きく横にずれた
           #painter.setPen(QPen(QColor(245, 0, 0, prob_alpha), 4));
           #painter.drawEllipse(r); //縁を描く
           #painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 1)); //文字を後で書くために色を再設定。->文字は赤でもいいや
@@ -758,18 +762,18 @@ class ModelRenderer(Widget):
         pass #num == 1
       elif num == 2:
 #       //推論3番
-        pen_size = 1
+        pen_size = l_1
         pen_color = rl.Color(int(0.09*255), int(0.9*255), int(0.9*255), int(prob_alpha))#       painter.setPen(QPen(QColor(0.9*255, 0.9*255, 0.9*255, prob_alpha), 1));
         pass #num == 2
       else:
 #       //推論4番以降。
 #       //存在していない。
-        pen_size = 1
+        pen_size = l_1
         pen_color = rl.Color(int(0.8*255), int(0.2*255), int(0.2*255), int(prob_alpha))#       painter.setPen(QPen(QColor(0.8*255, 0.2*255, 0.2*255, prob_alpha), 1));
         pass #else
 
       if num < 2:
-        c_r = 15 / (r.width/2) * gui_app._scale/4
+        c_r = l_15 / (r.width/2)
         rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
       else:
         #3番目のサークル描画は一旦保留
@@ -782,7 +786,7 @@ class ModelRenderer(Widget):
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
         if g_wide_cam_requested == False:
           d_lim = 32 #ロングカメラだとちょっと枠が大きい。実測
-        if num == 0 or (num==1 and (d_rel < d_lim or abs(y0 - y1) > 300)): #num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。
+        if num == 0 or (num==1 and (d_rel < d_lim or abs(y0 - y1) > l_300)): #num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。
           text = " "+str(num+1)
           size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
           rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y+r.height - size.y),pen_font_size,0,pen_color)#         painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
