@@ -33,6 +33,7 @@ class ConfidenceBall(Widget):
     self._lp2 = gui_app.texture("icons_mici/onroad/acc_dist2_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
     self._lp3 = gui_app.texture("icons_mici/onroad/acc_dist3_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
     self.brake_light_alpha = 0
+    self.vc_accel = 0
 
   def update_filter(self, value: float):
     self._confidence_filter.update(value)
