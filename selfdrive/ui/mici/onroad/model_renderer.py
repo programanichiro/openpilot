@@ -578,15 +578,18 @@ class ModelRenderer(Widget):
     pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
 
     __scale = 1/4 # gui_app._scale/4
+    l_850 = 850 * __scale
     l_500 = 500 * __scale
     l_300 = 300 * __scale
     ww = l_500; hh = l_500
-
     import openpilot.selfdrive.ui.mici.onroad.augmented_road_view as road_view
     g_wide_cam = road_view.g_wide_cam #extern bool g_wide_cam;
     if g_wide_cam:
        ww *= 1.25
        hh *= 1.25
+
+    if not g_wide_cam and gui_app.big_ui():
+      ww = l_850; hh = l_850
 
     l_40 = 40 * __scale
     l_15 = 15 * __scale
