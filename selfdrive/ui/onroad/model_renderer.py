@@ -846,7 +846,6 @@ class ModelRenderer(Widget):
         rl.draw_ring(arc_center,float(r.width/2), float(r.width/2-pen_size), float(0), float(360*prob_alpha0), 120, pen_color)# painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
 
       if ww >= 80:
-        #ここではy0,y1を参照できない。
         d_lim = 12
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
         if g_wide_cam_requested == False:

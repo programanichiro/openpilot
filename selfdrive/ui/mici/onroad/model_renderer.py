@@ -816,15 +816,14 @@ class ModelRenderer(Widget):
         arc_center = rl.Vector2(r.x+r.width/2,r.y+r.height/2)
         rl.draw_ring(arc_center,float(r.width/2), float(r.width/2-pen_size), float(0), float(360*prob_alpha0), 120, pen_color)# painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
 
-      if ww >= 60:
-        #ここではy0,y1を参照できない。
+      if ww >= 50:
         d_lim = 35 * gui_app._scale
         if not gui_app.big_ui():
           d_lim = 15
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
         if g_wide_cam_requested == False:
           d_lim *= 1.25 #ロングカメラだとちょっと枠が大きい。実測
-        if num == 0 or (num==1 and (d_rel < d_lim)): #num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。->c4では2を表示する。
+        if num == 0 or (num==1 and (d_rel < d_lim or abs(y0 - y1) > l_300)): #num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。->c4では2を表示する。
           text = " "+str(num+1)
           size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
           rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y+r.height - size.y),pen_font_size,0,pen_color)#         painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
