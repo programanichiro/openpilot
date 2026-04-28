@@ -738,7 +738,7 @@ class ModelRenderer(Widget):
         dd += 1 #dd=1〜3
         td /= dd
 
-        td *= gui_app._scale/4
+        td *= 2 * gui_app._scale/4
 
         tlw = l_8 * 2
         tlw_2 = tlw / 2
