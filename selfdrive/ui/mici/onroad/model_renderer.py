@@ -208,8 +208,8 @@ class ModelRenderer(Widget):
     if gui_app.big_ui() == False:
       rl.draw_texture_ex(self._fade_texture, rl.Vector2(rect.x, rect.y), 0.0, 1.0, rl.WHITE)
 
-    if self._enable_lead_indicator and render_lead_indicator and radar_state:
-      self._draw_lead_indicator()
+    # if self._enable_lead_indicator and render_lead_indicator and radar_state:
+    #   self._draw_lead_indicator()
 
     if render_lead_indicator:
       leads = model.leadsV3
@@ -580,7 +580,10 @@ class ModelRenderer(Widget):
     l_500 = 500 * gui_app._scale/4
     l_300 = 300 * gui_app._scale/4
     ww = l_500; hh = l_500
-    if True:
+
+    import openpilot.selfdrive.ui.mici.onroad.augmented_road_view as road_view
+    g_wide_cam = road_view.g_wide_cam #extern bool g_wide_cam;
+    if g_wide_cam:
        ww *= 1.25
        hh *= 1.25
 
@@ -607,10 +610,7 @@ class ModelRenderer(Widget):
     leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10
     a_rel = leadcar_lockon[num].a
 
-    import openpilot.selfdrive.ui.mici.onroad.augmented_road_view as road_view
-
     dh = 50
-    g_wide_cam = road_view.g_wide_cam #extern bool g_wide_cam;
     if g_wide_cam == False: #dhに奥行き値を反映させる。
       dd = d
       dd -= 25 #dd=0〜75
@@ -676,7 +676,7 @@ class ModelRenderer(Widget):
         #painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
 
         #num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
-        wwa = ww * 0.15
+        wwa = ww * 0.15 * 2
         if wwa > l_40:
           wwa = l_40
         elif wwa < l_10:
@@ -729,14 +729,16 @@ class ModelRenderer(Widget):
       td = leadcar_lockon[num].lockOK
       #d:10〜100->1〜3へ変換
       if td >= 3:
-        dd = leadcar_lockon[num].d * gui_app._scale/4
-        if dd < l_10:
-          dd = l_10
+        dd = leadcar_lockon[num].d
+        if dd < 10:
+          dd = 10
 
-        dd -= l_10 #dd=0〜90
+        dd -= 10 #dd=0〜90
         dd /= (90.0/2) #dd=0〜2
-        dd += l_1 #dd=1〜3
+        dd += 1 #dd=1〜3
         td /= dd
+
+        td *= gui_app._scale/4
 
         tlw = l_8 * 2
         tlw_2 = tlw / 2
