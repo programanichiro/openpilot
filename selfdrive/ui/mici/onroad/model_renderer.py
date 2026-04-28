@@ -812,7 +812,7 @@ class ModelRenderer(Widget):
 
       if ww >= 80:
         #ここではy0,y1を参照できない。
-        d_lim = 16 * gui_app._scale
+        d_lim = 35 * gui_app._scale
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
         if g_wide_cam_requested == False:
           d_lim *= 1.25 #ロングカメラだとちょっと枠が大きい。実測
