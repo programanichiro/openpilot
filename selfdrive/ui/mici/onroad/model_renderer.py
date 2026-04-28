@@ -108,6 +108,9 @@ class ModelRenderer(Widget):
     self.global_a_rel = 0
     self.global_a_rel_col = 0
     self._font_semi_bold: rl.Font = gui_app.font(FontWeight.SEMI_BOLD)
+    self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
+    self.toggle_lead_indicator()
+    self.toggle_lead_indicator() #2回呼ぶと_enable_lead_indicatorにlockon_disp_disable.txtの状態が反映される（真偽がトグルするから）
 
     # Get longitudinal control setting from car parameters
     if car_params := Params().get("CarParams"):
@@ -115,7 +118,21 @@ class ModelRenderer(Widget):
       self._longitudinal_control = cp.openpilotLongitudinalControl
 
   def toggle_lead_indicator(self):
-    self._enable_lead_indicator = not self._enable_lead_indicator
+    #self._enable_lead_indicator = not self._enable_lead_indicator
+    lockon_disp_disable = 0
+    try:
+      with open('/dev/shm/lockon_disp_disable.txt','r') as fp: # /dev/shmのまま
+        lockon_disp_disable_str = fp.read()
+        if lockon_disp_disable_str:
+          lockon_disp_disable = int(lockon_disp_disable_str)
+    except Exception as e:
+      pass
+
+    lockon_disp_disable = int(not lockon_disp_disable) # 0->1, 1->0
+    with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
+      fp2.write("%d" % (lockon_disp_disable))
+
+    self._enable_lead_indicator = (lockon_disp_disable == 0)
 
   def set_transform(self, transform: np.ndarray):
     self._car_space_transform = transform.astype(np.float32)
@@ -187,10 +204,14 @@ class ModelRenderer(Widget):
       self._draw_lane_lines()
       self._draw_path(sm)
 
+    # Fade out bottom of overlays for looks
+    if gui_app.big_ui() == False:
+      rl.draw_texture_ex(self._fade_texture, rl.Vector2(rect.x, rect.y), 0.0, 1.0, rl.WHITE)
+
     if self._enable_lead_indicator and render_lead_indicator and radar_state:
       self._draw_lead_indicator()
 
-    if self._enable_lead_indicator and render_lead_indicator:
+    if render_lead_indicator:
       leads = model.leadsV3
       leads_num = len(leads)
 
@@ -556,8 +577,9 @@ class ModelRenderer(Widget):
     pen_size = 2
     pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
 
+    l_500 = 500 * gui_app._scale/4
     l_300 = 300 * gui_app._scale/4
-    ww = l_300; hh = l_300
+    ww = l_500; hh = l_500
     if True:
        ww *= 1.25
        hh *= 1.25
@@ -607,6 +629,7 @@ class ModelRenderer(Widget):
       if dd < 1:
         dd = 1
       dh /= dd*dd
+    dh *= gui_app._scale/4
 
     ww = ww * 2 * 5 / d
     hh = hh * 2 * 5 / d
@@ -621,7 +644,8 @@ class ModelRenderer(Widget):
     pen_font_size = int(38 * gui_app._scale/4)
     # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
     #import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
-    hud_g_lockon_disp_disable = False #仮にFalseにしておく。= hud.g_lockon_disp_disable;
+    #hud_g_lockon_disp_disable = False #仮にFalseにしておく。= hud.g_lockon_disp_disable;
+    hud_g_lockon_disp_disable = 0 if self._enable_lead_indicator else 1
     if num == 0 and hud_g_lockon_disp_disable == False:
       #推論1番
       pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
@@ -705,7 +729,7 @@ class ModelRenderer(Widget):
       td = leadcar_lockon[num].lockOK
       #d:10〜100->1〜3へ変換
       if td >= 3:
-        dd = leadcar_lockon[num].d
+        dd = leadcar_lockon[num].d * gui_app._scale/4
         if dd < l_10:
           dd = l_10
 
@@ -714,7 +738,7 @@ class ModelRenderer(Widget):
         dd += l_1 #dd=1〜3
         td /= dd
 
-        tlw = l_8
+        tlw = l_8 * 2
         tlw_2 = tlw / 2
         pen_size = tlw
         pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
