@@ -577,8 +577,9 @@ class ModelRenderer(Widget):
     pen_size = 2
     pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
 
-    l_500 = 500 * gui_app._scale/4
-    l_300 = 300 * gui_app._scale/4
+    __scale = gui_app._scale/4
+    l_500 = 500 * __scale/4
+    l_300 = 300 * __scale/4
     ww = l_500; hh = l_500
 
     import openpilot.selfdrive.ui.mici.onroad.augmented_road_view as road_view
@@ -587,11 +588,11 @@ class ModelRenderer(Widget):
        ww *= 1.25
        hh *= 1.25
 
-    l_40 = 40 * gui_app._scale/4
-    l_15 = 15 * gui_app._scale/4
-    l_10 = 10 * gui_app._scale/4
-    l_8 = 8 * gui_app._scale/4
-    l_1 = 1 # * gui_app._scale/4
+    l_40 = 40 * __scale/4
+    l_15 = 15 * __scale/4
+    l_10 = 10 * __scale/4
+    l_8 = 8 * __scale/4
+    l_1 = 1 # * __scale/4
 
     d = d_rel #距離をロックターケットの大きさに反映させる。
     if d < 1:
@@ -629,7 +630,7 @@ class ModelRenderer(Widget):
       if dd < 1:
         dd = 1
       dh /= dd*dd
-    dh *= gui_app._scale/4
+    dh *= __scale/4
 
     ww = ww * 2 * 5 / d
     hh = hh * 2 * 5 / d
@@ -738,11 +739,11 @@ class ModelRenderer(Widget):
         dd += 1 #dd=1〜3
         td /= dd
 
-        td *= 2 * gui_app._scale/4
+        td *= 2 * __scale/4
 
-        tlw = l_8 * 2
+        tlw = l_8
         tlw_2 = tlw / 2
-        pen_size = tlw
+        pen_size = tlw * 2
         pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
         rl.draw_line_ex(rl.Vector2(r.x+r.width/2, r.y-tlw_2), rl.Vector2(r.x+r.width/2, r.y-td), pen_size, pen_color)#painter.drawLine(r.center().x() , r.top()-tlw_2 , r.center().x() , r.top() - td);
         rl.draw_line_ex(rl.Vector2(r.x-tlw_2, r.y+r.height/2), rl.Vector2(r.x-td, r.y+r.height/2), pen_size, pen_color)#painter.drawLine(r.left()-tlw_2 , r.center().y() , r.left() - td , r.center().y());
@@ -812,7 +813,7 @@ class ModelRenderer(Widget):
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
         if g_wide_cam_requested == False:
           d_lim = 32 #ロングカメラだとちょっと枠が大きい。実測
-        if num == 0 or (num==1 and (d_rel < d_lim or abs(y0 - y1) > l_300)): #num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。
+        if num == 0 or (num==1 and (d_rel < d_lim)): #num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。->c4では2を表示する。
           text = " "+str(num+1)
           size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
           rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y+r.height - size.y),pen_font_size,0,pen_color)#         painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
