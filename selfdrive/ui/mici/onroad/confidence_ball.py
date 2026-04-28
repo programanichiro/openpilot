@@ -132,7 +132,7 @@ class ConfidenceBall(Widget):
     if hha < 0:
       hha = 0
     hha = hha * content_rect.height
-    wp = 70 * gui_app._scale/4
+    wp = 70 * 1/4
     if self.vc_accel > 0:
       meter = [(content_rect.x+content_rect.width - wp + wp/2 , content_rect.y+content_rect.height/2),
                (content_rect.x+content_rect.width , content_rect.y+content_rect.height/2),
