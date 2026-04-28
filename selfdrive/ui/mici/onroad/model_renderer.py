@@ -650,7 +650,7 @@ class ModelRenderer(Widget):
     #pen_font_size = int(38 * gui_app._scale/4)
     pen_font_size = int(38 * 2/4)
     if not gui_app.big_ui():
-      pen_font_size *= 2 #c4で小さすぎると表示されないようだ。
+      pen_font_size = int(pen_font_size * 1.5) #c4で小さすぎると表示されないようだ。
     # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
     #import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     #hud_g_lockon_disp_disable = False #仮にFalseにしておく。= hud.g_lockon_disp_disable;
@@ -672,7 +672,8 @@ class ModelRenderer(Widget):
 
       text = " "+str(num+1)
       #上端だから不要 size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
-      rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y),pen_font_size,0,pen_color)#painter.drawText(r, Qt::AlignTop | Qt::AlignLeft, " " + QString::number(num+1));
+      if ww >= 30:
+        rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y),pen_font_size,0,pen_color)#painter.drawText(r, Qt::AlignTop | Qt::AlignLeft, " " + QString::number(num+1));
 
       lxt = leadcar_lockon[num].lxt
       if lxt < r.x:
@@ -815,9 +816,11 @@ class ModelRenderer(Widget):
         arc_center = rl.Vector2(r.x+r.width/2,r.y+r.height/2)
         rl.draw_ring(arc_center,float(r.width/2), float(r.width/2-pen_size), float(0), float(360*prob_alpha0), 120, pen_color)# painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
 
-      if ww >= l_80:
+      if ww >= 60:
         #ここではy0,y1を参照できない。
         d_lim = 35 * gui_app._scale
+        if not gui_app.big_ui():
+          d_lim = 15
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
         if g_wide_cam_requested == False:
           d_lim *= 1.25 #ロングカメラだとちょっと枠が大きい。実測
