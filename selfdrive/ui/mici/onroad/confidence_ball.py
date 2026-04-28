@@ -96,6 +96,7 @@ class ConfidenceBall(Widget):
     else: #if self._LongitudinalPersonality == 2:
       rl.draw_texture(self._lp3,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp3.width)/2),int(content_rect.y + content_rect.height -self._lp3.height-y_ofs), rl.Color(240,240,240,230))
 
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     brake_flag = False
     try:
       with open('/dev/shm/brake_light_state.txt','r') as fp3:
@@ -115,8 +116,35 @@ class ConfidenceBall(Widget):
       self.brake_light_alpha -= alp_add
       if self.brake_light_alpha < 0:
         self.brake_light_alpha = 0
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     rl.draw_rectangle_rounded(content_rect,0.5,10,rl.Color(255, 0, 0, self.brake_light_alpha)) #角丸の赤いオーバーレイ
+
+    #加速減速表示
+    car_state = ui_state.sm['carState']
+    self.vc_accel += (car_state.aEgo - self.vc_accel) / 5
+    hha = 0
+    if self.vc_accel > 0:
+      hha = 1 - 0.1 / self.vc_accel
+      va_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), 200)
+    if self.vc_accel < 0:
+      hha = 1 + 0.1 / self.vc_accel
+      va_color = rl.Color(245, 0, 0, 200)
+    if hha < 0:
+      hha = 0
+    hha = hha * content_rect.height
+    wp = 35 * gui_app._scale/4
+    if self.vc_accel > 0:
+      meter = [(content_rect.x+content_rect.width - wp + wp/2 , content_rect.y+content_rect.height/2),
+               (content_rect.x+content_rect.width , content_rect.y+content_rect.height/2),
+               (content_rect.x+content_rect.width , content_rect.y+content_rect.height/2 - hha/2),
+               (content_rect.x+content_rect.width - wp/2 - wp/2 * hha / content_rect.height , content_rect.y+content_rect.height/2 - hha/2)]
+      rl.draw_triangle_fan(meter,len(meter),va_color)
+    elif self.vc_accel < 0:
+      meter = [(content_rect.x+content_rect.width - wp/2 - wp/2 * hha / content_rect.height , content_rect.y+content_rect.height/2 + hha/2),
+               (content_rect.x+content_rect.width , content_rect.y+content_rect.height/2 + hha/2),
+               (content_rect.x+content_rect.width , content_rect.y+content_rect.height/2),
+               (content_rect.x+content_rect.width - wp + wp/2 , content_rect.y+content_rect.height/2)]
+      rl.draw_triangle_fan(meter,len(meter),va_color)
+
     rl.end_blend_mode() #元のブレンドに戻す
 
     self._LongitudinalPersonality_ct += 1

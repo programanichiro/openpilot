@@ -726,6 +726,7 @@ class HudRenderer(Widget):
       font_size_km = 29
       y_pos = rect.y+font_size+3-2
       y_pos2 = rect.y+font_size+3 #速度用
+
     if self.road_info_txt:
       road_th_ct_ct_limit = 30 #30秒無通信チェック。
       if self.speed < 0.1: #velo_for_trans = self.speed #km/h
