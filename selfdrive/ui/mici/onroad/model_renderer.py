@@ -649,6 +649,8 @@ class ModelRenderer(Widget):
 
     #pen_font_size = int(38 * gui_app._scale/4)
     pen_font_size = int(38 * 2/4)
+    if not gui_app.big_ui():
+      pen_font_size *= 2 #c4で小さすぎると表示されないようだ。
     # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
     #import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     #hud_g_lockon_disp_disable = False #仮にFalseにしておく。= hud.g_lockon_disp_disable;
@@ -669,8 +671,6 @@ class ModelRenderer(Widget):
         #painter.drawLine(r.left(),r.top() , 0 , 0);
 
       text = " "+str(num+1)
-      sys.stderr.write("nnnnn:"+text+"\n")
-      sys.stderr.flush()
       #上端だから不要 size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
       rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y),pen_font_size,0,pen_color)#painter.drawText(r, Qt::AlignTop | Qt::AlignLeft, " " + QString::number(num+1));
 
