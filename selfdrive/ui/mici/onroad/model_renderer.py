@@ -538,7 +538,7 @@ class ModelRenderer(Widget):
     a_rel = lead_data.a[0]
     self.global_a_rel = a_rel
 
-    sz = max(15.0, min((25 * 30) / (d_rel / 3 + 30), 30.0)) * 2.35 * gui_app._scale / 4 #float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
+    sz = max(15.0, min((25 * 30) / (d_rel / 3 + 30), 30.0)) * 2.35 * gui_app._scale/4 #float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
     #x = max(0, min(vd.x, rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
     x = max(rect.x, min(vd.x, rect.x+rect.width - sz / 2)) #こっち？rect.xを含めた方がいいかな。
     y = vd.y #float y = (float)vd.y();
@@ -611,14 +611,14 @@ class ModelRenderer(Widget):
     y0 = leadcar_lockon[0].x * leadcar_lockon[0].d #こうなったら画面座標から逆算。
     y1 = leadcar_lockon[1].x * leadcar_lockon[1].d
 
-    pen_font_size = int(38 * 1 / gui_app._scale)
+    pen_font_size = int(38 * gui_app._scale/4)
     # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
     #import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     hud_g_lockon_disp_disable = False #仮にFalseにしておく。= hud.g_lockon_disp_disable;
     if num == 0 and hud_g_lockon_disp_disable == False:
       #推論1番
       pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
-      c_r = 15 / (r.width/2) * 1 / gui_app._scale
+      c_r = 15 / (r.width/2) * gui_app._scale/4
       rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
 
       if leadcar_lockon[0].x > leadcar_lockon[1].x - 20:
@@ -766,7 +766,7 @@ class ModelRenderer(Widget):
         pass #else
 
       if num < 2:
-        c_r = 15 / (r.width/2) * 1 / gui_app._scale
+        c_r = 15 / (r.width/2) * gui_app._scale/4
         rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
       else:
         #3番目のサークル描画は一旦保留
