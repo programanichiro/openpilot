@@ -12,6 +12,7 @@ from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.shader_polygon import draw_polygon, Gradient
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.lib.text_measure import measure_text_cached
+import sys
 
 CLIP_MARGIN = 500
 MIN_DRAW_DISTANCE = 10.0
@@ -45,7 +46,7 @@ class LeadcarLockon:
   lxf: float = 0.0
   lockOK: float = 0.0
 
-LeadcarLockon_MAX = 3 #5
+LeadcarLockon_MAX = 2 #5
 leadcar_lockon = [LeadcarLockon() for _ in range(LeadcarLockon_MAX)]
 
 @dataclass
@@ -591,6 +592,7 @@ class ModelRenderer(Widget):
     if not g_wide_cam and gui_app.big_ui():
       ww = l_850; hh = l_850
 
+    l_80 = 80 * __scale
     l_40 = 40 * __scale
     l_15 = 15 * __scale
     l_10 = 10 * __scale
@@ -645,7 +647,8 @@ class ModelRenderer(Widget):
     y0 = leadcar_lockon[0].x * leadcar_lockon[0].d #こうなったら画面座標から逆算。
     y1 = leadcar_lockon[1].x * leadcar_lockon[1].d
 
-    pen_font_size = int(38 * gui_app._scale/4)
+    #pen_font_size = int(38 * gui_app._scale/4)
+    pen_font_size = int(38 * 2/4)
     # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
     #import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
     #hud_g_lockon_disp_disable = False #仮にFalseにしておく。= hud.g_lockon_disp_disable;
@@ -666,6 +669,8 @@ class ModelRenderer(Widget):
         #painter.drawLine(r.left(),r.top() , 0 , 0);
 
       text = " "+str(num+1)
+      sys.stderr.write("nnnnn:"+text+"\n")
+      sys.stderr.flush()
       #上端だから不要 size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
       rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y),pen_font_size,0,pen_color)#painter.drawText(r, Qt::AlignTop | Qt::AlignLeft, " " + QString::number(num+1));
 
@@ -810,7 +815,7 @@ class ModelRenderer(Widget):
         arc_center = rl.Vector2(r.x+r.width/2,r.y+r.height/2)
         rl.draw_ring(arc_center,float(r.width/2), float(r.width/2-pen_size), float(0), float(360*prob_alpha0), 120, pen_color)# painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
 
-      if ww >= 80:
+      if ww >= l_80:
         #ここではy0,y1を参照できない。
         d_lim = 35 * gui_app._scale
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
