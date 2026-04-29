@@ -493,7 +493,7 @@ class HudRenderer(Widget):
     self.steer_always = False
     self.cruise_available = False
 
-    self.osm_frame_ct_ct = -1 #-1 or 100以上でosmへの通信が死んでいる。
+    self.osm_frame_ct_ct = -1 #-1 or 100(c4は60fpsなので300)以上でosmへの通信が死んでいる。
     self.osm_per = 0 #2Hzに対してosmの応答率。走行中ならだいたい50パーセントくらいになる。
     self.osm_access_counter_txt = ""
     #self.osm_access_counter_ct = 0
@@ -760,8 +760,8 @@ class HudRenderer(Widget):
 
     if self.osm_per >= 0:
       h = rect.height * self.osm_per // 100
-      wp1 = 10
-      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < 100:
+      wp1 = 10 if gui_app.big_ui() else 6 #6:c4で見た目調整
+      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < (100 if gui_app.big_ui() else 300): #100フレーム以上変化がなければ、通信断絶とみなす。c4は60fpsなので300フレーム以上にする。
         osm_bar_color = rl.Color(0, 245, 0, 200) #緑
       else:
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
