@@ -516,9 +516,10 @@ class FanController:
 
       # クエリを実行し、結果を取得
       self.cur.execute(query, (self.bearing, self.latitude, self.latitude, self.longitude, self.longitude , ))
-      if limitspeed_info_ok == False: #limitspeed_info_ok == False(ファイル読み込み失敗)のフォローは一度きり
-        self.latitude = 0
-        self.longitude = 0
+      # if limitspeed_info_ok == False: #limitspeed_info_ok == False(ファイル読み込み失敗)のフォローは一度きり
+      #   self.latitude = 0
+      #   self.longitude = 0
+      # やめてみる。ファイル読み込み失敗のときは、前回の座標を使う。 -> 走行中に一度でも読み込めれば、以降はファイル読み込み失敗しても前回の座標で処理する。 -> 走行中に一度も読み込めないときは、座標0,0で処理する。
 
       # データ内容を検査して走行速度を推定する。
       earth_ang = 0.0009 #大体200m四方
@@ -541,7 +542,7 @@ class FanController:
 
         if True: #self.velocity < 110 or self.tss_type == 2: #TSSPで120km/h高速対応にするため、こちらは110超では通さない。,TSS2なら使って良い。
           velo_70 = (velo_max - limitspeed_min) * 0.7 + limitspeed_min #まず70〜90を検査する。
-          velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
+          #velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
           for row in rows: #rowsは何度でも使える。
             row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
             if velo_70 <= velocity: #rowsが自車近傍のみなので、以降の条件はいらない,and velocity <= velo_95 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
