@@ -816,7 +816,7 @@ class ModelRenderer(Widget):
         arc_center = rl.Vector2(r.x+r.width/2,r.y+r.height/2)
         rl.draw_ring(arc_center,float(r.width/2), float(r.width/2-pen_size), float(0), float(360*prob_alpha0), 120, pen_color)# painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
 
-      if ww >= 50:
+      if ww >= 50 or (ww >= 30 and abs(y0 - y1) > l_500):
         d_lim = 35 * gui_app._scale
         if not gui_app.big_ui():
           d_lim = 15
