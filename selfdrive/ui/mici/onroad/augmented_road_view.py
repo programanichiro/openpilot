@@ -246,7 +246,7 @@ class AugmentedRoadView(CameraView):
       self._hud_renderer.ui_freeze(False)
 
     # Draw fake rounded border
-    rr = 1.0 if Params().get_bool("C4UIOnC3X") == False else 0.05
+    rr = 1.0*0.5 if Params().get_bool("C4UIOnC3X") == False else 0.05
     rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * rr, 10, 50, rl.BLACK)
 
     # End clipping region

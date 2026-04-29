@@ -757,6 +757,20 @@ class HudRenderer(Widget):
     # self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, y_pos2 - 4 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+
+    if self.osm_per >= 0:
+      h = rect.height * self.osm_per // 100
+      wp1 = 10
+      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < 100:
+        osm_bar_color = rl.Color(0, 245, 0, 200) #緑
+      else:
+        osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
+
+      rect_h = rect.y+rect.height
+#      rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
+      rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1), int(h))
+      rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
+
     self.knightScanner(rect)
     rl.end_blend_mode() #元のブレンドに戻す
 
