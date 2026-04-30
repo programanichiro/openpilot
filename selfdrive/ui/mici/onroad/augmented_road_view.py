@@ -321,7 +321,7 @@ class AugmentedRoadView(CameraView):
     if is_wide_camera:
       zoom = 0.7 * 1.5 / (gui_app._scale ** 0.5) #_scale==1がたまたま変化しないことを利用しているので、危険コード。
     elif gui_app.big_ui():
-      zoom = 0.7 * 1.5 / gui_app._scale *1.01
+      zoom = 0.7 * 1.5 / gui_app._scale *1.012 #*1.012:画面の端までカメラを伸ばす
     else:
       zoom = np.interp(ui_state.sm['carState'].vEgo, [10, 30], [0.8, 1.0])
 
