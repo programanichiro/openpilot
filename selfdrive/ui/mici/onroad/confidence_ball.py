@@ -161,7 +161,7 @@ class ConfidenceBall(Widget):
 
     self._LongitudinalPersonality_ct += 1
 
-    btn_h = 300 * gui_app._scale
+    btn_h = content_rect.width * 2 #だいたいこのくらいの高さ
     self._LongitudinalPersonality_button.render(rl.Rectangle(content_rect.x, content_rect.y + content_rect.height - btn_h, content_rect.width, btn_h))
 
   def ui_freeze(self, freeze):
