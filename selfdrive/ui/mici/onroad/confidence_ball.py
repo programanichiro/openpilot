@@ -3,7 +3,8 @@ import pyray as rl
 from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.widgets import Widget
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.widgets.button import Button, ButtonStyle
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.params import Params
 
@@ -34,6 +35,16 @@ class ConfidenceBall(Widget):
     self._lp3 = gui_app.texture("icons_mici/onroad/acc_dist3_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
     self.brake_light_alpha = 0
     self.vc_accel = 0
+
+    self.ui_freeze_flag = False
+    self.button_style_only = True
+    font_sz = 10 #acc_distにかぶせる透明ボタン
+    font_wt = FontWeight.BOLD
+    self._LongitudinalPersonality_button = Button("",click_callback=self._press_LongitudinalPersonality,font_size=font_sz,font_weight=font_wt, border_radius=10)
+    self._LongitudinalPersonality_button.set_button_style(ButtonStyle.HudUnder) #バック透明
+    self._press_LongitudinalPersonality()
+    self.button_style_only = False
+
 
   def update_filter(self, value: float):
     self._confidence_filter.update(value)
@@ -150,3 +161,32 @@ class ConfidenceBall(Widget):
 
     self._LongitudinalPersonality_ct += 1
 
+    btn_h = 300 * gui_app._scale
+    self._LongitudinalPersonality_button.render(rl.Rectangle(content_rect.x, content_rect.y + content_rect.height - btn_h, content_rect.width, btn_h))
+
+  def ui_freeze(self, freeze):
+    self.ui_freeze_flag = freeze
+
+  def _button_push_sound(self,onoff):
+    with open('/dev/shm/sound_py_request.txt','w') as fp2:
+      if onoff:
+        fp2.write('%d' % (102)) #pipo.wav
+      else:
+        fp2.write('%d' % (101)) #po.wav
+
+  def _press_LongitudinalPersonality(self):
+    if self.ui_freeze_flag:
+      return
+
+    psn_str = Params().get("LongitudinalPersonality")
+    psn = int(psn_str)
+
+    if self.button_style_only == False:
+      psn = (psn -1 + 3) % 3
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(1)
+
+    Params().put("LongitudinalPersonality", psn)

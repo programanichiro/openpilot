@@ -242,8 +242,10 @@ class AugmentedRoadView(CameraView):
 
     if self._bookmark_icon._interacting:
       self._hud_renderer.ui_freeze(True) #ブックマークスワイプ中はHUDのタップ反応を止める
+      self._confidence_ball.ui_freeze(True) #ブックマークスワイプ中はHUDのタップ反応を止める
     else:
       self._hud_renderer.ui_freeze(False)
+      self._confidence_ball.ui_freeze(False)
 
     # Draw fake rounded border
     rr = 1.0*0.5 if Params().get_bool("C4UIOnC3X") == False else 0.2
