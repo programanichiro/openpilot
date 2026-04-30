@@ -246,7 +246,7 @@ class AugmentedRoadView(CameraView):
       self._hud_renderer.ui_freeze(False)
 
     # Draw fake rounded border
-    rr = 1.0*0.5 if Params().get_bool("C4UIOnC3X") == False else 0.05
+    rr = 1.0*0.5 if Params().get_bool("C4UIOnC3X") == False else 0.2
     rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * rr, 10, 50, rl.BLACK)
 
     # End clipping region
@@ -321,7 +321,7 @@ class AugmentedRoadView(CameraView):
     if is_wide_camera:
       zoom = 0.7 * 1.5 / (gui_app._scale ** 0.5) #_scale==1がたまたま変化しないことを利用しているので、危険コード。
     elif gui_app.big_ui():
-      zoom = 0.7 * 1.5 / gui_app._scale
+      zoom = 0.7 * 1.5 / gui_app._scale *1.01
     else:
       zoom = np.interp(ui_state.sm['carState'].vEgo, [10, 30], [0.8, 1.0])
 
