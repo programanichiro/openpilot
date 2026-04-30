@@ -686,9 +686,9 @@ class ModelRenderer(Widget):
         #painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
 
         #num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
-        wwa = ww * 0.15 * 2
-        if wwa > l_40:
-          wwa = l_40
+        wwa = ww * 0.15
+        if wwa > l_40 * 2:
+          wwa = l_40 * 2
         elif wwa < l_10:
           wwa = l_10
         if wwa > ww:

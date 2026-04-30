@@ -38,7 +38,7 @@ class LeadcarLockon:
   lxf: float = 0.0
   lockOK: float = 0.0
 
-LeadcarLockon_MAX = 3 #5
+LeadcarLockon_MAX = 2 #5
 leadcar_lockon = [LeadcarLockon() for _ in range(LeadcarLockon_MAX)]
 
 @dataclass
