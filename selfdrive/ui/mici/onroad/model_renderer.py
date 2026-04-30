@@ -819,7 +819,7 @@ class ModelRenderer(Widget):
       if ww >= 40 or (ww >= 25 and abs(y0 - y1) > l_500):
         d_lim = 35 * gui_app._scale
         if not gui_app.big_ui():
-          d_lim = 15
+          d_lim = 20
         g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
         if g_wide_cam_requested == False:
           d_lim *= 1.25 #ロングカメラだとちょっと枠が大きい。実測
