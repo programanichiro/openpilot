@@ -50,7 +50,7 @@ sound_list: dict[int, tuple[str, int | None, float]] = {
   102: ("pipo.wave", 1, MAX_VOLUME),
   103: ("pikiri.wave", 1, MAX_VOLUME),
 }
-if HARDWARE.get_device_type() == "tizi":
+if HARDWARE.get_device_type() == "tizi" or True: #イチロウパイロットはc3Xサウンド採用
   sound_list.update({
     AudibleAlert.engage: ("engage_tizi.wav", 1, MAX_VOLUME),
     AudibleAlert.disengage: ("disengage_tizi.wav", 1, MAX_VOLUME),
