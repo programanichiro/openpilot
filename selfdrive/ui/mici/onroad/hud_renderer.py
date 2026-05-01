@@ -783,8 +783,9 @@ class HudRenderer(Widget):
     if taco_rpm > taco_max:
       taco_rpm = taco_max #5000回転表示がMAX。
     taco_color = rl.Color(int(0.96*0.7*255), int(0.51*0.7*255), int(0.12*0.7*255),int(0.65*255)) #オレンジ
-    taco_r = 50 * gui_app._scale
-    self.draw_taco(int(rect.x+osm_w), rect.y+rect.height/2, taco_r, taco_r * 0.1, taco_rpm, taco_max, taco_color)
+    taco_w = 50 * gui_app._scale * 0.1
+    taco_r = 50 * gui_app._scale * 0.5
+    self.draw_taco(int(rect.x+osm_w), rect.y+rect.height/2, taco_r, taco_w, taco_rpm, taco_max, taco_color)
 
     rl.end_blend_mode() #元のブレンドに戻す
 
@@ -847,8 +848,11 @@ class HudRenderer(Widget):
     end_angle = -90
     rpm_angle = start_angle - (end_angle - start_angle) * (-rpm) / max_rpm
     arc_center = rl.Vector2(x,y)
-    rl.draw_ring(arc_center,float(r-w),float(r),float(start_angle), float(end_angle),90,color) #枠
-    rl.draw_ring(arc_center,float(0),float(r-w),float(start_angle), float(rpm_angle),90,color) #メーター
+    if r > w:
+      rl.draw_ring(arc_center,float(r-w),float(r),float(start_angle), float(end_angle),90,color) #枠
+      rl.draw_ring(arc_center,float(0),float(r-w),float(start_angle), float(rpm_angle),90,color) #メーター
+    else:
+      rl.draw_ring(arc_center,float(0),float(r),float(start_angle), float(rpm_angle),90,color) #枠
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
