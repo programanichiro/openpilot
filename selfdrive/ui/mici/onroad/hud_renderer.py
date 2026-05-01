@@ -845,7 +845,7 @@ class HudRenderer(Widget):
     #タコメーターを描く関数。x,yは中心座標、rは半径、rpmは回転数、max_rpmは最大回転数、colorは色。
     start_angle = 90
     end_angle = -90
-    rpm_angle = start_angle - (end_angle - start_angle) * rpm / max_rpm
+    rpm_angle = start_angle - (end_angle - start_angle) * (-rpm) / max_rpm
     arc_center = rl.Vector2(x,y)
     rl.draw_ring(arc_center,float(r-w),float(r),float(start_angle), float(end_angle),90,color) #枠
     rl.draw_ring(arc_center,float(0),float(r-w),float(start_angle), float(rpm_angle),90,color) #メーター
