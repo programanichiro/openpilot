@@ -781,9 +781,9 @@ class HudRenderer(Widget):
     car_state = sm['carState']
     taco_rpm = car_state.engineRpm
     if(taco_rpm > 0):
-      self.taco_size += 1/20 if gui_app.big_ui() else 1/60
+      self.taco_size += self.dt/1000 * 2
     else:
-      self.taco_size -= 1/20 if gui_app.big_ui() else 1/60
+      self.taco_size -= self.dt/1000 * 2
     self.taco_size = max(0.0, min(1.0, self.taco_size))
     taco_max = 5000
     if taco_rpm > taco_max:
