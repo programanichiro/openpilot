@@ -778,7 +778,7 @@ class HudRenderer(Widget):
 
     #タコメーター
     car_state = sm['carState']
-    taco_rpm = car_state.engineRpm
+    taco_rpm = 2000 #car_state.engineRpm
     taco_max = 5000
     if taco_rpm > taco_max:
       taco_rpm = taco_max #5000回転表示がMAX。
@@ -847,8 +847,8 @@ class HudRenderer(Widget):
     end_angle = -90
     rpm_angle = start_angle - (end_angle - start_angle) * rpm / max_rpm
     arc_center = rl.Vector2(x,y)
-    rl.draw_ring(arc_center,float(r-w),float(r),float(start_angle), float(rpm_angle),90,color) #枠
-    rl.draw_ring(arc_center,float(0),float(r-w),float(start_angle), float(end_angle),90,color) #メーター
+    rl.draw_ring(arc_center,float(r-w),float(r),float(start_angle), float(end_angle),90,color) #枠
+    rl.draw_ring(arc_center,float(0),float(r-w),float(start_angle), float(rpm_angle),90,color) #メーター
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
