@@ -758,15 +758,16 @@ class HudRenderer(Widget):
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
 
+    osm_w = 10 if gui_app.big_ui() else 8 #8:c4で見た目調整
+    rect_h = rect.y+rect.height
     if self.osm_per >= 0:
       h = rect.height * self.osm_per // 100
-      wp1 = 10 if gui_app.big_ui() else 8 #8:c4で見た目調整
+      wp1 = osm_w
       if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < (100 if gui_app.big_ui() else 300): #100フレーム以上変化がなければ、通信断絶とみなす。c4は60fpsなので300フレーム以上にする。
         osm_bar_color = rl.Color(0, 245, 0, 200) #緑
       else:
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
 
-      rect_h = rect.y+rect.height
 #      rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
       rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1), int(h))
       rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
@@ -781,21 +782,10 @@ class HudRenderer(Widget):
     taco_max = 5000
     if taco_rpm > taco_max:
       taco_rpm = taco_max #5000回転表示がMAX。
-    #taco_rpm = taco_max/2; //表示テスト
-    upper_2w = 200+80
-    under_2w = 100+55
-    lu = rect.x+rect.width/2-upper_2w
-    ur = lu + upper_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+upper_2w
-    ld = rect.x+rect.width/2-under_2w
-    dr = ld + under_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+under_2w
-    taco_y = rect.y-10
-    taco_meter = [(lu,20+taco_y),
-                  (ld,50 + 40*3+10+taco_y),
-                  (dr,50 + 40*3+10+taco_y),
-                  (ur,20+taco_y)]
-    #p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
     taco_color = rl.Color(int(0.96*0.7*255), int(0.51*0.7*255), int(0.12*0.7*255),int(0.65*255)) #オレンジ
-    rl.draw_triangle_fan(taco_meter, len(taco_meter), taco_color)
+    taco_h = rect.height * taco_rpm / taco_max
+    rc2 =  rl.Rectangle(int(rect.x+osm_w), int(rect_h - taco_h) , int(50*gui_app._scale), int(taco_h)) #単純に矩形
+    rl.draw_rectangle_rounded(rc2, 1.0, 5, taco_color)
 
     rl.end_blend_mode() #元のブレンドに戻す
 
