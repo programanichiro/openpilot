@@ -784,7 +784,7 @@ class HudRenderer(Widget):
       taco_rpm = taco_max #5000回転表示がMAX。
     taco_color = rl.Color(int(0.96*0.7*255), int(0.51*0.7*255), int(0.12*0.7*255),int(0.65*255)) #オレンジ
     taco_w = 50 * gui_app._scale * 0.1
-    taco_r = 50 * gui_app._scale * 0.5
+    taco_r = 50 * gui_app._scale * 0.05
     self.draw_taco(int(rect.x+osm_w), rect.y+rect.height/2, taco_r, taco_w, taco_rpm, taco_max, taco_color)
 
     rl.end_blend_mode() #元のブレンドに戻す
