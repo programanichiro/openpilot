@@ -783,9 +783,8 @@ class HudRenderer(Widget):
     if taco_rpm > taco_max:
       taco_rpm = taco_max #5000回転表示がMAX。
     taco_color = rl.Color(int(0.96*0.7*255), int(0.51*0.7*255), int(0.12*0.7*255),int(0.65*255)) #オレンジ
-    taco_h = rect.height * taco_rpm / taco_max
-    rc2 =  rl.Rectangle(int(rect.x+osm_w), int(rect_h - taco_h) , int(50*gui_app._scale), int(taco_h)) #単純に矩形
-    rl.draw_rectangle_rounded(rc2, 1.0, 5, taco_color)
+    taco_r = 200 * gui_app._scale
+    self.draw_taco(int(rect.x+osm_w), rect.y+rect.height/2, taco_r, taco_r * 0.1, taco_rpm, taco_max, taco_color)
 
     rl.end_blend_mode() #元のブレンドに戻す
 
@@ -842,6 +841,14 @@ class HudRenderer(Widget):
       )
       self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
 
+  def draw_taco(self, x, y, r, w, rpm, max_rpm, color):
+    #タコメーターを描く関数。x,yは中心座標、rは半径、rpmは回転数、max_rpmは最大回転数、colorは色。
+    start_angle = 90
+    end_angle = -90
+    rpm_angle = start_angle - (end_angle - start_angle) * rpm / max_rpm
+    arc_center = rl.Vector2(x,y)
+    rl.draw_ring(arc_center,float(r-w),float(r),float(start_angle), float(rpm_angle),90,color) #枠
+    rl.draw_ring(arc_center,float(0),float(r-w),float(start_angle), float(end_angle),90,color) #メーター
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
