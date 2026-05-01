@@ -772,9 +772,32 @@ class HudRenderer(Widget):
       rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
 
     self.knightScanner(rect)
-    rl.end_blend_mode() #元のブレンドに戻す
 
     sm = ui_state.sm
+
+    #タコメーター
+    car_state = sm['carState']
+    taco_rpm = car_state.engineRpm
+    taco_max = 5000
+    if taco_rpm > taco_max:
+      taco_rpm = taco_max #5000回転表示がMAX。
+    #taco_rpm = taco_max/2; //表示テスト
+    upper_2w = 200+80
+    under_2w = 100+55
+    lu = rect.x+rect.width/2-upper_2w
+    ur = lu + upper_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+upper_2w
+    ld = rect.x+rect.width/2-under_2w
+    dr = ld + under_2w * 2 * taco_rpm / taco_max #rect.x+rect.width/2+under_2w
+    taco_y = rect.y-10
+    taco_meter = [(lu,20+taco_y),
+                  (ld,50 + 40*3+10+taco_y),
+                  (dr,50 + 40*3+10+taco_y),
+                  (ur,20+taco_y)]
+    #p.setBrush(QColor::fromRgbF(0.8, 0.0, 0.0, 0.65)); //赤
+    taco_color = rl.Color(int(0.96*0.7*255), int(0.51*0.7*255), int(0.12*0.7*255),int(0.65*255)) #オレンジ
+    rl.draw_triangle_fan(taco_meter, len(taco_meter), taco_color)
+
+    rl.end_blend_mode() #元のブレンドに戻す
 
     # Get monitoring state
     dm_state = sm["driverMonitoringState"]
