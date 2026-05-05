@@ -2303,7 +2303,8 @@ struct Sentinel {
 }
 
 struct UIDebug {
-  drawTimeMillis @0 :Float32;
+  cpuTimeMillis @0 :Float32;
+  frameTimeMillis @1 :Float32;
 }
 
 struct ManagerState {
