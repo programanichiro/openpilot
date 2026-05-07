@@ -124,6 +124,30 @@ class NetworkIcon(Widget):
 
     rl.draw_texture_ex(draw_net_txt, rl.Vector2(draw_x, draw_y), 0.0, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
 
+class ThermalTextIcon(Widget):
+  def __init__(self):
+    super().__init__()
+    self.set_rect(rl.Rectangle(0, 0, 54, 44))  # max size of all icons
+    self.temp_disp3 = "°C"
+    self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
+
+  def _update_state(self):
+    device_state = ui_state.sm['deviceState']
+    max_temp = int(device_state.maxTempC) #表示はこれを使う。
+    self.temp_str = str(max_temp) + "°C"
+
+  def _render(self, _):
+    draw_x = self._rect.x
+    draw_y = self._rect.y
+
+    rl.draw_text_ex(
+      self._font_bold,
+      self.temp_str,
+      rl.Vector2(draw_x, draw_y),
+      40,
+      0,
+      pen_color = rl.Color(255, 255, 255, 255),
+    )
 
 class MiciHomeLayout(Widget):
   def __init__(self):
@@ -152,6 +176,7 @@ class MiciHomeLayout(Widget):
       self._experimental_icon,
       self._body_icon,
       self._mic_icon,
+      ThermalTextIcon(),
     ], spacing=18)
 
     self._openpilot_label = UnifiedLabel("ichiropilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
