@@ -213,7 +213,7 @@ class MiciHomeLayout(Widget):
       self._body_icon,
       self._mic_icon,
       ThermalTextIcon(), #横幅適当なので最後の指定すること。
-      VoltageTextIcon(), #横幅適当なので最後の指定すること。
+      #VoltageTextIcon(), #横幅適当なので最後の指定すること。
     ], spacing=18)
 
     self._openpilot_label = UnifiedLabel("ichiropilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
