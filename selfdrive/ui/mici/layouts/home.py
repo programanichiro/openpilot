@@ -146,7 +146,7 @@ class ThermalTextIcon(Widget):
       rl.Vector2(draw_x, draw_y),
       40,
       0,
-      pen_color = rl.Color(255, 255, 255, 255),
+      rl.Color(255, 255, 255, 255),
     )
 
 class MiciHomeLayout(Widget):
