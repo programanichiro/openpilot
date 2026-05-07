@@ -130,11 +130,21 @@ class ThermalTextIcon(Widget):
     self.set_rect(rl.Rectangle(0, 0, 65, 44))  # max size of all icons
     self.temp_disp3 = "°C"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
+    self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
 
   def _update_state(self):
     device_state = ui_state.sm['deviceState']
     max_temp = int(device_state.maxTempC) #表示はこれを使う。
     self.temp_str = str(max_temp) + "°C"
+
+    ts = device_state.thermalStatus
+    ThermalStatus = log.DeviceState.ThermalStatus
+    if ts == ThermalStatus.ok:
+      self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+    elif ts == ThermalStatus.overheated:
+      self.warning_color = rl.Color(255, 255, 0, int(255 * 0.9))
+    else: #critical
+      self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
 
   def _render(self, _):
     draw_x = self._rect.x
@@ -146,7 +156,7 @@ class ThermalTextIcon(Widget):
       rl.Vector2(draw_x, draw_y),
       40,
       0,
-      rl.Color(255, 255, 255, int(255 * 0.9)),
+      self.warning_color,
     )
 
 class MiciHomeLayout(Widget):
