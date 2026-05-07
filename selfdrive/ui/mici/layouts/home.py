@@ -125,13 +125,16 @@ class NetworkIcon(Widget):
 
     rl.draw_texture_ex(draw_net_txt, rl.Vector2(draw_x, draw_y), 0.0, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
 
-class ThermalTextIcon(Widget):
+class ThermalAndVoltageTextIcon(Widget):
   def __init__(self):
     super().__init__()
     self.set_rect(rl.Rectangle(0, 0, 83, 44))  # max size of all icons
     self.temp_str = "°C"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+
+    self.volt_str = "V"
+    self.warning_color2 = rl.Color(255, 255, 255, int(255 * 0.9))
 
   def _update_state(self):
     device_state = ui_state.sm['deviceState']
@@ -147,25 +150,6 @@ class ThermalTextIcon(Widget):
     else: #critical
       self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
 
-  def _render(self, _):
-    rl.draw_text_ex(
-      self._font_bold,
-      self.temp_str,
-      rl.Vector2(self._rect.x, self._rect.y),
-      40,
-      0,
-      self.warning_color,
-    )
-
-class VoltageTextIcon(Widget):
-  def __init__(self):
-    super().__init__()
-    self.set_rect(rl.Rectangle(0, 0, 80, 44))  # max size of all icons
-    self.volt_str = "V"
-    self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
-    self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
-
-  def _update_state(self):
     voltage = 0
     try:
       with open('/tmp/car_voltage.txt','r') as fp:
@@ -178,23 +162,31 @@ class VoltageTextIcon(Widget):
     if voltage != 0: #voltage:車に繋いでなくても5〜7は出るみたい。
       self.volt_str = f"{voltage:.1f}V"
       if voltage >= 11.5:  # Overvoltage threshold (example value, adjust as needed)
-        self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+        self.warning_color2 = rl.Color(255, 255, 255, int(255 * 0.9))
       else:
-        self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
+        self.warning_color2 = rl.Color(255, 0, 0, int(255 * 0.9))
     else:
       self.volt_str = "--.-V"
-      self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+      self.warning_color2 = rl.Color(255, 255, 255, int(255 * 0.9))
 
   def _render(self, _):
     rl.draw_text_ex(
       self._font_bold,
-      self.volt_str,
+      self.temp_str,
       rl.Vector2(self._rect.x, self._rect.y),
-      40,
+      20,
       0,
       self.warning_color,
     )
 
+    rl.draw_text_ex(
+      self._font_bold,
+      self.volt_str,
+      rl.Vector2(self._rect.x, self._rect.y+20),
+      20,
+      0,
+      self.warning_color,
+    )
 
 class MiciHomeLayout(Widget):
   def __init__(self):
@@ -223,8 +215,7 @@ class MiciHomeLayout(Widget):
       self._experimental_icon,
       self._body_icon,
       self._mic_icon,
-      ThermalTextIcon(), #横幅適当なので最後の指定すること。
-      VoltageTextIcon(), #横幅適当なので最後の指定すること。
+      ThermalAndVoltageTextIcon(), #横幅適当なので最後の指定すること。
     ], spacing=18)
 
     self._openpilot_label = UnifiedLabel("ichiropilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
