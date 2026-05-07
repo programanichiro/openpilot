@@ -128,7 +128,7 @@ class NetworkIcon(Widget):
 class ThermalTextIcon(Widget):
   def __init__(self):
     super().__init__()
-    self.set_rect(rl.Rectangle(0, 0, 65, 44))  # max size of all icons
+    self.set_rect(rl.Rectangle(0, 0, 70, 44))  # max size of all icons
     self.temp_str = "°C"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
@@ -169,7 +169,7 @@ class VoltageTextIcon(Widget):
     pm = PowerMonitoring()
     self.volt_str = f"{pm.car_voltage_mV / 1000:.1f}V"  # Convert mV to V and format
 
-    if pm.car_voltage_mV > 12500:  # Overvoltage threshold (example value, adjust as needed)
+    if pm.car_voltage_mV > 11500:  # Overvoltage threshold (example value, adjust as needed)
       self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
     else:
       self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
