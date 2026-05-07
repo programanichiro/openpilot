@@ -139,9 +139,9 @@ class ThermalTextIcon(Widget):
 
     ts = device_state.thermalStatus
     ThermalStatus = log.DeviceState.ThermalStatus
-    if ts == ThermalStatus.ok:
+    if False:#ts == ThermalStatus.ok:
       self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
-    elif ts == ThermalStatus.overheated:
+    elif True:#ts == ThermalStatus.overheated:
       self.warning_color = rl.Color(255, 255, 0, int(255 * 0.9))
     else: #critical
       self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
