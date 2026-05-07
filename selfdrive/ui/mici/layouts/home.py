@@ -166,10 +166,11 @@ class VoltageTextIcon(Widget):
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
 
   def _update_state(self):
-    pm = PowerMonitoring()
-    self.volt_str = f"{pm.car_voltage_mV / 1000:.1f}V"  # Convert mV to V and format
+    peripheralState = ui_state.sm['peripheralState']
+    voltage = None if peripheralState.pandaType == log.PandaState.PandaType.unknown else peripheralState.voltage
+    self.volt_str = f"{voltage / 1000:.1f}V"  # Convert mV to V and format
 
-    if pm.car_voltage_mV > 11500:  # Overvoltage threshold (example value, adjust as needed)
+    if voltage > 11500:  # Overvoltage threshold (example value, adjust as needed)
       self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
     else:
       self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
@@ -213,7 +214,7 @@ class MiciHomeLayout(Widget):
       self._body_icon,
       self._mic_icon,
       ThermalTextIcon(), #横幅適当なので最後の指定すること。
-      #VoltageTextIcon(), #横幅適当なので最後の指定すること。
+      VoltageTextIcon(), #横幅適当なので最後の指定すること。
     ], spacing=18)
 
     self._openpilot_label = UnifiedLabel("ichiropilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
