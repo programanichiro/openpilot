@@ -156,6 +156,10 @@ class ThermalTextIcon(Widget):
       self.warning_color,
     )
 
+# from openpilot.system.hardware.power_monitoring import PowerMonitoring
+# pm = PowerMonitoring()
+# pm.car_voltage_mV #補機バッテリーの電圧？
+
 class MiciHomeLayout(Widget):
   def __init__(self):
     super().__init__()
