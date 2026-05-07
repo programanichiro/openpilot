@@ -164,7 +164,7 @@ class VoltageTextIcon(Widget):
     self.volt_str = "V"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
-    self.sm = messaging.SubMaster(["peripheralState"], poll="pandaStates")
+    self.sm = messaging.SubMaster(["peripheralState"])
 
   def _update_state(self):
     peripheralState = self.sm['peripheralState']
