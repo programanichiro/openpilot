@@ -182,7 +182,7 @@ class ThermalAndVoltageTextIcon(Widget):
     rl.draw_text_ex(
       self._font_bold,
       self.volt_str,
-      rl.Vector2(self._rect.x, self._rect.y+26-2),
+      rl.Vector2(self._rect.x, self._rect.y+26-4),
       26,
       0,
       self.warning_color2,
