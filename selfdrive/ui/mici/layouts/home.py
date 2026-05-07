@@ -177,7 +177,7 @@ class VoltageTextIcon(Widget):
 
     if voltage != 0: #voltage:車に繋いでなくても5〜7は出るみたい。
       self.volt_str = f"{voltage:.1f}V"
-      if voltage > 12.0:  # Overvoltage threshold (example value, adjust as needed)
+      if voltage >= 11.5:  # Overvoltage threshold (example value, adjust as needed)
         self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
       else:
         self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
