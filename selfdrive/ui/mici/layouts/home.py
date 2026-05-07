@@ -169,7 +169,10 @@ class VoltageTextIcon(Widget):
   def _update_state(self):
     peripheralState = self.sm['peripheralState']
     voltage = None if peripheralState.pandaType == log.PandaState.PandaType.unknown else peripheralState.voltage
-    self.volt_str = f"{voltage / 1000:.1f}V"  # Convert mV to V and format
+    if voltage is not None:
+      self.volt_str = f"{voltage / 1000:.1f}V"
+    else:
+      self.volt_str = "--.-V"
 
     if voltage > 11500:  # Overvoltage threshold (example value, adjust as needed)
       self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
