@@ -128,7 +128,7 @@ class NetworkIcon(Widget):
 class ThermalTextIcon(Widget):
   def __init__(self):
     super().__init__()
-    self.set_rect(rl.Rectangle(0, 0, 80, 44))  # max size of all icons
+    self.set_rect(rl.Rectangle(0, 0, 83, 44))  # max size of all icons
     self.temp_str = "°C"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
@@ -160,7 +160,7 @@ class ThermalTextIcon(Widget):
 class VoltageTextIcon(Widget):
   def __init__(self):
     super().__init__()
-    self.set_rect(rl.Rectangle(0, 0, 65, 44))  # max size of all icons
+    self.set_rect(rl.Rectangle(0, 0, 80, 44))  # max size of all icons
     self.volt_str = "V"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
