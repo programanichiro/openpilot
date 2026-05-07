@@ -11,7 +11,7 @@ from openpilot.system.ui.widgets.label import UnifiedLabel, gui_label
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.version import RELEASE_BRANCHES
-from openpilot.system.hardware.power_monitoring import PowerMonitoring
+import cereal.messaging as messaging
 
 HEAD_BUTTON_FONT_SIZE = 40
 HOME_PADDING = 8
@@ -164,9 +164,10 @@ class VoltageTextIcon(Widget):
     self.volt_str = "V"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+    self.sm = messaging.SubMaster(["peripheralState"], poll="pandaStates")
 
   def _update_state(self):
-    peripheralState = ui_state.sm['peripheralState']
+    peripheralState = self.sm['peripheralState']
     voltage = None if peripheralState.pandaType == log.PandaState.PandaType.unknown else peripheralState.voltage
     self.volt_str = f"{voltage / 1000:.1f}V"  # Convert mV to V and format
 
