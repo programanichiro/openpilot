@@ -18,6 +18,8 @@ MIN_ON_TIME_S = 3600
 DELAY_SHUTDOWN_TIME_S = 300 # Wait at least DELAY_SHUTDOWN_TIME_S seconds after offroad_time to shutdown.
 VOLTAGE_SHUTDOWN_MIN_OFFROAD_TIME_S = 60
 
+g_car_voltage_mV = 0
+
 class PowerMonitoring:
   def __init__(self):
     self.params = Params()
@@ -51,6 +53,8 @@ class PowerMonitoring:
       self.car_voltage_instant_mV = voltage
       self.car_voltage_mV = ((voltage * CAR_VOLTAGE_LOW_PASS_K) + (self.car_voltage_mV * (1 - CAR_VOLTAGE_LOW_PASS_K)))
       statlog.gauge("car_voltage", self.car_voltage_mV / 1e3)
+      global g_car_voltage_mV
+      g_car_voltage_mV = self.car_voltage_mV / 1e3
 
       # Cap the car battery power and save it in a param every 10-ish seconds
       self.car_battery_capacity_uWh = max(self.car_battery_capacity_uWh, 0)

@@ -164,12 +164,11 @@ class VoltageTextIcon(Widget):
     self.volt_str = "V"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
-    self.sm = messaging.SubMaster(["peripheralState"])
 
   def _update_state(self):
-    peripheralState = self.sm['peripheralState']
-    voltage = None if peripheralState.pandaType == log.PandaState.PandaType.unknown else peripheralState.voltage
-    if voltage is not None:
+    import system.hardware.power_monitoring as pm #遅延インポート、重くないらしい。
+    voltage = int(pm.g_car_voltage_mV)
+    if voltage != 0:
       self.volt_str = f"{voltage / 1000:.1f}V"
       if voltage > 11500:  # Overvoltage threshold (example value, adjust as needed)
         self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
