@@ -11,6 +11,7 @@ from openpilot.system.ui.widgets.label import UnifiedLabel, gui_label
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.version import RELEASE_BRANCHES
+from openpilot.system.hardware.power_monitoring import PowerMonitoring
 
 HEAD_BUTTON_FONT_SIZE = 40
 HOME_PADDING = 8
@@ -128,7 +129,7 @@ class ThermalTextIcon(Widget):
   def __init__(self):
     super().__init__()
     self.set_rect(rl.Rectangle(0, 0, 65, 44))  # max size of all icons
-    self.temp_disp3 = "°C"
+    self.temp_str = "°C"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
 
@@ -156,9 +157,33 @@ class ThermalTextIcon(Widget):
       self.warning_color,
     )
 
-# from openpilot.system.hardware.power_monitoring import PowerMonitoring
-# pm = PowerMonitoring()
-# pm.car_voltage_mV #補機バッテリーの電圧？
+class VoltageTextIcon(Widget):
+  def __init__(self):
+    super().__init__()
+    self.set_rect(rl.Rectangle(0, 0, 65, 44))  # max size of all icons
+    self.volt_str = "V"
+    self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
+    self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+
+  def _update_state(self):
+    pm = PowerMonitoring()
+    self.volt_str = f"{pm.car_voltage_mV / 1000:.1f}V"  # Convert mV to V and format
+
+    if pm.car_voltage_mV > 12500:  # Overvoltage threshold (example value, adjust as needed)
+      self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+    else:
+      self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
+
+  def _render(self, _):
+    rl.draw_text_ex(
+      self._font_bold,
+      self.volt_str,
+      rl.Vector2(self._rect.x, self._rect.y),
+      40,
+      0,
+      self.warning_color,
+    )
+
 
 class MiciHomeLayout(Widget):
   def __init__(self):
@@ -188,6 +213,7 @@ class MiciHomeLayout(Widget):
       self._body_icon,
       self._mic_icon,
       ThermalTextIcon(), #横幅適当なので最後の指定すること。
+      VoltageTextIcon(), #横幅適当なので最後の指定すること。
     ], spacing=18)
 
     self._openpilot_label = UnifiedLabel("ichiropilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
