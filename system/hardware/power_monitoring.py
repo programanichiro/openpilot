@@ -51,7 +51,7 @@ class PowerMonitoring:
       self.car_voltage_instant_mV = voltage
       self.car_voltage_mV = ((voltage * CAR_VOLTAGE_LOW_PASS_K) + (self.car_voltage_mV * (1 - CAR_VOLTAGE_LOW_PASS_K)))
       statlog.gauge("car_voltage", self.car_voltage_mV / 1e3)
-      g_car_voltage_mV = self.car_voltage_mV / 1e3
+      g_car_voltage_mV = self.car_voltage_mV
       with open('/tmp/car_voltage.txt','w') as fp:
         fp.write("%d" % (g_car_voltage_mV))
 

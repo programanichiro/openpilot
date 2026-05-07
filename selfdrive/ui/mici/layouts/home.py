@@ -171,13 +171,13 @@ class VoltageTextIcon(Widget):
       with open('/tmp/car_voltage.txt','r') as fp:
         car_voltage_str = fp.read()
         if car_voltage_str:
-          voltage = int(car_voltage_str)
+          voltage = int(car_voltage_str) / 1e3
     except Exception as e:
       pass
 
-    if voltage != 0 and voltage > 100: #voltage:5〜7は出るみたい。
-      self.volt_str = f"{voltage / 1000:.1f}V"
-      if voltage > 11500:  # Overvoltage threshold (example value, adjust as needed)
+    if voltage != 0: #voltage:車に繋いでなくても5〜7は出るみたい。
+      self.volt_str = f"{voltage:.1f}V"
+      if voltage > 12.0:  # Overvoltage threshold (example value, adjust as needed)
         self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
       else:
         self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
