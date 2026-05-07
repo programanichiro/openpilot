@@ -141,19 +141,16 @@ class ThermalTextIcon(Widget):
     ThermalStatus = log.DeviceState.ThermalStatus
     if False:#ts == ThermalStatus.ok:
       self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
-    elif True:#ts == ThermalStatus.overheated:
+    elif False:#ts == ThermalStatus.overheated:
       self.warning_color = rl.Color(255, 255, 0, int(255 * 0.9))
     else: #critical
       self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
 
   def _render(self, _):
-    draw_x = self._rect.x
-    draw_y = self._rect.y
-
     rl.draw_text_ex(
       self._font_bold,
       self.temp_str,
-      rl.Vector2(draw_x, draw_y),
+      rl.Vector2(self._rect.x, self._rect.y),
       40,
       0,
       self.warning_color,
