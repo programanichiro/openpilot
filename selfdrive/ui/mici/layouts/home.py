@@ -175,7 +175,7 @@ class VoltageTextIcon(Widget):
     except Exception as e:
       pass
 
-    if voltage != 0:
+    if voltage != 0 and voltage > 100: #voltage:5〜7は出るみたい。
       self.volt_str = f"{voltage / 1000:.1f}V"
       if voltage > 11500:  # Overvoltage threshold (example value, adjust as needed)
         self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
