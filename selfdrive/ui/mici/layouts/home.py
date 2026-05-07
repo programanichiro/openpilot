@@ -174,7 +174,7 @@ class ThermalAndVoltageTextIcon(Widget):
       self._font_bold,
       self.temp_str,
       rl.Vector2(self._rect.x, self._rect.y),
-      20,
+      24,
       0,
       self.warning_color,
     )
@@ -182,10 +182,10 @@ class ThermalAndVoltageTextIcon(Widget):
     rl.draw_text_ex(
       self._font_bold,
       self.volt_str,
-      rl.Vector2(self._rect.x, self._rect.y+20),
-      20,
+      rl.Vector2(self._rect.x, self._rect.y+24),
+      24,
       0,
-      self.warning_color,
+      self.warning_color2,
     )
 
 class MiciHomeLayout(Widget):
