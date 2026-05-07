@@ -127,7 +127,7 @@ class NetworkIcon(Widget):
 class ThermalTextIcon(Widget):
   def __init__(self):
     super().__init__()
-    self.set_rect(rl.Rectangle(0, 0, 54, 60))  # max size of all icons
+    self.set_rect(rl.Rectangle(0, 0, 65, 44))  # max size of all icons
     self.temp_disp3 = "°C"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
 
