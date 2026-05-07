@@ -166,8 +166,15 @@ class VoltageTextIcon(Widget):
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
 
   def _update_state(self):
-    import system.hardware.power_monitoring as pm #遅延インポート、重くないらしい。
-    voltage = int(pm.g_car_voltage_mV)
+    voltage = 0
+    try:
+      with open('/tmp/car_voltage.txt','r') as fp:
+        car_voltage_str = fp.read()
+        if car_voltage_str:
+          voltage = int(car_voltage_str)
+    except Exception as e:
+      pass
+
     if voltage != 0:
       self.volt_str = f"{voltage / 1000:.1f}V"
       if voltage > 11500:  # Overvoltage threshold (example value, adjust as needed)
