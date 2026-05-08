@@ -158,7 +158,7 @@ class AugmentedRoadView(CameraView):
                                        alignment=rl.GuiTextAlignment.TEXT_ALIGN_CENTER,
                                        alignment_vertical=rl.GuiTextAlignmentVertical.TEXT_ALIGN_MIDDLE)
 
-    self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
+    #self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
 
   def is_swiping_left(self) -> bool:
     """Check if currently swiping left (for scroller to disable)."""
