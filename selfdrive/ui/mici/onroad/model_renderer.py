@@ -214,8 +214,8 @@ class ModelRenderer(Widget):
         rl.Rectangle(0, 0,
                     self._fade_texture.width,
                     self._fade_texture.height),
-        rl.Rectangle(rect.x, rect.y +rect.height/2,
-                    self._fade_texture.width * 2,
+        rl.Rectangle(rect.x, rect.y +rect.height - self._fade_texture.height, # fade textureの高さ分、下から上に描画
+                    self._fade_texture.width * 2.25, #1080/(240*2)=2.25
                     self._fade_texture.height),
         rl.Vector2(0, 0),
         0.0,
