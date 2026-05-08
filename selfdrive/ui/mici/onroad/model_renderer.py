@@ -208,6 +208,19 @@ class ModelRenderer(Widget):
     # Fade out bottom of overlays for looks
     if gui_app.big_ui() == False:
       rl.draw_texture_ex(self._fade_texture, rl.Vector2(rect.x, rect.y), 0.0, 1.0, rl.WHITE)
+    else:
+      rl.draw_texture_pro(
+        self._fade_texture,
+        rl.Rectangle(0, 0,
+                    self._fade_texture.width,
+                    self._fade_texture.height),
+        rl.Rectangle(rect.x, rect.y +rect.height/2,
+                    self._fade_texture.width * 2,
+                    self._fade_texture.height),
+        rl.Vector2(0, 0),
+        0.0,
+        rl.WHITE
+      )
 
     # if self._enable_lead_indicator and render_lead_indicator and radar_state:
     #   self._draw_lead_indicator()
