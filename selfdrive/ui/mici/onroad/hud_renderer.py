@@ -764,7 +764,7 @@ class HudRenderer(Widget):
     if self.osm_per >= 0:
       h = rect.height * self.osm_per // 100
       wp1 = osm_w
-      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < (100 if gui_app.big_ui() else 300): #100フレーム以上変化がなければ、通信断絶とみなす。c4は60fpsなので300フレーム以上にする。
+      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < (166 if gui_app.big_ui() else 500): #100フレーム以上変化がなければ、通信断絶とみなす。c4は60fpsなので300フレーム以上にする。
         osm_bar_color = rl.Color(0, 245, 0, 200) #緑
       else:
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
