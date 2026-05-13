@@ -745,7 +745,7 @@ def get_conn(tx, ty):
     key = (tx, ty)
 
     # 同じtileならそのまま
-    if _current_tile == key:
+    if _current_tile == key and _current_conn != None:
         return _current_conn
 
     # 以前のDB閉じる
@@ -813,13 +813,17 @@ def set_current_db(tx, ty):
 
     key = (tx, ty)
 
-    if _current_tile == key:
+    if _current_tile == key and _current_conn != None:
         return True
 
     conn = get_conn(tx, ty)
 
     if conn is None:
-        return False
+      if _current_conn != None:
+        _current_conn.close()
+      _current_conn = None
+      _current_cur = None
+      return False
 
     _current_tile = key
     _current_conn = conn
@@ -1003,14 +1007,17 @@ def get_node_coordinates(node_ids):
 
     global _current_conn
     if osm_db_loop > 1:
-      _current_cur.close()
+      if _current_conn != None:
+        _current_conn.close()
       _current_conn = None
+      _current_cur = None
       return get_node_coordinatesZ(node_ids)
 
     if len(node_ids) == 0:
-      if _current_cur != None:
-        _current_cur.close()
-        _current_conn = None
+      if _current_conn != None:
+        _current_conn.close()
+      _current_conn = None
+      _current_cur = None
       return []
 
     placeholders = ",".join("?" for _ in node_ids)
@@ -1042,8 +1049,9 @@ def get_node_coordinates(node_ids):
         if node_id in node_map:
             coordinates.append(node_map[node_id])
 
-    if _current_cur != None:
-      _current_cur.close()
-      _current_conn = None
+    if _current_conn != None:
+      _current_conn.close()
+    _current_conn = None
+    _current_cur = None
 
     return coordinates
