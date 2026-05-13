@@ -273,6 +273,8 @@ class FanController:
                 else:
                     road_coordinates = [] #"NA"
                 road_name = element.get("tags", {}).get("name", "---")
+                if road_name == "" and self.osm_local_mode: #ローカルモードなら、nameタグが空文字のときは---にする。通信モードは空文字のまま。
+                  road_name = "---" #空文字も---にする。
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
                 if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
