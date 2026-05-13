@@ -10,6 +10,13 @@ import random
 
 from openpilot.common.pid import PIDController
 
+# ----------------------------------------------------------
+# tile config
+# ----------------------------------------------------------
+
+TILE_DIR = "/data/osm_work/tiles"
+GRID_SIZE = 0.18  # 約20km
+
 SERVERS = [
   "http://overpass.kumi.systems/api/interpreter",
     # "https://overpass-api.de/api/interpreter",
@@ -130,13 +137,330 @@ class FanController:
     self.frame_net_off = 0
 
     self.osm_local_mode = False
-    if os.path.exists("/data/osm_work/tiles"):
+    if os.path.exists(TILE_DIR):
       self.osm_local_mode = True
+
+    self._current_tile = None
+    self._current_conn = None
+    self._current_cur = None
+
+    self.osm_db_loop = 0
+    self.osm_tiles = None
+
+
+# ----------------------------------------------------------
+# tile index
+# 生成側と完全一致必須
+# ----------------------------------------------------------
+
+  def tile_xy(self,lat, lon):
+      return (
+          math.floor(lon / GRID_SIZE),
+          math.floor(lat / GRID_SIZE)
+      )
+
+
+  def tile_path(self,tx, ty):
+      return os.path.join(
+          TILE_DIR,
+          f"tile_{ty}_{tx}.sqlite"
+      )
+
+# ----------------------------------------------------------
+# db cache
+# ----------------------------------------------------------
+
+  def get_conn(self,tx, ty):
+
+      key = (tx, ty)
+
+      # 同じtileならそのまま
+      if self._current_tile == key:
+          return self._current_conn
+
+      # 以前のDB閉じる
+      if self._current_conn is not None:
+          self._current_conn.close()
+          self._current_conn = None
+
+      path = self.tile_path(tx, ty)
+
+      if not os.path.exists(path):
+          self._current_tile = None
+          return None
+
+      conn = sqlite3.connect(
+          path,
+          check_same_thread=False
+      )
+
+      conn.row_factory = sqlite3.Row
+
+      cur = conn.cursor()
+
+      cur.execute("PRAGMA mmap_size = 33554432")
+      cur.execute("PRAGMA cache_size = -8192")
+
+      self._current_tile = key
+      self._current_conn = conn
+
+      return conn
+
+# ----------------------------------------------------------
+# bbox → tile一覧
+# ----------------------------------------------------------
+
+  def tiles_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
+
+      tx_min, ty_min = self.tile_xy(lat_min, lon_min)
+      tx_max, ty_max = self.tile_xy(lat_max, lon_max)
+
+      result = []
+
+      for ty in range(ty_min, ty_max + 1):
+          for tx in range(tx_min, tx_max + 1):
+              result.append((tx, ty))
+
+      return result
+
+# ----------------------------------------------------------
+# current db
+# 全国版と同じcurを維持
+# ----------------------------------------------------------
+
+  def set_current_db(self, tx, ty):
+
+      key = (tx, ty)
+
+      if self._current_tile == key:
+          return True
+
+      conn = self.get_conn(tx, ty)
+
+      if conn is None:
+          return False
+
+      self._current_tile = key
+      self._current_conn = conn
+      self._current_cur = conn.cursor()
+
+      return True
+
+# ----------------------------------------------------------
+# query_roads_in_bbox
+# 全国版ロジックそのまま
+# ----------------------------------------------------------
+  def query_roads_in_bbox_local(self, lat_min, lon_min, lat_max, lon_max):
+      self.osm_db_loop = 0
+      self.osm_tiles = None
+
+      tiles = self.tiles_in_bbox(
+          lat_min,
+          lon_min,
+          lat_max,
+          lon_max
+      )
+
+      self.osm_tiles = tiles
+
+      elements = []
+
+      seen_way_ids = set()
+
+      for tx, ty in tiles:
+          self.osm_db_loop += 1
+          print("osm_db_loop:", self.osm_db_loop)
+
+          if not self.set_current_db(tx, ty):
+              continue
+
+          cur = self._current_cur
+
+          sql = """
+          SELECT
+              ways.id,
+              ways.name,
+              ways.highway,
+              ways.maxspeed
+          FROM ways
+          JOIN way_nodes
+            ON ways.id = way_nodes.way_id
+          JOIN nodes
+            ON way_nodes.node_id = nodes.id
+          WHERE
+            nodes.lat BETWEEN ? AND ?
+            AND
+            nodes.lon BETWEEN ? AND ?
+          """
+
+          rows = cur.execute(sql, (
+              lat_min,
+              lat_max,
+              lon_min,
+              lon_max
+          )).fetchall()
+
+          for r in rows:
+
+              # tile跨ぎ重複だけ除去
+              if r["id"] in seen_way_ids:
+                  continue
+
+              seen_way_ids.add(r["id"])
+
+              node_sql = """
+              SELECT node_id
+              FROM way_nodes
+              WHERE way_id = ?
+              ORDER BY seq
+              """
+
+              node_rows = cur.execute(
+                  node_sql,
+                  (r["id"],)
+              ).fetchall()
+
+              node_ids = [
+                  x["node_id"]
+                  for x in node_rows
+              ]
+
+              elements.append({
+                  "type": "way",
+                  "id": r["id"],
+                  "nodes": node_ids,
+                  "tags": {
+                      "name": r["name"],
+                      "highway": r["highway"],
+                      "maxspeed": r["maxspeed"]
+                  }
+              })
+
+      return {
+          "elements": elements
+      }
+
+  def get_node_coordinatesZ(self, node_ids): #グリッド跨いだ場合
+
+      if len(node_ids) == 0:
+          return []
+
+      placeholders = ",".join(
+          "?" for _ in node_ids
+      )
+
+      coordinates = []
+      node_map = {}
+
+      remaining = set(node_ids)
+
+      tile_files = self.osm_tiles #os.listdir(TILE_DIR)
+
+      for tx, ty in tile_files:
+
+          path = self.tile_path(tx,ty)
+
+          conn = sqlite3.connect(
+              path,
+              check_same_thread=False
+          )
+
+          conn.row_factory = sqlite3.Row
+
+          cur = conn.cursor()
+
+          sql = f"""
+          SELECT
+              id,
+              lat,
+              lon
+          FROM nodes
+          WHERE id IN ({placeholders})
+          """
+
+          rows = cur.execute(
+              sql,
+              node_ids
+          ).fetchall()
+
+          conn.close()
+
+          for r in rows:
+
+              node_map[r["id"]] = (
+                  r["lat"],
+                  r["lon"]
+              )
+
+              if r["id"] in remaining:
+                  remaining.remove(r["id"])
+
+          if len(remaining) == 0:
+              break
+
+      # 元順序維持
+      for node_id in node_ids:
+
+          if node_id in node_map:
+              coordinates.append(
+                  node_map[node_id]
+              )
+
+      return coordinates
+
+
+  def get_node_coordinates_local(self, node_ids):
+
+      if self.osm_db_loop > 1:
+        self._current_cur.close()
+        self._current_conn = None
+        return self.get_node_coordinatesZ(node_ids)
+
+      if len(node_ids) == 0:
+        if self._current_cur != None:
+          self._current_cur.close()
+          self._current_conn = None
+        return []
+
+      placeholders = ",".join("?" for _ in node_ids)
+
+      sql = f"""
+      SELECT
+          id,
+          lat,
+          lon
+      FROM nodes
+      WHERE id IN ({placeholders})
+      """
+
+      rows = self._current_cur.execute(sql, node_ids).fetchall()
+
+      # id -> 座標
+      node_map = {}
+
+      for r in rows:
+          node_map[r["id"]] = (
+              r["lat"],
+              r["lon"]
+          )
+
+      # 元順序維持
+      coordinates = []
+
+      for node_id in node_ids:
+          if node_id in node_map:
+              coordinates.append(node_map[node_id])
+
+      if self._current_cur != None:
+        self._current_cur.close()
+        self._current_conn = None
+
+      return coordinates
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
     if self.osm_local_mode:
-      return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
+      return self.query_roads_in_bbox_local(lat_min, lon_min, lat_max, lon_max)
 
     #overpass_url = "https://overpass.private.coffee/api/interpreter"
     query = f"""
@@ -152,7 +476,7 @@ class FanController:
   def get_node_coordinates(self,node_ids):
 
     if self.osm_local_mode:
-      return get_node_coordinates(node_ids)
+      return self.get_node_coordinates_local(node_ids)
 
     """
     Overpass APIを使用して、指定されたノードIDの座標を取得する関数
@@ -703,227 +1027,7 @@ class FanController:
 #osm_local_mode用の関数
 #############################################################
 
-# ----------------------------------------------------------
-# tile config
-# ----------------------------------------------------------
 
-TILE_DIR = "/data/osm_work/tiles"
-GRID_SIZE = 0.18  # 約20km
-
-# ----------------------------------------------------------
-# tile index
-# 生成側と完全一致必須
-# ----------------------------------------------------------
-
-def tile_xy(lat, lon):
-    return (
-        math.floor(lon / GRID_SIZE),
-        math.floor(lat / GRID_SIZE)
-    )
-
-
-def tile_path(tx, ty):
-    return os.path.join(
-        TILE_DIR,
-        f"tile_{ty}_{tx}.sqlite"
-    )
-
-
-# ----------------------------------------------------------
-# db cache
-# ----------------------------------------------------------
-
-_current_tile = None
-_current_conn = None
-
-
-def get_conn(tx, ty):
-
-    global _current_tile
-    global _current_conn
-
-    key = (tx, ty)
-
-    # 同じtileならそのまま
-    if _current_tile == key:
-        return _current_conn
-
-    # 以前のDB閉じる
-    if _current_conn is not None:
-        _current_conn.close()
-        _current_conn = None
-
-    path = tile_path(tx, ty)
-
-    if not os.path.exists(path):
-        _current_tile = None
-        return None
-
-    conn = sqlite3.connect(
-        path,
-        check_same_thread=False
-    )
-
-    conn.row_factory = sqlite3.Row
-
-    cur = conn.cursor()
-
-    cur.execute("PRAGMA mmap_size = 33554432")
-    cur.execute("PRAGMA cache_size = -8192")
-
-    _current_tile = key
-    _current_conn = conn
-
-    return conn
-
-
-# ----------------------------------------------------------
-# bbox → tile一覧
-# ----------------------------------------------------------
-
-def tiles_in_bbox(lat_min, lon_min, lat_max, lon_max):
-
-    tx_min, ty_min = tile_xy(lat_min, lon_min)
-    tx_max, ty_max = tile_xy(lat_max, lon_max)
-
-    result = []
-
-    for ty in range(ty_min, ty_max + 1):
-        for tx in range(tx_min, tx_max + 1):
-            result.append((tx, ty))
-
-    return result
-
-
-# ----------------------------------------------------------
-# current db
-# 全国版と同じcurを維持
-# ----------------------------------------------------------
-
-_current_tile = None
-_current_conn = None
-_current_cur = None
-
-
-def set_current_db(tx, ty):
-
-    global _current_tile
-    global _current_conn
-    global _current_cur
-
-    key = (tx, ty)
-
-    if _current_tile == key:
-        return True
-
-    conn = get_conn(tx, ty)
-
-    if conn is None:
-        return False
-
-    _current_tile = key
-    _current_conn = conn
-    _current_cur = conn.cursor()
-
-    return True
-
-
-# ----------------------------------------------------------
-# query_roads_in_bbox
-# 全国版ロジックそのまま
-# ----------------------------------------------------------
-osm_db_loop = 0
-osm_tiles = None
-def query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max):
-    global osm_db_loop,osm_tiles
-    osm_db_loop = 0
-    osm_tiles = None
-
-    tiles = tiles_in_bbox(
-        lat_min,
-        lon_min,
-        lat_max,
-        lon_max
-    )
-
-    osm_tiles = tiles
-
-    elements = []
-
-    seen_way_ids = set()
-
-    for tx, ty in tiles:
-        osm_db_loop += 1
-        print("osm_db_loop:", osm_db_loop)
-
-        if not set_current_db(tx, ty):
-            continue
-
-        cur = _current_cur
-
-        sql = """
-        SELECT
-            ways.id,
-            ways.name,
-            ways.highway,
-            ways.maxspeed
-        FROM ways
-        JOIN way_nodes
-          ON ways.id = way_nodes.way_id
-        JOIN nodes
-          ON way_nodes.node_id = nodes.id
-        WHERE
-          nodes.lat BETWEEN ? AND ?
-          AND
-          nodes.lon BETWEEN ? AND ?
-        """
-
-        rows = cur.execute(sql, (
-            lat_min,
-            lat_max,
-            lon_min,
-            lon_max
-        )).fetchall()
-
-        for r in rows:
-
-            # tile跨ぎ重複だけ除去
-            if r["id"] in seen_way_ids:
-                continue
-
-            seen_way_ids.add(r["id"])
-
-            node_sql = """
-            SELECT node_id
-            FROM way_nodes
-            WHERE way_id = ?
-            ORDER BY seq
-            """
-
-            node_rows = cur.execute(
-                node_sql,
-                (r["id"],)
-            ).fetchall()
-
-            node_ids = [
-                x["node_id"]
-                for x in node_rows
-            ]
-
-            elements.append({
-                "type": "way",
-                "id": r["id"],
-                "nodes": node_ids,
-                "tags": {
-                    "name": r["name"],
-                    "highway": r["highway"],
-                    "maxspeed": r["maxspeed"]
-                }
-            })
-
-    return {
-        "elements": elements
-    }
 
 
 # ----------------------------------------------------------
@@ -931,119 +1035,4 @@ def query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max):
 # 全国版ロジックそのまま
 # ----------------------------------------------------------
 
-def get_node_coordinatesZ(node_ids): #グリッド跨いだ場合
 
-    if len(node_ids) == 0:
-        return []
-
-    placeholders = ",".join(
-        "?" for _ in node_ids
-    )
-
-    coordinates = []
-    node_map = {}
-
-    remaining = set(node_ids)
-
-    tile_files = osm_tiles #os.listdir(TILE_DIR)
-
-    for tx, ty in tile_files:
-
-        path = tile_path(tx,ty)
-
-        conn = sqlite3.connect(
-            path,
-            check_same_thread=False
-        )
-
-        conn.row_factory = sqlite3.Row
-
-        cur = conn.cursor()
-
-        sql = f"""
-        SELECT
-            id,
-            lat,
-            lon
-        FROM nodes
-        WHERE id IN ({placeholders})
-        """
-
-        rows = cur.execute(
-            sql,
-            node_ids
-        ).fetchall()
-
-        conn.close()
-
-        for r in rows:
-
-            node_map[r["id"]] = (
-                r["lat"],
-                r["lon"]
-            )
-
-            if r["id"] in remaining:
-                remaining.remove(r["id"])
-
-        if len(remaining) == 0:
-            break
-
-    # 元順序維持
-    for node_id in node_ids:
-
-        if node_id in node_map:
-            coordinates.append(
-                node_map[node_id]
-            )
-
-    return coordinates
-
-def get_node_coordinates(node_ids):
-
-    global _current_conn
-    if osm_db_loop > 1:
-      _current_cur.close()
-      _current_conn = None
-      return get_node_coordinatesZ(node_ids)
-
-    if len(node_ids) == 0:
-      if _current_cur != None:
-        _current_cur.close()
-        _current_conn = None
-      return []
-
-    placeholders = ",".join("?" for _ in node_ids)
-
-    sql = f"""
-    SELECT
-        id,
-        lat,
-        lon
-    FROM nodes
-    WHERE id IN ({placeholders})
-    """
-
-    rows = _current_cur.execute(sql, node_ids).fetchall()
-
-    # id -> 座標
-    node_map = {}
-
-    for r in rows:
-        node_map[r["id"]] = (
-            r["lat"],
-            r["lon"]
-        )
-
-    # 元順序維持
-    coordinates = []
-
-    for node_id in node_ids:
-        if node_id in node_map:
-            coordinates.append(node_map[node_id])
-
-    if _current_cur != None:
-      _current_cur.close()
-      _current_conn = None
-
-    return coordinates
