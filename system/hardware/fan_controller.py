@@ -232,7 +232,7 @@ class FanController:
 
       key = (tx, ty)
 
-      if self._current_tile == key:
+      if self._current_tile == key and self._current_conn != None:
           return True
 
       conn = self.get_conn(tx, ty)
