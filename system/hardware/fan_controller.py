@@ -1025,7 +1025,6 @@ def get_node_coordinatesZ(node_ids): #グリッド跨いだ場合
     return coordinates
 
 def get_node_coordinates(node_ids):
-    print("get_node_coordinates:", 1)
 
     global _current_conn
     if osm_db_loop > 1:
@@ -1042,6 +1041,8 @@ def get_node_coordinates(node_ids):
       _current_cur = None
       return []
 
+    print("get_node_coordinates:", 1)
+    print("node_ids:", node_ids)
     print("get_node_coordinates:", 2)
 
     placeholders = ",".join("?" for _ in node_ids)
