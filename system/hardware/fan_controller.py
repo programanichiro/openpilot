@@ -761,7 +761,7 @@ _current_conn = None
 def get_conn(tx, ty):
 
     global _current_tile
-    global _current_conn
+    global _current_conn,_current_cur
 
     key = (tx, ty)
 
@@ -794,6 +794,7 @@ def get_conn(tx, ty):
 
     _current_tile = key
     _current_conn = conn
+    _current_cur = cur
 
     return conn
 
@@ -1059,6 +1060,7 @@ def get_node_coordinates(node_ids):
 
     print("get_node_coordinates:", 4)
     print("sql:", sql)
+    print("_current_cur:", _current_cur)
 
     rows = _current_cur.execute(sql, node_ids).fetchall()
 
