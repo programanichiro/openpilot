@@ -392,7 +392,7 @@ class FanController:
                 road_info["bearing"] = bears[idx]
                 print("osm_fetch:", 106)
                 road_info_list2.append(road_info)
-                if speed_limit != "0":
+                if speed_limit != "0" and speed_limit != "":
                   print("osm_fetch:", 107)
                   speed_limit_num = int(speed_limit)
                   print("osm_fetch:", 108)
