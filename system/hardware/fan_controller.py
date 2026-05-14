@@ -344,15 +344,19 @@ class FanController:
         min_road_v_kph0 = 0
         limit_match_ang = 10
         while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
+          print("osm_fetch:", 100)
           for road_info in road_info_list:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
             coords = road_info["coords"]
             bears = road_info["bears"]
+            print("osm_fetch:", 101)
             idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
+              print("osm_fetch:", 102)
               dup = False
               if True:
+                print("osm_fetch:", 103)
                 if speed_limit == "0":
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
@@ -367,6 +371,7 @@ class FanController:
                       break
                     road_info_list_ct += 1
                 else:
+                  print("osm_fetch:", 104)
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
@@ -383,7 +388,9 @@ class FanController:
                       break
                     road_info_list_ct += 1
               if dup == False:
+                print("osm_fetch:", 105)
                 road_info["bearing"] = bears[idx]
+                print("osm_fetch:", 106)
                 road_info_list2.append(road_info)
                 if speed_limit != "0":
                   speed_limit_num = int(speed_limit)
