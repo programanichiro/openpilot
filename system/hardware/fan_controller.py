@@ -136,6 +136,7 @@ class FanController:
     self.frame_ct2 = 0
     self.frame_net_off = 0
 
+    self.osm_proc_ct = 0
     self.osm_local_mode = False
     if os.path.exists(TILE_DIR):
       self.osm_local_mode = True
@@ -376,7 +377,7 @@ class FanController:
                       del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
                       break
                     road_info_list_ct += 1
-              if dup == False:
+              if (dup == False) and (road_name != "" or speed_limit != "0"):
                 road_info["bearing"] = bears[idx]
                 road_info_list2.append(road_info)
                 if speed_limit != "0" and speed_limit != "":
@@ -431,7 +432,9 @@ class FanController:
       self.controller.reset()
     self.last_ignition = ignition
 
-    self.osm_proc()
+    self.osm_proc_ct += 1
+    if (self.osm_proc_ct & 1) != 0 or self.osm_local_mode == False:
+      self.osm_proc() #localモードなら1Hzで十分。
 
     return int(self.controller.update(
                  error=(cur_temp - 75),  # temperature setpoint in C
