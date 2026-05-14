@@ -280,8 +280,6 @@ class FanController:
                 else:
                     road_coordinates = [] #"NA"
                 road_name = element.get("tags", {}).get("name", "---")
-                # if road_name == "" and self.osm_local_mode: #ローカルモードなら、nameタグが空文字のときは---にする。通信モードは空文字のまま。
-                #   road_name = "---" #空文字も---にする。
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
                 if speed_limit == "":
                   speed_limit = "0"
