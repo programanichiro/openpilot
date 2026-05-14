@@ -393,8 +393,11 @@ class FanController:
                 print("osm_fetch:", 106)
                 road_info_list2.append(road_info)
                 if speed_limit != "0":
+                  print("osm_fetch:", 107)
                   speed_limit_num = int(speed_limit)
+                  print("osm_fetch:", 108)
                   if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
+                    print("osm_fetch:", 109)
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
