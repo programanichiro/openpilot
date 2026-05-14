@@ -10,6 +10,13 @@ import random
 
 from openpilot.common.pid import PIDController
 
+# ----------------------------------------------------------
+# tile config
+# ----------------------------------------------------------
+
+TILE_DIR = "/data/osm_data/tiles"
+GRID_SIZE = 0.18  # 約20km
+
 SERVERS = [
   "http://overpass.kumi.systems/api/interpreter",
     # "https://overpass-api.de/api/interpreter",
@@ -130,7 +137,7 @@ class FanController:
     self.frame_net_off = 0
 
     self.osm_local_mode = False
-    if os.path.exists("/data/osm_work/tiles"):
+    if os.path.exists(TILE_DIR):
       self.osm_local_mode = True
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
@@ -708,13 +715,6 @@ class FanController:
 #############################################################
 #osm_local_mode用の関数
 #############################################################
-
-# ----------------------------------------------------------
-# tile config
-# ----------------------------------------------------------
-
-TILE_DIR = "/data/osm_work/tiles"
-GRID_SIZE = 0.18  # 約20km
 
 # ----------------------------------------------------------
 # tile index
