@@ -1025,6 +1025,7 @@ def get_node_coordinatesZ(node_ids): #グリッド跨いだ場合
     return coordinates
 
 def get_node_coordinates(node_ids):
+    print("get_node_coordinates:", 1)
 
     global _current_conn
     if osm_db_loop > 1:
@@ -1041,8 +1042,11 @@ def get_node_coordinates(node_ids):
       _current_cur = None
       return []
 
+    print("get_node_coordinates:", 2)
+
     placeholders = ",".join("?" for _ in node_ids)
 
+    print("placeholders:", placeholders)
     sql = f"""
     SELECT
         id,
@@ -1052,7 +1056,13 @@ def get_node_coordinates(node_ids):
     WHERE id IN ({placeholders})
     """
 
+    print("get_node_coordinates:", 4)
+    print("sql:", sql)
+
     rows = _current_cur.execute(sql, node_ids).fetchall()
+
+    print("get_node_coordinates:", 5)
+    print("rows:", rows)
 
     # id -> 座標
     node_map = {}
@@ -1066,13 +1076,18 @@ def get_node_coordinates(node_ids):
     # 元順序維持
     coordinates = []
 
+    print("get_node_coordinates:", 6)
+
     for node_id in node_ids:
         if node_id in node_map:
             coordinates.append(node_map[node_id])
 
+    print("get_node_coordinates:", 7)
     if _current_conn != None:
       _current_conn.close()
+    print("get_node_coordinates:", 8)
     _current_conn = None
     _current_cur = None
+    print("get_node_coordinates:", 9)
 
     return coordinates
