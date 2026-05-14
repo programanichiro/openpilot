@@ -256,18 +256,12 @@ class FanController:
       lon_max = self.longitude + lon_diff
       car_v_kph = self.velocity #km/h
 
-      print("osm_fetch:", 1)
-
       # 道路の位置情報を抽出
       road_info_list = []
       if car_v_kph > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
-        print("osm_fetch:", 2)
         response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
-        print("osm_fetch:", 3)
 
         if "elements" in response_data:
-          print("osm_fetch:", 4)
-          print("response_data:", response_data)
           for element in response_data["elements"]:
             if element["type"] == "way":
                 road_coordinates = []
@@ -279,33 +273,30 @@ class FanController:
                 else:
                     road_coordinates = [] #"NA"
                 road_name = element.get("tags", {}).get("name", "---")
-                if road_name == "" and self.osm_local_mode: #ローカルモードなら、nameタグが空文字のときは---にする。通信モードは空文字のまま。
-                  road_name = "---" #空文字も---にする。
+                # if road_name == "" and self.osm_local_mode: #ローカルモードなら、nameタグが空文字のときは---にする。通信モードは空文字のまま。
+                #   road_name = "---" #空文字も---にする。
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
+                if speed_limit == "":
+                  speed_limit = "0"
+                if speed_limit != "0" and road_name == "":
+                  road_name = "---" #速度ありで空文字は---にする。
                 if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
         #停止時は前回のをそのまま使う。
-        print("osm_fetch:", 5)
         road_info_list = self.before_road_info_list
 
-      print("osm_fetch:", 6)
       if len(road_info_list) > 0:
-        print("osm_fetch:", 7)
-        print("road_info_list:", road_info_list)
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["nodes"]
 
         if self.before_road_nodes_all == road_nodes_all:
-          print("osm_fetch:", 8)
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
           self.before_road_nodes_all_ct += 1
         else:
-          print("osm_fetch:", 9)
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
-          print("osm_fetch:", 10)
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
           self.road_nodes_all_ct += 1
@@ -313,7 +304,6 @@ class FanController:
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
-        print("osm_fetch:", 11)
         index_range = 0
         for road_info in road_info_list:
           length = len(road_info["nodes"])
@@ -338,40 +328,34 @@ class FanController:
             road_info["coords"] = road_coords2 #"nodes"は再利用するため"coords"に名前を変える。
           index_range += length
 
-        print("osm_fetch:", 12)
         #方位マッチしない道路を取り除く。
         road_info_list2 = []
         min_road_v_kph0 = 0
         limit_match_ang = 10
         while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
-          print("osm_fetch:", 100)
           for road_info in road_info_list:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
             coords = road_info["coords"]
             bears = road_info["bears"]
-            print("osm_fetch:", 101)
             idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
-              print("osm_fetch:", 102)
               dup = False
               if True:
-                print("osm_fetch:", 103)
-                if speed_limit == "0":
+                if speed_limit == "0" or speed_limit == "":
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
                     if road_info_tmp["road_name"] == road_name:
                       dup = True
                       break
-                    if road_info_tmp["road_name"] != "---" and road_name == "---":
+                    if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
                       dup = True #他に名前のある道があれば---は弾く
                       break
-                    if road_info_tmp["road_name"] == "---" and road_name != "---":
+                    if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
                       del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
                       break
                     road_info_list_ct += 1
                 else:
-                  print("osm_fetch:", 104)
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
@@ -380,31 +364,25 @@ class FanController:
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
                       del road_info_list2[road_info_list_ct]
                       break
-                    if road_info_tmp["road_name"] != "---" and road_name == "---":
+                    if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
                       dup = True #他に名前のある道があれば---は弾く
                       break
-                    if road_info_tmp["road_name"] == "---" and road_name != "---":
+                    if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
                       del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
                       break
                     road_info_list_ct += 1
               if dup == False:
-                print("osm_fetch:", 105)
                 road_info["bearing"] = bears[idx]
-                print("osm_fetch:", 106)
                 road_info_list2.append(road_info)
                 if speed_limit != "0" and speed_limit != "":
-                  print("osm_fetch:", 107)
                   speed_limit_num = int(speed_limit)
-                  print("osm_fetch:", 108)
                   if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
-                    print("osm_fetch:", 109)
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
-        print("osm_fetch:", 13)
 
       with open('/dev/shm/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
@@ -425,12 +403,9 @@ class FanController:
           fp.write('%d,0,--,9999' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
-        print("osm_fetch:", 14)
       if self.frame_net_off == 0: #通信成功なら
-        print("osm_fetch:", 15)
         self.frame_ct2 += 1 #カウントアップ
     except Exception as e:
-      print("osm_fetch:", 16)
       self.min_road_v_kph = 0
       self.frame_net_off = 1 #通信失敗
 
@@ -766,6 +741,7 @@ def tile_path(tx, ty):
 
 _current_tile = None
 _current_conn = None
+_current_cur = None
 
 
 def get_conn(tx, ty):
@@ -833,11 +809,6 @@ def tiles_in_bbox(lat_min, lon_min, lat_max, lon_max):
 # 全国版と同じcurを維持
 # ----------------------------------------------------------
 
-_current_tile = None
-_current_conn = None
-_current_cur = None
-
-
 def set_current_db(tx, ty):
 
     global _current_tile
@@ -891,7 +862,7 @@ def query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max):
 
     for tx, ty in tiles:
         osm_db_loop += 1
-        print("osm_db_loop:", osm_db_loop)
+        # print("osm_db_loop:", osm_db_loop)
 
         if not set_current_db(tx, ty):
             continue
@@ -1046,6 +1017,7 @@ def get_node_coordinates(node_ids):
       _current_cur = None
       return get_node_coordinatesZ(node_ids)
 
+    #以下、不正動作する。_current_curが壊れてる？
     if len(node_ids) == 0:
       if _current_conn != None:
         _current_conn.close()
@@ -1053,13 +1025,8 @@ def get_node_coordinates(node_ids):
       _current_cur = None
       return []
 
-    print("get_node_coordinates:", 1)
-    print("node_ids:", node_ids)
-    print("get_node_coordinates:", 2)
-
     placeholders = ",".join("?" for _ in node_ids)
 
-    print("placeholders:", placeholders)
     sql = f"""
     SELECT
         id,
@@ -1069,16 +1036,7 @@ def get_node_coordinates(node_ids):
     WHERE id IN ({placeholders})
     """
 
-    print("get_node_coordinates:", 4)
-    print("sql:", sql)
-    print("get_node_coordinates:", 44)
-    print("_current_cur:", _current_cur)
-    print("get_node_coordinates:", 45)
-
     rows = _current_cur.execute(sql, node_ids).fetchall()
-
-    print("get_node_coordinates:", 5)
-    print("rows:", rows)
 
     # id -> 座標
     node_map = {}
@@ -1092,18 +1050,13 @@ def get_node_coordinates(node_ids):
     # 元順序維持
     coordinates = []
 
-    print("get_node_coordinates:", 6)
-
     for node_id in node_ids:
         if node_id in node_map:
             coordinates.append(node_map[node_id])
 
-    print("get_node_coordinates:", 7)
     if _current_conn != None:
       _current_conn.close()
-    print("get_node_coordinates:", 8)
     _current_conn = None
     _current_cur = None
-    print("get_node_coordinates:", 9)
 
     return coordinates
