@@ -267,6 +267,7 @@ class FanController:
 
         if "elements" in response_data:
           print("osm_fetch:", 4)
+          print("response_data:", response_data)
           for element in response_data["elements"]:
             if element["type"] == "way":
                 road_coordinates = []
@@ -292,6 +293,7 @@ class FanController:
       print("osm_fetch:", 6)
       if len(road_info_list) > 0:
         print("osm_fetch:", 7)
+        print("road_info_list:", road_info_list)
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["nodes"]
