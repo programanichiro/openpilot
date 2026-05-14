@@ -773,6 +773,7 @@ def get_conn(tx, ty):
     if _current_conn is not None:
         _current_conn.close()
         _current_conn = None
+    _current_cur = None
 
     path = tile_path(tx, ty)
 
@@ -1028,7 +1029,7 @@ def get_node_coordinatesZ(node_ids): #グリッド跨いだ場合
 def get_node_coordinates(node_ids):
 
     global _current_conn
-    if osm_db_loop > 1:
+    if True or osm_db_loop > 1:
       if _current_conn != None:
         _current_conn.close()
       _current_conn = None
