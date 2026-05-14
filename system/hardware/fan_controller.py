@@ -256,12 +256,17 @@ class FanController:
       lon_max = self.longitude + lon_diff
       car_v_kph = self.velocity #km/h
 
+      print("osm_fetch:", 1)
+
       # 道路の位置情報を抽出
       road_info_list = []
       if car_v_kph > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
+        print("osm_fetch:", 2)
         response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
+        print("osm_fetch:", 3)
 
         if "elements" in response_data:
+          print("osm_fetch:", 4)
           for element in response_data["elements"]:
             if element["type"] == "way":
                 road_coordinates = []
@@ -281,18 +286,24 @@ class FanController:
         self.before_road_info_list = road_info_list
       else:
         #停止時は前回のをそのまま使う。
+        print("osm_fetch:", 5)
         road_info_list = self.before_road_info_list
 
+      print("osm_fetch:", 6)
       if len(road_info_list) > 0:
+        print("osm_fetch:", 7)
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["nodes"]
 
         if self.before_road_nodes_all == road_nodes_all:
+          print("osm_fetch:", 8)
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
           self.before_road_nodes_all_ct += 1
         else:
+          print("osm_fetch:", 9)
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
+          print("osm_fetch:", 10)
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
           self.road_nodes_all_ct += 1
@@ -300,6 +311,7 @@ class FanController:
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
+        print("osm_fetch:", 11)
         index_range = 0
         for road_info in road_info_list:
           length = len(road_info["nodes"])
@@ -324,6 +336,7 @@ class FanController:
             road_info["coords"] = road_coords2 #"nodes"は再利用するため"coords"に名前を変える。
           index_range += length
 
+        print("osm_fetch:", 12)
         #方位マッチしない道路を取り除く。
         road_info_list2 = []
         min_road_v_kph0 = 0
@@ -379,6 +392,7 @@ class FanController:
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
+        print("osm_fetch:", 13)
 
       with open('/dev/shm/road_info.txt','w') as fp:
         # fp.write('th_id:%s\n' % (self.th_id))
@@ -399,9 +413,12 @@ class FanController:
           fp.write('%d,0,--,9999' % (self.th_id))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
+        print("osm_fetch:", 14)
       if self.frame_net_off == 0: #通信成功なら
+        print("osm_fetch:", 15)
         self.frame_ct2 += 1 #カウントアップ
     except Exception as e:
+      print("osm_fetch:", 16)
       self.min_road_v_kph = 0
       self.frame_net_off = 1 #通信失敗
 
