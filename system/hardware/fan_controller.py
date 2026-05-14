@@ -1061,6 +1061,7 @@ def get_node_coordinates(node_ids):
     print("get_node_coordinates:", 4)
     print("sql:", sql)
     print("_current_cur:", _current_cur)
+    print("get_node_coordinates:", 44)
 
     rows = _current_cur.execute(sql, node_ids).fetchall()
 
