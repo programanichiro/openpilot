@@ -140,7 +140,7 @@ class FanController:
     self.osm_local_mode = False
     if os.path.exists(TILE_DIR):
       self.osm_local_mode = True
-    self.debug_ct_osm = 0
+    #self.debug_ct_osm = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
@@ -267,7 +267,6 @@ class FanController:
 
       # 道路の位置情報を抽出
       road_info_list = []
-      ddddd = "a"
       if car_v_kph > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
         response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
 
@@ -335,72 +334,53 @@ class FanController:
             road_info["bears"] = road_bear
             road_info["coords"] = road_coords2 #"nodes"は再利用するため"coords"に名前を変える。
           index_range += length
-        ddddd += "n"
-        if len(road_info_list) == 0:
-          ddddd += "Z"
 
         #方位マッチしない道路を取り除く。
         road_info_list2 = []
         min_road_v_kph0 = 0
         limit_match_ang = 10
         while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
-          ddddd += "o"
-          if len(road_info_list) == 0:
-            ddddd += "Z"
           for road_info in road_info_list:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
             coords = road_info["coords"]
             bears = road_info["bears"]
             idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
-            ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
+            #ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
-              ddddd += "="
+              #ddddd += "="
               dup = False
               if True:
                 if speed_limit == "0" or speed_limit == "":
-                  ddddd += "A"
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
                     if road_info_tmp["road_name"] == road_name:
-                      ddddd += "B"
                       dup = True
                       break
                     if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
-                      ddddd += "C"
                       dup = True #他に名前のある道があれば---は弾く
                       break
                     if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
-                      ddddd += "D"
                       del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
                       break
-                    ddddd += "E"
                     road_info_list_ct += 1
                 else:
-                  ddddd += "F"
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
-                      ddddd += "G"
                       dup = True #速度と名前が同じでも弾く。
                       break
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
-                      ddddd += "H"
                       del road_info_list2[road_info_list_ct]
                       break
                     if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
-                      ddddd += "I"
                       dup = True #他に名前のある道があれば---は弾く
                       break
                     if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
-                      ddddd += "j"
                       del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
                       break
-                    ddddd += "K"
                     road_info_list_ct += 1
-              ddddd += "L"
               if (dup == False) and (road_name != "" or speed_limit != "0"):
-                ddddd += "M"
                 road_info["bearing"] = bears[idx]
                 road_info_list2.append(road_info)
                 if speed_limit != "0" and speed_limit != "":
@@ -409,13 +389,7 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
-        ddddd += "p"
-        if len(road_info_list) == 0:
-          ddddd += "Z"
         road_info_list = road_info_list2
-        ddddd += "q"
-        if len(road_info_list) == 0:
-          ddddd += "Z"
 
         self.min_road_v_kph = min_road_v_kph0
 
@@ -435,8 +409,9 @@ class FanController:
           road_info_list_select_ct += 1
         if len(road_info_list) == 0:
           self.min_road_v_kph = 0
-          self.debug_ct_osm += 1
-          fp.write('%d,0,--,%s<%f,%f>' % (self.th_id,str(self.bearing)+ddddd+str(self.debug_ct_osm),self.latitude,self.longitude))
+          fp.write('%d,0,--,9999' % (self.th_id))
+          # self.debug_ct_osm += 1
+          # fp.write('%d,0,--,%s<%f,%f>' % (self.th_id,str(self.bearing)+ddddd+str(self.debug_ct_osm),self.latitude,self.longitude))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
       if self.frame_net_off == 0: #通信成功なら
