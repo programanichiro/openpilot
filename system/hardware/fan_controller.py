@@ -145,7 +145,7 @@ class FanController:
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
     if self.osm_local_mode:
-      return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
+      return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing)
 
     #overpass_url = "https://overpass.private.coffee/api/interpreter"
     query = f"""
@@ -718,7 +718,7 @@ class FanController:
     #   fp.write('osm_fetch:%d, %.5f, %.5f' % (self.thread == None,self.latitude,self.longitude))
     if self.thread == None and (self.latitude != 0 or self.longitude != 0):
       try:
-        self.distance = 2 * 50 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+        self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
         self_thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
         self.thread = self_thread
         #self_thread.setDaemon(True)
@@ -873,7 +873,318 @@ def set_current_db(tx, ty):
 # ----------------------------------------------------------
 osm_db_loop = 0
 osm_tiles = None
-def query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max):
+
+# ----------------------------------------------------------
+# meter scale
+# ----------------------------------------------------------
+
+def latlon_to_meter_scale(lat):
+
+    lat_rad = math.radians(lat)
+
+    meter_per_lat = 111320.0
+
+    meter_per_lon = (
+        111320.0 *
+        math.cos(lat_rad)
+    )
+
+    return meter_per_lat, meter_per_lon
+
+
+# ----------------------------------------------------------
+# world -> vehicle local
+#
+# front:
+#   + front
+#   - back
+#
+# side:
+#   + right
+#   - left
+# ----------------------------------------------------------
+
+def world_to_vehicle_local(
+    car_lat,
+    car_lon,
+    car_bear,
+    lat,
+    lon
+):
+
+    meter_per_lat, meter_per_lon = \
+        latlon_to_meter_scale(car_lat)
+
+    dy = (
+        lat - car_lat
+    ) * meter_per_lat
+
+    dx = (
+        lon - car_lon
+    ) * meter_per_lon
+
+    rad = math.radians(car_bear)
+
+    sin_r = math.sin(rad)
+    cos_r = math.cos(rad)
+
+    front_m = (
+        dx * sin_r +
+        dy * cos_r
+    )
+
+    side_m = (
+        dx * cos_r -
+        dy * sin_r
+    )
+
+    return front_m, side_m
+
+
+# ----------------------------------------------------------
+# query roads
+# ----------------------------------------------------------
+
+def query_roads_in_bbox(
+    lat_min,
+    lon_min,
+    lat_max,
+    lon_max,
+    car_bear
+):
+
+    global osm_db_loop
+    global osm_tiles
+
+    osm_db_loop = 0
+    osm_tiles = None
+
+    # ------------------------------------------------------
+    # bbox center
+    # ------------------------------------------------------
+
+    car_lat = (
+        lat_min + lat_max
+    ) * 0.5
+
+    car_lon = (
+        lon_min + lon_max
+    ) * 0.5
+
+    # ------------------------------------------------------
+    # meter scale
+    # ------------------------------------------------------
+
+    meter_per_lat, meter_per_lon = \
+        latlon_to_meter_scale(car_lat)
+
+    # ------------------------------------------------------
+    # bbox half size
+    # ------------------------------------------------------
+
+    half_h_m = (
+        (lat_max - lat_min)
+        * meter_per_lat
+        * 0.5
+    )
+
+    half_w_m = (
+        (lon_max - lon_min)
+        * meter_per_lon
+        * 0.5
+    )
+
+    # ------------------------------------------------------
+    # search rect size
+    # ------------------------------------------------------
+
+    side_limit_m = max(
+        half_h_m,
+        half_w_m
+    )
+
+    front_limit_m = side_limit_m * 4.0
+
+    # ------------------------------------------------------
+    # rough bbox
+    #
+    # rotated rect outer bbox
+    # ------------------------------------------------------
+
+    rough_radius_m = front_limit_m
+
+    lat_expand = (
+        rough_radius_m /
+        meter_per_lat
+    )
+
+    lon_expand = (
+        rough_radius_m /
+        meter_per_lon
+    )
+
+    query_lat_min = car_lat - lat_expand
+    query_lat_max = car_lat + lat_expand
+
+    query_lon_min = car_lon - lon_expand
+    query_lon_max = car_lon + lon_expand
+
+    # ------------------------------------------------------
+    # tiles
+    # ------------------------------------------------------
+
+    tiles = tiles_in_bbox(
+        query_lat_min,
+        query_lon_min,
+        query_lat_max,
+        query_lon_max
+    )
+
+    osm_tiles = tiles
+
+    elements = []
+
+    seen_way_ids = set()
+
+    # ------------------------------------------------------
+    # tile loop
+    # ------------------------------------------------------
+
+    for tx, ty in tiles:
+
+        osm_db_loop += 1
+
+        if not set_current_db(tx, ty):
+            continue
+
+        cur = _current_cur
+
+        # --------------------------------------------------
+        # rough candidate search
+        # --------------------------------------------------
+
+        sql = """
+        SELECT
+            ways.id,
+            ways.name,
+            ways.highway,
+            ways.maxspeed
+        FROM ways
+        JOIN way_nodes
+          ON ways.id = way_nodes.way_id
+        JOIN nodes
+          ON way_nodes.node_id = nodes.id
+        WHERE
+          nodes.lat BETWEEN ? AND ?
+          AND
+          nodes.lon BETWEEN ? AND ?
+        """
+
+        rows = cur.execute(sql, (
+            query_lat_min,
+            query_lat_max,
+            query_lon_min,
+            query_lon_max
+        )).fetchall()
+
+        # --------------------------------------------------
+        # way loop
+        # --------------------------------------------------
+
+        for r in rows:
+
+            way_id = r["id"]
+
+            # ----------------------------------------------
+            # tile duplicate remove
+            # ----------------------------------------------
+
+            if way_id in seen_way_ids:
+                continue
+
+            # ----------------------------------------------
+            # full way geometry
+            # ----------------------------------------------
+
+            node_sql = """
+            SELECT
+                nodes.id,
+                nodes.lat,
+                nodes.lon
+            FROM way_nodes
+            JOIN nodes
+              ON way_nodes.node_id = nodes.id
+            WHERE way_nodes.way_id = ?
+            ORDER BY way_nodes.rowid
+            """
+
+            node_rows = cur.execute(
+                node_sql,
+                (way_id,)
+            ).fetchall()
+
+            # ----------------------------------------------
+            # rotated rectangle hit test
+            # ----------------------------------------------
+
+            hit = False
+
+            node_ids = []
+
+            for n in node_rows:
+
+                node_ids.append(
+                    n["id"]
+                )
+
+                front_m, side_m = \
+                    world_to_vehicle_local(
+                        car_lat,
+                        car_lon,
+                        car_bear,
+                        n["lat"],
+                        n["lon"]
+                    )
+
+                if (
+                    abs(front_m) <= front_limit_m
+                    and
+                    abs(side_m) <= side_limit_m
+                ):
+
+                    hit = True
+
+            # ----------------------------------------------
+            # reject
+            # ----------------------------------------------
+
+            if not hit:
+                continue
+
+            seen_way_ids.add(
+                way_id
+            )
+
+            # ----------------------------------------------
+            # append
+            # ----------------------------------------------
+
+            elements.append({
+                "type": "way",
+                "id": way_id,
+                "nodes": node_ids,
+                "tags": {
+                    "name": r["name"],
+                    "highway": r["highway"],
+                    "maxspeed": r["maxspeed"]
+                }
+            })
+
+    return {
+        "elements": elements
+    }
+
+def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max):
     global osm_db_loop,osm_tiles
     osm_db_loop = 0
     osm_tiles = None
