@@ -266,10 +266,14 @@ class FanController:
 
       # 道路の位置情報を抽出
       road_info_list = []
+      ddddd = "a"
       if car_v_kph > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
+        ddddd += "b"
         response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
 
+        ddddd += "c"
         if "elements" in response_data:
+          ddddd += "d"
           for element in response_data["elements"]:
             if element["type"] == "way":
                 road_coordinates = []
@@ -288,21 +292,29 @@ class FanController:
                   road_name = "---" #速度ありで空文字は---にする。
                 if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
+          ddddd += "e"
         self.before_road_info_list = road_info_list
+        ddddd += "f"
       else:
+        ddddd += "g"
         #停止時は前回のをそのまま使う。
         road_info_list = self.before_road_info_list
 
+      ddddd += "h"
       if len(road_info_list) > 0:
+        ddddd += "i"
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["nodes"]
 
         if self.before_road_nodes_all == road_nodes_all:
+          ddddd += "j"
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
           self.before_road_nodes_all_ct += 1
         else:
+          ddddd += "k"
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
+          ddddd += "l"
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
           self.road_nodes_all_ct += 1
@@ -310,6 +322,7 @@ class FanController:
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
+        ddddd += "m"
         index_range = 0
         for road_info in road_info_list:
           length = len(road_info["nodes"])
@@ -333,12 +346,18 @@ class FanController:
             road_info["bears"] = road_bear
             road_info["coords"] = road_coords2 #"nodes"は再利用するため"coords"に名前を変える。
           index_range += length
+        ddddd += "n"
+        if len(road_info_list) == 0:
+          ddddd += "Z"
 
         #方位マッチしない道路を取り除く。
         road_info_list2 = []
         min_road_v_kph0 = 0
         limit_match_ang = 10
         while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
+          ddddd += "o"
+          if len(road_info_list) == 0:
+            ddddd += "Z"
           for road_info in road_info_list:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
@@ -386,7 +405,13 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
+        ddddd += "p"
+        if len(road_info_list) == 0:
+          ddddd += "Z"
         road_info_list = road_info_list2
+        ddddd += "q"
+        if len(road_info_list) == 0:
+          ddddd += "Z"
 
         self.min_road_v_kph = min_road_v_kph0
 
@@ -406,7 +431,8 @@ class FanController:
           road_info_list_select_ct += 1
         if len(road_info_list) == 0:
           self.min_road_v_kph = 0
-          fp.write('%d,0,--,%d' % (self.th_id,self.bearing))
+          self.debug_ct_osm += 1
+          fp.write('%d,0,--,%s' % (self.th_id,str(self.bearing)+ddddd+str(self.debug_ct_osm)))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
       if self.frame_net_off == 0: #通信成功なら
