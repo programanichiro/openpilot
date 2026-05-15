@@ -729,11 +729,12 @@ class HudRenderer(Widget):
       y_pos2 = rect.y+font_size+3 #速度用
 
     if self.road_info_txt:
+      gui_rate = 50 / self.dt #20fpsよりリfpsが速いc4対策。
       road_th_ct_ct_limit = 30 #30秒無通信チェック。
       if self.speed < 0.1: #velo_for_trans = self.speed #km/h
         road_th_ct_ct_limit = 180 #停止時は3分まで伸ばす。
 
-      if self.road_name == False or (self.road_name == "--" and self.kmh == "0") or self.road_th_ct_ct > road_th_ct_ct_limit * 20:
+      if self.road_name == False or (self.road_name == "--" and self.kmh == "0") or self.road_th_ct_ct > road_th_ct_ct_limit * 20 *gui_rate:
         self.road_info_txt_flag = False
       else:
         self.road_info_txt_flag = True
