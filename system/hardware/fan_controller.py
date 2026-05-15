@@ -251,11 +251,6 @@ class FanController:
       #self.th_ct += 1
       #print("スレッドct:", th_ct)
 
-      self.latitude = 35.320168
-      self.longitude = 139.399814
-      self.bearing = 188 #通信遅れを考慮して、角度だけは保存値を使わない。
-      self.velocity = 20 #km/h
-
       # 矩形領域内の道路データをクエリ
       lat_diff = self.distance / 111111  # 緯度1度あたりの距離
       lon_diff = self.distance / (111111 * math.cos(math.radians(self.latitude)))  # 経度1度あたりの距離
@@ -263,7 +258,6 @@ class FanController:
       # now_latitude = self.latitude #20260429通信遅れを考慮して座標も保存値を使わない。
       # now_longitude = self.longitude
       # now_car_bear = self.bearing #通信遅れを考慮して、角度だけは保存値を使わない。
-
       lat_min = self.latitude - lat_diff
       lat_max = self.latitude + lat_diff
       lon_min = self.longitude - lon_diff
@@ -344,7 +338,7 @@ class FanController:
         road_info_list2 = []
         min_road_v_kph0 = 0
         limit_match_ang = 10
-        while len(road_info_list2) == 0 and limit_match_ang <= 35: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
+        while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
           for road_info in road_info_list:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
@@ -390,8 +384,7 @@ class FanController:
                   speed_limit_num = int(speed_limit)
                   if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
-          #limit_match_ang += 10 #10,20のみ実行
-          limit_match_ang += 5 #10,20のみ実行
+          limit_match_ang += 10 #10,20のみ実行
 
         road_info_list = road_info_list2
 
