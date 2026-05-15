@@ -251,6 +251,10 @@ class FanController:
       #self.th_ct += 1
       #print("スレッドct:", th_ct)
 
+      self.latitude = 35.320168
+      self.longitude = 139.399814
+      self.bearing = 188 #通信遅れを考慮して、角度だけは保存値を使わない。
+
       # 矩形領域内の道路データをクエリ
       lat_diff = self.distance / 111111  # 緯度1度あたりの距離
       lon_diff = self.distance / (111111 * math.cos(math.radians(self.latitude)))  # 経度1度あたりの距離
@@ -258,10 +262,6 @@ class FanController:
       # now_latitude = self.latitude #20260429通信遅れを考慮して座標も保存値を使わない。
       # now_longitude = self.longitude
       # now_car_bear = self.bearing #通信遅れを考慮して、角度だけは保存値を使わない。
-
-      self.latitude = 35.320168
-      self.longitude = 139.399814
-      self.bearing = 188 #通信遅れを考慮して、角度だけは保存値を使わない。
 
       lat_min = self.latitude - lat_diff
       lat_max = self.latitude + lat_diff
