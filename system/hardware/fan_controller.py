@@ -140,6 +140,7 @@ class FanController:
     self.osm_local_mode = False
     if os.path.exists(TILE_DIR):
       self.osm_local_mode = True
+    self.debug_ct_osm = 0
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
