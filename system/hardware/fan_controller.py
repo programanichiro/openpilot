@@ -407,7 +407,7 @@ class FanController:
           road_info_list_select_ct += 1
         if len(road_info_list) == 0:
           self.min_road_v_kph = 0
-          fp.write('%d,0,--,9999' % (self.th_id))
+          fp.write('%d,0,--,%d' % (self.th_id,self.bearing))
           # fp.write(' road_name:%s\n' % ("--"))
           # fp.write(' speed_max:%s\n' % (0))
       if self.frame_net_off == 0: #通信成功なら
