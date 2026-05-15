@@ -269,12 +269,9 @@ class FanController:
       road_info_list = []
       ddddd = "a"
       if car_v_kph > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
-        ddddd += "b"
         response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
 
-        ddddd += "c"
         if "elements" in response_data:
-          ddddd += "d"
           for element in response_data["elements"]:
             if element["type"] == "way":
                 road_coordinates = []
@@ -293,29 +290,21 @@ class FanController:
                   road_name = "---" #速度ありで空文字は---にする。
                 if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
-          ddddd += "e"
         self.before_road_info_list = road_info_list
-        ddddd += "f"
       else:
-        ddddd += "g"
         #停止時は前回のをそのまま使う。
         road_info_list = self.before_road_info_list
 
-      ddddd += "h"
       if len(road_info_list) > 0:
-        ddddd += "i"
         road_nodes_all = []
         for road_info in road_info_list:
           road_nodes_all += road_info["nodes"]
 
         if self.before_road_nodes_all == road_nodes_all:
-          ddddd += "j"
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
           self.before_road_nodes_all_ct += 1
         else:
-          ddddd += "k"
           road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
-          ddddd += "l"
           self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
           self.before_road_coords_all = road_coords_all #参照渡しで十分。
           self.road_nodes_all_ct += 1
@@ -323,7 +312,6 @@ class FanController:
         # with open('/tmp/debug_out_o','w') as fp:
         #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
 
-        ddddd += "m"
         index_range = 0
         for road_info in road_info_list:
           length = len(road_info["nodes"])
@@ -369,35 +357,48 @@ class FanController:
               dup = False
               if True:
                 if speed_limit == "0" or speed_limit == "":
+                  ddddd += "A"
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
                     if road_info_tmp["road_name"] == road_name:
+                      ddddd += "B"
                       dup = True
                       break
                     if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
+                      ddddd += "C"
                       dup = True #他に名前のある道があれば---は弾く
                       break
                     if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
+                      ddddd += "D"
                       del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
                       break
+                    ddddd += "E"
                     road_info_list_ct += 1
                 else:
+                  ddddd += "F"
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
+                      ddddd += "G"
                       dup = True #速度と名前が同じでも弾く。
                       break
                     if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
+                      ddddd += "H"
                       del road_info_list2[road_info_list_ct]
                       break
                     if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
+                      ddddd += "I"
                       dup = True #他に名前のある道があれば---は弾く
                       break
                     if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
+                      ddddd += "j"
                       del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
                       break
+                    ddddd += "K"
                     road_info_list_ct += 1
+              ddddd += "L"
               if (dup == False) and (road_name != "" or speed_limit != "0"):
+                ddddd += "M"
                 road_info["bearing"] = bears[idx]
                 road_info_list2.append(road_info)
                 if speed_limit != "0" and speed_limit != "":
