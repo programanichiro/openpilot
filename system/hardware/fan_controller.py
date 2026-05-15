@@ -430,7 +430,7 @@ class FanController:
             fp.write('%d,%s,%s,%d' % (self.th_id , speed_limit , road_name,road_bearing))
             break
           road_info_list_select_ct += 1
-        if len(road_info_list) == 0 or True:
+        if len(road_info_list) == 0:
           self.min_road_v_kph = 0
           self.debug_ct_osm += 1
           fp.write('%d,0,--,%s' % (self.th_id,str(self.bearing)+ddddd+str(self.debug_ct_osm)))
