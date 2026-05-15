@@ -906,7 +906,7 @@ def query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max):
             SELECT node_id
             FROM way_nodes
             WHERE way_id = ?
-            ORDER BY seq
+            ORDER BY rowid
             """
 
             node_rows = cur.execute(
