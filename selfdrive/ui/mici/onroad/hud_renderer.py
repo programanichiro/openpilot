@@ -763,14 +763,20 @@ class HudRenderer(Widget):
     rect_h = rect.y+rect.height
     if self.osm_per >= 0:
       h = rect.height * self.osm_per // 100
+      w_rate = 1.0
       wp1 = osm_w
       if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < (166 if gui_app.big_ui() else 500): #100フレーム以上変化がなければ、通信断絶とみなす。c4は60fpsなので300フレーム以上にする。
         osm_bar_color = rl.Color(0, 245, 0, 200) #緑
+        trans_point = 90 #90パーセント以上で、メーターを消す
+        if self.osm_per > trans_point:
+          w_rate -= (self.osm_per - trans_point) / (100 - trans_point)
+          if w_rate < 0:
+            w_rate = 0
       else:
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
 
 #      rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
-      rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1), int(h))
+      rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1*w_rate), int(h))
       rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
 
     self.knightScanner(rect)
