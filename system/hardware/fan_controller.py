@@ -353,7 +353,9 @@ class FanController:
             coords = road_info["coords"]
             bears = road_info["bears"]
             idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
+            ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
+              ddddd += "="
               dup = False
               if True:
                 if speed_limit == "0" or speed_limit == "":
