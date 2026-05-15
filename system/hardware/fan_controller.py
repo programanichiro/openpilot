@@ -338,7 +338,7 @@ class FanController:
         road_info_list2 = []
         min_road_v_kph0 = 0
         limit_match_ang = 10
-        while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
+        while len(road_info_list2) == 0 and limit_match_ang <= 35: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
           for road_info in road_info_list:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
@@ -384,7 +384,8 @@ class FanController:
                   speed_limit_num = int(speed_limit)
                   if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
-          limit_match_ang += 10 #10,20のみ実行
+          #limit_match_ang += 10 #10,20のみ実行
+          limit_match_ang += 5 #10,20のみ実行
 
         road_info_list = road_info_list2
 
