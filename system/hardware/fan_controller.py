@@ -241,10 +241,34 @@ class FanController:
       return 1
     return nearest_index
 
-  def check_angle_match(self,road_bear , car_bear , limit_ang):
+  def check_angle_match(self, road_bear , car_bear , limit_ang):
           abs_bear = math.fabs(road_bear - car_bear)
           diff_bear = 360 - abs_bear if abs_bear > 180 else abs_bear
           return diff_bear <= limit_ang or diff_bear >= 180 - limit_ang
+
+  def get_distance(self, lat1, lon1, lat2, lon2):
+      """
+      2つの緯度経度から距離を計算する関数
+      """
+      # 緯度経度をラジアンに変換
+      lat1_rad = math.radians(lat1)
+      lon1_rad = math.radians(lon1)
+      lat2_rad = math.radians(lat2)
+      lon2_rad = math.radians(lon2)
+
+      # 緯度と経度の差を計算
+      delta_lat = lat2_rad - lat1_rad
+      delta_lon = lon2_rad - lon1_rad
+
+      # 地球の半径（メートル）
+      earth_radius = 6371000
+
+      # ハバースイン法を使って距離を計算
+      a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
+      c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+      distance = earth_radius * c
+
+      return distance
 
   def osm_fetch(self):
     try:
@@ -346,6 +370,9 @@ class FanController:
             coords = road_info["coords"]
             bears = road_info["bears"]
             idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
+            #このようにすれば道路までの距離が取れる。self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
+            #road_info_list2は距離の短い順にソートしているわけでもなさそう。これでも精度的にはかなり十分だが。
+            #自車から道路までの距離ロジックは線分coordsに対してちょっと手間をかける必要がある。
             #ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
               #ddddd += "="
@@ -748,32 +775,13 @@ def tile_path(tx, ty):
 # db cache
 # ----------------------------------------------------------
 
-_current_tile = None
-_current_conn = None
-_current_cur = None
-
+#_current_conn = None #削除
 
 def get_conn(tx, ty):
-
-    global _current_tile
-    global _current_conn,_current_cur
-
-    key = (tx, ty)
-
-    # 同じtileならそのまま
-    if _current_tile == key and _current_conn != None:
-        return _current_conn
-
-    # 以前のDB閉じる
-    if _current_conn is not None:
-        _current_conn.close()
-        _current_conn = None
-    _current_cur = None
 
     path = tile_path(tx, ty)
 
     if not os.path.exists(path):
-        _current_tile = None
         return None
 
     conn = sqlite3.connect(
@@ -782,15 +790,6 @@ def get_conn(tx, ty):
     )
 
     conn.row_factory = sqlite3.Row
-
-    cur = conn.cursor()
-
-    cur.execute("PRAGMA mmap_size = 33554432")
-    cur.execute("PRAGMA cache_size = -8192")
-
-    _current_tile = key
-    _current_conn = conn
-    _current_cur = cur
 
     return conn
 
@@ -811,38 +810,6 @@ def tiles_in_bbox(lat_min, lon_min, lat_max, lon_max):
             result.append((tx, ty))
 
     return result
-
-
-# ----------------------------------------------------------
-# current db
-# 全国版と同じcurを維持
-# ----------------------------------------------------------
-
-def set_current_db(tx, ty):
-
-    global _current_tile
-    global _current_conn
-    global _current_cur
-
-    key = (tx, ty)
-
-    if _current_tile == key and _current_conn != None:
-        return True
-
-    conn = get_conn(tx, ty)
-
-    if conn is None:
-      if _current_conn != None:
-        _current_conn.close()
-      _current_conn = None
-      _current_cur = None
-      return False
-
-    _current_tile = key
-    _current_conn = conn
-    _current_cur = conn.cursor()
-
-    return True
 
 
 # ----------------------------------------------------------
@@ -1032,10 +999,12 @@ def query_roads_in_bbox(
 
         osm_db_loop += 1
 
-        if not set_current_db(tx, ty):
+        conn = get_conn(tx, ty)
+
+        if conn == None:
             continue
 
-        cur = _current_cur
+        cur = conn.cursor()
 
         # --------------------------------------------------
         # rough candidate search
@@ -1158,11 +1127,13 @@ def query_roads_in_bbox(
                 }
             })
 
+        conn.close()
+
     return {
         "elements": elements
     }
 
-def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max):
+def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max): #正方形取得の旧バージョン、要らない。
     global osm_db_loop,osm_tiles
     osm_db_loop = 0
     osm_tiles = None
@@ -1184,10 +1155,12 @@ def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max):
         osm_db_loop += 1
         # print("osm_db_loop:", osm_db_loop)
 
-        if not set_current_db(tx, ty):
+        conn = get_conn(tx, ty)
+
+        if conn == None:
             continue
 
-        cur = _current_cur
+        cur = conn.cursor()
 
         sql = """
         SELECT
@@ -1248,6 +1221,8 @@ def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max):
                     "maxspeed": r["maxspeed"]
                 }
             })
+
+        conn.close()
 
     return {
         "elements": elements
@@ -1328,55 +1303,7 @@ def get_node_coordinatesZ(node_ids): #グリッド跨いだ場合
     return coordinates
 
 def get_node_coordinates(node_ids):
+    #ここはquery_roads_in_bboxを通らずにくる可能性があるから、そのとき_current_connは作られていない。なので毎度get_node_coordinatesZでconnt作らざるを得ない。
+    return get_node_coordinatesZ(node_ids)
+    #_current_conn流用の旧処理は削除
 
-    global _current_conn
-    if True or osm_db_loop > 1:
-      if _current_conn != None:
-        _current_conn.close()
-      _current_conn = None
-      _current_cur = None
-      return get_node_coordinatesZ(node_ids)
-
-    #以下、不正動作する。_current_curが壊れてる？
-    if len(node_ids) == 0:
-      if _current_conn != None:
-        _current_conn.close()
-      _current_conn = None
-      _current_cur = None
-      return []
-
-    placeholders = ",".join("?" for _ in node_ids)
-
-    sql = f"""
-    SELECT
-        id,
-        lat,
-        lon
-    FROM nodes
-    WHERE id IN ({placeholders})
-    """
-
-    rows = _current_cur.execute(sql, node_ids).fetchall()
-
-    # id -> 座標
-    node_map = {}
-
-    for r in rows:
-        node_map[r["id"]] = (
-            r["lat"],
-            r["lon"]
-        )
-
-    # 元順序維持
-    coordinates = []
-
-    for node_id in node_ids:
-        if node_id in node_map:
-            coordinates.append(node_map[node_id])
-
-    if _current_conn != None:
-      _current_conn.close()
-    _current_conn = None
-    _current_cur = None
-
-    return coordinates
