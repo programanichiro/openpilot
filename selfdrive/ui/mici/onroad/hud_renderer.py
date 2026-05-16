@@ -382,7 +382,8 @@ class HudRenderer(Widget):
       max_color,
     )
 
-    set_speed_rect = rl.Rectangle(x+50, y, circle_radius*2-50+30, circle_radius*2+20)
+    offset_y = 0 if gui_app.big_ui() else 20 #c4で_set_speed_MAX_buttonと_accel_ctrl_disable_buttonが被らないように少し小さく。
+    set_speed_rect = rl.Rectangle(x+50, y + offset_y, circle_radius*2-50+30, circle_radius*2+20-offset_y)
     self._set_speed_MAX_button.render(set_speed_rect)
 
   def _draw_current_speed(self, rect: rl.Rectangle) -> None:
