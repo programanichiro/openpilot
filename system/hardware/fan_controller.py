@@ -141,11 +141,16 @@ class FanController:
     if os.path.exists(TILE_DIR):
       self.osm_local_mode = True
     #self.debug_ct_osm = 0
+    self.osm_front_back_long_mode = False
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
     if self.osm_local_mode:
-      return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing)
+      if self.osm_front_back_long_mode == False:
+        return query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max)
+      else:
+        #self.osm_front_back_long_mode = False,ここでクリアはまずい。呼び出し元でクリアする。
+        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing)
 
     #overpass_url = "https://overpass.private.coffee/api/interpreter"
     query = f"""
@@ -272,9 +277,10 @@ class FanController:
 
   def osm_fetch(self):
     try:
-      self.th_id += 1
-      #self.th_ct += 1
-      #print("スレッドct:", th_ct)
+      if self.osm_front_back_long_mode == False:
+        self.th_id += 1
+        #self.th_ct += 1
+        #print("スレッドct:", th_ct)
 
       # 矩形領域内の道路データをクエリ
       lat_diff = self.distance / 111111  # 緯度1度あたりの距離
@@ -315,7 +321,7 @@ class FanController:
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
-        #停止時は前回のをそのまま使う。
+        #停止時は前回のをそのまま使う。来正方形→長方形の検索をするとself.before_road_info_listは長方形検索の結果になる。
         road_info_list = self.before_road_info_list
 
       if len(road_info_list) > 0:
@@ -324,6 +330,7 @@ class FanController:
           road_nodes_all += road_info["nodes"]
 
         if self.before_road_nodes_all == road_nodes_all:
+          #従来正方形→長方形の検索をすると、ここには全く来なくなる可能性あり。
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
           self.before_road_nodes_all_ct += 1
         else:
@@ -416,6 +423,14 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
+        if self.osm_local_mode == True and len(road_info_list2) == 0 and self.osm_front_back_long_mode == False:
+           #方位マッチする道路が一つもなかったら、前後長方形で再検索する。
+          self.osm_front_back_long_mode = True
+          self.osm_fetch()
+          self.osm_front_back_long_mode = False
+          return
+
+        #ここでもしlen(road_info_list2) == 0 なら長方形取得をやり直す。
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
@@ -1133,7 +1148,7 @@ def query_roads_in_bbox(
         "elements": elements
     }
 
-def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max): #正方形取得の旧バージョン、要らない。
+def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max): #正方形取得の旧バージョン、先にこちらで検査する。
     global osm_db_loop,osm_tiles
     osm_db_loop = 0
     osm_tiles = None
