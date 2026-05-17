@@ -141,16 +141,16 @@ class FanController:
     if os.path.exists(TILE_DIR):
       self.osm_local_mode = True
     #self.debug_ct_osm = 0
-    self.osm_front_back_long_mode = False
+    self.osm_front_back_long_mode = 0 #0→1→2の順で検索。2が最終的に最も広い範囲を取る。
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
     if self.osm_local_mode:
-      if self.osm_front_back_long_mode == False:
-        #return query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max) #そのままは使えない
+      if self.osm_front_back_long_mode == 0:
+        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 1.0)
+      elif self.osm_front_back_long_mode == 1:
         return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 2.0)
       else:
-        #self.osm_front_back_long_mode = False,ここでクリアはまずい。呼び出し元でクリアする。
         return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 8.0)
 
     #overpass_url = "https://overpass.private.coffee/api/interpreter"
@@ -278,7 +278,7 @@ class FanController:
 
   def osm_fetch(self):
     try:
-      if self.osm_front_back_long_mode == False:
+      if self.osm_front_back_long_mode == 0:
         self.th_id += 1
         #self.th_ct += 1
         #print("スレッドct:", th_ct)
@@ -429,11 +429,11 @@ class FanController:
         self.min_road_v_kph = min_road_v_kph0
 
       #ここでもしlen(road_info_list) == 0 なら長方形取得をやり直す。
-      if self.osm_local_mode == True and self.osm_front_back_long_mode == False and len(road_info_list) == 0:
+      if self.osm_local_mode == True and self.osm_front_back_long_mode <= 1 and len(road_info_list) == 0:
           #方位マッチする道路が一つもなかったら、前後長方形で再検索する。
-        self.osm_front_back_long_mode = True
+        self.osm_front_back_long_mode += 1 #0→1→2の順で検索。2が最終的に最も広い範囲を取る。
         self.osm_fetch()
-        self.osm_front_back_long_mode = False
+        self.osm_front_back_long_mode = 0
         return
 
       with open('/dev/shm/road_info.txt','w') as fp:
@@ -445,8 +445,10 @@ class FanController:
         for road_info in road_info_list:
           if road_info_list_select_ct == self.road_info_list_select:
             road_name = road_info["road_name"]
-            if self.osm_front_back_long_mode == True:
-              road_name += "*" #長方形で取ったやつは道路名に*をつける。
+            if self.osm_front_back_long_mode == 1:
+              road_name = "*"+road_name #長方形で取ったやつは道路名の前に*をつける。
+            elif self.osm_front_back_long_mode == 2:
+              road_name += "*" #長方形で取ったやつは道路名の後に*をつける。
             speed_limit = road_info["speed_limit"]
             road_bearing = road_info.get("bearing", 9999)
             fp.write('%d,%s,%s,%d' % (self.th_id , speed_limit , road_name,road_bearing))
@@ -739,8 +741,7 @@ class FanController:
     if self.thread == None and (self.latitude != 0 or self.longitude != 0):
       try:
         if self.osm_local_mode:
-          #self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.25, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.25〜1倍
-          self.distance = 25 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.25〜1倍
+          self.distance = 25 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.5〜1倍
         else:
           self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.5〜1倍
         self_thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
