@@ -146,7 +146,7 @@ class FanController:
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
     if self.osm_local_mode:
-      if self.osm_front_back_long_mode == False:
+      if False and self.osm_front_back_long_mode == False:
         return query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max)
       else:
         #self.osm_front_back_long_mode = False,ここでクリアはまずい。呼び出し元でクリアする。
@@ -423,7 +423,7 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
-        if self.osm_local_mode == True and len(road_info_list2) == 0 and self.osm_front_back_long_mode == False:
+        if False and self.osm_local_mode == True and len(road_info_list2) == 0 and self.osm_front_back_long_mode == False:
            #方位マッチする道路が一つもなかったら、前後長方形で再検索する。
           self.osm_front_back_long_mode = True
           self.osm_fetch()
