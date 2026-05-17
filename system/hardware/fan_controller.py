@@ -831,7 +831,6 @@ def tiles_in_bbox(lat_min, lon_min, lat_max, lon_max):
 # query_roads_in_bbox
 # 全国版ロジックそのまま
 # ----------------------------------------------------------
-osm_db_loop = 0
 osm_tiles = None
 
 # ----------------------------------------------------------
@@ -913,10 +912,7 @@ def query_roads_in_bbox(
     car_bear
 ):
 
-    global osm_db_loop
     global osm_tiles
-
-    osm_db_loop = 0
     osm_tiles = None
 
     # ------------------------------------------------------
@@ -1005,6 +1001,7 @@ def query_roads_in_bbox(
     elements = []
 
     seen_way_ids = set()
+    tile_exist = False
 
     # ------------------------------------------------------
     # tile loop
@@ -1012,13 +1009,12 @@ def query_roads_in_bbox(
 
     for tx, ty in tiles:
 
-        osm_db_loop += 1
-
         conn = get_conn(tx, ty)
 
         if conn == None:
             continue
 
+        tile_exist = True
         cur = conn.cursor()
 
         # --------------------------------------------------
@@ -1144,13 +1140,15 @@ def query_roads_in_bbox(
 
         conn.close()
 
+    if tile_exist == False:
+       raise Exception("no tile")
+
     return {
         "elements": elements
     }
 
 def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max): #正方形取得の旧バージョン、先にこちらで検査する。
-    global osm_db_loop,osm_tiles
-    osm_db_loop = 0
+    global osm_tiles
     osm_tiles = None
 
     tiles = tiles_in_bbox(
@@ -1165,16 +1163,16 @@ def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max): #正方形取得�
     elements = []
 
     seen_way_ids = set()
+    tile_exist = False
 
     for tx, ty in tiles:
-        osm_db_loop += 1
-        # print("osm_db_loop:", osm_db_loop)
 
         conn = get_conn(tx, ty)
 
         if conn == None:
             continue
 
+        tile_exist = True
         cur = conn.cursor()
 
         sql = """
@@ -1238,6 +1236,9 @@ def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max): #正方形取得�
             })
 
         conn.close()
+
+    if tile_exist == False:
+       raise Exception("no tile")
 
     return {
         "elements": elements
