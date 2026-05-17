@@ -370,7 +370,7 @@ class FanController:
         road_info_list2 = []
         min_road_v_kph0 = 0
         limit_match_ang = 10
-        while len(road_info_list2) == 0 and limit_match_ang <= (20 if self.osm_front_back_long_mode == False else 10): #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
+        while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
           for road_info in road_info_list:
             road_name = road_info["road_name"]
             speed_limit = road_info["speed_limit"]
