@@ -445,10 +445,10 @@ class FanController:
         for road_info in road_info_list:
           if road_info_list_select_ct == self.road_info_list_select:
             road_name = road_info["road_name"]
-            if self.osm_front_back_long_mode == 1:
-              road_name = "*"+road_name #長方形で取ったやつは道路名の前に*をつける。
-            elif self.osm_front_back_long_mode == 2:
-              road_name += "*" #長方形で取ったやつは道路名の後に*をつける。
+            # if self.osm_front_back_long_mode == 1:
+            #   road_name = "*"+road_name #長方形で取ったやつは道路名の前に*をつける。
+            # elif self.osm_front_back_long_mode == 2:
+            #   road_name += "*" #長方形で取ったやつは道路名の後に*をつける。
             speed_limit = road_info["speed_limit"]
             road_bearing = road_info.get("bearing", 9999)
             fp.write('%d,%s,%s,%d' % (self.th_id , speed_limit , road_name,road_bearing))
