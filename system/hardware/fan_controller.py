@@ -422,6 +422,8 @@ class FanController:
                       break
                     road_info_list_ct += 1
               if (dup == False) and (road_name != "" or speed_limit != "0"):
+                if self.osm_front_back_long_mode == False:
+                  road_info["road_name"] = road_name + "+"
                 road_info["bearing"] = bears[idx]
                 road_info_list2.append(road_info)
                 if speed_limit != "0" and speed_limit != "":
@@ -430,6 +432,7 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
+        #ここでもしlen(road_info_list2) == 0 なら長方形取得をやり直す。
         if self.osm_local_mode == True and self.osm_front_back_long_mode == False and ((road_name_enable == False and speed_limit_enable == False) or (len(road_info_list2) == 0)):
            #方位マッチする道路が一つもなかったら、前後長方形で再検索する。
           self.osm_front_back_long_mode = True
@@ -437,7 +440,6 @@ class FanController:
           self.osm_front_back_long_mode = False
           return
 
-        #ここでもしlen(road_info_list2) == 0 なら長方形取得をやり直す。
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
@@ -458,7 +460,10 @@ class FanController:
           road_info_list_select_ct += 1
         if len(road_info_list) == 0:
           self.min_road_v_kph = 0
-          fp.write('%d,0,--,9999' % (self.th_id))
+          if self.osm_front_back_long_mode == False:
+            fp.write('%d,0,--,9999+++' % (self.th_id))
+          else:
+            fp.write('%d,0,--,9999---' % (self.th_id))
           # self.debug_ct_osm += 1
           # fp.write('%d,0,--,%s<%f,%f>' % (self.th_id,str(self.bearing)+ddddd+str(self.debug_ct_osm),self.latitude,self.longitude))
           # fp.write(' road_name:%s\n' % ("--"))
