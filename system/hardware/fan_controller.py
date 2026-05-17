@@ -146,11 +146,12 @@ class FanController:
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
     if self.osm_local_mode:
-      if False and self.osm_front_back_long_mode == False:
-        return query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max)
+      if self.osm_front_back_long_mode == False:
+        #return query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max) #そのままは使えない
+        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 2.0)
       else:
         #self.osm_front_back_long_mode = False,ここでクリアはまずい。呼び出し元でクリアする。
-        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing)
+        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 8.0)
 
     #overpass_url = "https://overpass.private.coffee/api/interpreter"
     query = f"""
@@ -370,6 +371,8 @@ class FanController:
         road_info_list2 = []
         min_road_v_kph0 = 0
         limit_match_ang = 10
+        road_name_enable = False
+        speed_limit_enable = False
         while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
           for road_info in road_info_list:
             road_name = road_info["road_name"]
@@ -383,6 +386,10 @@ class FanController:
             #ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
               #ddddd += "="
+              if road_name != "":
+                road_name_enable = True
+              if speed_limit != "0" and speed_limit != "":
+                speed_limit_enable = True
               dup = False
               if True:
                 if speed_limit == "0" or speed_limit == "":
@@ -423,7 +430,7 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
-        if False and self.osm_local_mode == True and len(road_info_list2) == 0 and self.osm_front_back_long_mode == False:
+        if self.osm_local_mode == True and self.osm_front_back_long_mode == False and ((road_name_enable == False and speed_limit_enable == False) or (len(road_info_list2) == 0)):
            #方位マッチする道路が一つもなかったら、前後長方形で再検索する。
           self.osm_front_back_long_mode = True
           self.osm_fetch()
@@ -736,7 +743,8 @@ class FanController:
     if self.thread == None and (self.latitude != 0 or self.longitude != 0):
       try:
         if self.osm_local_mode:
-          self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.25, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.25〜1倍
+          #self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.25, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.25〜1倍
+          self.distance = 25 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.25〜1倍
         else:
           self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.5〜1倍
         self_thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
@@ -909,7 +917,8 @@ def query_roads_in_bbox(
     lon_min,
     lat_max,
     lon_max,
-    car_bear
+    car_bear,
+    front_back_multiply
 ):
 
     global osm_tiles
@@ -959,7 +968,7 @@ def query_roads_in_bbox(
         half_w_m
     )
 
-    front_limit_m = side_limit_m * 4.0
+    front_limit_m = side_limit_m * front_back_multiply # 4.0
 
     # ------------------------------------------------------
     # rough bbox
