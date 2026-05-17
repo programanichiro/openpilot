@@ -11,6 +11,7 @@ from openpilot.system.ui.widgets.label import UnifiedLabel, gui_label
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.version import RELEASE_BRANCHES
+import cereal.messaging as messaging
 
 HEAD_BUTTON_FONT_SIZE = 40
 HOME_PADDING = 8
@@ -124,6 +125,68 @@ class NetworkIcon(Widget):
 
     rl.draw_texture_ex(draw_net_txt, rl.Vector2(draw_x, draw_y), 0.0, 1.0, rl.Color(255, 255, 255, int(255 * 0.9)))
 
+class ThermalAndVoltageTextIcon(Widget):
+  def __init__(self):
+    super().__init__()
+    self.set_rect(rl.Rectangle(0, 0, 58, 44))  # max size of all icons
+    self.temp_str = "°C"
+    self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
+    self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+
+    self.volt_str = "V"
+    self.warning_color2 = rl.Color(255, 255, 255, int(255 * 0.9))
+
+  def _update_state(self):
+    device_state = ui_state.sm['deviceState']
+    max_temp = int(device_state.maxTempC) #表示はこれを使う。
+    self.temp_str = str(max_temp) + "°C"
+
+    ts = device_state.thermalStatus
+    ThermalStatus = log.DeviceState.ThermalStatus
+    if ts == ThermalStatus.ok:
+      self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
+    elif ts == ThermalStatus.overheated:
+      self.warning_color = rl.Color(255, 255, 0, int(255 * 0.9))
+    else: #critical
+      self.warning_color = rl.Color(255, 0, 0, int(255 * 0.9))
+
+    voltage = 0
+    try:
+      with open('/tmp/car_voltage.txt','r') as fp:
+        car_voltage_str = fp.read()
+        if car_voltage_str:
+          voltage = int(car_voltage_str) / 1e3
+    except Exception as e:
+      pass
+
+    if voltage != 0: #voltage:車に繋いでなくても5〜7は出るみたい。
+      self.volt_str = f"{voltage:.1f}V"
+      if voltage >= 11.5:  # Overvoltage threshold (example value, adjust as needed)
+        self.warning_color2 = rl.Color(255, 255, 255, int(255 * 0.9))
+      else:
+        self.warning_color2 = rl.Color(255, 0, 0, int(255 * 0.9))
+    else:
+      self.volt_str = "--.-V"
+      self.warning_color2 = rl.Color(255, 255, 255, int(255 * 0.9))
+
+  def _render(self, _):
+    rl.draw_text_ex(
+      self._font_bold,
+      self.temp_str,
+      rl.Vector2(self._rect.x, self._rect.y-3),
+      27,
+      0,
+      self.warning_color,
+    )
+
+    rl.draw_text_ex(
+      self._font_bold,
+      self.volt_str,
+      rl.Vector2(self._rect.x, self._rect.y+26-6),
+      27,
+      0,
+      self.warning_color2,
+    )
 
 class MiciHomeLayout(Widget):
   def __init__(self):
@@ -152,9 +215,10 @@ class MiciHomeLayout(Widget):
       self._experimental_icon,
       self._body_icon,
       self._mic_icon,
+      ThermalAndVoltageTextIcon(), #横幅適当なので最後の指定すること。
     ], spacing=18)
 
-    self._openpilot_label = UnifiedLabel("openpilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
+    self._openpilot_label = UnifiedLabel("ichiropilot", font_size=96, font_weight=FontWeight.DISPLAY, max_width=480, wrap_text=False)
     self._version_label = UnifiedLabel("", font_size=36, font_weight=FontWeight.ROMAN, max_width=480, wrap_text=False)
     self._large_version_label = UnifiedLabel("", font_size=64, text_color=rl.GRAY, font_weight=FontWeight.ROMAN, max_width=480, wrap_text=False)
     self._date_label = UnifiedLabel("", font_size=36, text_color=rl.GRAY, font_weight=FontWeight.ROMAN, max_width=480, wrap_text=False)
@@ -216,9 +280,20 @@ class MiciHomeLayout(Widget):
     branch = ui_state.params.get("GitBranch")
     commit = ui_state.params.get("GitCommit")
 
-    if not all((version, branch, commit)):
+    description = ui_state.params.get("UpdaterCurrentDescription")
+    os_ver = "--.-" # タイミング的にdescriptionが取れない場合あり？の対策。
+    if description is not None and len(description) > 0:
+      # Expect "version / branch / commit / date"; be tolerant of other formats
+      try:
+        # version, branch, commit, date = description.split(" / ")
+        os_ver, versionZ, branchZ, commitZ, date = description.split(" / ")
+      except Exception:
+        os_ver = "XY.Z"
+
+    if not all((os_ver, version, branch, commit)):
       return None
 
+    version = os_ver + ";" + version
     commit_date_raw = ui_state.params.get("GitCommitDate")
     try:
       # GitCommitDate format from get_commit_date(): '%ct %ci' e.g. "'1708012345 2024-02-15 ...'"

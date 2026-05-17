@@ -80,6 +80,9 @@ class MiciMainLayout(Scroller):
     ui_state.add_on_body_changed_callbacks(self._on_body_changed)
 
   def _scroll_to(self, layout: Widget):
+    if self._onroad_layout._hud_renderer.user_interacting():
+      return
+
     layout_x = int(layout.rect.x)
     self._scroller.scroll_to(layout_x, smooth=True)
 
