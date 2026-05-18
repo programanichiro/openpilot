@@ -269,7 +269,7 @@ class MiciHomeLayout(Widget):
     commit = ui_state.params.get("GitCommit")
 
     #description = ui_state.params.get("UpdaterCurrentDescription")
-    os_ver = self.run(["bash", "-c", r"unset AGNOS_VERSION && source launch_env.sh && echo -n $AGNOS_VERSION"], OVERLAY_MERGED).strip()
+    os_ver = self.run(["bash", "-c", r"unset AGNOS_VERSION && source launch_env.sh && echo -n $AGNOS_VERSION"]).strip()
     #os_ver = HARDWARE.get_os_version()
 
     if not all((os_ver, version, branch, commit)):
