@@ -193,7 +193,7 @@ class SelfdriveD:
     if not self.CP.notCar:
       # Block engaging until ignition cycle after max number or time of distractions
       if self.sm['driverMonitoringState'].lockout and not self.dm_lockout_set:
-        self.params.put_bool_nonblocking("DriverTooDistracted", True)
+        self.params.put_bool("DriverTooDistracted", True)
         self.dm_lockout_set = True
       # No entry conditions
       if self.sm['driverMonitoringState'].lockout or self.sm['driverMonitoringState'].alwaysOnLockout:
