@@ -1,6 +1,6 @@
 import datetime
 import time
-import subprocess
+from openpilot.system.hardware import AGNOS, HARDWARE
 
 from cereal import log
 import pyray as rl
@@ -260,17 +260,14 @@ class MiciHomeLayout(Widget):
         self._on_settings_click()
     self._did_long_press = False
 
-  def run(self, cmd: list[str], cwd: str | None = None) -> str:
-    return subprocess.check_output(cmd, cwd=cwd, stderr=subprocess.STDOUT, encoding='utf8')
-
   def _get_version_text(self) -> tuple[str, str, str, str] | None:
     version = ui_state.params.get("Version")
     branch = ui_state.params.get("GitBranch")
     commit = ui_state.params.get("GitCommit")
 
     #description = ui_state.params.get("UpdaterCurrentDescription")
-    os_ver = self.run(["bash", "-c", r"unset AGNOS_VERSION && source launch_env.sh && echo -n $AGNOS_VERSION"]).strip()
-    #os_ver = HARDWARE.get_os_version()
+    #os_ver = self.run(["bash", "-c", r"unset AGNOS_VERSION && source launch_env.sh && echo -n $AGNOS_VERSION"]).strip()
+    os_ver = HARDWARE.get_os_version()
 
     if not all((os_ver, version, branch, commit)):
       return None
