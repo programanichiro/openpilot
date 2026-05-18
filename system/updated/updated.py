@@ -317,8 +317,7 @@ class Updater:
         commit_date = dt.strftime("%b %d")
       except Exception:
         cloudlog.exception("updater.get_description")
-      agnos = "AA.A" #run(["bash", "-c", r"unset AGNOS_VERSION && source launch_env.sh && echo -n $AGNOS_VERSION"], OVERLAY_MERGED).strip()
-      return f"OS{agnos} / {version} / {branch} / {commit} / {commit_date}"
+      return f"{version} / {branch} / {commit} / {commit_date}"
     self.params.put("UpdaterCurrentDescription", get_description(BASEDIR), block=True)
     self.params.put("UpdaterCurrentReleaseNotes", parse_release_notes(BASEDIR), block=True)
     self.params.put("UpdaterNewDescription", get_description(FINALIZED), block=True)

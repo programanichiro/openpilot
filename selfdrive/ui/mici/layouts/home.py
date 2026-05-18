@@ -1,5 +1,6 @@
 import datetime
 import time
+import subprocess
 
 from cereal import log
 import pyray as rl
@@ -259,20 +260,17 @@ class MiciHomeLayout(Widget):
         self._on_settings_click()
     self._did_long_press = False
 
+  def run(self, cmd: list[str], cwd: str | None = None) -> str:
+    return subprocess.check_output(cmd, cwd=cwd, stderr=subprocess.STDOUT, encoding='utf8')
+
   def _get_version_text(self) -> tuple[str, str, str, str] | None:
     version = ui_state.params.get("Version")
     branch = ui_state.params.get("GitBranch")
     commit = ui_state.params.get("GitCommit")
 
-    description = ui_state.params.get("UpdaterCurrentDescription")
-    os_ver = "--.-" # タイミング的にdescriptionが取れない場合あり？の対策。
-    if description is not None and len(description) > 0:
-      # Expect "version / branch / commit / date"; be tolerant of other formats
-      try:
-        # version, branch, commit, date = description.split(" / ")
-        os_ver, versionZ, branchZ, commitZ, date = description.split(" / ")
-      except Exception:
-        os_ver = "XY.Z"
+    #description = ui_state.params.get("UpdaterCurrentDescription")
+    os_ver = self.run(["bash", "-c", r"unset AGNOS_VERSION && source launch_env.sh && echo -n $AGNOS_VERSION"], OVERLAY_MERGED).strip()
+    #os_ver = HARDWARE.get_os_version()
 
     if not all((os_ver, version, branch, commit)):
       return None
