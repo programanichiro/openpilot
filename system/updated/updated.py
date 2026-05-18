@@ -317,7 +317,7 @@ class Updater:
         commit_date = dt.strftime("%b %d")
       except Exception:
         cloudlog.exception("updater.get_description")
-      agnos = os.environ.get('AGNOS_VERSION', None)
+      agnos = HARDWARE.get_os_version()
       return f"OS{agnos} / {version} / {branch} / {commit} / {commit_date}"
     self.params.put("UpdaterCurrentDescription", get_description(BASEDIR), block=True)
     self.params.put("UpdaterCurrentReleaseNotes", parse_release_notes(BASEDIR), block=True)
