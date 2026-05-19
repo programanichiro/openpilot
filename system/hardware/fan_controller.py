@@ -741,7 +741,7 @@ class FanController:
     if self.thread == None and (self.latitude != 0 or self.longitude != 0):
       try:
         if self.osm_local_mode:
-          self.distance = 25 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.5〜1倍
+          self.distance = 25 * np.interp(self.velocity, [0, 50.0], [0.2, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.2〜1倍
         else:
           self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.5〜1倍
         self_thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
