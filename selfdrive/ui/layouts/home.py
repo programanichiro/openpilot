@@ -1,5 +1,6 @@
 import time
 import pyray as rl
+from openpilot.system.hardware import HARDWARE
 from collections.abc import Callable
 from enum import IntEnum
 from openpilot.common.params import Params
@@ -230,4 +231,5 @@ class HomeLayout(Widget):
   def _get_version_text(self) -> str:
     brand = "ichiropilot"
     description = self.params.get("UpdaterCurrentDescription")
-    return f"{brand} {description}" if description else brand
+    os_ver = HARDWARE.get_os_version()
+    return f"{brand} {os_ver} / {description}" if description else f"{brand} {os_ver}"

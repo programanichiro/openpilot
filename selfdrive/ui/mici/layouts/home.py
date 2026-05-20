@@ -1,6 +1,6 @@
 import datetime
 import time
-from openpilot.system.hardware import AGNOS, HARDWARE
+from openpilot.system.hardware import HARDWARE
 
 from cereal import log
 import pyray as rl
