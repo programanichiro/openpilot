@@ -232,4 +232,4 @@ class HomeLayout(Widget):
     brand = "ichiropilot"
     description = self.params.get("UpdaterCurrentDescription")
     os_ver = HARDWARE.get_os_version()
-    return f"{brand} {os_ver} / {description}" if description else f"{brand} {os_ver}"
+    return f"{brand} OS{os_ver} / {description}" if description else f"{brand} {os_ver}"
