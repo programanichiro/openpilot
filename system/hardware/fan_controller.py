@@ -322,7 +322,7 @@ class FanController:
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
       else:
-        #停止時は前回のをそのまま使う。来正方形→長方形の検索をするとself.before_road_info_listは長方形検索の結果になる。
+        #停止時は前回のをそのまま使う。段階検索するとself.before_road_info_listは後段の広域検索の結果になる。
         road_info_list = self.before_road_info_list
 
       if len(road_info_list) > 0:
@@ -331,7 +331,7 @@ class FanController:
           road_nodes_all += road_info["nodes"]
 
         if self.before_road_nodes_all == road_nodes_all:
-          #従来正方形→長方形の検索をすると、ここには全く来なくなる可能性あり。
+          #段階検索をすると、ここには全く来なくなる可能性あり。
           road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
           self.before_road_nodes_all_ct += 1
         else:
