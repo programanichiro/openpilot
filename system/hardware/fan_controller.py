@@ -316,9 +316,9 @@ class FanController:
                 speed_limit = element.get("tags", {}).get("maxspeed", "0")
                 if speed_limit == "":
                   speed_limit = "0"
-                # if speed_limit != "0" and road_name == "":
-                #   road_name = "---" #速度ありで空文字は---にする。
-                if road_name == "":
+                if speed_limit != "0" and road_name == "":
+                  road_name = "---" #速度ありで空文字は---にする。
+                if road_name == "" and self.osm_local_mode == True and self.osm_front_back_long_mode == 2:
                   road_name = "---" #速度ありで空文字は---にする。
                 if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
@@ -380,13 +380,16 @@ class FanController:
             coords = road_info["coords"]
             bears = road_info["bears"]
             idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
-            #このようにすれば道路までの距離が取れる。self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
             #road_info_list2は距離の短い順にソートしているわけでもなさそう。これでも精度的にはかなり十分だが。
             #自車から道路までの距離ロジックは線分coordsに対してちょっと手間をかける必要がある。
             #ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
               #ddddd += "="
               dup = False
+              if self.osm_front_back_long_mode == 2 and road_name == "---" and speed_limit == "0": #後段の長方形で取った無名速度なし道路は、30m以上離れているなら弾く。
+                road_dist =self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
+                if road_dist > 30 and self.osm_front_back_long_mode == 2:
+                  break
               if True:
                 if speed_limit == "0" or speed_limit == "":
                   road_info_list_ct = 0
@@ -426,30 +429,24 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
+        if len(road_info_list2) >= 2 and self.osm_local_mode and self.osm_front_back_long_mode == 2:
+          road_name_enable = False
+          for road_info2 in road_info_list2:
+            road_name = road_info2["road_name"]
+            speed_limit = road_info2["speed_limit"]
+            if speed_limit != "0" or road_name != "---":
+              road_name_enable = True
+              break
+
+          if road_name_enable == True:
+            for i in range(len(road_info_list2)-1, -1, -1): #逆ループで削除すれば、ループ破綻しない。
+              ri = road_info_list2[i]
+              if ri["speed_limit"] == "0" and ri["road_name"] == "---":
+                del road_info_list2[i]
+
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
-
-      road_name_enable = False
-      if (self.osm_front_back_long_mode == 0 or len(road_info_list) >= 2) and self.osm_local_mode == True:
-        #初回検索限定処理
-        for road_info2 in road_info_list:
-          road_name = road_info2["road_name"]
-          speed_limit = road_info2["speed_limit"]
-          if speed_limit != "0" or road_name != "---":
-            road_name_enable = True
-            break
-
-      if self.osm_front_back_long_mode == 0:
-        if road_name_enable == False:
-          road_info_list = [] #方位マッチする道路があっても、全ての道路が速度なしで名前なしなら、道路情報は無しと見做す。
-
-      if len(road_info_list) >= 2 and self.osm_local_mode == True:
-        if road_name_enable == True:
-          for i in range(len(road_info_list)-1, -1, -1): #逆ループで削除すれば、ループ破綻しない。
-            ri = road_info_list[i]
-            if ri["speed_limit"] == "0" and ri["road_name"] == "---":
-              del road_info_list[i]
 
       #ここでもしlen(road_info_list) == 0 なら長方形取得をやり直す。
       if self.osm_local_mode == True and self.osm_front_back_long_mode <= 1 and len(road_info_list) == 0:
