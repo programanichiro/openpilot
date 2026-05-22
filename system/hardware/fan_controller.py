@@ -426,6 +426,21 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
+        if len(road_info_list2) >= 2 and self.osm_local_mode:
+          road_name_enable = False
+          for road_info2 in road_info_list2:
+            road_name = road_info2["road_name"]
+            speed_limit = road_info2["speed_limit"]
+            if speed_limit != "0" or road_name != "---":
+              road_name_enable = True
+              break
+
+          if road_name_enable == True:
+            for i in range(len(road_info_list2)-1, -1, -1): #逆ループで削除すれば、ループ破綻しない。
+              ri = road_info_list2[i]
+              if ri["speed_limit"] == "0" and ri["road_name"] != "---":
+                del road_info_list2[i]
+
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
