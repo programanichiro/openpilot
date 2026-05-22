@@ -389,8 +389,8 @@ class FanController:
               if self.osm_front_back_long_mode == 2 and road_name == "---" and speed_limit == "0": #後段の長方形で取った無名速度なし道路は、30m以上離れているなら弾く。
                 road_dist =self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
                 if road_dist > 30 and self.osm_front_back_long_mode == 2:
-                  break
-              if True:
+                  dup = True
+              if dup == False:
                 if speed_limit == "0" or speed_limit == "":
                   road_info_list_ct = 0
                   for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
