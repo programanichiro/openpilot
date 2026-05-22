@@ -228,7 +228,88 @@ class FanController:
 
     return bearing_deg
 
-  def find_nearest_coordinate(self,target_lat, target_lon, coordinates):
+  def point_to_segment_distance(self, px, py, ax, ay, bx, by):
+      """
+      点Pと線分ABの最短距離を返す
+      """
+
+      # ベクトルAB
+      abx = bx - ax
+      aby = by - ay
+
+      # ベクトルAP
+      apx = px - ax
+      apy = py - ay
+
+      # ABの長さ二乗
+      ab_len_sq = abx * abx + aby * aby
+
+      # AとBが同一点だった場合
+      if ab_len_sq == 0:
+          dx = px - ax
+          dy = py - ay
+
+          dy *= 111000 * math.cos(math.radians(px))
+          dx *= 111000
+          return math.sqrt(dx * dx + dy * dy)
+
+      # 射影係数 t
+      # t=0 -> A
+      # t=1 -> B
+      # 0<t<1 -> 線分内部
+      t = (apx * abx + apy * aby) / ab_len_sq
+
+      # 線分外なら端点距離
+      if t < 0:
+          nearest_x = ax
+          nearest_y = ay
+
+      elif t > 1:
+          nearest_x = bx
+          nearest_y = by
+
+      # 線分内なら垂線の足
+      else:
+          nearest_x = ax + t * abx
+          nearest_y = ay + t * aby
+
+      dx = px - nearest_x
+      dy = py - nearest_y
+
+      #緯度経度を距離に変換するための係数（約111,000m/度）
+      dy *= 111000 * math.cos(math.radians(px))
+      dx *= 111000
+
+      return math.sqrt(dx * dx + dy * dy) #線分までの距離をメートルで返している。
+
+
+  def find_nearest_segment_distance(self, target_lat, target_lon, coordinates):
+      """
+      polyline全体の中で最短距離を返す
+      """
+
+      min_distance = math.inf
+      nearest_segment_index = None
+
+      for i in range(len(coordinates) - 1):
+
+          ax, ay = coordinates[i]
+          bx, by = coordinates[i + 1]
+
+          dist = self.point_to_segment_distance(
+              target_lat,
+              target_lon,
+              ax, ay,
+              bx, by
+          )
+
+          if dist < min_distance:
+              min_distance = dist
+              nearest_segment_index = i
+
+      return min_distance, nearest_segment_index
+
+  def find_nearest_coordinate(self, target_lat, target_lon, coordinates):
     """
     座標配列から最も近い座標のインデックスを返す関数
     """
