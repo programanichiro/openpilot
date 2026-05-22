@@ -251,7 +251,7 @@ class FanController:
 
           dy *= 111000 * math.cos(math.radians(px))
           dx *= 111000
-          return math.sqrt(dx * dx + dy * dy)
+          return math.sqrt(dx * dx + dy * dy) #線分までの距離をメートルで返している。
 
       # 射影係数 t
       # t=0 -> A
