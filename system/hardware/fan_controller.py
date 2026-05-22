@@ -317,7 +317,9 @@ class FanController:
                 if speed_limit == "":
                   speed_limit = "0"
                 if speed_limit != "0" and road_name == "":
-                  road_name = "---" #速度ありで空文字は---にする。
+                  if self.osm_local_mode:
+                    #road_name = "---" #速度ありで空文字は---にする。
+                    road_name = "無名道" #速度ありで空文字は---にする。
                 if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
