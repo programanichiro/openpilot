@@ -426,24 +426,30 @@ class FanController:
                     min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
           limit_match_ang += 10 #10,20のみ実行
 
-        if len(road_info_list2) >= 2 and self.osm_local_mode:
-          road_name_enable = False
-          for road_info2 in road_info_list2:
-            road_name = road_info2["road_name"]
-            speed_limit = road_info2["speed_limit"]
-            if speed_limit != "0" or road_name != "---":
-              road_name_enable = True
-              break
-
-          if road_name_enable == True:
-            for i in range(len(road_info_list2)-1, -1, -1): #逆ループで削除すれば、ループ破綻しない。
-              ri = road_info_list2[i]
-              if ri["speed_limit"] == "0" and ri["road_name"] == "---":
-                del road_info_list2[i]
-
         road_info_list = road_info_list2
 
         self.min_road_v_kph = min_road_v_kph0
+
+      road_name_enable = False
+      if (self.osm_front_back_long_mode == 0 or len(road_info_list) >= 2) and self.osm_local_mode == True:
+        #初回検索限定処理
+        for road_info2 in road_info_list:
+          road_name = road_info2["road_name"]
+          speed_limit = road_info2["speed_limit"]
+          if speed_limit != "0" or road_name != "---":
+            road_name_enable = True
+            break
+
+      if self.osm_front_back_long_mode == 0:
+        if road_name_enable == False:
+          road_info_list = [] #方位マッチする道路があっても、全ての道路が速度なしで名前なしなら、道路情報は無しと見做す。
+
+      if len(road_info_list) >= 2 and self.osm_local_mode == True:
+        if road_name_enable == True:
+          for i in range(len(road_info_list)-1, -1, -1): #逆ループで削除すれば、ループ破綻しない。
+            ri = road_info_list[i]
+            if ri["speed_limit"] == "0" and ri["road_name"] == "---":
+              del road_info_list[i]
 
       #ここでもしlen(road_info_list) == 0 なら長方形取得をやり直す。
       if self.osm_local_mode == True and self.osm_front_back_long_mode <= 1 and len(road_info_list) == 0:
