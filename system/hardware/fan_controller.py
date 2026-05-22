@@ -438,7 +438,7 @@ class FanController:
           if road_name_enable == True:
             for i in range(len(road_info_list2)-1, -1, -1): #逆ループで削除すれば、ループ破綻しない。
               ri = road_info_list2[i]
-              if ri["speed_limit"] == "0" and ri["road_name"] != "---":
+              if ri["speed_limit"] == "0" and ri["road_name"] == "---":
                 del road_info_list2[i]
 
         road_info_list = road_info_list2
