@@ -307,7 +307,7 @@ class FanController:
               min_distance = dist
               nearest_segment_index = i
 
-      return min_distance, nearest_segment_index
+      return min_distance, nearest_segment_index+1
 
   def find_nearest_coordinate(self, target_lat, target_lon, coordinates):
     """
@@ -467,10 +467,14 @@ class FanController:
             if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
               #ddddd += "="
               dup = False
-              if self.osm_front_back_long_mode == 2 and road_name == "---" and speed_limit == "0": #後段の長方形で取った無名速度なし道路は、30m以上離れているなら弾く。
-                road_dist =self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
-                if road_dist > self.distance*2 and self.osm_front_back_long_mode == 2:
+              if self.osm_local_mode:
+                min_distance, nearest_segment_index = self.find_nearest_segment_distance(self.latitude, self.longitude, coords)
+                if min_distance > 10: #ローカルモードなら、距離10m以上のは弾く。
                   dup = True
+              # if dup == False and self.osm_front_back_long_mode == 2 and road_name == "---" and speed_limit == "0": #後段の長方形で取った無名速度なし道路は、30m以上離れているなら弾く。
+              #   road_dist =self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
+              #   if road_dist > self.distance*2 and self.osm_front_back_long_mode == 2:
+              #     dup = True
               if dup == False:
                 if speed_limit == "0" or speed_limit == "":
                   road_info_list_ct = 0
