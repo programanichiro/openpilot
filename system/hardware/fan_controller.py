@@ -460,16 +460,21 @@ class FanController:
             speed_limit = road_info["speed_limit"]
             coords = road_info["coords"]
             bears = road_info["bears"]
-            idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
+            if self.osm_local_mode == False:
+              idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
+              ang_mul = 1.0
+            else:
+              min_distance, idx = self.find_nearest_segment_distance(self.latitude, self.longitude, coords)
+              ang_mul = 1.0 if min_distance > 3.0 else 1.5 #距離3m以内なら、角度のマッチング範囲を広げる。
             #road_info_list2は距離の短い順にソートしているわけでもなさそう。これでも精度的にはかなり十分だが。
             #自車から道路までの距離ロジックは線分coordsに対してちょっと手間をかける必要がある。
             #ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
-            if self.check_angle_match(bears[idx],self.bearing , limit_match_ang): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
+            if self.check_angle_match(bears[idx],self.bearing , limit_match_ang * ang_mul): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
               #ddddd += "="
               dup = False
               if self.osm_local_mode:
-                min_distance, nearest_segment_index = self.find_nearest_segment_distance(self.latitude, self.longitude, coords)
-                if min_distance > 10: #ローカルモードなら、距離10m以上のは弾く。
+                #min_distance, nearest_segment_index = self.find_nearest_segment_distance(self.latitude, self.longitude, coords)
+                if min_distance > 10.0: #ローカルモードなら、距離10m以上の道は弾く。
                   dup = True
               # if dup == False and self.osm_front_back_long_mode == 2 and road_name == "---" and speed_limit == "0": #後段の長方形で取った無名速度なし道路は、30m以上離れているなら弾く。
               #   road_dist =self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
