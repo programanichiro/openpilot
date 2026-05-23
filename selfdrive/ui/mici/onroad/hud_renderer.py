@@ -464,6 +464,7 @@ class HudRenderer(Widget):
     self._press_mads()
 
     self.dexp_sw_mode = 0
+    self.dexp_sw_exp_mode = ui_state.params.get_bool("ExperimentalMode")
     dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=60,height=60)
     self.dx_icon_chill = gui_app.texture("icons_mici/wheel.png",width=60,height=60)
     self.dx_icon_exp = gui_app.texture("icons_mici/experimental_mode.png",width=60,height=60)
@@ -1130,7 +1131,7 @@ class HudRenderer(Widget):
       pass
 
     if self.long_speeddown_disable != long_speeddown_disable:
-      self._long_speeddown_disable_changed_ct = 20 * 1 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
+      self._long_speeddown_disable_changed_ct = 20 * 1.5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
     if self.button_style_only == False:
       long_speeddown_disable = (long_speeddown_disable + 1) % 2
@@ -1245,7 +1246,11 @@ class HudRenderer(Widget):
       pass
 
     if self.dexp_sw_mode != dexp_sw_mode:
-      self._dexp_sw_mode_button_changed_ct = 20 * 1 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
+      self._dexp_sw_mode_button_changed_ct = 20 * 1.5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
+
+    now_exp_mode = ui_state.params.get_bool("ExperimentalMode")
+    if self.dexp_sw_exp_mode != now_exp_mode:
+      self._dexp_sw_mode_button_changed_ct = 20 * 1.5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
     if self.button_style_only == False:
       #dX(OFF){chill->exp}->dX(ON)というフローにする
@@ -1253,7 +1258,7 @@ class HudRenderer(Widget):
         dexp_sw_mode = (dexp_sw_mode + 1) % 2
         ui_state.params.put_bool("ExperimentalMode",False)
       else:
-        if ui_state.params.get_bool("ExperimentalMode"):
+        if now_exp_mode:
           dexp_sw_mode = (dexp_sw_mode + 1) % 2
         else:
           ui_state.params.put_bool("ExperimentalMode",True)
@@ -1262,7 +1267,8 @@ class HudRenderer(Widget):
     else:
       self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOn)
 
-    self._dexp_sw_mode_button.set_icon(self.dx_icon_exp if ui_state.params.get_bool("ExperimentalMode") else self.dx_icon_chill)
+    self.dexp_sw_exp_mode = ui_state.params.get_bool("ExperimentalMode")
+    self._dexp_sw_mode_button.set_icon(self.dx_icon_exp if self.dexp_sw_exp_mode else self.dx_icon_chill)
 
     self.dexp_sw_mode = dexp_sw_mode
 
@@ -1323,7 +1329,7 @@ class HudRenderer(Widget):
       pass
 
     if self.accel_ctrl_disable != accel_ctrl_disable:
-      self._accel_ctrl_disable_changed_ct = 20 * 1 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
+      self._accel_ctrl_disable_changed_ct = 20 * 1.5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
     if self.button_style_only == False:
       accel_ctrl_disable = (accel_ctrl_disable + 1) % 2
