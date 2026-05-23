@@ -465,10 +465,10 @@ class HudRenderer(Widget):
 
     self.dexp_sw_mode = 0
     self.dexp_sw_exp_mode = ui_state.params.get_bool("ExperimentalMode")
-    dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=60,height=60)
-    self.dx_icon_chill = gui_app.texture("icons_mici/wheel.png",width=60,height=60)
+    #dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=60,height=60)
+    self.dx_icon_chill = gui_app.texture("icons/chffr_wheel.png",width=60,height=60)
     self.dx_icon_exp = gui_app.texture("icons_mici/experimental_mode.png",width=60,height=60)
-    self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=dx_icon)
+    self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=self.dx_icon_chill)
     self._press_dexp_sw_mode()
 
     lane_icon = gui_app.texture("icons_mici/onroad/lane_keep_w.png",width=72,height=int(147*72/256))
