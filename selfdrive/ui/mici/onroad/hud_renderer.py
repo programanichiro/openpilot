@@ -449,6 +449,7 @@ class HudRenderer(Widget):
     self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=40,font_weight=FontWeight.BOLD, border_radius=45)
     self._press_accel_engaged()
 
+    self.long_speeddown_disable = 0
     self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable,font_size=40,font_weight=FontWeight.BOLD, border_radius=45)
     self._press_long_speeddown_disable()
 
@@ -462,6 +463,7 @@ class HudRenderer(Widget):
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
 
+    self.dexp_sw_mode = 0
     dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=60,height=60)
     self.dx_icon_chill = gui_app.texture("icons_mici/wheel.png",width=60,height=60)
     self.dx_icon_exp = gui_app.texture("icons_mici/experimental_mode.png",width=60,height=60)
@@ -472,6 +474,7 @@ class HudRenderer(Widget):
     self._lta_enable_sw_button = Button("",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=lane_icon)
     self._press_lta_enable_sw()
 
+    self.accel_ctrl_disable = 0
     arrow_up = gui_app.texture("icons_mici/onroad/arrow_up.png",width=60,height=60)
     self._accel_ctrl_disable_button = Button("",click_callback=self._press_accel_ctrl_disable,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=arrow_up)
     self._press_accel_ctrl_disable()
@@ -511,8 +514,10 @@ class HudRenderer(Widget):
     self.road_bear = "99999" #道路方位
     #self.disp_ichiro_logo = False
 
-    self.dexp_sw_mode = 0
     self._disp_button_ct = 0
+    self._accel_ctrl_disable_changed_ct = 0
+    self._dexp_sw_mode_button_changed_ct = 0
+    self._long_speeddown_disable_changed_ct = 0
 
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
@@ -777,7 +782,7 @@ class HudRenderer(Widget):
       else:
         osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
 
-#      rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
+      #rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
       rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1*w_rate), int(h))
       rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
 
@@ -816,8 +821,10 @@ class HudRenderer(Widget):
     if not self._is_active or not self._face_detected:
       self._disp_button_ct = 20 * 5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
+    all_btn_appeared = False
     if self._disp_button_ct > 0:
       self._disp_button_ct -= 1
+      all_btn_appeared = True
 
       dX_rect = rl.Rectangle(
         # 70, 20, 90, 90,
@@ -857,6 +864,37 @@ class HudRenderer(Widget):
         int(rect.x+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
       )
       self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
+
+      # 全ボタン表示されたら個別カウンタはクリアしておく
+      self._accel_ctrl_disable_changed_ct = 0
+      self._dexp_sw_mode_button_changed_ct = 0
+      self._long_speeddown_disable_changed_ct = 0
+
+
+    if all_btn_appeared == False:
+
+      if self._accel_ctrl_disable_changed_ct > 0:
+        self._accel_ctrl_disable_changed_ct -= 1
+        accel_ctrl_disable_rect = rl.Rectangle(
+          int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
+        )
+        self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
+
+      if self._dexp_sw_mode_button_changed_ct > 0:
+        self._dexp_sw_mode_button_changed_ct -= 1
+        dX_rect = rl.Rectangle(
+          # 70, 20, 90, 90,
+          int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+        )
+        self._dexp_sw_mode_button.render(dX_rect)
+
+      if self._long_speeddown_disable_changed_ct > 0:
+        self._long_speeddown_disable_changed_ct -= 1
+        long_speeddown_disable_rect = rl.Rectangle(
+          int(rect.x+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
+        )
+        self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
+
 
   def draw_taco(self, x, y, r, w, rpm, max_rpm, color):
     #タコメーターを描く関数。x,yは中心座標、rは半径、rpmは回転数、max_rpmは最大回転数、colorは色。
@@ -1091,8 +1129,8 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
-    # global long_speeddown_disable00
-    # long_speeddown_disable00 = long_speeddown_disable
+    if self.long_speeddown_disable != long_speeddown_disable:
+      self._long_speeddown_disable_changed_ct = 20 * 1 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
     if self.button_style_only == False:
       long_speeddown_disable = (long_speeddown_disable + 1) % 2
@@ -1100,6 +1138,8 @@ class HudRenderer(Widget):
       self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudBOn)
     else:
       self._long_speeddown_disable_button.set_button_style(ButtonStyle.HudBOff)
+
+    self.long_speeddown_disable = long_speeddown_disable
 
     if self.button_style_only:
       return
@@ -1204,6 +1244,9 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    if self.dexp_sw_mode != dexp_sw_mode:
+      self._dexp_sw_mode_button_changed_ct = 20 * 1 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
+
     if self.button_style_only == False:
       #dX(OFF){chill->exp}->dX(ON)というフローにする
       if dexp_sw_mode != 0:
@@ -1279,6 +1322,9 @@ class HudRenderer(Widget):
     except Exception as e:
       pass
 
+    if self.accel_ctrl_disable != accel_ctrl_disable:
+      self._accel_ctrl_disable_changed_ct = 20 * 1 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
+
     if self.button_style_only == False:
       accel_ctrl_disable = (accel_ctrl_disable + 1) % 2
     if accel_ctrl_disable == 0:
@@ -1286,6 +1332,7 @@ class HudRenderer(Widget):
     else:
       self._accel_ctrl_disable_button.set_button_style(ButtonStyle.HudBOff)
 
+    self.accel_ctrl_disable = accel_ctrl_disable
     if self.button_style_only:
       return
 
