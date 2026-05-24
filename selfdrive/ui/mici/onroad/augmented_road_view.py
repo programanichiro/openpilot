@@ -101,7 +101,7 @@ class BookmarkIcon(Widget):
     elif mouse_event.left_down and self._is_swiping:
       self._swipe_current_x = mouse_event.pos.x
       swipe_offset = self._swipe_start_x - self._swipe_current_x
-      self._is_swiping_left = swipe_offset > 0
+      self._is_swiping_left = swipe_offset > 0 if self._interacting else 10 #動き出しは10px以上左に動いたらスワイプとみなす
       if self._is_swiping_left:
         self._interacting = True
 
