@@ -222,8 +222,8 @@ class ModelRenderer(Widget):
         rl.Color(255, 255, 255, 192)
       )
 
-    # if self._enable_lead_indicator and render_lead_indicator and radar_state:
-    #   self._draw_lead_indicator()
+    if self._enable_lead_indicator and render_lead_indicator and radar_state and gui_app.big_ui() == True: #c3Xのみ表示
+      self._draw_lead_indicator()
 
     if render_lead_indicator:
       leads = model.leadsV3
@@ -367,8 +367,12 @@ class ModelRenderer(Widget):
     g_xo = sz / 5
     g_yo = sz / 10
 
-    glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)]
-    chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
+    homebase_h = 12
+
+    # glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)]
+    # chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
+    glow = [(x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo),(x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h), (x, y + sz + homebase_h + g_yo + 10),(x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h),(x + (sz * 1.35) + g_xo, y + sz + g_yo)] #土台
+    chevron = [(x, y), (x - (sz * 1.25), y + sz),(x - (sz * 1.25), y + sz + homebase_h), (x, y + sz + homebase_h - 7),(x + (sz * 1.25), y + sz + homebase_h),(x + (sz * 1.25), y + sz)]
 
     return LeadVehicle(glow=glow, chevron=chevron, fill_alpha=int(fill_alpha))
 
