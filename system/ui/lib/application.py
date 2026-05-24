@@ -206,6 +206,9 @@ class MouseState:
 
 class GuiApplication:
   def __init__(self, width: int | None = None, height: int | None = None):
+    global MOUSE_THREAD_RATE
+    if GuiApplication.big_ui() == True:
+      MOUSE_THREAD_RATE = 60 # big UIは描画負荷が高いのでマウスイベントの処理頻度を下げる
     self._set_log_callback()
 
     self._fonts: dict[FontWeight, rl.Font] = {}
