@@ -367,7 +367,7 @@ class ModelRenderer(Widget):
     g_xo = sz / 5
     g_yo = sz / 10
 
-    homebase_h = 12
+    homebase_h = 12 / 2.35
 
     # glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)]
     # chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
