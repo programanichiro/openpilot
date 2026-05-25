@@ -844,22 +844,41 @@ class HudRenderer(Widget):
       debug_disp_xpos = rect.x+rect.width
       rect_h0 = rect.y+font_size_debug_info
 
-      # cv_str = str(int(self.limit_vc_info))
-      # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , cv_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=11-2 , bk_xofs=0 , bk_add_h=-5)-3
-      # debug_disp_xpos = self._drawTextRight(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "↓" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 11 , 0 , -5) - 11
+      # # cv_str = str(int(self.limit_vc_info))
+      # # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , cv_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=11-2 , bk_xofs=0 , bk_add_h=-5)-3
+      # # debug_disp_xpos = self._drawTextRight(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "↓" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 11 , 0 , -5) - 11
 
+      # ahr_str = str(int(self.ahr)) + "%"
+      # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , ahr_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 4 , 0 , -5)
+      # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h0+4 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=4 , bk_xofs=0-1 , bk_add_h=-5) - 4
+
+      # trip_str = f"{self.distance_traveled / 1000:.1f}" + "km"
+      # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , trip_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 8 , -2 , -5) - 3-4
+      # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+6 , rect_h0+4 , "Trip" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 10 , -3 , -5) - 5
+
+      # if abs(self.vc_speed) < 0.1/3.6:
+      #   blue_signal_chk_str = str(self.blue_signal_chk)
+      #   debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
+      #   debug_disp_xpos = self._drawTextRight(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=11, bk_xofs=0-4 , bk_add_h=-5) - (12-2)
+
+      debug_disp_xpos = rect.x
+
+      debug_disp_xpos = self._drawTextLeft(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "↓" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 11 , 0 , -5) + 11
+      cv_str = str(int(self.limit_vc_info))
+      debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , cv_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=11-2 , bk_xofs=0 , bk_add_h=-5)+3
+
+      debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h0+4 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=4 , bk_xofs=0-1 , bk_add_h=-5) + 4
       ahr_str = str(int(self.ahr)) + "%"
-      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , ahr_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 4 , 0 , -5)
-      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h0+4 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=4 , bk_xofs=0-1 , bk_add_h=-5) - 4
+      debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , ahr_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 4 , 0 , -5)
 
+      debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+6 , rect_h0+4 , "Trip" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 10 , -3 , -5) + 5
       trip_str = f"{self.distance_traveled / 1000:.1f}" + "km"
-      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , trip_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 8 , -2 , -5) - 3-4
-      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+6 , rect_h0+4 , "Trip" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 10 , -3 , -5) - 5
+      debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , trip_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 8 , -2 , -5) + 3+4
 
       if abs(self.vc_speed) < 0.1/3.6:
+        debug_disp_xpos = self._drawTextLeft(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=11, bk_xofs=0-4 , bk_add_h=-5) + 12-2
         blue_signal_chk_str = str(self.blue_signal_chk)
-        debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
-        debug_disp_xpos = self._drawTextRight(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=11, bk_xofs=0-4 , bk_add_h=-5) - (12-2)
+        debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
 
     #タコメーター
     car_state = sm['carState']
@@ -980,7 +999,6 @@ class HudRenderer(Widget):
       rl.draw_ring(arc_center,float(0),float(r),float(start_angle), float(rpm_angle),90,color) #枠
 
   def _drawTextLeft(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
-    #現在未使用未検証
     text_size = measure_text_cached(font, text, font_size)
 
     if bk_alp > 0:
