@@ -842,7 +842,7 @@ class HudRenderer(Widget):
     if gui_app.big_ui():
       font_size_debug_info = 44
       debug_disp_xpos = rect.x+rect.width
-      rect_h0 = rect.y
+      rect_h0 = rect.y+font_size_debug_info
 
       # cv_str = str(int(self.limit_vc_info))
       # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , cv_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=11-2 , bk_xofs=0 , bk_add_h=-5)-3
