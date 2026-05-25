@@ -724,45 +724,46 @@ class HudRenderer(Widget):
     if self.dt == 0:
       self.dt = 1 #0割り算対策
 
-    now_dist = self.distance_traveled - self.before_distance_traveled
-    self.before_distance_traveled = self.distance_traveled
+    if gui_app.big_ui():
+      now_dist = self.distance_traveled - self.before_distance_traveled
+      self.before_distance_traveled = self.distance_traveled
 
-    all_brake_light = False
-    try:
-      with open('/dev/shm/brake_light_state.txt','r') as fp3:
-        brake_light_state = fp3.read()
-        if brake_light_state and int(brake_light_state) != 0:
-          all_brake_light = True #こちらはエンゲージしていなくてもセットされる。
-    except Exception as e:
-      pass
-
-    if ui_state.status == UIStatus.DISENGAGED or ui_state.status == UIStatus.OVERRIDE:
-      self.h_manual_dist += now_dist #手動運転中
-      if all_brake_light and self.vc_speed < 0.1/3.6:
-        self.h_manual_dist += 1.0 * self.dt / 1000 #/20; #1秒を1m換算
-
-      # if (ui_state.status != UIStatus.DISENGAGED) or (all_brake_light and self.vc_speed < 0.1/3.6):
-      #   #//manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。特例としてエンゲージしてなくてもブレーキ踏めば含める（人が運転しているから）
-      #   pass
-
-    else:
-      self.h_autopilot_dist += now_dist #オートパイロット中
-      if self.vc_speed < 0.1/3.6:
-        self.h_autopilot_dist += 1.0 * self.dt / 1000 #//1秒を1m換算
-      #//autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
-
-    # // double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
-    # // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
-    self.ahr = (self.h_autopilot_dist * 100) / (self.h_autopilot_dist + self.h_manual_dist) #//autopilot hybrid rate
-
-    if abs(self.vc_speed) < 0.1/3.6:
+      all_brake_light = False
       try:
-        with open('/dev/shm/blue_signal_chk.txt','r') as fp3:
-          blue_signal_chk = fp3.read()
-          if blue_signal_chk:
-            self.blue_signal_chk = int(blue_signal_chk)
+        with open('/dev/shm/brake_light_state.txt','r') as fp3:
+          brake_light_state = fp3.read()
+          if brake_light_state and int(brake_light_state) != 0:
+            all_brake_light = True #こちらはエンゲージしていなくてもセットされる。
       except Exception as e:
-        self.blue_signal_chk = 0
+        pass
+
+      if ui_state.status == UIStatus.DISENGAGED or ui_state.status == UIStatus.OVERRIDE:
+        self.h_manual_dist += now_dist #手動運転中
+        if all_brake_light and self.vc_speed < 0.1/3.6:
+          self.h_manual_dist += 1.0 * self.dt / 1000 #/20; #1秒を1m換算
+
+        # if (ui_state.status != UIStatus.DISENGAGED) or (all_brake_light and self.vc_speed < 0.1/3.6):
+        #   #//manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。特例としてエンゲージしてなくてもブレーキ踏めば含める（人が運転しているから）
+        #   pass
+
+      else:
+        self.h_autopilot_dist += now_dist #オートパイロット中
+        if self.vc_speed < 0.1/3.6:
+          self.h_autopilot_dist += 1.0 * self.dt / 1000 #//1秒を1m換算
+        #//autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
+
+      # // double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
+      # // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
+      self.ahr = (self.h_autopilot_dist * 100) / (self.h_autopilot_dist + self.h_manual_dist) #//autopilot hybrid rate
+
+      if abs(self.vc_speed) < 0.1/3.6:
+        try:
+          with open('/dev/shm/blue_signal_chk.txt','r') as fp3:
+            blue_signal_chk = fp3.read()
+            if blue_signal_chk:
+              self.blue_signal_chk = int(blue_signal_chk)
+        except Exception as e:
+          self.blue_signal_chk = 0
 
 
   def appear_btn(self): #ボタンを出す。
