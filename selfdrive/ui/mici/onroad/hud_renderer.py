@@ -422,6 +422,11 @@ class HudRenderer(Widget):
     self.dt = 50 #フレームタイム
     self.distance_traveled = 0
     self.prev_draw_t = time.monotonic_ns() / 1_000_000
+    self.before_distance_traveled = 0
+    self.h_manual_dist = 0.001
+    self.h_autopilot_dist = 0 #停止時間は1秒を1m換算でカウントする。
+    #self.brake_light = False
+    self.ahr = 0
 
     self.button_style_only = True
 
@@ -439,6 +444,7 @@ class HudRenderer(Widget):
     self.dir0 = 1.0
     self.Knight_scanner = 0
 
+    self.blue_signal_chk = 0
     self.limit_vc_info = 0
     self.ip_update_state_ct = 0
     self.handle_center = -100
@@ -717,6 +723,47 @@ class HudRenderer(Widget):
     if self.dt == 0:
       self.dt = 1 #0割り算対策
 
+    now_dist = self.distance_traveled - self.before_distance_traveled
+    self.before_distance_traveled = self.distance_traveled
+
+    all_brake_light = False
+    try:
+      with open('/dev/shm/brake_light_state.txt','r') as fp3:
+        brake_light_state = fp3.read()
+        if brake_light_state and int(brake_light_state) != 0:
+          all_brake_light = True #こちらはエンゲージしていなくてもセットされる。
+    except Exception as e:
+      pass
+
+    if ui_state.status == UIStatus.DISENGAGED or ui_state.status == UIStatus.OVERRIDE:
+      self.h_manual_dist += now_dist #手動運転中
+      if all_brake_light and self.vc_speed < 0.1/3.6:
+        self.h_manual_dist += 1.0 * self.dt / 1000 #/20; #1秒を1m換算
+
+      # if (ui_state.status != UIStatus.DISENGAGED) or (all_brake_light and self.vc_speed < 0.1/3.6):
+      #   #//manual_ct ++; //手動運転中 , エンゲージしていれば停車時も含める。特例としてエンゲージしてなくてもブレーキ踏めば含める（人が運転しているから）
+      #   pass
+
+    else:
+      self.h_autopilot_dist += now_dist #オートパイロット中
+      if self.vc_speed < 0.1/3.6:
+        self.h_autopilot_dist += 1.0 * self.dt / 1000 #//1秒を1m換算
+      #//autopilot_ct ++; //オートパイロット中（ハンドル、アクセル操作時は含めない , 停車時は自動運転停車として含める）
+
+    # // double atr = ((double)autopilot_ct * 100) / (autopilot_ct + manual_ct); //autopilot time rate
+    # // double adr = (autopilot_dist * 100) / (autopilot_dist + manual_dist); //autopilot distance rate
+    self.ahr = (self.h_autopilot_dist * 100) / (self.h_autopilot_dist + self.h_manual_dist) #//autopilot hybrid rate
+
+    if abs(self.vc_speed) < 0.1/3.6:
+      try:
+        with open('/dev/shm/blue_signal_chk.txt','r') as fp3:
+          blue_signal_chk = fp3.read()
+          if blue_signal_chk:
+            self.blue_signal_chk = int(blue_signal_chk)
+      except Exception as e:
+        self.blue_signal_chk = 0
+
+
   def appear_btn(self): #ボタンを出す。
     self._disp_button_ct = 20 * 5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
@@ -790,6 +837,28 @@ class HudRenderer(Widget):
     self.knightScanner(rect)
 
     sm = ui_state.sm
+
+    if gui_app.big_ui():
+      font_size_debug_info = 44
+      debug_disp_xpos = rect.x+rect.width
+      rect_h0 = rect.y
+
+      # cv_str = str(int(self.limit_vc_info))
+      # debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , cv_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=11-2 , bk_xofs=0 , bk_add_h=-5)-3
+      # debug_disp_xpos = self._drawTextRight(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "↓" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 11 , 0 , -5) - 11
+
+      ahr_str = str(int(self.ahr)) + "%"
+      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , ahr_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 4 , 0 , -5)
+      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+4 , rect_h0+4 , "AP" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=4 , bk_xofs=0-1 , bk_add_h=-5) - 4
+
+      trip_str = f"{self.distance_traveled / 1000:.1f}" + "km"
+      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , trip_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , 8 , -2 , -5) - 3-4
+      debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos+6 , rect_h0+4 , "Trip" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , 10 , -3 , -5) - 5
+
+      if abs(self.vc_speed) < 0.1/3.6:
+        blue_signal_chk_str = str(self.blue_signal_chk)
+        debug_disp_xpos = self._drawTextRight(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
+        debug_disp_xpos = self._drawTextRight(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=11, bk_xofs=0-4 , bk_add_h=-5) - (12-2)
 
     #タコメーター
     car_state = sm['carState']
@@ -908,6 +977,35 @@ class HudRenderer(Widget):
       rl.draw_ring(arc_center,float(0),float(r-w),float(start_angle), float(rpm_angle),90,color) #メーター
     else:
       rl.draw_ring(arc_center,float(0),float(r),float(start_angle), float(rpm_angle),90,color) #枠
+
+  def _drawTextLeft(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
+    #現在未使用未検証
+    text_size = measure_text_cached(font, text, font_size)
+
+    if bk_alp > 0:
+      #//バックを塗る。
+      bk_color = rl.Color(int(bk_red), int(bk_grn), int(bk_blu), int(bk_alp))
+      rc = rl.Rectangle(x+bk_xofs,y-text_size.y+bk_yofs,text_size.x+bk_add_w,text_size.y+bk_add_h)
+      rl.draw_rectangle_rounded(rc, bk_corner_r, 10, bk_color)
+
+    if brakeLight == False:
+      pen_color = rl.Color(int(red), int(grn), int(blu), int(alpha))
+    else:
+      alpha += 100
+      if alpha > 255:
+        alpha = 255
+      pen_color = rl.Color(0xff, 0, 0, int(alpha))
+
+    rl.draw_text_ex(
+      font,
+      text,
+      rl.Vector2(x, y-text_size.y),
+      font_size,
+      0,
+      pen_color,
+    )
+
+    return x + text_size.x #続けて並べるxposを返す。
 
   def _drawTextRight(self, font,font_size, x,y,text,alpha=255 ,brakeLight=False ,red=255, grn=255, blu=255 , bk_red=0, bk_grn=0, bk_blu=0, bk_alp=0, bk_yofs=0, bk_corner_r=0, bk_add_w=0, bk_xofs=0, bk_add_h=0):
     text_size = measure_text_cached(font, text, font_size)
