@@ -117,6 +117,7 @@ class HudRenderer(Widget):
     self._font_semi_bold: rl.Font = gui_app.font(FontWeight.SEMI_BOLD)
     self._font_display: rl.Font = gui_app.font(FontWeight.DISPLAY)
     # self._font_uni: rl.Font = gui_app.font("JP2") #動的ロード
+    self._font_JP: rl.Font = gui_app.font("JP")
 
     self._turn_intent = TurnIntent()
     self._torque_bar = TorqueBar()
