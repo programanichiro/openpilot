@@ -813,32 +813,6 @@ class HudRenderer(Widget):
     # self._drawTextRight(self._font_uni, font_size , rect.x+rect.width-right_margin-1, y_pos+1 , "テスト神奈川県茅ヶ崎市道路情報(12345)", 220)
     # self._drawTextRight(self._font_semi_bold, font_size_km, next_x-4, y_pos2 - 4 , "120" , 255 , False , 0x24, 0x57, 0xa1 , 255,255,255,200 , 0 , 0.2 , 2 , -1)
 
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
-
-    osm_w = 10 if gui_app.big_ui() else 8 #8:c4で見た目調整
-    rect_h = rect.y+rect.height
-    if self.osm_per >= 0:
-      h = rect.height * self.osm_per // 100
-      w_rate = 1.0
-      wp1 = osm_w
-      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < (166 if gui_app.big_ui() else 500): #100フレーム以上変化がなければ、通信断絶とみなす。c4は60fpsなので300フレーム以上にする。
-        osm_bar_color = rl.Color(0, 245, 0, 200) #緑
-        trans_point = 90 #90パーセント以上で、メーターを消す
-        if self.osm_per > trans_point:
-          w_rate -= (self.osm_per - trans_point) / (100 - trans_point)
-          if w_rate < 0:
-            w_rate = 0
-      else:
-        osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
-
-      #rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
-      rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1*w_rate), int(h))
-      rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
-
-    self.knightScanner(rect)
-
-    sm = ui_state.sm
-
     if gui_app.big_ui():
       font_size_debug_info = 44
       debug_disp_xpos = rect.x+rect.width
@@ -879,6 +853,32 @@ class HudRenderer(Widget):
         debug_disp_xpos = self._drawTextLeft(self._font_JP , font_size_debug_info , debug_disp_xpos , rect_h0+4 , "●" , 200 , False , 0xdf, 0xdf, 0x00 , 0, 0, 0, 140 , 5 , 0.3 , bk_add_w=11, bk_xofs=0-4 , bk_add_h=-5) + 12-2
         blue_signal_chk_str = str(self.blue_signal_chk)
         debug_disp_xpos = self._drawTextLeft(self._font_semi_bold , font_size_debug_info , debug_disp_xpos , rect_h0+4 , blue_signal_chk_str , 140 , False , 0, 0, 0 , 0xdf, 0xdf, 0x00, 200 , 5 , 0.3 , bk_add_w=13-3 , bk_xofs=1-2 ,bk_add_h=-5)
+
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+
+    osm_w = 10 if gui_app.big_ui() else 8 #8:c4で見た目調整
+    rect_h = rect.y+rect.height
+    if self.osm_per >= 0:
+      h = rect.height * self.osm_per // 100
+      w_rate = 1.0
+      wp1 = osm_w
+      if 0 <= self.osm_frame_ct_ct and self.osm_frame_ct_ct < (166 if gui_app.big_ui() else 500): #100フレーム以上変化がなければ、通信断絶とみなす。c4は60fpsなので300フレーム以上にする。
+        osm_bar_color = rl.Color(0, 245, 0, 200) #緑
+        trans_point = 90 #90パーセント以上で、メーターを消す
+        if self.osm_per > trans_point:
+          w_rate -= (self.osm_per - trans_point) / (100 - trans_point)
+          if w_rate < 0:
+            w_rate = 0
+      else:
+        osm_bar_color = rl.Color(245, 0, 0, 200) #赤、通信断絶。
+
+      #rl.draw_rectangle(int(rect.x) , int(rect_h - h) , int(wp1) , int(h) , osm_bar_color) #draw_rectangleはパラメータに整数を要求する。
+      rc2 =  rl.Rectangle(int(rect.x), int(rect_h - h) , int(wp1*w_rate), int(h))
+      rl.draw_rectangle_rounded(rc2, 1.0, 5, osm_bar_color)
+
+    self.knightScanner(rect)
+
+    sm = ui_state.sm
 
     #タコメーター
     car_state = sm['carState']
