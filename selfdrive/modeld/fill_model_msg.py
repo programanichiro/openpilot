@@ -196,7 +196,10 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.init('leadsV3', 3)
   for i in range(3):
     lead = modelV2.leadsV3[i]
-    fill_xyvat(lead, ModelConstants.LEAD_T_IDXS, *net_output_data['lead'][0,i].T, *net_output_data['lead_stds'][0,i].T)
+    lead_x_offset = 1.0 #前走車の判定を1m近くに寄せる。衝突防止
+    x, y, v, a = net_output_data['lead'][0,i].T
+    x = np.maximum(x - lead_x_offset, 0.0)
+    fill_xyvat(lead, ModelConstants.LEAD_T_IDXS, x, y, v, a, *net_output_data['lead_stds'][0,i].T)
     lead.prob = net_output_data['lead_prob'][0,i].tolist()
     lead.probTime = ModelConstants.LEAD_T_OFFSETS[i]
 
