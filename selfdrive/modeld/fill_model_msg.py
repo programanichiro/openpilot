@@ -119,10 +119,10 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     except Exception as e:
       pass
   DEVICE_OFFSET_update_count += 1
-  x_offset = 1.0 #前走車までに余裕をもつ
+  lead_x_offset = 1.0 #前走車の判定を1m近くに寄せる。衝突防止
   y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
   pos_x, pos_y, pos_z = net_output_data['plan'][0,:,Plan.POSITION].T
-  pos_x = np.maximum(pos_x - x_offset, 0.0)
+  pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？
   fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
 
   # action
@@ -198,7 +198,9 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.init('leadsV3', 3)
   for i in range(3):
     lead = modelV2.leadsV3[i]
-    fill_xyvat(lead, ModelConstants.LEAD_T_IDXS, *net_output_data['lead'][0,i].T, *net_output_data['lead_stds'][0,i].T)
+    x, y, v, a = net_output_data['lead'][0,i].T
+    x = np.maximum(x - lead_x_offset, 0.0)
+    fill_xyvat(lead, ModelConstants.LEAD_T_IDXS, x, y, v, a, *net_output_data['lead_stds'][0,i].T)
     lead.prob = net_output_data['lead_prob'][0,i].tolist()
     lead.probTime = ModelConstants.LEAD_T_OFFSETS[i]
 
