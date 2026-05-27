@@ -4,6 +4,9 @@ import numpy as np
 from cereal import log
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
 from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
+from openpilot.common.params import Params
+
+params = Params()
 
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
@@ -119,7 +122,9 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     except Exception as e:
       pass
   DEVICE_OFFSET_update_count += 1
-  lead_x_offset = 1.0 #前走車の判定を1m近くに寄せる。衝突防止
+  psn_str = params.get("LongitudinalPersonality", return_default=True)
+  psn = int(psn_str) #0,1,2, 0で一番接近
+  lead_x_offset = 0.5+float(psn)/2 #前走車の判定を1m近くに寄せる。衝突防止(0.5,1.0,1.5m)
   y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
   pos_x, pos_y, pos_z = net_output_data['plan'][0,:,Plan.POSITION].T
   pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？
