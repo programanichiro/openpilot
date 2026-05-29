@@ -139,6 +139,7 @@ class NavWidget(Widget, abc.ABC):
       self._drag_start_pos = None
 
     if self._drag_start_pos is not None:
+      print(f"aaaa")
       last_mouse_event = gui_app.last_mouse_event
       # push entire widget as user drags it away
       new_y = max(last_mouse_event.pos.y - self._drag_start_pos.y, 0)
@@ -149,7 +150,7 @@ class NavWidget(Widget, abc.ABC):
       new_y = self._rect.height + DISMISS_PUSH_OFFSET
 
     new_y = self._y_pos_filter.update(new_y)
-    print(f"new_y: {new_y}, dragging: {self._dragging_down}, playing_dismiss: {self._playing_dismiss_animation}")
+    print(f"new_y: {new_y}, drag_start_pos: {self._drag_start_pos}, dragging: {self._dragging_down}, playing_dismiss: {self._playing_dismiss_animation}")
     if abs(new_y) < 1 and abs(self._y_pos_filter.velocity.x) < 0.5:
       new_y = self._y_pos_filter.x = 0.0
       self._y_pos_filter.velocity.x = 0.0
