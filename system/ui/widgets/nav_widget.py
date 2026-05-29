@@ -91,6 +91,13 @@ class NavWidget(Widget, abc.ABC):
     if self._playing_dismiss_animation:
       return
 
+    # Only the top-most nav widget should respond to swipe-to-dismiss gestures.
+    try:
+      if hasattr(gui_app, '_nav_stack') and len(gui_app._nav_stack) and gui_app._nav_stack[-1] is not self:
+        return
+    except Exception:
+      pass
+
     if mouse_event.left_pressed:
       # user is able to swipe away if starting near top of screen
       self._y_pos_filter.update_alpha(0.04)
