@@ -240,7 +240,7 @@ class GuiApplication:
     self._window_close_requested = False
     self._nav_stack: list[object] = []
     self._nav_stack_ticks: list[Callable[[], None]] = []
-    self._nav_stack_widgets_to_render = 1 if self.big_ui() else 2
+    self._nav_stack_widgets_to_render = 1 if (self.big_ui() and Params().get_bool("C4UIOnC3X") == False) else 2
 
     self._mouse = MouseState(self._scale)
     self._mouse_events: list[MouseEvent] = []
@@ -421,7 +421,7 @@ class GuiApplication:
     if idx_to_pop == len(self._nav_stack) - 1:
       prev_widget = self._nav_stack[idx_to_pop - 1]
       prev_widget.set_enabled(True)
-      if hasattr(prev_widget, '_drag_start_pos') and self.big_ui():
+      if False and hasattr(prev_widget, '_drag_start_pos') and self.big_ui():
         prev_widget._drag_start_pos = None #これでc3Xでpop時に真ん中に移動する。
         prev_widget._y_pos_filter.x = prev_widget._rect.height + 64
         prev_widget._y_pos_filter.velocity.x = 0.0
@@ -985,7 +985,7 @@ class GuiApplication:
     scale = SCALE
     if GuiApplication.big_ui() == True:
       if Params().get_bool("C4UIOnC3X") == True:
-        scale = 2 #4でそのまま？
+        scale = 2 #4でそのまま？,scale=2で最適化しているので、４にしてもレイアウトおかしくなるはず。
     return 2160//scale if GuiApplication.big_ui() else 536
 
   @staticmethod
