@@ -398,7 +398,6 @@ class Scroller(Widget):
     self._scroller.set_enabled(lambda: self.enabled)
 
   def _render(self, _):
-    self._rect.y = 0
     self._scroller.render(self._rect)
 
 

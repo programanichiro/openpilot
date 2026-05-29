@@ -171,7 +171,7 @@ class NavWidget(Widget, abc.ABC):
       self._drag_start_pos = None
       self._dragging_down = False
 
-    self.set_position(self._rect.x, new_y)
+    self.set_position(self._rect.x, new_y*0)
 
   def _layout(self):
     # Dim whatever is behind this widget, fading with position (runs after _update_state so position is correct)
