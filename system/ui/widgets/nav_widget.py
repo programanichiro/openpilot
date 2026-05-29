@@ -149,6 +149,7 @@ class NavWidget(Widget, abc.ABC):
         new_y /= 2  # resistance until mouse release would dismiss widget
 
     if self._playing_dismiss_animation:
+      self._drag_start_pos = None
       new_y = self._rect.height + DISMISS_PUSH_OFFSET
 
     new_y = self._y_pos_filter.update(new_y)
