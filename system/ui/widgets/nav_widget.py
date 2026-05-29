@@ -145,14 +145,11 @@ class NavWidget(Widget, abc.ABC):
       if new_y < SWIPE_AWAY_THRESHOLD:
         new_y /= 2  # resistance until mouse release would dismiss widget
 
-    if self._playing_dismiss_animation == False:
-      new_y /= 2  # resistance until mouse release would dismiss widget
-
     if self._playing_dismiss_animation:
       new_y = self._rect.height + DISMISS_PUSH_OFFSET
 
     new_y = self._y_pos_filter.update(new_y)
-    if abs(new_y) < 1 and abs(self._y_pos_filter.velocity.x) < 0.5:
+    if abs(new_y) < 1*2 and abs(self._y_pos_filter.velocity.x) < 0.5 * 2:
       new_y = self._y_pos_filter.x = 0.0
       self._y_pos_filter.velocity.x = 0.0
 
