@@ -147,9 +147,10 @@ class NavWidget(Widget, abc.ABC):
       new_y = max(last_mouse_event.pos.y - self._drag_start_pos.y, 0)
       if new_y < SWIPE_AWAY_THRESHOLD:
         new_y /= 2  # resistance until mouse release would dismiss widget
+    else:
+      self._drag_start_pos = None
 
     if self._playing_dismiss_animation:
-      self._drag_start_pos = None
       new_y = self._rect.height + DISMISS_PUSH_OFFSET
 
     new_y = self._y_pos_filter.update(new_y)
