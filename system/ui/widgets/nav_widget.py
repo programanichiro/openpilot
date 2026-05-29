@@ -162,6 +162,11 @@ class NavWidget(Widget, abc.ABC):
         self._shown_callback = None
 
     if new_y > self._rect.height + DISMISS_PUSH_OFFSET - 10:
+
+      self._playing_dismiss_animation = False
+      self._drag_start_pos = None
+      self._dragging_down = False
+
       gui_app.pop_widget()
 
       # Only one callback should ever be fired
