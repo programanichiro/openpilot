@@ -280,7 +280,7 @@ class _Scroller(Widget):
       # Nicely lay out items horizontally/vertically
       if self._horizontal:
         x = self._rect.x + cur_pos + spacing
-        y = self._rect.y*0 + (self._rect.height - item.rect.height) / 2
+        y = self._rect.y + (self._rect.height - item.rect.height) / 2
         cur_pos += item.rect.width + spacing
       else:
         x = self._rect.x + (self._rect.width - item.rect.width) / 2
@@ -398,6 +398,7 @@ class Scroller(Widget):
     self._scroller.set_enabled(lambda: self.enabled)
 
   def _render(self, _):
+    self._rect.y = 0
     self._scroller.render(self._rect)
 
 
