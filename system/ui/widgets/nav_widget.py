@@ -171,9 +171,6 @@ class NavWidget(Widget, abc.ABC):
       self._drag_start_pos = None
       self._dragging_down = False
 
-      new_y = self._y_pos_filter.x = 0.0
-      self._y_pos_filter.velocity.x = 0.0
-
     self.set_position(self._rect.x, new_y) #ここでnew_yがゼロに戻り切らない
 
   def _layout(self):
