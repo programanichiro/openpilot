@@ -281,6 +281,7 @@ class _Scroller(Widget):
       if self._horizontal:
         x = self._rect.x + cur_pos + spacing
         y = self._rect.y + (self._rect.height - item.rect.height) / 2
+        y=0
         cur_pos += item.rect.width + spacing
       else:
         x = self._rect.x + (self._rect.width - item.rect.width) / 2
@@ -307,7 +308,6 @@ class _Scroller(Widget):
                                                          [self._rect.y, cy, self._rect.y + self._rect.height],
                                                          [self._item_pos_filter.x, self._scroll_offset, self._item_pos_filter.x])
           y -= np.clip(jello_offset, -20, 20)
-          y = 0
 
       # Animate moves if needed
       x, y = self._do_move_animation(item, x, y)
