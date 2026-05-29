@@ -240,8 +240,8 @@ class GuiApplication:
     self._window_close_requested = False
     self._nav_stack: list[object] = []
     self._nav_stack_ticks: list[Callable[[], None]] = []
-    self._nav_stack_widgets_to_render = 1 if (self.big_ui() and Params().get_bool("C4UIOnC3X") == False) else 2 #こうするとC4UIOnC3Xでもpopの描画がc4ライクになる。
-    #self._nav_stack_widgets_to_render = 1 if self.big_ui() else 2
+    #self._nav_stack_widgets_to_render = 1 if (self.big_ui() and Params().get_bool("C4UIOnC3X") == False) else 2 #こうするとC4UIOnC3Xでもpopの描画がc4ライクになる。
+    self._nav_stack_widgets_to_render = 1 if self.big_ui() else 2
 
     self._mouse = MouseState(self._scale)
     self._mouse_events: list[MouseEvent] = []
