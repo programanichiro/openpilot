@@ -176,8 +176,6 @@ class GuiScrollPanel2:
         if mouse_event.left_pressed:
           self._state = ScrollState.PRESSED
           self._initial_click_event = mouse_event
-          # Prevent large delta on the next frame (e.g. after parent/bounds change)
-          self._previous_mouse_event = mouse_event
 
     elif self._state == ScrollState.PRESSED:
       initial_click_pos = self._get_mouse_pos(cast(MouseEvent, self._initial_click_event))
