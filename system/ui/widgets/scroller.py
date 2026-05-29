@@ -312,7 +312,7 @@ class _Scroller(Widget):
       x, y = self._do_move_animation(item, x, y)
 
       # Update item state
-      item.set_position(x, y)
+      item.set_position(x, y*0)
       item.set_parent_rect(self._rect)
 
   def _render_item(self, item: Widget):

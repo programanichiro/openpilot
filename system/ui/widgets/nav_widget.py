@@ -196,7 +196,7 @@ class NavWidget(Widget, abc.ABC):
     else:
       self._nav_bar_y_filter.update(NAV_BAR_MARGIN)
 
-    self._nav_bar.set_position(bar_x, self._nav_bar_y_filter.x*0)
+    self._nav_bar.set_position(bar_x, self._nav_bar_y_filter.x)
     self._nav_bar.render()
 
     return ret
