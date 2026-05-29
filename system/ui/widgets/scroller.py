@@ -307,12 +307,13 @@ class _Scroller(Widget):
                                                          [self._rect.y, cy, self._rect.y + self._rect.height],
                                                          [self._item_pos_filter.x, self._scroll_offset, self._item_pos_filter.x])
           y -= np.clip(jello_offset, -20, 20)
+          y = 0
 
       # Animate moves if needed
       x, y = self._do_move_animation(item, x, y)
 
       # Update item state
-      item.set_position(x, y*0)
+      item.set_position(x, y)
       item.set_parent_rect(self._rect)
 
   def _render_item(self, item: Widget):
