@@ -149,7 +149,7 @@ class NavWidget(Widget, abc.ABC):
       new_y = self._rect.height + DISMISS_PUSH_OFFSET
 
     new_y = self._y_pos_filter.update(new_y)
-    if abs(new_y) < 1*2 and abs(self._y_pos_filter.velocity.x) < 0.5 * 2:
+    if abs(new_y) < 1 and abs(self._y_pos_filter.velocity.x) < 0.5:
       new_y = self._y_pos_filter.x = 0.0
       self._y_pos_filter.velocity.x = 0.0
 
@@ -170,6 +170,9 @@ class NavWidget(Widget, abc.ABC):
       self._playing_dismiss_animation = False
       self._drag_start_pos = None
       self._dragging_down = False
+
+      self._y_pos_filter.x = 0.0
+      self._y_pos_filter.velocity.x = 0.0
 
     self.set_position(self._rect.x, new_y) #ここでnew_yがゼロに戻り切らない
 
