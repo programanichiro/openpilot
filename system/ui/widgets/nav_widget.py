@@ -97,8 +97,8 @@ class NavWidget(Widget, abc.ABC):
       in_dismiss_area = mouse_event.pos.y < self._rect.height * self.BACK_TOUCH_AREA_PERCENTAGE
 
       if in_dismiss_area and self._back_enabled():
-        print(f"aaaa2")
         self._drag_start_pos = mouse_event.pos
+        print(f"aaaa2:{self._drag_start_pos}")
 
     elif mouse_event.left_down:
       if self._drag_start_pos is not None:
@@ -171,8 +171,9 @@ class NavWidget(Widget, abc.ABC):
         self._back_callback()
 
       self._playing_dismiss_animation = False
-      print(f"aaaa1")
+      print(f"aaaa1:{self._drag_start_pos}")
       self._drag_start_pos = None
+      print(f"aaaa0:{self._drag_start_pos}")
       self._dragging_down = False
 
     self.set_position(self._rect.x, new_y) #ここでnew_yがゼロに戻り切らない
