@@ -142,8 +142,10 @@ class NavWidget(Widget, abc.ABC):
       last_mouse_event = gui_app.last_mouse_event
       # push entire widget as user drags it away
       new_y = max(last_mouse_event.pos.y - self._drag_start_pos.y, 0)
+      if new_y < SWIPE_AWAY_THRESHOLD:
+        new_y /= 2  # resistance until mouse release would dismiss widget
 
-    if new_y < SWIPE_AWAY_THRESHOLD:
+    if self._playing_dismiss_animation == False:
       new_y /= 2  # resistance until mouse release would dismiss widget
 
     if self._playing_dismiss_animation:
