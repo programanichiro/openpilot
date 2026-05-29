@@ -98,7 +98,7 @@ class NavWidget(Widget, abc.ABC):
 
       if in_dismiss_area and self._back_enabled():
         self._drag_start_pos = mouse_event.pos
-        print(f"aaaa2:{self._drag_start_pos}")
+        print(f"aaaa2 id={id(self)} drag_start_pos={self._drag_start_pos} evt=({mouse_event.pos.x:.1f},{mouse_event.pos.y:.1f},t={mouse_event.t:.3f})")
 
     elif mouse_event.left_down:
       if self._drag_start_pos is not None:
@@ -140,8 +140,9 @@ class NavWidget(Widget, abc.ABC):
       self._drag_start_pos = None
 
     if self._drag_start_pos is not None:
-      print(f"aaaa")
       last_mouse_event = gui_app.last_mouse_event
+      print(f"aaaa id={id(self)} drag_start_pos={self._drag_start_pos} last_evt=({last_mouse_event.pos.x:.1f},{last_mouse_event.pos.y:.1f},t={last_mouse_event.t:.3f})")
+      # push entire widget as user drags it away
       # push entire widget as user drags it away
       new_y = max(last_mouse_event.pos.y - self._drag_start_pos.y, 0)
       if new_y < SWIPE_AWAY_THRESHOLD:
@@ -171,9 +172,9 @@ class NavWidget(Widget, abc.ABC):
         self._back_callback()
 
       self._playing_dismiss_animation = False
-      print(f"aaaa1:{self._drag_start_pos}")
+      print(f"aaaa1 id={id(self)} before_clear drag_start_pos={self._drag_start_pos}")
       self._drag_start_pos = None
-      print(f"aaaa0:{self._drag_start_pos}")
+      print(f"aaaa0 id={id(self)} after_clear drag_start_pos={self._drag_start_pos}")
       self._dragging_down = False
 
     self.set_position(self._rect.x, new_y) #ここでnew_yがゼロに戻り切らない
