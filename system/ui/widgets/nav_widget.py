@@ -7,9 +7,9 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.common.filter_simple import BounceFilter, FirstOrderFilter
 from openpilot.system.ui.lib.application import gui_app, MousePos, MouseEvent
 
-SWIPE_AWAY_THRESHOLD = 80*2  # px to dismiss after releasing
-START_DISMISSING_THRESHOLD = 40*2  # px to start dismissing while dragging
-BLOCK_SWIPE_AWAY_THRESHOLD = 60*2  # px horizontal movement to block swipe away
+SWIPE_AWAY_THRESHOLD = 80  # px to dismiss after releasing
+START_DISMISSING_THRESHOLD = 40  # px to start dismissing while dragging
+BLOCK_SWIPE_AWAY_THRESHOLD = 60  # px horizontal movement to block swipe away
 
 NAV_BAR_MARGIN = 6
 NAV_BAR_WIDTH = 205
@@ -196,7 +196,7 @@ class NavWidget(Widget, abc.ABC):
     else:
       self._nav_bar_y_filter.update(NAV_BAR_MARGIN)
 
-    self._nav_bar.set_position(bar_x, self._nav_bar_y_filter.x)
+    self._nav_bar.set_position(bar_x, self._nav_bar_y_filter.x*0)
     self._nav_bar.render()
 
     return ret
