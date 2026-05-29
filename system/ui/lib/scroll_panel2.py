@@ -54,7 +54,6 @@ class GuiScrollPanel2:
     self._velocity = 0.0  # pixels per second
     self._velocity_buffer: deque[float] = deque(maxlen=12 if TICI else 6)
     self._enabled: bool | Callable[[], bool] = True
-    self._last_bounds: rl.Rectangle | None = None
 
   def set_enabled(self, enabled: bool | Callable[[], bool]) -> None:
     self._enabled = enabled
@@ -68,22 +67,6 @@ class GuiScrollPanel2:
       print('Old state:', self._state)
 
     bounds_size = bounds.width if self._horizontal else bounds.height
-
-    # Detect parent/bounds change and defensively clamp offset so content
-    # doesn't jump far below the viewport center on transition.
-    try:
-      last = self._last_bounds
-      changed = (last is None) or (last.x != bounds.x or last.y != bounds.y or last.width != bounds.width or last.height != bounds.height)
-      if changed:
-        cur = self.get_offset()
-        # don't allow the offset to drop below half the viewport size (prevents over-downward jump)
-        max_allowed = bounds_size * 0.5
-        if cur > max_allowed:
-          self.set_offset(max_allowed)
-      self._last_bounds = rl.Rectangle(bounds.x, bounds.y, bounds.width, bounds.height)
-    except Exception:
-      # Defensive: ignore any issues and continue normally
-      pass
 
     for mouse_event in gui_app.mouse_events:
       self._handle_mouse_event(mouse_event, bounds, bounds_size, content_size)
