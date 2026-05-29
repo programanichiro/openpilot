@@ -421,6 +421,8 @@ class GuiApplication:
     if idx_to_pop == len(self._nav_stack) - 1:
       prev_widget = self._nav_stack[idx_to_pop - 1]
       prev_widget.set_enabled(True)
+      if hasattr(prev_widget, '_drag_start_pos') and self.big_ui():
+        prev_widget._drag_start_pos = None #これでc3Xでpop時に真ん中に移動する。
 
     widget = self._nav_stack.pop(idx_to_pop)
     widget.hide_event()
