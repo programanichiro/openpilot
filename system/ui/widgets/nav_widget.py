@@ -185,7 +185,7 @@ class NavWidget(Widget, abc.ABC):
     ret = super().render(rect)
 
     bar_x = self._rect.x + (self._rect.width - self._nav_bar.rect.width) / 2
-    nav_bar_delayed = rl.get_time() - self._nav_bar_show_time < 0.4
+    nav_bar_delayed = rl.get_time() - self._nav_bar_show_time < 0.4 * 3
     # User dragging or dismissing, nav bar follows NavWidget
     if self._drag_start_pos is not None or self._playing_dismiss_animation:
       self._nav_bar_y_filter.x = NAV_BAR_MARGIN + self._y_pos_filter.x
