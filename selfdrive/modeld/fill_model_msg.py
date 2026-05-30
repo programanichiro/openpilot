@@ -122,15 +122,13 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     except Exception as e:
       pass
 
-  # leadsV3初期化位置をここに移動
-  modelV2.init('leadsV3', 3) #公式コードの取得方法が変わったらエラーになるので注意。
   tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
   lead_x_offset = 0
 
   DEVICE_OFFSET_update_count += 1
-  psn_str = params.get("LongitudinalPersonality", return_default=True)
-  psn = int(psn_str) #0,1,2, 0で一番接近
   if tmp_lead_prob > 0.5: #前走車がいる時だけ
+    psn_str = params.get("LongitudinalPersonality", return_default=True)
+    psn = int(psn_str) #0,1,2, 0で一番接近
     lead_x_offset = 0.5+float(psn)/2 #前走車の判定を手前に寄せる。衝突防止(0.5,1.0,1.5m)
   y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
   pos_x, pos_y, pos_z = net_output_data['plan'][0,:,Plan.POSITION].T
@@ -207,7 +205,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.roadEdgeStds = net_output_data['road_edges_stds'][0,:,0,0].tolist()
 
   # leads
-  # modelV2.init('leadsV3', 3) #leadsV3初期化位置を上に移動
+  modelV2.init('leadsV3', 3)
   for i in range(3):
     lead = modelV2.leadsV3[i]
     x, y, v, a = net_output_data['lead'][0,i].T
