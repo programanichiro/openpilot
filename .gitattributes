@@ -22,3 +22,6 @@ selfdrive/assets/icons_mici/onroad/arrow_up.png -filter -text
 selfdrive/assets/icons_mici/onroad/arrow_up2.png -filter -text
 selfdrive/assets/icons_mici/onroad/dX_icon_128.png -filter -text
 selfdrive/assets/icons_mici/onroad/lane_keep_w.png -filter -text
+selfdrive/assets/offroad/icon_car_key.png -filter -text
+selfdrive/assets/offroad/icon_car_weight.png -filter -text
+selfdrive/assets/offroad/icon_gps_car.png -filter -text
