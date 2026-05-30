@@ -628,7 +628,7 @@ class LongitudinalPlanner:
 
     # if OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_v_cruise_kph != v_cruise_kph: #レバー操作したらエンゲージ初期クルーズ速度解除
     # 単にレバーアップダウンで通常クルーズに移行するのをやめる。基本は上なら通常クルーズ。下の時は現車速より上がってしまうなら何もしない。
-    if OP_ENABLE_v_cruise_kph != 0 and ((OP_ENABLE_v_cruise_kph < v_cruise_kph and OP_ENABLE_gas_speed*3.6 < v_cruise_kph) or (OP_ENABLE_v_cruise_kph > v_cruise_kph and OP_ENABLE_gas_speed*3.6 > v_cruise_kph)):
+    if OP_ENABLE_v_cruise_kph != 0 and (OP_ENABLE_v_cruise_kph < v_cruise_kph or (OP_ENABLE_v_cruise_kph > v_cruise_kph and OP_ENABLE_gas_speed*3.6 > v_cruise_kph)):
       OP_ENABLE_v_cruise_kph = 0
       if red_signal_scan_flag == 3:
         red_signal_scan_flag = 2
