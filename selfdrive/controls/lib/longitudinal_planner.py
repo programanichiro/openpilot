@@ -634,6 +634,10 @@ class LongitudinalPlanner:
         red_signal_scan_flag = 2
         with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
           fp.write('%d' % (red_signal_scan_flag))
+    if OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_v_cruise_kph > v_cruise_kph:
+      OP_ENABLE_v_cruise_kph = v_cruise_kph
+      with open('/dev/shm/sound_py_request.txt','w') as fp2:
+        fp2.write('%d' % (101)) #po.wav
 
     # if OP_ENABLE_v_cruise_kph != 0 and (OP_ENABLE_v_cruise_kph > v_cruise_kph and OP_ENABLE_gas_speed  > 1.0/3.6):
     #   ワンペダルの時は抑制したい
