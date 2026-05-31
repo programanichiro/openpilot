@@ -636,13 +636,11 @@ class LongitudinalPlanner:
           fp.write('%d' % (red_signal_scan_flag))
     if OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_v_cruise_kph > v_cruise_kph:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
-      with open('/dev/shm/sound_py_request.txt','w') as fp2:
-        fp2.write('%d' % (101)) #po.wav
-
-    # if OP_ENABLE_v_cruise_kph != 0 and (OP_ENABLE_v_cruise_kph > v_cruise_kph and OP_ENABLE_gas_speed  > 1.0/3.6):
-    #   ワンペダルの時は抑制したい
-    #   OP_ENABLE_v_cruise_kph = v_cruise_kph
-    #   OP_ENABLE_gas_speed = 1.0 / 3.6
+      if accel_engaged_str and int(accel_engaged_str) >= 3 and OP_ENABLE_v_cruise_kph <= min_acc_speed: #ワンペダルモード
+          OP_ENABLE_gas_speed = 1.0 / 3.6
+      else:
+        with open('/dev/shm/sound_py_request.txt','w') as fp2:
+          fp2.write('%d' % (101)) #po.wav
 
     if OP_ENABLE_v_cruise_kph != 0:
       v_cruise_kph = OP_ENABLE_gas_speed*3.6 #エンゲージ初期クルーズ速度を優先して使う,MAX=1もここで入ってくる。
