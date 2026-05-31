@@ -637,7 +637,8 @@ class LongitudinalPlanner:
     if OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_v_cruise_kph > v_cruise_kph:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       if accel_engaged_str and int(accel_engaged_str) >= 3 and (OP_ENABLE_v_cruise_kph <= min_acc_speed or vk_ego*3.6 <= min_acc_speed): #ワンペダルモード
-          OP_ENABLE_gas_speed = 1.0 / 3.6
+        OP_ENABLE_ACCEL_RELEASE = True #アクセルコントロールを許可しない
+        OP_ENABLE_gas_speed = 1.0 / 3.6
       else:
         with open('/dev/shm/sound_py_request.txt','w') as fp2:
           fp2.write('%d' % (101)) #po.wav
