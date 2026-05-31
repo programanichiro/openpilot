@@ -636,7 +636,7 @@ class LongitudinalPlanner:
           fp.write('%d' % (red_signal_scan_flag))
     if OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_v_cruise_kph > v_cruise_kph:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
-      if accel_engaged_str and int(accel_engaged_str) >= 3 and (OP_ENABLE_v_cruise_kph <= min_acc_speed or vk_ego*3.6 < min_acc_speed): #ワンペダルモード
+      if accel_engaged_str and int(accel_engaged_str) >= 3 and (OP_ENABLE_v_cruise_kph <= min_acc_speed or vk_ego*3.6 <= min_acc_speed): #ワンペダルモード
           OP_ENABLE_gas_speed = 1.0 / 3.6
       else:
         with open('/dev/shm/sound_py_request.txt','w') as fp2:
