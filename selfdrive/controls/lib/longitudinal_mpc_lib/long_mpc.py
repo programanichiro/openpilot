@@ -81,7 +81,7 @@ def get_T_FOLLOW(personality=log.LongitudinalPersonality.standard):
     raise NotImplementedError("Longitudinal personality not supported")
 
 def get_stopped_equivalence_factor(v_lead):
-  return (v_lead**2) / (2 * COMFORT_BRAKE)
+  return np.maximum(0.0, (v_lead**2) / (2 * COMFORT_BRAKE) - 1.0) #自車が1m手前で早く止まるように補正。
 
 def get_safe_obstacle_distance(v_ego, t_follow):
   return (v_ego**2) / (2 * COMFORT_BRAKE) + t_follow * v_ego + STOP_DISTANCE
@@ -335,7 +335,7 @@ class LongitudinalMpc:
     v_cruise_clipped = np.clip(v_cruise * np.ones(N+1), v_lower, v_upper)
     cruise_obstacle = np.cumsum(T_DIFFS * v_cruise_clipped) + get_safe_obstacle_distance(v_cruise_clipped, t_follow)
 
-    x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle, cruise_obstacle]) + 1.0
+    x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle, cruise_obstacle])
     self.source = MPC_SOURCES[np.argmin(x_obstacles[0])]
 
     self.yref[:,:] = 0.0

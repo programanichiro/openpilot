@@ -126,7 +126,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   lead_x_offset = 0
 
   DEVICE_OFFSET_update_count += 1
-  if tmp_lead_prob > 0.5: #前走車がいる時だけ
+  if False and tmp_lead_prob > 0.5: #前走車がいる時だけ
     psn_str = params.get("LongitudinalPersonality", return_default=True)
     psn = int(psn_str) #0,1,2, 0で一番接近
     lead_x_offset = 0.5+float(psn)/2 #前走車の判定を手前に寄せる。衝突防止(0.5,1.0,1.5m)
