@@ -639,6 +639,8 @@ class LongitudinalPlanner:
       if accel_engaged_str and int(accel_engaged_str) >= 3 and (OP_ENABLE_v_cruise_kph <= min_acc_speed or vk_ego*3.6 <= min_acc_speed): #ワンペダルモード
         OP_ENABLE_ACCEL_RELEASE = True #アクセルコントロールを許可しない
         OP_ENABLE_gas_speed = 1.0 / 3.6
+        with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
+          fp.write('%d' % (1)) #prompt.wavを鳴らす。
       else:
         with open('/dev/shm/sound_py_request.txt','w') as fp2:
           fp2.write('%d' % (101)) #po.wav
