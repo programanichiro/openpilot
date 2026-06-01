@@ -322,6 +322,7 @@ class LongitudinalPlanner:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       if one_pedal_chenge_restrict_time == 0:
         OP_ENABLE_gas_speed = vk_ego
+        print("aaaa2 OP_ENABLE_PREV:{OP_ENABLE_PREV} sm_longControlState:{sm_longControlState} v_cruise_kph:{v_cruise_kph} min_acc_speed:{min_acc_speed}")
       if accel_engaged_str:
         if int(accel_engaged_str) >= 3 and sm['carState'].gasPressed == False: #ワンペダルモード(開始時にアクセル操作していたら低速エンゲージとする)
           OP_ENABLE_gas_speed = 1.0 / 3.6
@@ -338,6 +339,7 @@ class LongitudinalPlanner:
       if sm['carState'].gasPressed and OP_ENABLE_ACCEL_RELEASE == False:
         if one_pedal_chenge_restrict_time == 0:
           OP_ENABLE_gas_speed = vk_ego
+          print("aaaa3 sm_longControlState:{sm_longControlState} v_cruise_kph:{v_cruise_kph}")
           if OnePedal_Low_speed_auto_engage and vk_ego >= min_acc_speed/3.6 and a_ego > 0 and self.weak_one_pedal == False:
             OP_ENABLE_v_cruise_kph = 0 #通常クルーズへ
       elif OnePedal_Low_speed_auto_engage:
@@ -607,6 +609,7 @@ class LongitudinalPlanner:
             if int(force_low_engage_str) == 1:
               OP_ENABLE_v_cruise_kph = v_cruise_kph
               OP_ENABLE_gas_speed = vk_ego
+              print("aaaa4 vk_ego:{vk_ego} v_cruise_kph:{v_cruise_kph}")
               force_low_engage_set = True
               if sm['carState'].gasPressed:
                 OP_ENABLE_ACCEL_RELEASE = False #このあとのアクセルコントロールを許可する
@@ -621,6 +624,7 @@ class LongitudinalPlanner:
       if before_v_cruise_kph_max_1 <= (37 if tss_type < 2 else 57) and OP_ENABLE_gas_speed == 1.0 / 3.6 and v_cruise_kph > before_v_cruise_kph_max_1: # これを繰り返すとACC設定速度がどんどん上がっていく。ACC最低速度近辺(37程度)に限定
         OP_ENABLE_v_cruise_kph = v_cruise_kph
         OP_ENABLE_gas_speed = vk_ego
+        print("aaaa5 vk_ego:{vk_ego} v_cruise_kph:{v_cruise_kph} before_v_cruise_kph_max_1:{before_v_cruise_kph_max_1}")
         OP_ENABLE_ACCEL_RELEASE = False #このあとのアクセルコントロールを許可する
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (2)) #engage.wavを鳴らす。
@@ -640,10 +644,11 @@ class LongitudinalPlanner:
         OP_ENABLE_ACCEL_RELEASE = True #アクセルコントロールを許可しない
         OP_ENABLE_gas_speed = 1.0 / 3.6
         lever_up_down = 0
-        OP_ENABLE_PREV = True #念の為
         #一定の条件でMAX=1に落ちた後すぐにOP_ENABLE_gas_speed=vk_egoしてしまう。条件がわからない。
         with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
           fp.write('%d' % (1)) #prompt.wavを鳴らす。
+        print("aaaa1 OP_ENABLE_PREV:{OP_ENABLE_PREV} v_cruise_kph:{v_cruise_kph} before_v_cruise_kph_max_1:{before_v_cruise_kph_max_1}")
+        OP_ENABLE_PREV = True #念の為
       else:
         with open('/dev/shm/sound_py_request.txt','w') as fp2:
           fp2.write('%d' % (101)) #po.wav
