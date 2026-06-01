@@ -54,7 +54,7 @@ T_IDXS = np.array(T_IDXS_LST)
 FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 COMFORT_BRAKE = 2.5
-STOP_DISTANCE = (6.0+1.0) #1m足してテスト
+STOP_DISTANCE = 6.0
 CRUISE_MIN_ACCEL = -1.2
 CRUISE_MAX_ACCEL = 1.6
 MIN_X_LEAD_FACTOR = 0.5
@@ -335,7 +335,7 @@ class LongitudinalMpc:
     v_cruise_clipped = np.clip(v_cruise * np.ones(N+1), v_lower, v_upper)
     cruise_obstacle = np.cumsum(T_DIFFS * v_cruise_clipped) + get_safe_obstacle_distance(v_cruise_clipped, t_follow)
 
-    x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle, cruise_obstacle])
+    x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle, cruise_obstacle]) + 1.0
     self.source = MPC_SOURCES[np.argmin(x_obstacles[0])]
 
     self.yref[:,:] = 0.0
