@@ -28,17 +28,22 @@ git branch -D devel-staging || true
 git push origin --delete devel-staging || true
 
 git checkout devel-staging
-# git checkout -f --track remotes/devel-staging
 git reset --hard devel-staging
 git push --set-upstream origin devel-staging
 
 git fetch --depth 1 origin devel-staging
-#git fetch --depth 1 origin devel
 
-# git checkout devel-staging
 git reset --hard origin/devel-staging
 git clean -xdff
 git lfs uninstall
+
+# ----------------------------------------
+# backup chunked model files
+# ----------------------------------------
+
+MODEL_BACKUP=$(mktemp -d)
+
+cp selfdrive/modeld/models/big_driving_vision.onnx.chunk* $MODEL_BACKUP/
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
@@ -50,13 +55,32 @@ git clean -xdff
 
 # do the files copy
 echo "[-] copying files T=$SECONDS"
+
 cd $SOURCE_DIR
 #cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
-rsync -l -R $(./release/release_files.py) $TARGET_DIR/
+rsync -l -R --exclude='big_driving_vision.onnx' $(./release/release_files.py) $TARGET_DIR/
 
 # in the directory
 cd $TARGET_DIR
 rm -f panda/board/obj/panda.bin.signed
+
+# ----------------------------------------
+# restore chunked model files
+# ----------------------------------------
+
+mkdir -p selfdrive/modeld/models
+
+cp $MODEL_BACKUP/* selfdrive/modeld/models/
+
+rm -f selfdrive/modeld/models/big_driving_vision.onnx
+
+# remove accidental git index entry
+git rm --cached selfdrive/modeld/models/big_driving_vision.onnx || true
+
+# ensure chunks are tracked
+git add selfdrive/modeld/models/big_driving_vision.onnx.chunk*
+
+rm -rf $MODEL_BACKUP
 
 # include source commit hash and build date in commit
 GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)
@@ -72,26 +96,6 @@ date: $DATETIME
 master commit: $GIT_HASH
 "
 
-# should be no submodules or LFS files
-# git submodule status
-# if [ ! -z "$(git lfs ls-files)" ]; then
-#   echo "LFS files detected!"
-#   exit 1
-# fi
-
-# ensure files are within GitHub's limit
-# BIG_FILES="$(find . -type f -not -path './.git/*' -size +95M)"
-# if [ ! -z "$BIG_FILES" ]; then
-#   printf '\n\n\n'
-#   echo "Found files exceeding GitHub's 100MB limit:"
-#   echo "$BIG_FILES"
-#   exit 1
-# fi
-
-# if [ ! -z "$BRANCH" ]; then
-#   echo "[-] Pushing to $BRANCH T=$SECONDS"
-#   git push -f origin devel-staging:$BRANCH
-# fi
 git push -f origin devel-staging:devel-staging
 
 echo "[-] done T=$SECONDS, ready at $TARGET_DIR"
