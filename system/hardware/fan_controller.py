@@ -561,7 +561,7 @@ class FanController:
           if road_info_list_select_ct == self.road_info_list_select:
             road_name = road_info["road_name"]
             if road_name == "---":
-              road_name = "➖➖➖" #"無名道"
+              road_name = "–––" #"無名道"
             # if self.osm_front_back_long_mode == 1:
             #   road_name = "*"+road_name #長方形で取ったやつは道路名の前に*をつける。
             # elif self.osm_front_back_long_mode == 2:
