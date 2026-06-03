@@ -371,8 +371,8 @@ class ModelRenderer(Widget):
 
     # glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)]
     # chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
-    glow = [(x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo),(x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h), (x, y + sz + homebase_h + g_yo + 10),(x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h),(x + (sz * 1.35) + g_xo, y + sz + g_yo)] #土台
-    chevron = [(x, y), (x - (sz * 1.25), y + sz),(x - (sz * 1.25), y + sz + homebase_h), (x, y + sz + homebase_h - 7),(x + (sz * 1.25), y + sz + homebase_h),(x + (sz * 1.25), y + sz)]
+    glow = [(x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo),(x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h), (x, y + sz + homebase_h + g_yo + 10 / 2.35),(x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h),(x + (sz * 1.35) + g_xo, y + sz + g_yo)] #土台
+    chevron = [(x, y), (x - (sz * 1.25), y + sz),(x - (sz * 1.25), y + sz + homebase_h), (x, y + sz + homebase_h - 7 / 2.35),(x + (sz * 1.25), y + sz + homebase_h),(x + (sz * 1.25), y + sz)]
 
     return LeadVehicle(glow=glow, chevron=chevron, fill_alpha=int(fill_alpha))
 
