@@ -16,6 +16,7 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.common.filter_simple import BounceFilter
 from openpilot.common.transformations.camera import DEVICE_CAMERAS, DeviceCameraConfig, view_frame_from_device_frame
 from openpilot.common.transformations.orientation import rot_from_euler
+from openpilot.common.params import Params
 from enum import IntEnum
 
 OpState = log.SelfdriveState.OpenpilotState
@@ -35,6 +36,7 @@ ROAD_CAM_MIN_SPEED = 10  # m/s (25 mph)
 
 CAM_Y_OFFSET = 20
 
+g_wide_cam = False
 
 class BookmarkIcon(Widget):
   PEEK_THRESHOLD = 50  # If icon peeks out this much, snap it fully visible
@@ -99,7 +101,7 @@ class BookmarkIcon(Widget):
     elif mouse_event.left_down and self._is_swiping:
       self._swipe_current_x = mouse_event.pos.x
       swipe_offset = self._swipe_start_x - self._swipe_current_x
-      self._is_swiping_left = swipe_offset > 0
+      self._is_swiping_left = swipe_offset > (0 if self._interacting else 10)  # 動き出しは10px以上左に動いたらスワイプとみなす
       if self._is_swiping_left:
         self._interacting = True
 
@@ -156,7 +158,7 @@ class AugmentedRoadView(CameraView):
                                        alignment=rl.GuiTextAlignment.TEXT_ALIGN_CENTER,
                                        alignment_vertical=rl.GuiTextAlignmentVertical.TEXT_ALIGN_MIDDLE)
 
-    self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
+    #self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
 
   def is_swiping_left(self) -> bool:
     """Check if currently swiping left (for scroller to disable)."""
@@ -175,8 +177,11 @@ class AugmentedRoadView(CameraView):
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
     # Don't trigger click callback if bookmark was triggered
-    if not self._bookmark_icon.interacting():
-      super()._handle_mouse_release(mouse_pos)
+    if (not self._bookmark_icon.interacting()) and (not self._hud_renderer.user_interacting()):
+      self._model_renderer.toggle_lead_indicator() #リードインジケーターのON/OFFをタップで切り替える
+      #self._hud_renderer.appear_btn() #ボタンを出す
+      #pass #onroadタップでhomeに戻るのをやめる
+      #super()._handle_mouse_release(mouse_pos)
 
   def _render(self, _):
     # Draw text if not onroad
@@ -214,12 +219,13 @@ class AugmentedRoadView(CameraView):
     self._model_renderer.render(self._content_rect)
 
     # Fade out bottom of overlays for looks
-    rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)
+    # if gui_app.big_ui() == False:　->model_rendererの方に移動
+    #   rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)
 
     alert_to_render, not_animating_out = self._alert_renderer.will_render()
 
     # Hide DMoji when disengaged unless AlwaysOnDM is enabled
-    should_draw_dmoji = (not self._hud_renderer.drawing_top_icons() and
+    should_draw_dmoji = ((True or not self._hud_renderer.drawing_top_icons()) and
                          (ui_state.status != UIStatus.DISENGAGED or ui_state.always_on_dm))
     self._driver_state_renderer.set_should_draw(should_draw_dmoji)
     self._driver_state_renderer.set_position(self._rect.x + 16, self._rect.y + 10)
@@ -231,8 +237,16 @@ class AugmentedRoadView(CameraView):
     self._alert_renderer.render(self._content_rect)
     self._hud_renderer.render(self._content_rect)
 
+    if self._bookmark_icon._interacting:
+      self._hud_renderer.ui_freeze(True) #ブックマークスワイプ中はHUDのタップ反応を止める
+      self._confidence_ball.ui_freeze(True) #ブックマークスワイプ中はHUDのタップ反応を止める
+    else:
+      self._hud_renderer.ui_freeze(False)
+      self._confidence_ball.ui_freeze(False)
+
     # Draw fake rounded border
-    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02, 10, 50, rl.BLACK)
+    rr = 1.0*0.5 if Params().get_bool("C4UIOnC3X") == False else 0.2
+    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * rr, 10, 50, rl.BLACK)
 
     # End clipping region
     rl.end_scissor_mode()
@@ -297,10 +311,14 @@ class AugmentedRoadView(CameraView):
     # Get camera configuration
     device_camera = self.device_camera or DEFAULT_DEVICE_CAMERA
     is_wide_camera = self.stream_type == WIDE_CAM
+    global g_wide_cam
+    g_wide_cam = is_wide_camera
     intrinsic = device_camera.ecam.intrinsics if is_wide_camera else device_camera.fcam.intrinsics
     calibration = self.view_from_wide_calib if is_wide_camera else self.view_from_calib
     if is_wide_camera:
-      zoom = 0.7 * 1.5
+      zoom = 0.7 * 1.5 / (gui_app._scale ** 0.5) #_scale==1がたまたま変化しないことを利用しているので、危険コード。
+    elif gui_app.big_ui():
+      zoom = 0.7 * 1.5 / gui_app._scale *1.012 #*1.012:画面の端までカメラを伸ばす
     else:
       zoom = np.interp(ui_state.sm['carState'].vEgo, [10, 30], [0.8, 1.0])
 

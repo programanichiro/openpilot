@@ -422,7 +422,27 @@ void pandad_run(Panda *panda) {
     // Process panda state at 10 Hz
     if (rk.frame() % 10 == 0) {
       sm.update(0);
-      engaged = sm.allAliveAndValid({"selfdriveState"}) && sm["selfdriveState"].getSelfdriveState().getEnabled();
+#if 1
+      bool steer_always = false;
+      bool cruise_available = false;
+      std::string steer_always_txt = util::read_file("/dev/shm/steer_always.txt");
+      if(steer_always_txt.empty() == false){
+        if(std::stoi(steer_always_txt) >= 1){
+          steer_always = true;
+        } else {
+          steer_always = false;
+        }
+      }
+      std::string cruise_available_txt = util::read_file("/dev/shm/cruise_available.txt");
+      if(cruise_available_txt.empty() == false){
+        if(std::stoi(cruise_available_txt) >= 1){
+          cruise_available = true;
+        } else {
+          cruise_available = false;
+        }
+      }
+#endif
+      engaged = sm.allAliveAndValid({"selfdriveState"}) && (sm["selfdriveState"].getSelfdriveState().getEnabled() || (steer_always && cruise_available));
       if (sm.updated("deviceState")) {
         is_onroad = sm["deviceState"].getDeviceState().getStarted();
       }

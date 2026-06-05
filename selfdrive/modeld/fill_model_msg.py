@@ -3,6 +3,27 @@ import capnp
 import numpy as np
 from cereal import log
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
+from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
+from openpilot.common.params import Params
+
+params = Params()
+
+STEERING_CENTER_calibration = []
+STEERING_CENTER_calibration_update_count = 0
+DEVICE_OFFSET_update_count = 0
+device_y_offset = 0
+try:
+  with open('/data/handle_center_info.txt','r') as fp:
+    handle_center_info_str = fp.read()
+    if handle_center_info_str:
+      STEERING_CENTER = float(handle_center_info_str)
+      with open('/dev/shm/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+        fp.write('%0.2f' % (STEERING_CENTER) )
+except Exception as e:
+  pass
+LP = LanePlanner(False) #widw_cameraが推論に使われていない模様。常にONではなくOFFとしてみる。2024/5/9
+g_lane_d = -999
+g_lane_d_dim = []
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
@@ -59,7 +80,7 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
                    net_output_data: dict[str, np.ndarray], action: log.ModelDataV2.Action,
                    publish_state: PublishState, vipc_frame_id: int, vipc_frame_id_extra: int,
                    frame_id: int, frame_drop: float, timestamp_eof: int, model_execution_time: float,
-                   valid: bool) -> None:
+                   valid: bool , STEER_CTRL_Y: float, DH, v_ego: float) -> None:
   frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
   frame_drop_perc = frame_drop * 100
   extended_msg.valid = valid
@@ -89,8 +110,32 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   fill_xyzt(modelV2.orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
   fill_xyzt(modelV2.orientationRate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
 
-  # poly path
-  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, *net_output_data['plan'][0,:,Plan.POSITION].T)
+  # poly path (apply same lateral offset so controllers use shifted path)
+  global DEVICE_OFFSET_update_count,device_y_offset
+  if DEVICE_OFFSET_update_count % 50 == 0: #10回に1回、テキストから読み込んで反映する。頻度は多すぎるとファイルI/Oが増えるし、少なすぎると反映が遅れる。10回に1回くらいがちょうどいいかも。
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+        if device_offset_str:
+          device_y_offset = float(device_offset_str)
+          device_y_offset /= 100.0 #cmからmへ変換
+    except Exception as e:
+      pass
+
+  # leadsV3初期化位置をここに移動
+  modelV2.init('leadsV3', 3) #公式コードの取得方法が変わったらエラーになるので注意。
+  tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
+  lead_x_offset = 0
+
+  DEVICE_OFFSET_update_count += 1
+  psn_str = params.get("LongitudinalPersonality", return_default=True)
+  psn = int(psn_str) #0,1,2, 0で一番接近
+  if tmp_lead_prob > 0.5: #前走車がいる時だけ
+    lead_x_offset = 0.5+float(psn)/2 #前走車の判定を手前に寄せる。衝突防止(0.5,1.0,1.5m)
+  y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
+  pos_x, pos_y, pos_z = net_output_data['plan'][0,:,Plan.POSITION].T
+  pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？
+  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
 
   # action
   modelV2.action = action
@@ -106,6 +151,52 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
+  if len(modelV2.position.x) == ModelConstants.IDX_N and len(modelV2.orientation.x) == ModelConstants.IDX_N: #ワンペダルならある程度ハンドルが正面を向いていること。
+    LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
+    position = modelV2.position
+    path_xyz = np.column_stack([position.x, position.y, position.z])
+
+    path_y = path_xyz[:,1]
+    max_yp = 0
+    for yp in path_y:
+      max_yp = yp if abs(yp) > abs(max_yp) else max_yp
+    STEERING_CENTER_calibration_max = 300 #3秒
+    if abs(max_yp) / 2.5 < 0.1 and v_ego > 20/3.6 and abs(STEER_CTRL_Y) < 8:
+      STEERING_CENTER_calibration.append(STEER_CTRL_Y)
+      if len(STEERING_CENTER_calibration) > STEERING_CENTER_calibration_max:
+        STEERING_CENTER_calibration.pop(0)
+    if len(STEERING_CENTER_calibration) > 0:
+      value_STEERING_CENTER_calibration = sum(STEERING_CENTER_calibration) / len(STEERING_CENTER_calibration)
+    else:
+      value_STEERING_CENTER_calibration = 0
+    #handle_center = 0 #STEERING_CENTER,もうhandle_center_info.txtもいらないか。
+    global STEERING_CENTER_calibration_update_count,g_lane_d,g_lane_d_dim
+    STEERING_CENTER_calibration_update_count += 1
+    if len(STEERING_CENTER_calibration) >= STEERING_CENTER_calibration_max:
+      #handle_center = value_STEERING_CENTER_calibration #動的に求めたハンドルセンターを使う。
+      if STEERING_CENTER_calibration_update_count % 100 == 0:
+        with open('/data/handle_center_info.txt','w') as fp: #保存用に間引いて書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+      if STEERING_CENTER_calibration_update_count % 10 == 5:
+        with open('/dev/shm/handle_center_info.txt','w') as fp: #読み出し用にtmpへ書き込み
+          fp.write('%0.2f' % (value_STEERING_CENTER_calibration) )
+    else:
+      with open('/data/handle_calibct_info.txt','w') as fp:
+        fp.write('%d' % ((len(STEERING_CENTER_calibration)+2) / (STEERING_CENTER_calibration_max / 100)) )
+
+    lane_d = 0
+    if LP.lta_mode and DH.lane_change_state == 0: #LTA有効なら。ただしレーンチェンジ中は発動しない。(DHは前回の情報になる)
+      pred_angle = (-max_yp / 2.5)
+      lane_d0 = LP.get_d_path(pred_angle , v_ego, path_xyz) #self.path_xyzは戻り値から外した。
+      g_lane_d_dim.append(lane_d0)
+      if len(g_lane_d_dim) > 20: #20Hz->1秒の平均
+        g_lane_d_dim.pop(0)
+      lane_d = sum(g_lane_d_dim) / len(g_lane_d_dim)
+    if lane_d != g_lane_d:
+      g_lane_d = lane_d
+      with open('/dev/shm/lane_d_info.txt','w') as fp:
+        fp.write('%.5f' % (lane_d))
+
   fill_lane_line_meta(driving_model_data.laneLineMeta, modelV2.laneLines, modelV2.laneLineProbs)
 
   # road edges
@@ -116,10 +207,12 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
   modelV2.roadEdgeStds = net_output_data['road_edges_stds'][0,:,0,0].tolist()
 
   # leads
-  modelV2.init('leadsV3', 3)
+  # modelV2.init('leadsV3', 3) #leadsV3初期化位置を上に移動
   for i in range(3):
     lead = modelV2.leadsV3[i]
-    fill_xyvat(lead, ModelConstants.LEAD_T_IDXS, *net_output_data['lead'][0,i].T, *net_output_data['lead_stds'][0,i].T)
+    x, y, v, a = net_output_data['lead'][0,i].T
+    x = np.maximum(x - lead_x_offset, 0.0)
+    fill_xyvat(lead, ModelConstants.LEAD_T_IDXS, x, y, v, a, *net_output_data['lead_stds'][0,i].T)
     lead.prob = net_output_data['lead_prob'][0,i].tolist()
     lead.probTime = ModelConstants.LEAD_T_OFFSETS[i]
 
