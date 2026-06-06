@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import math
+import datetime
 from numbers import Number
 
 from cereal import car, log
@@ -114,6 +115,9 @@ class Controls:
     print(f"longActive: {CC.longActive} CS.brakePressed: {CS.brakePressed}")
     with open('/tmp/long_brake.txt','w') as fp:
       fp.write("long:%d brake:%d" % (int(CC.longActive), int(CS.brakePressed)))
+    if CC.longActive and CS.brakePressed:
+      with open('/data/long_brake_error.txt','w') as fp:
+        fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
