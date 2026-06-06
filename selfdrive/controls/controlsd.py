@@ -59,6 +59,9 @@ class Controls:
     elif self.CP.lateralTuning.which() == 'torque':
       self.LaC = LatControlTorque(self.CP, self.CI, DT_CTRL)
 
+    self.old_longActive = False
+    self.old_brakePressed = False
+
   def update(self):
     self.sm.update(15)
     if self.sm.updated["liveCalibration"]:
@@ -113,11 +116,13 @@ class Controls:
                    (not standstill or self.CP.steerAtStandstill)
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
     print(f"longActive: {CC.longActive} CS.brakePressed: {CS.brakePressed}")
-    with open('/tmp/long_brake.txt','w') as fp:
-      fp.write("long:%d brake:%d" % (int(CC.longActive), int(CS.brakePressed)))
-    if CC.longActive and CS.brakePressed:
+    # with open('/tmp/long_brake.txt','w') as fp:
+    #   fp.write("long:%d brake:%d" % (int(CC.longActive), int(CS.brakePressed)))
+    if CC.longActive and CS.brakePressed and self.old_longActive and not self.old_brakePressed: #longActiveがON継続の状態でブレーキが踏まれた瞬間を検知
       with open('/data/long_brake_error.txt','w') as fp:
         fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    self.old_longActive = CC.longActive
+    self.old_brakePressed = CS.brakePressed
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
