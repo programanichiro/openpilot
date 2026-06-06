@@ -75,6 +75,15 @@ class DRIVER_MONITOR_SETTINGS:
     self._POSE_OFFSET_MAX_COUNT = int(360 / DT_DMON)  # stop deweighting new data after 6 min, aka "short term memory"
     self._WHEELPOS_CALIB_MIN_SPEED = 11
     self._WHEELPOS_THRESHOLD = 0.5
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+        if device_offset_str:
+          device_offset = float(device_offset_str)
+          self._WHEELPOS_THRESHOLD -= device_offset/100 #この計算はかなり適当である。一応右に10cmずらしたら閾値を-0.1するので、右ハンドル判定されやすくなるという理屈ではあるが、c4でrhd_predが綺麗に0.5固定というのが気に入らない。故障か何か・・・あやしい気がする。
+    except Exception as e:
+      pass
+
     self._WHEELPOS_FILTER_MIN_COUNT = int(15 / DT_DMON) # allow 15 seconds to converge wheel side
     self._WHEELPOS_DATA_AVG = 0.03
     self._WHEELPOS_DATA_VAR = 3*5.5e-5
@@ -231,7 +240,7 @@ class DriverMonitoring:
 
   def _update_states(self, driver_state, cal_rpy, car_speed, op_engaged, standstill, demo_mode=False, steering_angle_deg=0.):
     rhd_pred = driver_state.wheelOnRightProb
-    print(f"rhd_pred: {rhd_pred}")
+    #print(f"rhd_pred: {rhd_pred}")
     # calibrates only when there's movement and either face detected
     if car_speed > self.settings._WHEELPOS_CALIB_MIN_SPEED and (driver_state.leftDriverData.faceProb > self.settings._FACE_THRESHOLD or
                                           driver_state.rightDriverData.faceProb > self.settings._FACE_THRESHOLD):
@@ -241,10 +250,10 @@ class DriverMonitoring:
 
     if wheelpos_calibrated or demo_mode:
       self.wheel_on_right = self.wheelpos_offsetter.filtered_stat.M > self.settings._WHEELPOS_THRESHOLD
-      print(f"wheelpos_offsetter.M: {self.wheelpos_offsetter.filtered_stat.M}")
+      #print(f"wheelpos_offsetter.M: {self.wheelpos_offsetter.filtered_stat.M}")
     else:
       self.wheel_on_right = self.wheel_on_right_default # use default/saved if calibration is unfinished
-    print(f"self.wheel_on_right: {self.wheel_on_right}")
+    #print(f"self.wheel_on_right: {self.wheel_on_right}")
     # make sure no switching when engaged
     if op_engaged and self.wheel_on_right_last is not None and self.wheel_on_right_last != self.wheel_on_right and not demo_mode:
       self.wheel_on_right = self.wheel_on_right_last
