@@ -146,6 +146,17 @@ class CarSpecificEvents:
       except Exception as e:
         pass
 
+    if True: #longActiveがON継続の状態でブレーキが踏まれたらエラーイベントを出す。
+      try:
+        with open('/tmp/long_brake_error_tmp.txt','r') as fp:
+          long_brake_error_str = fp.read()
+          if long_brake_error_str:
+            long_brake_error = int(long_brake_error_str)
+            if long_brake_error > 0:
+              events.add(EventName.longActiveBrakeError)
+      except Exception as e:
+        pass
+
     if not CS.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if CS.espDisabled:
