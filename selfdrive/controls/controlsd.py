@@ -115,11 +115,15 @@ class Controls:
     CC.latActive = (self.sm['selfdriveState'].active or (steer_always != 0 and cruise_available != 0)) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                    (not standstill or self.CP.steerAtStandstill)
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
-    print(f"longActive: {CC.longActive} CS.brakePressed: {CS.brakePressed}")
     # with open('/tmp/long_brake.txt','w') as fp:
     #   fp.write("long:%d brake:%d" % (int(CC.longActive), int(CS.brakePressed)))
     if CC.longActive and CS.brakePressed and self.old_longActive and not self.old_brakePressed: #longActiveがON継続の状態でブレーキが踏まれた瞬間を検知
+      print(f"longActive: {CC.longActive} brakePressed: {CS.brakePressed}")
       with open('/data/long_brake_error.txt','w') as fp:
+        fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+    elif (not CC.longActive or not CS.brakePressed) and self.old_longActive and self.old_brakePressed: #両方ON状態が解除された瞬間も検知
+      print(f"longActive2: {CC.longActive} brakePressed2: {CS.brakePressed}")
+      with open('/data/long_brake_error2.txt','w') as fp:
         fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
     self.old_longActive = CC.longActive
     self.old_brakePressed = CS.brakePressed
