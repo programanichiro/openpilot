@@ -112,6 +112,8 @@ class Controls:
                    (not standstill or self.CP.steerAtStandstill)
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
     print(f"longActive: {CC.longActive} CS.brakePressed: {CS.brakePressed}")
+    with open('/tmp/long_brake.txt','w') as fp:
+      fp.write("long:%d brake:%d" % (int(CC.longActive), int(CS.brakePressed)))
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
