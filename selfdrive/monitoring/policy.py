@@ -80,7 +80,7 @@ class DRIVER_MONITOR_SETTINGS:
         device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
         if device_offset_str:
           device_offset = float(device_offset_str)
-          self._WHEELPOS_THRESHOLD -= device_offset/100 #この計算はかなり適当である。一応右に10cmずらしたら閾値を-0.1するので、右ハンドル判定されやすくなるという理屈ではあるが、c4でrhd_predが綺麗に0.5固定というのが気に入らない。故障か何か・・・あやしい気がする。
+          self._WHEELPOS_THRESHOLD -= device_offset/180 #この計算はかなり適当である。180は一般的な車幅。一応右に10cmずらしたら閾値を-0.05程度するので、右ハンドル判定されやすくなるという理屈ではあるが、c4でrhd_predが綺麗に0.5固定というのが気に入らない。故障か何か・・・あやしい気がする。
     except Exception as e:
       pass
 
