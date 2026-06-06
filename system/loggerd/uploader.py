@@ -142,6 +142,7 @@ class Uploader:
   def do_upload(self, key: str, fn: str):
     url_resp = self.api.get("v1.4/" + self.dongle_id + "/upload_url/", timeout=10, path=key, access_token=self.api.get_token())
     if url_resp.status_code == 412:
+      print(f"412 body: {url_resp.text}")
       return url_resp
 
     url_resp_json = json.loads(url_resp.text)
