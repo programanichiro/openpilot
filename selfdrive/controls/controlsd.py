@@ -121,10 +121,14 @@ class Controls:
       print(f"longActive: {CC.longActive} brakePressed: {CS.brakePressed}")
       with open('/data/long_brake_error.txt','w') as fp:
         fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+      with open('/tmp/long_brake_error_tmp.txt','w') as fp:
+        fp.write("1")
     elif (not CC.longActive or not CS.brakePressed) and self.old_longActive and self.old_brakePressed: #両方ON状態が解除された瞬間も検知
       print(f"longActive2: {CC.longActive} brakePressed2: {CS.brakePressed}")
       with open('/data/long_brake_error2.txt','w') as fp:
         fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+      with open('/tmp/long_brake_error_tmp.txt','w') as fp:
+        fp.write("0")
     self.old_longActive = CC.longActive
     self.old_brakePressed = CS.brakePressed
 

@@ -982,6 +982,13 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       AlertStatus.userPrompt, AlertSize.full,
       Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
   },
+  EventName.LongActiveBrakeError: {
+    ET.WARNING: Alert(
+      "LongActive\nBrakePressed",
+      "",
+      AlertStatus.critical, AlertSize.full,
+      Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
+  },
 
   # On cars that use stock ACC the car can decide to cancel ACC for various reasons.
   # When this happens we can no long control the car so the user needs to be warned immediately.
@@ -1108,6 +1115,13 @@ if HARDWARE.get_device_type() == 'mici':
         "hazard warning lights",
         AlertStatus.userPrompt, AlertSize.full,
         Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
+    },
+    EventName.LongActiveBrakeError: {
+      ET.WARNING: Alert(
+        "long brake",
+        "long active brake",
+        AlertStatus.critical, AlertSize.full,
+        Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
     },
   })
 
