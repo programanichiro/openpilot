@@ -982,7 +982,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       AlertStatus.userPrompt, AlertSize.full,
       Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
   },
-  EventName.LongActiveBrakeError: {
+  EventName.longActiveBrakeError: {
     ET.WARNING: Alert(
       "LongActive\nBrakePressed",
       "",
@@ -1116,7 +1116,7 @@ if HARDWARE.get_device_type() == 'mici':
         AlertStatus.userPrompt, AlertSize.full,
         Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
     },
-    EventName.LongActiveBrakeError: {
+    EventName.longActiveBrakeError: {
       ET.WARNING: Alert(
         "long brake",
         "long active brake",

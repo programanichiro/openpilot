@@ -153,7 +153,7 @@ class CarSpecificEvents:
           if long_brake_error_str:
             long_brake_error = int(long_brake_error_str)
             if long_brake_error > 0:
-              events.add(EventName.LongActiveBrakeError)
+              events.add(EventName.longActiveBrakeError)
       except Exception as e:
         pass
 

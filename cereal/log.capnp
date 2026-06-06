@@ -136,7 +136,7 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     soundsUnavailableDEPRECATED @47;
 
     hazardWarningLights @100;
-    LongActiveBrakeError @101;
+    longActiveBrakeError @101;
   }
 }
 
