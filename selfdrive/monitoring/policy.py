@@ -257,7 +257,7 @@ class DriverMonitoring:
     # make sure no switching when engaged
     if op_engaged and self.wheel_on_right_last is not None and self.wheel_on_right_last != self.wheel_on_right and not demo_mode:
       self.wheel_on_right = self.wheel_on_right_last
-    self.wheel_on_right = True #ここで強制ONにすれば常に右ハンドルになる。
+    #self.wheel_on_right = True #ここで強制ONにすれば常に右ハンドルになる。
     driver_data = driver_state.rightDriverData if self.wheel_on_right else driver_state.leftDriverData
     if not all(len(x) > 0 for x in (driver_data.faceOrientation, driver_data.facePosition,
                                     driver_data.faceOrientationStd, driver_data.facePositionStd)):
