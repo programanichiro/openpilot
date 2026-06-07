@@ -142,8 +142,7 @@ class CarSpecificEvents:
           if hazard_light_str:
             hazard_light = int(hazard_light_str)
             if hazard_light > 0:
-#              events.add(EventName.hazardWarningLights)
-              events.add(EventName.longActiveBrakeError)
+              events.add(EventName.hazardWarningLights)
       except Exception as e:
         pass
 
