@@ -240,7 +240,7 @@ class DriverMonitoring:
 
   def _update_states(self, driver_state, cal_rpy, car_speed, op_engaged, standstill, demo_mode=False, steering_angle_deg=0.):
     rhd_pred = driver_state.wheelOnRightProb
-    #print(f"rhd_pred: {rhd_pred} n:{self.wheelpos_offsetter.filtered_stat.n} min_count:{self.settings._WHEELPOS_FILTER_MIN_COUNT}")
+    print(f"rhd_pred: {rhd_pred} n:{self.wheelpos_offsetter.filtered_stat.n} min_count:{self.settings._WHEELPOS_FILTER_MIN_COUNT}")
     # calibrates only when there's movement and either face detected
     if car_speed > self.settings._WHEELPOS_CALIB_MIN_SPEED and (driver_state.leftDriverData.faceProb > self.settings._FACE_THRESHOLD or
                                           driver_state.rightDriverData.faceProb > self.settings._FACE_THRESHOLD):
@@ -250,10 +250,10 @@ class DriverMonitoring:
 
     if wheelpos_calibrated or demo_mode:
       self.wheel_on_right = self.wheelpos_offsetter.filtered_stat.M > self.settings._WHEELPOS_THRESHOLD
-      #print(f"wheelpos_offsetter.M: {self.wheelpos_offsetter.filtered_stat.M}")
+      print(f"wheelpos_offsetter.M: {self.wheelpos_offsetter.filtered_stat.M}")
     else:
       self.wheel_on_right = self.wheel_on_right_default # use default/saved if calibration is unfinished
-    #print(f"self.wheel_on_right: {self.wheel_on_right}")
+    print(f"self.wheel_on_right: {self.wheel_on_right}")
     # make sure no switching when engaged
     if op_engaged and self.wheel_on_right_last is not None and self.wheel_on_right_last != self.wheel_on_right and not demo_mode:
       self.wheel_on_right = self.wheel_on_right_last
