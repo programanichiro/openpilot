@@ -76,79 +76,19 @@ def fill_lane_line_meta(builder, lane_lines, lane_line_probs):
   builder.rightY = lane_lines[2].y[0]
   builder.rightProb = lane_line_probs[2]
 
-def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._DynamicStructBuilder,
-                   net_output_data: dict[str, np.ndarray], action: log.ModelDataV2.Action,
-                   publish_state: PublishState, vipc_frame_id: int, vipc_frame_id_extra: int,
-                   frame_id: int, frame_drop: float, timestamp_eof: int, model_execution_time: float,
-                   valid: bool , STEER_CTRL_Y: float, DH, v_ego: float) -> None:
-  frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
-  frame_drop_perc = frame_drop * 100
-  extended_msg.valid = valid
-  base_msg.valid = valid
+def fill_driving_model_data(msg: capnp._DynamicStructBuilder, modelv2_send: capnp._DynamicStructBuilder , STEER_CTRL_Y: float, DH, v_ego: float) -> None:
+  msg.valid = modelv2_send.valid
+  modelV2 = modelv2_send.modelV2
+  driving_model_data = msg.drivingModelData
+  driving_model_data.frameId = modelV2.frameId
+  driving_model_data.frameIdExtra = modelV2.frameIdExtra
+  driving_model_data.frameDropPerc = modelV2.frameDropPerc
+  driving_model_data.modelExecutionTime = modelV2.modelExecutionTime
+  driving_model_data.action = modelV2.action
+  driving_model_data.meta.laneChangeState = modelV2.meta.laneChangeState
+  driving_model_data.meta.laneChangeDirection = modelV2.meta.laneChangeDirection
 
-  driving_model_data = base_msg.drivingModelData
-
-  driving_model_data.frameId = vipc_frame_id
-  driving_model_data.frameIdExtra = vipc_frame_id_extra
-  driving_model_data.frameDropPerc = frame_drop_perc
-  driving_model_data.modelExecutionTime = model_execution_time
-
-  driving_model_data.action = action
-
-  modelV2 = extended_msg.modelV2
-  modelV2.frameId = vipc_frame_id
-  modelV2.frameIdExtra = vipc_frame_id_extra
-  modelV2.frameAge = frame_age
-  modelV2.frameDropPerc = frame_drop_perc
-  modelV2.timestampEof = timestamp_eof
-  modelV2.modelExecutionTime = model_execution_time
-
-  # plan
-  fill_xyzt(modelV2.position, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.POSITION].T, *net_output_data['plan_stds'][0,:,Plan.POSITION].T)
-  fill_xyzt(modelV2.velocity, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.VELOCITY].T)
-  fill_xyzt(modelV2.acceleration, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ACCELERATION].T)
-  fill_xyzt(modelV2.orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
-  fill_xyzt(modelV2.orientationRate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
-
-  # poly path (apply same lateral offset so controllers use shifted path)
-  global DEVICE_OFFSET_update_count,device_y_offset
-  if DEVICE_OFFSET_update_count % 50 == 0: #10回に1回、テキストから読み込んで反映する。頻度は多すぎるとファイルI/Oが増えるし、少なすぎると反映が遅れる。10回に1回くらいがちょうどいいかも。
-    try:
-      with open('/data/device_offset.txt','r') as fp:
-        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
-        if device_offset_str:
-          device_y_offset = float(device_offset_str)
-          device_y_offset /= 100.0 #cmからmへ変換
-    except Exception as e:
-      pass
-
-  tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
-  lead_x_offset = 0
-
-  DEVICE_OFFSET_update_count += 1
-  if False and tmp_lead_prob > 0.5: #前走車がいる時だけ
-    psn_str = params.get("LongitudinalPersonality", return_default=True)
-    psn = int(psn_str) #0,1,2, 0で一番接近
-    lead_x_offset = 0.5+float(psn)/2 #前走車の判定を手前に寄せる。衝突防止(0.5,1.0,1.5m)
-  y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
-  pos_x, pos_y, pos_z = net_output_data['plan'][0,:,Plan.POSITION].T
-  pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？
-  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
-
-  # action
-  modelV2.action = action
-
-  # times at X_IDXS of edges and lines aren't used
-  LINE_T_IDXS: list[float] = []
-
-  # lane lines
-  modelV2.init('laneLines', 4)
-  for i in range(4):
-    lane_line = modelV2.laneLines[i]
-    fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['lane_lines'][0,i,:,0], net_output_data['lane_lines'][0,i,:,1])
-  modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
-  modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
-
+  #################
   if len(modelV2.position.x) == ModelConstants.IDX_N and len(modelV2.orientation.x) == ModelConstants.IDX_N: #ワンペダルならある程度ハンドルが正面を向いていること。
     LP.parse_model(modelV2,v_ego) #ichiropilot,lta_mode判定をこの中で行う。
     position = modelV2.position
@@ -194,8 +134,67 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
       g_lane_d = lane_d
       with open('/dev/shm/lane_d_info.txt','w') as fp:
         fp.write('%.5f' % (lane_d))
-
   fill_lane_line_meta(driving_model_data.laneLineMeta, modelV2.laneLines, modelV2.laneLineProbs)
+
+  #################
+  # poly path (apply same lateral offset so controllers use shifted path)
+  global DEVICE_OFFSET_update_count,device_y_offset
+  if DEVICE_OFFSET_update_count % 50 == 0: #10回に1回、テキストから読み込んで反映する。頻度は多すぎるとファイルI/Oが増えるし、少なすぎると反映が遅れる。10回に1回くらいがちょうどいいかも。
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+        if device_offset_str:
+          device_y_offset = float(device_offset_str)
+          device_y_offset /= 100.0 #cmからmへ変換
+    except Exception as e:
+      pass
+
+  #tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
+  lead_x_offset = 0
+
+  DEVICE_OFFSET_update_count += 1
+  y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
+  pos_x, pos_y, pos_z = modelV2.position.x, modelV2.position.y, modelV2.position.z
+  pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？
+# fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, modelV2.position.x, modelV2.position.y, modelV2.position.z)
+  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
+
+def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, np.ndarray], action: log.ModelDataV2.Action,
+                   publish_state: PublishState, vipc_frame_id: int, vipc_frame_id_extra: int,
+                   frame_id: int, frame_drop: float, timestamp_eof: int, model_execution_time: float,
+                   valid: bool) -> None:
+  frame_age = frame_id - vipc_frame_id if frame_id > vipc_frame_id else 0
+  frame_drop_perc = frame_drop * 100
+  msg.valid = valid
+
+  modelV2 = msg.modelV2
+  modelV2.frameId = vipc_frame_id
+  modelV2.frameIdExtra = vipc_frame_id_extra
+  modelV2.frameAge = frame_age
+  modelV2.frameDropPerc = frame_drop_perc
+  modelV2.timestampEof = timestamp_eof
+  modelV2.modelExecutionTime = model_execution_time
+
+  # plan
+  fill_xyzt(modelV2.position, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.POSITION].T, *net_output_data['plan_stds'][0,:,Plan.POSITION].T)
+  fill_xyzt(modelV2.velocity, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.VELOCITY].T)
+  fill_xyzt(modelV2.acceleration, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ACCELERATION].T)
+  fill_xyzt(modelV2.orientation, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.T_FROM_CURRENT_EULER].T)
+  fill_xyzt(modelV2.orientationRate, ModelConstants.T_IDXS, *net_output_data['plan'][0,:,Plan.ORIENTATION_RATE].T)
+
+  # action
+  modelV2.action = action
+
+  # times at X_IDXS of edges and lines aren't used
+  LINE_T_IDXS: list[float] = []
+
+  # lane lines
+  modelV2.init('laneLines', 4)
+  for i in range(4):
+    lane_line = modelV2.laneLines[i]
+    fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['lane_lines'][0,i,:,0], net_output_data['lane_lines'][0,i,:,1])
+  modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
+  modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
   # road edges
   modelV2.init('roadEdges', 2)
@@ -203,6 +202,14 @@ def fill_model_msg(base_msg: capnp._DynamicStructBuilder, extended_msg: capnp._D
     road_edge = modelV2.roadEdges[i]
     fill_xyzt(road_edge, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['road_edges'][0,i,:,0], net_output_data['road_edges'][0,i,:,1])
   modelV2.roadEdgeStds = net_output_data['road_edges_stds'][0,:,0,0].tolist()
+
+  tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
+  lead_x_offset = 0
+
+  if False and tmp_lead_prob > 0.5: #前走車がいる時だけ->使ってなかった？
+    psn_str = params.get("LongitudinalPersonality", return_default=True)
+    psn = int(psn_str) #0,1,2, 0で一番接近
+    lead_x_offset = 0.5+float(psn)/2 #前走車の判定を手前に寄せる。衝突防止(0.5,1.0,1.5m)
 
   # leads
   modelV2.init('leadsV3', 3)
