@@ -154,10 +154,10 @@ def fill_driving_model_data(msg: capnp._DynamicStructBuilder, modelv2_send: capn
 
   DEVICE_OFFSET_update_count += 1
   y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
-  pos_x, pos_y, pos_z = np.asarray(modelV2.position.x), np.asarray(modelV2.position.y), modelV2.position.z
-  pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？->これはそもそも要らないのだが、ひとまず。
-# fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, modelV2.position.x, modelV2.position.y, modelV2.position.z)
-  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
+# pos_x, pos_y, pos_z = np.asarray(modelV2.position.x), np.asarray(modelV2.position.y), modelV2.position.z
+# pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？->これはそもそも要らないのだが、ひとまず。
+  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, modelV2.position.x, np.asarray(modelV2.position.y)+y_offset, modelV2.position.z)
+# fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
 
 def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, np.ndarray], action: log.ModelDataV2.Action,
                    publish_state: PublishState, vipc_frame_id: int, vipc_frame_id_extra: int,
