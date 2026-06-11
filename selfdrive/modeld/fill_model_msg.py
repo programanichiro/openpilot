@@ -150,7 +150,7 @@ def fill_driving_model_data(msg: capnp._DynamicStructBuilder, modelv2_send: capn
       pass
 
   #tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
-  lead_x_offset = 0 #これはゼロでいいみたい。
+# lead_x_offset = 0 #これはゼロでいいみたい。
 
   DEVICE_OFFSET_update_count += 1
   y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
@@ -204,9 +204,9 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
   modelV2.roadEdgeStds = net_output_data['road_edges_stds'][0,:,0,0].tolist()
 
   tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
-  lead_x_offset = 0 #現在ゼロで運用のまま。long_mpc.pyのSTOP_DISTANCEを増やす方が効果が大きい。
+  lead_x_offset = 0 #long_mpc.pyのSTOP_DISTANCEを増やす方が効果が大きい。
 
-  if False and tmp_lead_prob > 0.5: #前走車がいる時だけ->使ってなかった？,3fcda811066595850f4156d7df677d7437107078で無効の実験をしてそのままだった。
+  if tmp_lead_prob > 0.5: #前走車がいる時だけ->使ってなかった？,3fcda811066595850f4156d7df677d7437107078で無効の実験をしてそのままだった。->せっかくなので復活。
     psn_str = params.get("LongitudinalPersonality", return_default=True)
     psn = int(psn_str) #0,1,2, 0で一番接近
     lead_x_offset = 0.5+float(psn)/2 #前走車の判定を手前に寄せる。衝突防止(0.5,1.0,1.5m)
