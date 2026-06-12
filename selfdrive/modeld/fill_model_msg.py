@@ -10,7 +10,6 @@ params = Params()
 
 STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
-DEVICE_OFFSET_update_count = 0
 device_y_offset = 0
 try:
   with open('/data/handle_center_info.txt','r') as fp:
@@ -175,9 +174,9 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
   # times at X_IDXS of edges and lines aren't used
   LINE_T_IDXS: list[float] = []
 
-  global DEVICE_OFFSET_update_count,device_y_offset
-  if DEVICE_OFFSET_update_count % 50 == 0 and device_y_offset == 0: #50回に1回、テキストから読み込んで反映する。頻度は多すぎるとファイルI/Oが増えるし、少なすぎると反映が遅れる。10回に1回くらいがちょうどいいかも。
-    device_y_offset = 0.00000001
+  global device_y_offset
+  if device_y_offset == 0:
+    device_y_offset = 0.0001 #番人にゼロに近い値(0.1mm)を入れておく。
     try:
       with open('/data/device_offset.txt','r') as fp:
         device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
@@ -186,7 +185,6 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
           device_y_offset /= 100.0 #cmからmへ変換
     except Exception as e:
       pass
-  DEVICE_OFFSET_update_count += 1
 
   # lane lines
   modelV2.init('laneLines', 4)
