@@ -138,21 +138,8 @@ def fill_driving_model_data(msg: capnp._DynamicStructBuilder, modelv2_send: capn
 
   #################
   # poly path (apply same lateral offset so controllers use shifted path)
-  global DEVICE_OFFSET_update_count,device_y_offset
-  if DEVICE_OFFSET_update_count % 50 == 0: #10回に1回、テキストから読み込んで反映する。頻度は多すぎるとファイルI/Oが増えるし、少なすぎると反映が遅れる。10回に1回くらいがちょうどいいかも。
-    try:
-      with open('/data/device_offset.txt','r') as fp:
-        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
-        if device_offset_str:
-          device_y_offset = float(device_offset_str)
-          device_y_offset /= 100.0 #cmからmへ変換
-    except Exception as e:
-      pass
-
   #tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
 # lead_x_offset = 0 #これはゼロでいいみたい。
-
-  DEVICE_OFFSET_update_count += 1
   y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
 # pos_x, pos_y, pos_z = np.asarray(modelV2.position.x), np.asarray(modelV2.position.y), modelV2.position.z
 # pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？->これはそもそも要らないのだが、ひとまず。
@@ -188,11 +175,24 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
   # times at X_IDXS of edges and lines aren't used
   LINE_T_IDXS: list[float] = []
 
+  global DEVICE_OFFSET_update_count,device_y_offset
+  if DEVICE_OFFSET_update_count % 50 == 0 and device_y_offset == 0: #50回に1回、テキストから読み込んで反映する。頻度は多すぎるとファイルI/Oが増えるし、少なすぎると反映が遅れる。10回に1回くらいがちょうどいいかも。
+    device_y_offset = 0.00000001
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+        if device_offset_str:
+          device_y_offset = float(device_offset_str)
+          device_y_offset /= 100.0 #cmからmへ変換
+    except Exception as e:
+      pass
+  DEVICE_OFFSET_update_count += 1
+
   # lane lines
   modelV2.init('laneLines', 4)
   for i in range(4):
     lane_line = modelV2.laneLines[i]
-    fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['lane_lines'][0,i,:,0], net_output_data['lane_lines'][0,i,:,1])
+    fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['lane_lines'][0,i,:,0] + device_y_offset, net_output_data['lane_lines'][0,i,:,1])
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()
 
