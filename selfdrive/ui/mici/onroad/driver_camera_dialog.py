@@ -26,7 +26,7 @@ class DriverCameraView(CameraView):
     driver_view_ratio = 1.5
     base[0, 0] *= driver_view_ratio
     base[1, 1] *= driver_view_ratio
-    base[0, 2] += (device_y_offset*30/0.12) / (rect.width / 2) #12cmで30くらい,_renderでのx_offsetへの影響を加味して(rect.width / 2)で割っている。
+    base[0, 2] += (device_y_offset*(50 if gui_app.big_ui() else 30)/0.12) / (rect.width / 2) #12cmで30くらい,_renderでのx_offsetへの影響を加味して(rect.width / 2)で割っている。
     return base
 
 
