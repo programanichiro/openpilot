@@ -161,11 +161,11 @@ class BaseDriverCameraDialog(Widget):
   def _load_eye_textures(self):
     """Lazy load eye textures"""
     if self._eye_fill_texture is None:
-      self._eye_fill_texture = gui_app.texture("icons_mici/onroad/eye_fill.png", self._eye_size, self._eye_size)
+      self._eye_fill_texture = gui_app.texture("icons_mici/onroad/eye_fill.png", self._eye_size, self._eye_size*312/300)
     if self._eye_orange_texture is None:
-      self._eye_orange_texture = gui_app.texture("icons_mici/onroad/eye_orange.png", self._eye_size, self._eye_size)
+      self._eye_orange_texture = gui_app.texture("icons_mici/onroad/eye_orange.png", self._eye_size, self._eye_size*266/300)
     if self._glasses_texture is None:
-      self._glasses_texture = gui_app.texture("icons_mici/onroad/glasses.png", self._glasses_size, self._glasses_size)
+      self._glasses_texture = gui_app.texture("icons_mici/onroad/glasses.png", self._glasses_size, self._glasses_size*110/300)
 
   def _draw_face_detection(self, rect: rl.Rectangle):
     dm_state = ui_state.sm["driverMonitoringState"]
