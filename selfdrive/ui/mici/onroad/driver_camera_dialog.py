@@ -225,7 +225,7 @@ class BaseDriverCameraDialog(Widget):
     for eye_x, eye_y, eye_prob in [(left_eye_x, left_eye_y, left_eye_prob), (right_eye_x, right_eye_y, right_eye_prob)]:
       fill_opacity = eye_prob
       orange_opacity = 1.0 - eye_prob
-
+      print(f"fill_opacity {fill_opacity}")
       rl.draw_texture_v(self._eye_orange_texture, (eye_x, eye_y), rl.Color(255, 255, 255, int(255 * orange_opacity)))
       rl.draw_texture_v(self._eye_fill_texture, (eye_x, eye_y), rl.Color(255, 255, 255, int(255 * fill_opacity)))
 
@@ -235,6 +235,7 @@ class BaseDriverCameraDialog(Widget):
     glasses_y = rect.y
     glasses_pos = rl.Vector2(glasses_x, glasses_y)
     glasses_prob = driver_data.sunglassesProb
+    print(f"glasses_prob {glasses_prob}")
     rl.draw_texture_v(self._glasses_texture, glasses_pos, rl.Color(70, 80, 161, int(255 * glasses_prob)))
 
 
