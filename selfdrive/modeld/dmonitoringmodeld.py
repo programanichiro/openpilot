@@ -143,7 +143,7 @@ def main():
     if model_transform is None:
       cam = _os_fisheye if buf.width == _os_fisheye.width else _ar_ox_fisheye
       K = cam.intrinsics.copy()
-      K[0,2] += device_y_offset*150/0.12 #デバイスが右に12cmくらいオフセットされていたら150
+      K[0,2] += device_y_offset*90/0.12 #デバイスが右に12cmくらいオフセットされていたら90
       model_transform = np.linalg.inv(np.dot(dmonitoringmodel_intrinsics, np.linalg.inv(K))).astype(np.float32)
 
     sm.update(0)
