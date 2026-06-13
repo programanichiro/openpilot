@@ -75,14 +75,6 @@ class DRIVER_MONITOR_SETTINGS:
     self._POSE_OFFSET_MAX_COUNT = int(360 / DT_DMON)  # stop deweighting new data after 6 min, aka "short term memory"
     self._WHEELPOS_CALIB_MIN_SPEED = 11
     self._WHEELPOS_THRESHOLD = 0.5
-    try:
-      with open('/data/device_offset.txt','r') as fp:
-        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
-        if device_offset_str:
-          device_offset = float(device_offset_str)
-          self._WHEELPOS_THRESHOLD -= device_offset/180 #この計算はかなり適当である。180は一般的な車幅。一応右に10cmずらしたら閾値を-0.05程度するので、右ハンドル判定されやすくなるという理屈ではあるが、c4でrhd_predが綺麗に0.5固定というのが気に入らない。故障か何か・・・あやしい気がする。
-    except Exception as e:
-      pass
 
     self._WHEELPOS_FILTER_MIN_COUNT = int(15 / DT_DMON) # allow 15 seconds to converge wheel side
     self._WHEELPOS_DATA_AVG = 0.03
