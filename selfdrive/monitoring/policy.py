@@ -13,6 +13,16 @@ from openpilot.common.transformations.camera import DEVICE_CAMERAS
 AlertLevel = log.DriverMonitoringState.AlertLevel
 MonitoringPolicy = log.DriverMonitoringState.MonitoringPolicy
 
+device_y_offset = 0
+try:
+  with open('/data/device_offset.txt','r') as fp:
+    device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+    if device_offset_str:
+      device_y_offset = float(device_offset_str)
+      device_y_offset /= 100.0 #cmからmへ変換
+except Exception as e:
+  pass
+
 def to_percent(v):
   return int(min(max(v * 100., 0.), 100.))
 
@@ -257,7 +267,7 @@ class DriverMonitoring:
 
     self.face_detected = driver_data.faceProb > self.settings._FACE_THRESHOLD
     self.pose.pitch, self.pose.yaw = face_orientation_from_model(driver_data.faceOrientation, driver_data.facePosition, cal_rpy)
-    self.pose.yaw += 0.2 #0.149 #rad,device_offset分少し回す
+    self.pose.yaw += device_y_offset*0.2/0.12 #rad,device_offset分少し回す,12cmで0.2radくらい
     steer_d = max(abs(steering_angle_deg) - self.settings._POSE_YAW_MIN_STEER_DEG, 0.)
     self.pose.steer_yaw_offset = radians(steer_d) * -np.sign(steering_angle_deg) * self.settings._POSE_YAW_STEER_FACTOR
     if self.wheel_on_right:
