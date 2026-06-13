@@ -193,7 +193,7 @@ class TogglesLayout(Widget):
         self._auto_door_lock_btn.action_item.set_value("")
         try:
           with open('/data/run_auto_lock.txt','r') as fp:
-            lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+            lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいにkm/hで書いておく。ファイルが無いか0でオートロック無し。
             if lock_speed_str:
               self._auto_door_lock_btn.action_item.set_value(lock_speed_str+" [km/h]")
         except Exception as e:
@@ -206,7 +206,7 @@ class TogglesLayout(Widget):
         self._vehicle_mass_btn.action_item.set_value("")
         try:
           with open('/data/vehicle_mass.txt','r') as fp:
-            vehicle_mass_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+            vehicle_mass_str = fp.read() #車重をテキストで1530みたいにkgで書いておく。ファイルが無いか0でデフォの設定値。
             if vehicle_mass_str:
               self._vehicle_mass_btn.action_item.set_value(vehicle_mass_str+" [kg]")
         except Exception as e:
@@ -219,7 +219,7 @@ class TogglesLayout(Widget):
         self._device_offset_btn.action_item.set_value("")
         try:
           with open('/data/device_offset.txt','r') as fp:
-            device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+            device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はcomma再起動＆キャリブレーションリセットが必要。
             if device_offset_str:
               self._device_offset_btn.action_item.set_value(device_offset_str+" [cm]")
         except Exception as e:

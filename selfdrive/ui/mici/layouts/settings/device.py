@@ -332,6 +332,7 @@ class DeviceLayoutMici(NavScroller):
           else:
             device_offset_btn.set_value(offset+" [cm]")
 
+      #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はcomma再起動＆キャリブレーションリセットが必要。
       dlg = BigInputDialog("Device offset", device_offset, confirm_callback=device_offset_callback)
       gui_app.push_widget(dlg)
 
