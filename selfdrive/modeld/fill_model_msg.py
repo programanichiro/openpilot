@@ -12,6 +12,15 @@ STEERING_CENTER_calibration = []
 STEERING_CENTER_calibration_update_count = 0
 device_y_offset = 0
 try:
+  with open('/data/device_offset.txt','r') as fp:
+    device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+    if device_offset_str:
+      device_y_offset = float(device_offset_str)
+      device_y_offset /= 100.0 #cmからmへ変換
+except Exception as e:
+  pass
+
+try:
   with open('/data/handle_center_info.txt','r') as fp:
     handle_center_info_str = fp.read()
     if handle_center_info_str:
@@ -139,11 +148,10 @@ def fill_driving_model_data(msg: capnp._DynamicStructBuilder, modelv2_send: capn
   # poly path (apply same lateral offset so controllers use shifted path)
   #tmp_lead_prob = net_output_data['lead_prob'][0,0].tolist()
 # lead_x_offset = 0 #これはゼロでいいみたい。
-  y_offset = device_y_offset #デバイスを右にdevice_y_offset cmずらす
 # pos_x, pos_y, pos_z = np.asarray(modelV2.position.x), np.asarray(modelV2.position.y), modelV2.position.z
 # pos_x = np.maximum(pos_x - lead_x_offset, 0.0) #Expモードで効果ある？->これはそもそも要らないのだが、ひとまず。
-  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, modelV2.position.x, np.asarray(modelV2.position.y)+y_offset, modelV2.position.z)
-# fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, pos_x, pos_y+y_offset, pos_z)
+  #デバイスを右にdevice_y_offset cmずらす
+  fill_xyz_poly(driving_model_data.path, ModelConstants.POLY_PATH_DEGREE, modelV2.position.x, np.asarray(modelV2.position.y)+device_y_offset, modelV2.position.z)
 
 def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, np.ndarray], action: log.ModelDataV2.Action,
                    publish_state: PublishState, vipc_frame_id: int, vipc_frame_id_extra: int,
@@ -174,22 +182,11 @@ def fill_model_msg(msg: capnp._DynamicStructBuilder, net_output_data: dict[str, 
   # times at X_IDXS of edges and lines aren't used
   LINE_T_IDXS: list[float] = []
 
-  global device_y_offset
-  if device_y_offset == 0:
-    device_y_offset = 0.0001 #番人にゼロに近い値(0.1mm)を入れておく。
-    try:
-      with open('/data/device_offset.txt','r') as fp:
-        device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
-        if device_offset_str:
-          device_y_offset = float(device_offset_str)
-          device_y_offset /= 100.0 #cmからmへ変換
-    except Exception as e:
-      pass
-
   # lane lines
   modelV2.init('laneLines', 4)
   for i in range(4):
     lane_line = modelV2.laneLines[i]
+    #laneもdevice_y_offsetずらす
     fill_xyzt(lane_line, LINE_T_IDXS, np.array(ModelConstants.X_IDXS), net_output_data['lane_lines'][0,i,:,0] + device_y_offset, net_output_data['lane_lines'][0,i,:,1])
   modelV2.laneLineStds = net_output_data['lane_lines_stds'][0,:,0,0].tolist()
   modelV2.laneLineProbs = net_output_data['lane_lines_prob'][0,1::2].tolist()

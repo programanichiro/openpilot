@@ -17,6 +17,16 @@ from openpilot.system.camerad.cameras.nv12_info import get_nv12_info
 from openpilot.common.file_chunker import read_file_chunked
 from openpilot.selfdrive.modeld.parse_model_outputs import sigmoid, safe_exp
 
+device_y_offset = 0
+try:
+  with open('/data/device_offset.txt','r') as fp:
+    device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+    if device_offset_str:
+      device_y_offset = float(device_offset_str)
+      device_y_offset /= 100.0 #cmからmへ変換
+except Exception as e:
+  pass
+
 PROCESS_NAME = "selfdrive.modeld.dmonitoringmodeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 MODEL_PKL_PATH = MODELS_DIR / 'dmonitoring_model_tinygrad.pkl'
@@ -133,7 +143,7 @@ def main():
     if model_transform is None:
       cam = _os_fisheye if buf.width == _os_fisheye.width else _ar_ox_fisheye
       K = cam.intrinsics.copy()
-      K[0,2] += 90 #デバイスが右に12cmくらいオフセットされていたら
+      K[0,2] += device_y_offset*90/12 #デバイスが右に12cmくらいオフセットされていたら90
       model_transform = np.linalg.inv(np.dot(dmonitoringmodel_intrinsics, np.linalg.inv(K))).astype(np.float32)
 
     sm.update(0)

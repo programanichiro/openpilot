@@ -10,6 +10,15 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.nav_widget import NavWidget
 from openpilot.system.ui.widgets.label import gui_label
 
+device_y_offset = 0
+try:
+  with open('/data/device_offset.txt','r') as fp:
+    device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+    if device_offset_str:
+      device_y_offset = float(device_offset_str)
+      device_y_offset /= 100.0 #cmからmへ変換
+except Exception as e:
+  pass
 
 class DriverCameraView(CameraView):
   def _calc_frame_matrix(self, rect: rl.Rectangle):
@@ -17,6 +26,7 @@ class DriverCameraView(CameraView):
     driver_view_ratio = 1.5
     base[0, 0] *= driver_view_ratio
     base[1, 1] *= driver_view_ratio
+    base[0, 2] += (device_y_offset*30/12) / (rect.width / 2) #12cmで30くらい,_renderでのx_offsetへの影響を加味して(rect.width / 2)で割っている。
     return base
 
 
