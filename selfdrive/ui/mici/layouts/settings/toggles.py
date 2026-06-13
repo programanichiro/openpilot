@@ -66,6 +66,7 @@ class TogglesLayoutMici(NavScroller):
     self._auto_door_lock_btn.set_click_callback(self._auto_door_lock_btn_callback)
 
     self._scroller.add_widgets([
+      self._knight_scanner_bit3_button,
       self._personality_toggle,
       self._experimental_btn,
       is_metric_toggle,
@@ -89,7 +90,6 @@ class TogglesLayoutMici(NavScroller):
       self._mads_button,
       self._limitspeed_sw_button,
       self._lockon_disp_disable_button,
-      self._knight_scanner_bit3_button,
       self._vehicle_mass_btn,
       self._auto_door_lock_btn,
       C4UIOnC3X,
