@@ -251,7 +251,7 @@ class CameraView(Widget):
     scale_y = rect.height * transform[1, 1]  # zy
 
     # Calculate base position (centered)
-    x_offset = rect.x + (rect.width - scale_x) / 2
+    x_offset = rect.x + (rect.width - scale_x) / 2 + 90
     y_offset = rect.y + (rect.height - scale_y) / 2
 
     x_offset += transform[0, 2] * rect.width / 2
