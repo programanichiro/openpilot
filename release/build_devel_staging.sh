@@ -43,7 +43,7 @@ git lfs uninstall
 
 MODEL_BACKUP=$(mktemp -d)
 
-cp selfdrive/modeld/models/big_driving_vision.onnx.chunk* $MODEL_BACKUP/
+cp selfdrive/modeld/models/big_driving_*.onnx.chunk* $MODEL_BACKUP/
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
@@ -58,7 +58,7 @@ echo "[-] copying files T=$SECONDS"
 
 cd $SOURCE_DIR
 #cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
-rsync -l -R --exclude='big_driving_vision.onnx' $(./release/release_files.py) $TARGET_DIR/
+rsync -l -R --exclude='big_driving_*.onnx' $(./release/release_files.py) $TARGET_DIR/
 
 # in the directory
 cd $TARGET_DIR
@@ -72,13 +72,13 @@ mkdir -p selfdrive/modeld/models
 
 cp $MODEL_BACKUP/* selfdrive/modeld/models/
 
-rm -f selfdrive/modeld/models/big_driving_vision.onnx
+rm -f selfdrive/modeld/models/big_driving_*.onnx
 
 # remove accidental git index entry
-git rm --cached selfdrive/modeld/models/big_driving_vision.onnx || true
+git rm --cached selfdrive/modeld/models/big_driving_*.onnx || true
 
 # ensure chunks are tracked
-git add selfdrive/modeld/models/big_driving_vision.onnx.chunk*
+git add selfdrive/modeld/models/big_driving_*.onnx.chunk*
 
 rm -rf $MODEL_BACKUP
 
