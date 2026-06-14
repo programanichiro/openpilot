@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 import numpy as np
 import os
+import json
 import sqlite3
 import datetime
 import threading
@@ -660,6 +661,9 @@ class FanController:
           self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
           if self.velocity < 1.0:
             self.velocity = 0 #時速1キロ未満はゼロ扱い
+          else:
+            #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
+            gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
           if add_v_by_lead:
             self.velocity /= 1.15; #前走車追従中は、増速前の推定速度を学習する。
           self.timestamp /= 1000 #gps_axs_data.txtなら秒に直す
@@ -1446,3 +1450,48 @@ def get_node_coordinates(node_ids):
     return get_node_coordinatesZ(node_ids)
     #_current_conn流用の旧処理は削除
 
+GPS_DIR = "/data/gpslog"
+GPS_PASS = "/data/gpslog_pass.txt"
+MAX_FILE_SIZE = 100 * 1024  # 100KB
+MAX_FILES = 100
+
+def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
+    if not os.path.isdir(GPS_DIR) or not os.path.isfile(GPS_PASS):
+        return
+
+    if latitude==0 and longitude==0:
+      return
+
+    files = sorted(
+        f for f in os.listdir(GPS_DIR)
+        if f.endswith(".jsonl")
+    )
+
+    if files:
+        current_file = os.path.join(GPS_DIR, files[-1])
+        current_index = int(os.path.splitext(files[-1])[0])
+
+        if os.path.getsize(current_file) >= MAX_FILE_SIZE:
+            current_index += 1
+            current_file = os.path.join(
+                GPS_DIR,
+                f"{current_index:09d}.jsonl"
+            )
+            files.append(os.path.basename(current_file))
+    else:
+        current_file = os.path.join(GPS_DIR, "000000001.jsonl")
+        files = ["000000001.jsonl"]
+
+    record = {
+        "t": timestamp,
+        "la": latitude,
+        "lo": longitude,
+        "b": bearing,
+        "v": velocity,
+    }
+
+    with open(current_file, "a") as f:
+        f.write(json.dumps(record, separators=(",", ":")) + "\n")
+
+    if len(files) > MAX_FILES:
+        os.remove(os.path.join(GPS_DIR, files[0]))
