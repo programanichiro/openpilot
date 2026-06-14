@@ -1457,69 +1457,71 @@ MAX_FILES = 100
 
 def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
     if not os.path.isdir(GPS_DIR):
-        return
+      return
 
     if latitude==0 and longitude==0:
       return
 
     files = sorted(
-        f for f in os.listdir(GPS_DIR)
-        if f.endswith(".jsonl")
+      f for f in os.listdir(GPS_DIR)
+      if f.endswith(".jsonl")
     )
 
+    files_exchange = False
     if files:
-        current_file = os.path.join(GPS_DIR, files[-1])
-        current_index = int(os.path.splitext(files[-1])[0])
+      current_file = os.path.join(GPS_DIR, files[-1])
+      current_index = int(os.path.splitext(files[-1])[0])
 
-        if os.path.getsize(current_file) >= MAX_FILE_SIZE:
-            current_index += 1
-            current_file = os.path.join(
-                GPS_DIR,
-                f"{current_index:09d}.jsonl"
-            )
-            files.append(os.path.basename(current_file))
+      if os.path.getsize(current_file) >= MAX_FILE_SIZE:
+        current_index += 1
+        current_file = os.path.join(
+            GPS_DIR,
+            f"{current_index:09d}.jsonl"
+        )
+        files.append(os.path.basename(current_file))
+        files_exchange = True
     else:
-        current_file = os.path.join(GPS_DIR, "000000001.jsonl")
-        files = ["000000001.jsonl"]
+      current_file = os.path.join(GPS_DIR, "000000001.jsonl")
+      files = ["000000001.jsonl"]
 
     record = {
-        "t": int(timestamp),
-        "la": latitude,
-        "lo": longitude,
-        "b": bearing,
-        "v": round(velocity, 2)
+      "t": int(timestamp),
+      "la": latitude,
+      "lo": longitude,
+      "b": bearing,
+      "v": round(velocity, 2)
     }
 
     with open(current_file, "a") as f:
-        f.write(json.dumps(record, separators=(",", ":")) + "\n")
+      f.write(json.dumps(record, separators=(",", ":")) + "\n")
 
     if len(files) > MAX_FILES:
-        os.remove(os.path.join(GPS_DIR, files[0]))
+      os.remove(os.path.join(GPS_DIR, files[0]))
 
     # ----------------------------
     # index.json（逆スキャンで全列挙）
     # ----------------------------
-    try:
+    index_path = os.path.join(GPS_DIR, "index.json")
+    if files_exchange or (not os.path.exists(index_path)): #ファイルが切り替わったとき、もしくはindex.jsonが存在しないときに更新する。
+      try:
         current_index = int(os.path.splitext(os.path.basename(current_file))[0])
 
         files_list = []
 
         for i in range(current_index, 0, -1):
-            fname = f"{i:09d}.jsonl"
-            fpath = os.path.join(GPS_DIR, fname)
+          fname = f"{i:09d}.jsonl"
+          fpath = os.path.join(GPS_DIR, fname)
 
-            if os.path.exists(fpath):
-                files_list.append(fname)
-            else:
-                # 途切れたらそこで終了（連番前提）
-                break
-
-        index_path = os.path.join(GPS_DIR, "index.json")
+          if os.path.exists(fpath):
+            files_list.append(fname)
+          else:
+            # 途切れたらそこで終了（連番前提）
+            break
 
         with open(index_path, "w") as f:
-            f.write(json.dumps({
-                "latest": os.path.basename(current_file),
-                "files": files_list
-            }))
-    except Exception:
+          f.write(json.dumps({
+            "latest": os.path.basename(current_file),
+            "files": files_list
+          }))
+      except Exception:
         pass
