@@ -1451,12 +1451,11 @@ def get_node_coordinates(node_ids):
     #_current_conn流用の旧処理は削除
 
 GPS_DIR = "/data/gpslog"
-GPS_PASS = "/data/gpslog_pass.txt"
 MAX_FILE_SIZE = 100 * 1024  # 100KB
 MAX_FILES = 100
 
 def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
-    if not os.path.isdir(GPS_DIR) or not os.path.isfile(GPS_PASS):
+    if not os.path.isdir(GPS_DIR):
         return
 
     if latitude==0 and longitude==0:
@@ -1483,11 +1482,11 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
         files = ["000000001.jsonl"]
 
     record = {
-        "t": timestamp,
+        "t": int(timestamp),
         "la": latitude,
         "lo": longitude,
         "b": bearing,
-        "v": velocity,
+        "v": round(velocity, 2)
     }
 
     with open(current_file, "a") as f:
