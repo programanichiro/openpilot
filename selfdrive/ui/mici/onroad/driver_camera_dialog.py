@@ -194,7 +194,7 @@ class BaseDriverCameraDialog(Widget):
     scale_y = rect.height / 1080.0
     fbox_x = rect.x + rect.width / 2 + offset_x * scale_x
     fbox_y = rect.y + rect.height / 2 + offset_y * scale_y
-    box_size = 75 * gui_app._scale
+    box_size = 75 if not gui_app.big_ui() else 115
     line_thickness = 3
 
     line_color = rl.Color(255, 255, 255, int(alpha * 255))
