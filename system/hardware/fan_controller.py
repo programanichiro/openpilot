@@ -1494,3 +1494,31 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
 
     if len(files) > MAX_FILES:
         os.remove(os.path.join(GPS_DIR, files[0]))
+
+    # ----------------------------
+    # index.json（逆スキャンで全列挙）
+    # ----------------------------
+    try:
+        current_index = int(os.path.splitext(os.path.basename(current_file))[0])
+
+        files_list = []
+
+        for i in range(current_index, 0, -1):
+            fname = f"{i:09d}.jsonl"
+            fpath = os.path.join(GPS_DIR, fname)
+
+            if os.path.exists(fpath):
+                files_list.append(fname)
+            else:
+                # 途切れたらそこで終了（連番前提）
+                break
+
+        index_path = os.path.join(GPS_DIR, "index.json")
+
+        with open(index_path, "w") as f:
+            f.write(json.dumps({
+                "latest": os.path.basename(current_file),
+                "files": files_list
+            }))
+    except Exception:
+        pass
