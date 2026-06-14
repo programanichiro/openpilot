@@ -190,8 +190,8 @@ class BaseDriverCameraDialog(Widget):
     offset_y = (tici_y - 540.0) * 1.25
 
     # Map to mici screen (scale from 2160x1080 to rect dimensions)
-    scale_x = rect.width / 2160.0
-    scale_y = rect.height / 1080.0
+    scale_x = rect.width / 2160.0 * gui_app._scale
+    scale_y = rect.height / 1080.0 * gui_app._scale
     fbox_x = rect.x + rect.width / 2 + offset_x * scale_x
     fbox_y = rect.y + rect.height / 2 + offset_y * scale_y
     box_size = 75
