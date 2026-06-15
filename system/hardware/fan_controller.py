@@ -1451,8 +1451,8 @@ def get_node_coordinates(node_ids):
     #_current_conn流用の旧処理は削除
 
 GPS_DIR = "/data/gpslog"
-#MAX_FILE_SIZE = 100 * 1024  # 100KB
-MAX_FILE_SIZE = 10 * 1024  # 10KBでテスト
+MAX_FILE_SIZE = 100 * 1024  # 100KB
+#MAX_FILE_SIZE = 10 * 1024  # 10KBでテスト
 MAX_FILES = 100
 
 def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
