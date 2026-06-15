@@ -17,6 +17,7 @@ from openpilot.system.hardware import HARDWARE
 key_raw = None
 with open("/data/gpslog_pass.txt", "r") as f:
   key_raw = f.read().strip()
+  key_raw = key_raw[:-8] #後ろ8文字を削る
   key = base64.urlsafe_b64decode(key_raw.encode("utf-8"))
   aesgcm = AESGCM(key)
   nonce = os.urandom(12)
