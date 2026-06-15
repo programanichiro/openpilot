@@ -2,6 +2,8 @@
 import numpy as np
 import os
 import json
+import base64
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import sqlite3
 import datetime
 import threading
@@ -11,6 +13,13 @@ import random
 
 from openpilot.common.pid import PIDController
 from openpilot.system.hardware import HARDWARE
+
+key_raw = None
+with open("/data/gpslog_pass.txt", "r") as f:
+  key_raw = f.read().strip()
+  key = base64.urlsafe_b64decode(key_raw.encode("utf-8"))
+  aesgcm = AESGCM(key)
+  nonce = os.urandom(12)
 
 # raise fan setpoint on tici/tizi to reduce noise
 # after raising LMH threshold in AGNOS 18.1 to prevent CPU throttling
@@ -1493,7 +1502,13 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
     }
 
     with open(current_file, "a") as f:
-      f.write(json.dumps(record, separators=(",", ":")) + "\n")
+      if key_raw == None:
+        f.write(json.dumps(record, separators=(",", ":")) + "\n")
+      else:
+        data = json.dumps(record, separators=(",", ":")).encode("utf-8")
+        cipher = aesgcm.encrypt(nonce, data, None)
+        line = base64.urlsafe_b64encode(nonce + cipher).decode("utf-8")
+        f.write(line + "\n")
 
     if len(files) > MAX_FILES:
       os.remove(os.path.join(GPS_DIR, files[0]))
