@@ -104,6 +104,9 @@ async function loadGPS() {
 
   const params = new URLSearchParams(location.search);
   let targetDate = params.get("date");
+  if (targetDate === "latest") {
+    //最後の日時を使う
+  }
   if (targetDate === "today") {
     const now = new Date();
     targetDate =
@@ -184,6 +187,11 @@ async function loadGPS() {
         Number.isFinite(c.coord[0]) &&
         Number.isFinite(c.coord[1])
       );
+
+    if(targetDate == "latest"){
+      targetDate = coords[0].date;
+    }
+    //console.log("targetDate:", targetDate);
 
     const filteredCoords = targetDate
       ? coords.filter(c => c.date === targetDate)

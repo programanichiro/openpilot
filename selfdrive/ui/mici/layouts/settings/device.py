@@ -402,7 +402,7 @@ class DeviceLayoutMici(NavScroller):
         username = Params().get("GithubUsername")
         if username:
           self._scroller.add_widgets([
-            QRCodeWidget(f"https://{username}.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=today"),
+            QRCodeWidget(f"https://{username}.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=latest"),
           ])
     except Exception:
       pass
