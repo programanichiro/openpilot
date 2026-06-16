@@ -134,8 +134,12 @@ async function loadGPS() {
   // 全ファイル読み込み
   // ----------------------------
   for (const file of index.files) {
+    let jsonl = "./" + dgl + "/" + file;
+    if(file == index.files[0]){
+      jsonl += "?t=" + Date.now() //最新だけキャッシュを拒否する
+    }
 
-    const res = await fetch("./" + dgl + "/" + file + "?t=" + Date.now());
+    const res = await fetch(jsonl);
     if (!res.ok) {
       continue;
     }
