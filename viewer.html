@@ -1,0 +1,422 @@
+<!doctype html>
+<html>
+<head>
+  <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+  <meta http-equiv="Pragma" content="no-cache">
+  <meta http-equiv="Expires" content="0">
+  <meta charset="utf-8" />
+  <title>GPS Viewer</title>
+
+  <link href="https://unpkg.com/maplibre-gl/dist/maplibre-gl.css" rel="stylesheet" />
+  <script src="https://unpkg.com/maplibre-gl/dist/maplibre-gl.js"></script>
+
+  <style>
+    body { margin: 0; }
+    #map { width: 100vw; height: 100vh; }
+  </style>
+</head>
+
+<body>
+<div id="map"></div>
+
+<script>
+
+
+function base64UrlToBytes(base64url) {
+  const base64 = base64url
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .padEnd(base64url.length + (4 - base64url.length % 4) % 4, "=");
+
+  return Uint8Array.from(atob(base64), c => c.charCodeAt(0));
+}
+
+function isJsonLine(line) {
+  const s = line.trim();
+  return s.startsWith("{") || s.startsWith("[");
+}
+
+function base64UrlToBase64(s) {
+  return s
+    .replace(/-/g, "+")
+    .replace(/_/g, "/")
+    .padEnd(s.length + (4 - s.length % 4) % 4, "=");
+}
+
+function safeAtob(line) {
+  try {
+    return atob(base64UrlToBase64(line));
+  } catch (e) {
+    console.error("NOT BASE64:", line);
+    return null;
+  }
+}
+
+async function decodeLineIfNeeded(line, pass) {
+
+  const s = line.trim();
+  if (!s) return null;
+
+  // JSONはそのまま
+  if (isJsonLine(s)) {
+    try {
+      return JSON.parse(s);
+    } catch (e) {
+      console.error("JSON parse fail:", s);
+      return null;
+    }
+  }
+
+  // base64 decode
+  const bin = safeAtob(s);
+  if (!bin) return null;
+
+  const raw = Uint8Array.from(bin, c => c.charCodeAt(0));
+
+  if (raw.length < 13) {
+    console.error("too short:", s);
+    return null;
+  }
+
+  const nonce = raw.slice(0, 12);
+  const data = raw.slice(12);
+
+  const keyBytes = base64UrlToBytes(pass);
+
+  const key = await crypto.subtle.importKey(
+    "raw",
+    keyBytes,
+    "AES-GCM",
+    false,
+    ["decrypt"]
+  );
+
+  const buf = await crypto.subtle.decrypt(
+    { name: "AES-GCM", iv: nonce },
+    key,
+    data
+  );
+
+  return JSON.parse(new TextDecoder().decode(buf));
+}
+
+async function loadGPS() {
+
+  const params = new URLSearchParams(location.search);
+  let targetDate = params.get("date");
+  if (targetDate === "today") {
+    const now = new Date();
+    targetDate =
+      now.getFullYear().toString() +
+      String(now.getMonth() + 1).padStart(2, "0") +
+      String(now.getDate()).padStart(2, "0");
+  }
+  const pass = params.get("pass");
+  const dgl = params.get("dgl");
+  if(!dgl){
+    dgl = "0000"
+  }
+
+  console.log("pass length:", pass?.length);
+
+  // ----------------------------
+  // index.json 読み込み
+  // ----------------------------
+  const indexRes = await fetch("./"+dgl+"/index.json?t=" + Date.now());
+  const index = await indexRes.json();
+
+  // console.log("latest:", index.latest);
+  // console.log("files:", index.files.length);
+
+  let allCoords = [];
+
+  // ----------------------------
+  // 全ファイル読み込み
+  // ----------------------------
+  for (const file of index.files) {
+
+    const res = await fetch("./" + dgl + "/" + file + "?t=" + Date.now());
+    if (!res.ok) {
+      continue;
+    }
+    const text = await res.text();
+
+    let records = [];
+
+    if (pass) {
+
+      records = (await Promise.all(
+        text.trim()
+          .split("\n")
+          .filter(Boolean)
+          .map(line => decodeLineIfNeeded(line, pass))
+      )).filter(Boolean);
+//console.log("ssss7:", records);
+
+    } else {
+
+      records = text
+        .trim()
+        .split("\n")
+        .filter(l => l.length > 0)
+        .map(l => JSON.parse(l));
+    }
+
+    const coords = records
+      .reverse()
+      .map(r => {
+        const d = new Date(r.t);
+
+        const y = d.getFullYear(); //以下ローカルタイムで取れる
+        const m = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
+
+        return {
+          coord: [Number(r.lo), Number(r.la)],
+          date: `${y}${m}${day}`
+        };
+      })
+      .filter(c =>
+        Number.isFinite(c.coord[0]) &&
+        Number.isFinite(c.coord[1])
+      );
+
+    const filteredCoords = targetDate
+      ? coords.filter(c => c.date === targetDate)
+      : coords;
+
+    allCoords = allCoords.concat(filteredCoords.map(c => c.coord));
+  }
+
+  if (allCoords.length < 2) {
+    console.log("no data");
+    return;
+  }
+
+  if (!allCoords || allCoords.length < 2) return;
+
+  // ----------------------------
+  // start, goal parameter
+  // ----------------------------
+  const start = parseInt(params.get("start"), 10);
+  const goal = parseInt(params.get("goal"), 10);
+
+  // ----------------------------
+  // safe coords
+  // ----------------------------
+  let safeCoords = allCoords.filter(c =>
+    Array.isArray(c) &&
+    c.length === 2 &&
+    Number.isFinite(c[0]) &&
+    Number.isFinite(c[1])
+  );
+
+  // ----------------------------
+  // newest N start〜goal、0は最新、スタートだけ指定可能。goalをマイナスで指定すると最古のデータから|goal|点数まで取る。
+  // ----------------------------
+  if (Number.isFinite(start) && start > 0) {
+    safeCoords = safeCoords.slice(goal,start);
+
+    console.log("goal:", goal);
+    console.log("start:", start);
+    console.log("filtered coords:", safeCoords.length);
+  } else if (Number.isFinite(goal) && goal > 0) {
+    safeCoords = safeCoords.slice(goal);
+
+    console.log("goal:", goal);
+    console.log("start:", start);
+    console.log("filtered coords:", safeCoords.length);
+  } else if (Number.isFinite(goal) && goal < 0) {
+    safeCoords = safeCoords.slice(goal);
+
+    console.log("goal:", goal);
+    console.log("start:", start);
+    console.log("filtered coords:", safeCoords.length);
+  }
+
+  // ----------------------------
+  // distance function
+  // ----------------------------
+  function haversine(a, b) {
+    const R = 6371000;
+    const toRad = x => x * Math.PI / 180;
+
+    const dLat = toRad(b[1] - a[1]);
+    const dLon = toRad(b[0] - a[0]);
+
+    const lat1 = toRad(a[1]);
+    const lat2 = toRad(b[1]);
+
+    const h =
+      Math.sin(dLat / 2) ** 2 +
+      Math.cos(lat1) * Math.cos(lat2) *
+      Math.sin(dLon / 2) ** 2;
+
+    return 2 * R * Math.asin(Math.sqrt(h));
+  }
+
+  // ----------------------------
+  // segment split
+  // ----------------------------
+  function splitSegments(coords, threshold = 100) {
+    const segments = [];
+    let current = [];
+
+    for (let i = 0; i < coords.length; i++) {
+
+      const p = coords[i];
+
+      if (current.length === 0) {
+        current.push(p);
+        continue;
+      }
+
+      const prev = current[current.length - 1];
+      const dist = haversine(prev, p);
+
+      if (dist > threshold) {
+        if (current.length >= 2) {
+          segments.push(current);
+        }
+        current = [p];
+      } else {
+        current.push(p);
+      }
+    }
+
+    if (current.length >= 2) {
+      segments.push(current);
+    }
+
+    return segments;
+  }
+
+  function segmentSizeOk(seg, minMeters = 1) { //同一点が集中していたらFalse
+
+    let minLat = Infinity, maxLat = -Infinity;
+    let minLon = Infinity, maxLon = -Infinity;
+
+    for (const [lon, lat] of seg) {
+      if (lon < minLon) minLon = lon;
+      if (lon > maxLon) maxLon = lon;
+      if (lat < minLat) minLat = lat;
+      if (lat > maxLat) maxLat = lat;
+    }
+
+    // 中心緯度でメートル換算
+    const avgLat = (minLat + maxLat) / 2;
+    const latMeter = 111320;
+    const lonMeter = 111320 * Math.cos(avgLat * Math.PI / 180);
+
+    const width = (maxLon - minLon) * lonMeter;
+    const height = (maxLat - minLat) * latMeter;
+
+    return Math.max(width, height) >= minMeters;
+  }
+
+  const segments = splitSegments(safeCoords, 100).filter(seg => seg.length >= 100 || segmentSizeOk(seg,1));
+
+  console.log("segments:", segments.length);
+
+  const bounds = new maplibregl.LngLatBounds();
+  segments.forEach(seg => {
+    seg.forEach(c => bounds.extend(c));
+  });
+
+const map = new maplibregl.Map({
+  container: "map",
+  style: "https://tiles.openfreemap.org/styles/liberty",
+//  center: [0, 0],
+//  zoom: 2
+  bounds: bounds,
+});
+
+map.fitBounds(bounds, {
+  padding: 60,
+  duration: 0
+});
+
+map.on("load", () => {
+
+  const layers = map.getStyle().layers;
+  for (const layer of layers) {
+    if (layer.type === "fill-extrusion") {
+      map.removeLayer(layer.id);
+    }
+  }
+
+  // ----------------------------
+  // route source
+  // ----------------------------
+  map.addSource("route", {
+    type: "geojson",
+    data: {
+      type: "FeatureCollection",
+      features: segments.map(seg => ({
+        type: "Feature",
+        geometry: {
+          type: "LineString",
+          coordinates: seg
+        }
+      }))
+    }
+  });
+
+  // ----------------------------
+  // route line
+  // ----------------------------
+  map.addLayer({
+    id: "route-line",
+    type: "line",
+    source: "route",
+    paint: {
+      "line-color": "#00d4ff",
+      "line-width": 6,
+      "line-opacity": 0.9,
+      "line-blur": 0.5
+    }
+  });
+
+  // ----------------------------
+  // route points
+  // ----------------------------
+  map.addLayer({
+    id: "route-points",
+    type: "circle",
+    source: "route",
+    paint: {
+      "circle-radius": 6,
+      "circle-color": "#ff3b30",
+      "circle-stroke-width": 2,
+      "circle-stroke-color": "#ffffff"
+    }
+  });
+
+  // ----------------------------
+  // start marker
+  // ----------------------------
+  const firstCoord = segments[0][0];
+
+  new maplibregl.Marker({ color: "green" })
+    .setLngLat(firstCoord)
+    .addTo(map);
+
+  // ----------------------------
+  // end marker
+  // ----------------------------
+  const lastSeg = segments[segments.length - 1];
+  const lastCoord = lastSeg[lastSeg.length - 1];
+
+  new maplibregl.Marker({ color: "red" })
+    .setLngLat(lastCoord)
+    .addTo(map);
+
+});
+}
+
+loadGPS();
+
+</script>
+</body>
+</html>
+
