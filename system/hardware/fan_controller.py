@@ -1558,26 +1558,28 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
 
 def gpslog_push():
 
-    def run(cmd):
-        return subprocess.run(cmd, cwd=GPS_DIR, text=True, capture_output=True)
+  def run(cmd):
+      return subprocess.run(cmd, cwd=GPS_DIR, text=True, capture_output=True)
 
-    # ① ローカル変更チェック（最速）
-    status = run(["git", "status", "--porcelain"])
-    if not status.stdout.strip():
-        return False
-
-    # ② ネット処理（ここから重い）
+  # 変更があるならコミット作成
+  status = run(["git", "status", "--porcelain"])
+  if status.stdout.strip():
     pull = run(["git", "pull"])
     if pull.returncode != 0:
-        return False
-
-    # ③ commit準備
+      return False #ネット未接続
     run(["git", "add", "."])
     run(["git", "commit", "-m", "gps"])
+  else:
+    pass #あえて、更新無しならpullしなくてもいいや
+    # pull = run(["git", "pull"])
+    # if pull.returncode != 0:
+    #   return False #ネット未接続
 
-    # ④ push
-    push = run(["git", "push"])
-    if push.returncode != 0:
-        return False
+  # 未push確認
+  check = run(["git", "rev-list", "@{u}..HEAD"]) # @{u}はorigin/mainになる
+  if check.returncode != 0 or not check.stdout.strip():
+    return False # pushするものがない
 
-    return True
+  # push
+  push = run(["git", "push"])
+  return push.returncode == 0
