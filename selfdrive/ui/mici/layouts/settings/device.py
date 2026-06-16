@@ -375,18 +375,6 @@ class DeviceLayoutMici(NavScroller):
       pass
     device_offset_btn.set_click_callback(device_offset_btn_callback)
 
-    key_raw = "Dummy"
-    try:
-      with open("/data/gpslog_pass.txt", "r") as f:
-        key_raw = f.read().strip()
-        key_raw = key_raw[:-8] #後ろ8文字を削る
-    except Exception:
-      pass
-
-    device_dir = "0000"
-    if Params().get("DongleId") != UNREGISTERED_DONGLE_ID:
-      device_dir = Params().get("DongleId")[:4] #ドングルIDの頭文字４つ
-
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
       UpdateOpenpilotBigButton(),
@@ -400,8 +388,22 @@ class DeviceLayoutMici(NavScroller):
       uninstall_openpilot_btn,
       reboot_btn,
       self._power_off_btn,
-      QRCodeWidget(f"https://ikawaoka.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=today"),
     ])
+
+    device_dir = "0000"
+    if Params().get("DongleId") != UNREGISTERED_DONGLE_ID:
+      device_dir = Params().get("DongleId")[:4] #ドングルIDの頭文字４つ
+
+    try:
+      with open("/data/gpslog_pass.txt", "r") as f:
+        key_raw = f.read().strip()
+        key_raw = key_raw[:-8] #後ろ8文字を削る
+
+        self._scroller.add_widgets([
+          QRCodeWidget(f"https://ikawaoka.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=today"),
+        ])
+    except Exception:
+      pass
 
   def _on_regulatory(self):
     if not self._fcc_dialog:
