@@ -112,12 +112,12 @@ async function loadGPS() {
       String(now.getDate()).padStart(2, "0");
   }
   const pass = params.get("pass");
-  const dgl = params.get("dgl");
+  let dgl = params.get("dgl");
   if(!dgl){
     dgl = "0000"
   }
 
-  console.log("pass length:", pass?.length);
+  //console.log("pass length:", pass?.length);
 
   // ----------------------------
   // index.json 読み込み
