@@ -3,6 +3,7 @@ import numpy as np
 import os
 import json
 import base64
+import shutil
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 import sqlite3
 import datetime
@@ -1590,6 +1591,7 @@ def gpslog_push():
     pull = run(["git", "pull"])
     if pull.returncode != 0:
       return False #ネット未接続
+    shutil.copy2("/data/openpilot/viewer.html", GPS_DIR0+"/viewer.html")
     run(["git", "add", "."])
     run(["git", "commit", "-m", "gps"])
   else:
