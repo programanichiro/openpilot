@@ -12,7 +12,7 @@ from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButto
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog, BigInputDialog
 from openpilot.selfdrive.ui.mici.widgets.pairing_dialog import PairingDialog
 from openpilot.selfdrive.ui.mici.onroad.driver_camera_dialog import DriverCameraDialog
-from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage
+from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage, QRCodeWidget
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets import Widget
@@ -375,6 +375,18 @@ class DeviceLayoutMici(NavScroller):
       pass
     device_offset_btn.set_click_callback(device_offset_btn_callback)
 
+    key_raw = "Dummy"
+    try:
+      with open("/data/gpslog_pass.txt", "r") as f:
+        key_raw = f.read().strip()
+        key_raw = key_raw[:-8] #後ろ8文字を削る
+    except Exception:
+      pass
+
+    device_dir = "0000"
+    if Params().get("DongleId") != UNREGISTERED_DONGLE_ID:
+      device_dir = Params().get("DongleId")[:4] #ドングルIDの頭文字４つ
+
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
       UpdateOpenpilotBigButton(),
@@ -388,6 +400,7 @@ class DeviceLayoutMici(NavScroller):
       uninstall_openpilot_btn,
       reboot_btn,
       self._power_off_btn,
+      QRCodeWidget(f"https://ikawaoka.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=today"),
     ])
 
   def _on_regulatory(self):
