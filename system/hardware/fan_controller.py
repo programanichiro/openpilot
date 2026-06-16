@@ -14,6 +14,8 @@ import subprocess
 
 from openpilot.common.pid import PIDController
 from openpilot.system.hardware import HARDWARE
+from openpilot.common.params import Params
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 key_raw = None
 with open("/data/gpslog_pass.txt", "r") as f:
@@ -1479,17 +1481,24 @@ def get_node_coordinates(node_ids):
     return get_node_coordinatesZ(node_ids)
     #_current_conn流用の旧処理は削除
 
-GPS_DIR = "/data/gpslog"
+GPS_DIR0 = "/data/gpslog"
+if Params().get("DongleId") != UNREGISTERED_DONGLE_ID:
+  GPS_DIR = GPS_DIR0+"/"+Params().get("DongleId")[:4] #ドングルIDの頭文字４つ
+else:
+  GPS_DIR = GPS_DIR0+"/0000" #ドングルID無し
+
 MAX_FILE_SIZE = 100 * 1024  # 100KB
 #MAX_FILE_SIZE = 10 * 1024  # 10KBでテスト
 MAX_FILES = 100
 
 def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
-    if not os.path.isdir(GPS_DIR):
+    if not os.path.isdir(GPS_DIR0):
       return
 
     if latitude==0 and longitude==0:
       return
+
+    os.makedirs(GPS_DIR, exist_ok=True)
 
     files = sorted(
       f for f in os.listdir(GPS_DIR)
@@ -1564,7 +1573,7 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
 def gpslog_push():
 
   def run(cmd):
-      return subprocess.run(cmd, cwd=GPS_DIR, text=True, capture_output=True)
+      return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
 
   # 変更があるならコミット作成
   status = run(["git", "status", "--porcelain"])
