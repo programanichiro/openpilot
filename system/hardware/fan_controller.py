@@ -18,12 +18,15 @@ from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 key_raw = None
-with open("/data/gpslog_pass.txt", "r") as f:
-  key_raw = f.read().strip()
-  key_raw = key_raw[:-8] #後ろ8文字を削る
-  key = base64.urlsafe_b64decode(key_raw.encode("utf-8"))
-  aesgcm = AESGCM(key)
-  nonce = os.urandom(12)
+try:
+  with open("/data/gpslog_pass.txt", "r") as f:
+    key_raw = f.read().strip()
+    key_raw = key_raw[:-8] #後ろ8文字を削る
+    key = base64.urlsafe_b64decode(key_raw.encode("utf-8"))
+    aesgcm = AESGCM(key)
+    nonce = os.urandom(12)
+except Exception:
+  pass
 
 # raise fan setpoint on tici/tizi to reduce noise
 # after raising LMH threshold in AGNOS 18.1 to prevent CPU throttling
