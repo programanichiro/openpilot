@@ -1497,6 +1497,16 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
     if latitude==0 and longitude==0:
       return
 
+    no_car_vego = True
+    try:
+      with open('/dev/shm/car_vego.txt','r') as fp:
+        no_car_vego = False
+    except Exception as e:
+      pass
+
+    if no_car_vego == True:
+      return #car_vego.txtがなければ座標記録しない。
+
     os.makedirs(GPS_DIR, exist_ok=True)
 
     files = sorted(
