@@ -10,6 +10,7 @@ import threading
 import requests
 import math
 import random
+import subprocess
 
 from openpilot.common.pid import PIDController
 from openpilot.system.hardware import HARDWARE
@@ -131,6 +132,8 @@ class FanController:
     self.db_none = 0
     self.db_del = 0
     self.min_distance_old = 0
+    self.gpslog_push_ct = 0
+    self.gpslog_write_ct = 0
     #self.tss_type = 0
 
     # # カーソルと接続を閉じる
@@ -559,7 +562,7 @@ class FanController:
           #方位マッチする道路が一つもなかったら、前後長方形で再検索する。
         self.osm_front_back_long_mode += 1 #0→1→2の順で検索。2が最終的に最も広い範囲を取る。
         self.osm_fetch()
-        self.osm_front_back_long_mode = 0
+        self.osm_front_back_long_mode = 0 #もし時速50キロ以上なら1に戻して、0モードをスキップするのもいいか？（th_idのインクリメントが怪しくなるのだけ留意。必ず要カウントアップ）
         return
 
       with open('/dev/shm/road_info.txt','w') as fp:
@@ -671,9 +674,20 @@ class FanController:
           self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
           if self.velocity < 1.0:
             self.velocity = 0 #時速1キロ未満はゼロ扱い
+            self.gpslog_push_ct += 1
+            if self.gpslog_push_ct >= 10:
+              self.gpslog_push_ct = 0
+              gpslog_push() #停止中のGPSデータをまとめてgithubのgpslogリポジトリにpushする。(ローカルosmの場合。ネットだと2Hzだが、遅すぎてどうなるか未検証)
+            self.gpslog_write_ct = 0
           else:
             #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
-            gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+            if self.velocity < 50: #時速50キロ以下は間引く
+              self.gpslog_write_ct += 1
+              if self.gpslog_write_ct % 1 == 0:
+                gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+            else:
+              gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+            self.gpslog_push_ct = 5 #次に止まったら5秒後にpushする。
           if add_v_by_lead:
             self.velocity /= 1.15; #前走車追従中は、増速前の推定速度を学習する。
           self.timestamp /= 1000 #gps_axs_data.txtなら秒に直す
@@ -1541,3 +1555,29 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
           }))
       except Exception:
         pass
+
+def gpslog_push():
+
+    def run(cmd):
+        return subprocess.run(cmd, cwd=GPS_DIR, text=True, capture_output=True)
+
+    # ① ローカル変更チェック（最速）
+    status = run(["git", "status", "--porcelain"])
+    if not status.stdout.strip():
+        return False
+
+    # ② ネット処理（ここから重い）
+    pull = run(["git", "pull"])
+    if pull.returncode != 0:
+        return False
+
+    # ③ commit準備
+    run(["git", "add", "."])
+    run(["git", "commit", "-m", "gps"])
+
+    # ④ push
+    push = run(["git", "push"])
+    if push.returncode != 0:
+        return False
+
+    return True
