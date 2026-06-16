@@ -399,9 +399,11 @@ class DeviceLayoutMici(NavScroller):
         key_raw = f.read().strip()
         key_raw = key_raw[:-8] #後ろ8文字を削る
 
-        self._scroller.add_widgets([
-          QRCodeWidget(f"https://ikawaoka.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=today"),
-        ])
+        username = Params().get("GithubUsername")
+        if username:
+          self._scroller.add_widgets([
+            QRCodeWidget(f"https://{username}.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=today"),
+          ])
     except Exception:
       pass
 
