@@ -683,7 +683,7 @@ class FanController:
             #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
             if self.velocity < 50: #時速50キロ以下は間引く
               self.gpslog_write_ct += 1
-              if self.gpslog_write_ct % 1 == 0:
+              if self.gpslog_write_ct % 2 == 0:
                 gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
             else:
               gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
