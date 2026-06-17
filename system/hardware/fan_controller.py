@@ -1589,12 +1589,14 @@ def gpslog_push_commit_fetch():
   # pull
   pull = run(["git", "pull"])
   if pull.returncode != 0:
+    push_thread = None
     return #ネット未接続
   shutil.copy2("/data/openpilot/viewer.html", GPS_DIR0+"/viewer.html") #viewer.html更新
   run(["git", "commit", "-m", "gps"])
   # 未push確認
   check = run(["git", "rev-list", "@{u}..HEAD"]) # @{u}はorigin/mainになる
   if check.returncode != 0 or not check.stdout.strip():
+    push_thread = None
     return # pushするものがない
   # push
   run(["git", "push"])
@@ -1611,6 +1613,7 @@ def gpslog_push_fetch():
   # 未push確認
   check = run(["git", "rev-list", "@{u}..HEAD"]) # @{u}はorigin/mainになる
   if check.returncode != 0 or not check.stdout.strip():
+    push_thread = None
     return # pushするものがない
   # push
   run(["git", "push"])
