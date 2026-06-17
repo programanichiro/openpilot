@@ -1580,31 +1580,56 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
       except Exception:
         pass
 
-def gpslog_push():
+push_thread = None
 
+def gpslog_push_commit_fetch():
+  global push_thread
   def run(cmd):
-      return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
-
-  # 変更があるならコミット作成
-  status = run(["git", "status", "--porcelain"])
-  if status.stdout.strip():
-    pull = run(["git", "pull"])
-    if pull.returncode != 0:
-      return False #ネット未接続
-    shutil.copy2("/data/openpilot/viewer.html", GPS_DIR0+"/viewer.html")
-    run(["git", "add", "."])
-    run(["git", "commit", "-m", "gps"])
-  else:
-    pass #あえて、更新無しならpullしなくてもいいや
-    # pull = run(["git", "pull"])
-    # if pull.returncode != 0:
-    #   return False #ネット未接続
-
+    return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
+  # pull
+  pull = run(["git", "pull"])
+  if pull.returncode != 0:
+    return #ネット未接続
+  shutil.copy2("/data/openpilot/viewer.html", GPS_DIR0+"/viewer.html") #viewer.html更新
+  run(["git", "commit", "-m", "gps"])
   # 未push確認
   check = run(["git", "rev-list", "@{u}..HEAD"]) # @{u}はorigin/mainになる
   if check.returncode != 0 or not check.stdout.strip():
-    return False # pushするものがない
-
+    return # pushするものがない
   # push
-  push = run(["git", "push"])
-  return push.returncode == 0
+  run(["git", "push"])
+  push_thread = None
+
+def gpslog_push_fetch():
+  global push_thread
+  def run(cmd):
+    return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
+  # あえて、更新がなければpullしない
+  # pull = run(["git", "pull"])
+  # if pull.returncode != 0:
+  #   return #ネット未接続
+  # 未push確認
+  check = run(["git", "rev-list", "@{u}..HEAD"]) # @{u}はorigin/mainになる
+  if check.returncode != 0 or not check.stdout.strip():
+    return # pushするものがない
+  # push
+  run(["git", "push"])
+  push_thread = None
+
+def gpslog_push():
+  global push_thread
+  if push_thread:
+    return
+  def run(cmd):
+    return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
+  # 変更があるならコミット作成
+  status = run(["git", "status", "--porcelain"])
+  if status.stdout.strip():
+    run(["git", "add", "."]) #addはワーカスレッドには出さない。
+    tmp_thread = threading.Thread(target=gpslog_push_commit_fetch)
+    push_thread = tmp_thread
+    tmp_thread.start()
+  else:
+    tmp_thread = threading.Thread(target=gpslog_push_fetch)
+    push_thread = tmp_thread
+    tmp_thread.start()
