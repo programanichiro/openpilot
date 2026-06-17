@@ -191,7 +191,17 @@ async function loadGPS() {
     if(targetDate == "latest"){
       targetDate = coords[0].date;
     }
-    //console.log("targetDate:", targetDate);
+    if(targetDate){
+      //console.log("targetDate:", targetDate);
+      if(targetDate > coords[0].date){
+        //console.log("break:", coords[0].date);
+        break; //指定日より過去になればもう調べなくていい。
+      }
+      if(targetDate < coords[coords.length - 1].date){
+        //console.log("continue:", coords[coords.length - 1].date);
+        continue; //指定日が、この配列の最も古い日付よりさらに古いなら、この配列には絶対存在しないので以降の処理をスキップする
+      }
+    }
 
     const filteredCoords = targetDate
       ? coords.filter(c => c.date === targetDate)
