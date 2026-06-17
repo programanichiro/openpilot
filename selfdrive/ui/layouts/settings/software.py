@@ -177,6 +177,7 @@ class SoftwareLayout(Widget):
   def _on_install_update(self):
     # Trigger reboot to install update
     self._install_btn.action_item.set_enabled(False)
+    os.system("echo 14 > /data/force_prebuild")
     ui_state.params.put_bool("DoReboot", True, block=True)
 
   def _on_select_branch(self):
