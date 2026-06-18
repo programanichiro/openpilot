@@ -682,6 +682,8 @@ class FanController:
             self.velocity = 0 #時速1キロ未満はゼロ扱い
             if self.velocity < 0.1: #ほぼ停止
               self.gpslog_push_ct += 1
+              if self.gpslog_push_ct >= 11: #走行中からの遷移特別処理
+                self.gpslog_push_ct = 5
               if self.gpslog_push_ct >= 10:
                 self.gpslog_push_ct = 0
                 gpslog_push() #停止中のGPSデータをまとめてgithubのgpslogリポジトリにpushする。(ローカルosmの場合。ネットだと2Hzだが、遅すぎてどうなるか未検証)
@@ -694,7 +696,12 @@ class FanController:
                 gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
             else:
               gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
-            self.gpslog_push_ct = 5 #次に止まったら5秒後にpushする。
+            #self.gpslog_push_ct = 5 #次に止まったら5秒後にpushする。
+            self.gpslog_push_ct += 1
+            if self.gpslog_push_ct >= 60*10: #走行中でも10分ごとにpushする。
+              self.gpslog_push_ct = 0 #走行→停止時に9以下だと直ぐにpushが動いてしまうが承知の上。
+              gpslog_push()
+
           if add_v_by_lead:
             self.velocity /= 1.15; #前走車追従中は、増速前の推定速度を学習する。
           self.timestamp /= 1000 #gps_axs_data.txtなら秒に直す
