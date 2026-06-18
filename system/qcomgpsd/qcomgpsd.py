@@ -343,6 +343,9 @@ def main() -> NoReturn:
         locationd_valid = 0
       # if gps.bearingAccuracyDeg > 60:
       #   locationd_valid = 0
+      if report["u_HorizontalReliability"] <= 2:
+        # 信頼しない
+        locationd_valid = 0
 
       car_vego = gps.speed
       try:

@@ -214,6 +214,9 @@ class UbloxMsgParser:
       locationd_valid = 0
     # if gps.bearingAccuracyDeg > 60:
     #   locationd_valid = 0
+    if gps.verticalAccuracy > 20:
+      # 怪しい
+      locationd_valid = 0
 
     car_vego = gps.speed
     try:
