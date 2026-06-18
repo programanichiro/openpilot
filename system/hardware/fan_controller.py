@@ -676,7 +676,7 @@ class FanController:
           limitspeed_info_ok = True
           #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
           #ただしa,b,cはdouble型とします
-          self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp,dummy = map(float, limitspeed_info_str.split(","))
+          self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp,gps_valid = map(float, limitspeed_info_str.split(","))
           self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
           if self.velocity < 1.0:
             self.velocity = 0 #時速1キロ未満はゼロ扱い
@@ -692,9 +692,9 @@ class FanController:
             #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
             if self.velocity < 50: #時速50キロ未満は1/2に間引く
               self.gpslog_write_ct += 1
-              if self.gpslog_write_ct % 2 == 0:
+              if gps_valid and self.gpslog_write_ct % 2 == 0:
                 gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
-            else:
+            elif gps_valid:
               gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
             #self.gpslog_push_ct = 5 #次に止まったら5秒後にpushする。
             self.gpslog_push_ct += 1
