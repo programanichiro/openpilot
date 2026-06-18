@@ -680,7 +680,7 @@ class FanController:
           self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
           if self.velocity < 1.0:
             self.velocity = 0 #時速1キロ未満はゼロ扱い
-            if self.velocity < 0.1: #ほぼ停止
+            if (self.osm_proc_ct & 1) != 0 and self.velocity < 0.1: #ほぼ停止
               self.gpslog_push_ct += 1
               if self.gpslog_push_ct >= 11: #走行中からの遷移特別処理
                 self.gpslog_push_ct = 5
@@ -688,7 +688,7 @@ class FanController:
                 self.gpslog_push_ct = 0
                 gpslog_push() #停止中のGPSデータをまとめてgithubのgpslogリポジトリにpushする。(ローカルosmの場合。ネットだと2Hzだが、遅すぎてどうなるか未検証)
               self.gpslog_write_ct = 0
-          else:
+          elif (self.osm_proc_ct & 1) != 0:
             #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
             if self.velocity < 50: #時速50キロ未満は1/2に間引く
               self.gpslog_write_ct += 1
