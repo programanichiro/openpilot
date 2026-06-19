@@ -25,7 +25,6 @@ try:
     key_raw = key_raw[:-8] #後ろ8文字を削る
     key = base64.urlsafe_b64decode(key_raw.encode("utf-8"))
     aesgcm = AESGCM(key)
-    nonce = os.urandom(12)
 except Exception:
   pass
 
@@ -1551,6 +1550,7 @@ def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
       if key_raw == None:
         f.write(json.dumps(record, separators=(",", ":")) + "\n")
       else:
+        nonce = os.urandom(12)
         data = json.dumps(record, separators=(",", ":")).encode("utf-8")
         cipher = aesgcm.encrypt(nonce, data, None)
         line = base64.urlsafe_b64encode(nonce + cipher).decode("utf-8")
