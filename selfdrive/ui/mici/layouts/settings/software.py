@@ -219,7 +219,7 @@ class BranchSelectPage(NavScroller):
 
     branches = [
       b for b in branches
-        if ("r3-debug-011" in b) or ("master-cit02" in b) or ("release3X4" in b) or ("release-pi" in b) or ("__nightly" in b)
+        if ("r3-debug-011" in b) or ("release3X4" in b) or ("release-pi" in b) or ("__nightly" in b)
     ]
 
     for b in [current_git_branch, "devel-staging", "devel", "nightly", "nightly-dev", "master"]:
