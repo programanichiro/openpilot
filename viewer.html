@@ -336,7 +336,7 @@ async function loadGPS() {
     return Math.max(width, height) >= minMeters;
   }
 
-  const segments = splitSegments(safeCoords, 100).filter(seg => seg.length >= 100 || segmentSizeOk(seg,1));
+  const segments = splitSegments(safeCoords, 60).filter(seg => seg.length >= 50 && segmentSizeOk(seg,10));
 
   console.log("segments:", segments.length);
 
