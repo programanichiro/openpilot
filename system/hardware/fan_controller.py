@@ -65,7 +65,7 @@ class FanController:
     self.controller = PIDController(k_p=0, k_i=4e-3, rate=rate)
 
     #ここが2Hzだから、limitspeed.db操作に利用する。
-    self.db_path = "../../../limitspeed.db" #例によって遅くないか？
+    self.db_path = "/data/limitspeed.db" #例によって遅くないか？
 
     # テーブルを作成するSQL
     create_table_sql = """
@@ -632,7 +632,7 @@ class FanController:
   def osm_proc(self):
     # if self.tss_type == 0:
     #   try:
-    #     with open('../../../tss_type_info.txt','r') as fp:
+    #     with open('/data/tss_type_info.txt','r') as fp:
     #       tss_type_str = fp.read()
     #       if tss_type_str:
     #         if int(tss_type_str) == 2: #TSS2

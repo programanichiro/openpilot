@@ -247,13 +247,13 @@ class LongitudinalPlanner:
 #100,102,104,106,108,110,112,114,116,118 ;410
 
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
-        with open('../../../tss_type_info.txt','w') as fp:
+        with open('/data/tss_type_info.txt','w') as fp:
           fp.write('%d' % (1))
     else:
       tss_type = 2
       min_acc_speed = 27
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
-        with open('../../../tss_type_info.txt','w') as fp:
+        with open('/data/tss_type_info.txt','w') as fp:
           fp.write('%d' % (2))
     #g_tss_type = tss_type
     if v_cruise_kph < min_acc_speed:
