@@ -10,17 +10,17 @@
 *.otf filter=lfs diff=lfs merge=lfs -text
 *.wav filter=lfs diff=lfs merge=lfs -text
 
-selfdrive/car/tests/test_models_segs.txt filter=lfs diff=lfs merge=lfs -text
-common/hardware/tici/updater filter=lfs diff=lfs merge=lfs -text
+openpilot/selfdrive/car/tests/test_models_segs.txt filter=lfs diff=lfs merge=lfs -text
+openpilot/common/hardware/tici/updater filter=lfs diff=lfs merge=lfs -text
 
-selfdrive/assets/icons_mici/onroad/acc_dist1_w2.png -filter -text
-selfdrive/assets/icons_mici/onroad/acc_dist2_w2.png -filter -text
-selfdrive/assets/icons_mici/onroad/acc_dist3_w2.png -filter -text
-selfdrive/assets/icons_mici/onroad/arrow_down.png -filter -text
-selfdrive/assets/icons_mici/onroad/arrow_up.png -filter -text
-selfdrive/assets/icons_mici/onroad/arrow_up2.png -filter -text
-selfdrive/assets/icons_mici/onroad/dX_icon_128.png -filter -text
-selfdrive/assets/icons_mici/onroad/lane_keep_w.png -filter -text
-selfdrive/assets/offroad/icon_car_key.png -filter -text
-selfdrive/assets/offroad/icon_car_weight.png -filter -text
-selfdrive/assets/offroad/icon_gps_car.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/acc_dist1_w2.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/acc_dist2_w2.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/acc_dist3_w2.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/arrow_down.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/arrow_up.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/arrow_up2.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/dX_icon_128.png -filter -text
+openpilot/selfdrive/assets/icons_mici/onroad/lane_keep_w.png -filter -text
+openpilot/selfdrive/assets/offroad/icon_car_key.png -filter -text
+openpilot/selfdrive/assets/offroad/icon_car_weight.png -filter -text
+openpilot/selfdrive/assets/offroad/icon_gps_car.png -filter -text
