@@ -1,7 +1,7 @@
 import os
 import pyray as rl
 import time
-from cereal import log
+from openpilot.cereal import log
 from dataclasses import dataclass
 from openpilot.common.constants import CV
 from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
@@ -848,7 +848,7 @@ class HudRenderer(Widget):
           if ui_state.status != UIStatus.DISENGAGED:
             self.brake_light = True
             self.logo_trs = 80 #drawText内部で100足される。
-          all_brake_light = True #ちらはエンゲージしていなくてもセットされる。
+          all_brake_light = True #こちらはエンゲージしていなくてもセットされる。
     except Exception as e:
       pass
 
