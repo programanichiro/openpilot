@@ -44,7 +44,7 @@ git lfs uninstall
 
 MODEL_BACKUP=$(mktemp -d)
 
-cp selfdrive/modeld/models/big_driving_*.onnx.chunk* $MODEL_BACKUP/
+cp openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk* $MODEL_BACKUP/
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
@@ -69,24 +69,24 @@ rm -f panda/board/obj/panda.bin.signed
 # restore chunked model files
 # ----------------------------------------
 
-mkdir -p selfdrive/modeld/models
+mkdir -p openpilot/selfdrive/modeld/models
 
-cp $MODEL_BACKUP/* selfdrive/modeld/models/
+cp $MODEL_BACKUP/* openpilot/selfdrive/modeld/models/
 
-rm -f selfdrive/modeld/models/big_driving_*.onnx
+rm -f openpilot/selfdrive/modeld/models/big_driving_*.onnx
 
 # remove accidental git index entry
-git rm --cached selfdrive/modeld/models/big_driving_*.onnx || true
+git rm --cached openpilot/selfdrive/modeld/models/big_driving_*.onnx || true
 
 # ensure chunks are tracked
-git add selfdrive/modeld/models/big_driving_*.onnx.chunk*
+git add openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk*
 
 rm -rf $MODEL_BACKUP
 
 # include source commit hash and build date in commit
 GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)
 DATETIME=$(date '+%Y-%m-%dT%H:%M:%S')
-VERSION=$(cat $SOURCE_DIR/common/version.h | awk -F\" '{print $2}')
+VERSION=$(cat $SOURCE_DIR/openpilot/common/version.h | awk -F\" '{print $2}')
 
 echo "[-] committing version $VERSION T=$SECONDS"
 git add -f .
