@@ -20,12 +20,12 @@ function agnos_init {
   # Check if AGNOS update is required
   if [ $(< /VERSION) != "$AGNOS_VERSION" ]; then
     echo 1 > $DIR/../agnos_update
-    AGNOS_PY="$DIR/common/hardware/tici/agnos.py"
-    MANIFEST="$DIR/system/hardware/tici/agnos.json"
+    AGNOS_PY="$DIR/openpilot/common/hardware/tici/agnos.py"
+    MANIFEST="$DIR/openpilot/system/hardware/tici/agnos.json"
     if $AGNOS_PY --verify $MANIFEST; then
       sudo reboot
     fi
-    $DIR/common/hardware/tici/updater $AGNOS_PY $MANIFEST
+    $DIR/openpilot/common/hardware/tici/updater $AGNOS_PY $MANIFEST
   fi
 }
 
@@ -88,7 +88,7 @@ function launch {
   fi
 
   # start manager
-  cd system/manager
+  cd openpilot/system/manager
   if [ -f $DIR/../agnos_update ] || [ ! -f $DIR/prebuilt ] && [ -f $DIR/../force_prebuild ]; then
     ./build.py
   fi

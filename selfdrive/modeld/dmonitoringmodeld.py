@@ -27,7 +27,7 @@ try:
 except Exception as e:
   pass
 
-PROCESS_NAME = "selfdrive.modeld.dmonitoringmodeld"
+PROCESS_NAME = "openpilot.selfdrive.modeld.dmonitoringmodeld"
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 MODEL_PKL_PATH = MODELS_DIR / 'dmonitoring_model_tinygrad.pkl'
 METADATA_PATH = MODELS_DIR / 'dmonitoring_model_metadata.pkl'
