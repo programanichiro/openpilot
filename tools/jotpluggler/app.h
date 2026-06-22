@@ -1,6 +1,6 @@
 #pragma once
 
-#include "cereal/gen/cpp/log.capnp.h"
+#include "openpilot/cereal/gen/cpp/log.capnp.h"
 #include "imgui.h"
 #include "tools/jotpluggler/dbc.h"
 #include "tools/jotpluggler/util.h"
@@ -143,7 +143,7 @@ struct CameraFeedIndex {
 
 enum class LogOrigin : uint8_t {
   Log,
-  Android,
+  OperatingSystem,
   Alert,
 };
 

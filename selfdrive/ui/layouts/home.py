@@ -1,6 +1,6 @@
 import time
 import pyray as rl
-from openpilot.system.hardware import HARDWARE
+from openpilot.common.hardware import HARDWARE
 from collections.abc import Callable
 from enum import IntEnum
 from openpilot.common.params import Params

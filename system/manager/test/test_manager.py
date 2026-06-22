@@ -3,12 +3,12 @@ import pytest
 import signal
 import time
 
-from cereal import car
+from opendbc.car.structs import car
 from openpilot.common.params import Params
 import openpilot.system.manager.manager as manager
 from openpilot.system.manager.process import ensure_running
 from openpilot.system.manager.process_config import managed_processes, procs
-from openpilot.system.hardware import HARDWARE
+from openpilot.common.hardware import HARDWARE
 
 os.environ['FAKEUPLOAD'] = "1"
 

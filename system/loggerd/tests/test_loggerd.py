@@ -9,18 +9,18 @@ from collections import defaultdict
 from pathlib import Path
 import pytest
 
-import cereal.messaging as messaging
-from cereal import log
-from cereal.services import SERVICE_LIST
+import openpilot.cereal.messaging as messaging
+from openpilot.cereal import log
+from openpilot.cereal.services import SERVICE_LIST
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.params import Params
 from openpilot.common.timeout import Timeout
-from openpilot.system.hardware.hw import Paths
-from openpilot.system.hardware import TICI
+from openpilot.common.hardware.hw import Paths
+from openpilot.common.hardware import TICI
 from openpilot.system.loggerd.xattr_cache import getxattr
 from openpilot.system.loggerd.deleter import PRESERVE_ATTR_NAME, PRESERVE_ATTR_VALUE
 from openpilot.system.manager.process_config import managed_processes
-from openpilot.system.version import get_version
+from openpilot.common.version import get_version
 from openpilot.tools.lib.helpers import RE
 from openpilot.tools.lib.logreader import LogReader
 from msgq.visionipc import VisionIpcServer, VisionStreamType

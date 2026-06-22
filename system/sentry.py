@@ -5,9 +5,9 @@ from sentry_sdk.integrations.threading import ThreadingIntegration
 
 from openpilot.common.params import Params
 from openpilot.system.athena.registration import is_registered_device
-from openpilot.system.hardware import HARDWARE, PC
+from openpilot.common.hardware import HARDWARE, PC
 from openpilot.common.swaglog import cloudlog
-from openpilot.system.version import get_build_metadata, get_version
+from openpilot.common.version import get_build_metadata, get_version
 
 
 class SentryProject(Enum):

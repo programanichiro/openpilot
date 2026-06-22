@@ -10,7 +10,7 @@ from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
 from openpilot.common.filter_simple import FirstOrderFilter
-from cereal import log
+from openpilot.cereal import log
 
 EventName = log.OnroadEvent.EventName
 

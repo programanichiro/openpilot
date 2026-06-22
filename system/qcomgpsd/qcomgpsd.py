@@ -12,12 +12,12 @@ from typing import NoReturn
 from struct import unpack_from, calcsize, pack
 from opendbc.car import structs
 
-from cereal import log
-import cereal.messaging as messaging
+from openpilot.cereal import log
+import openpilot.cereal.messaging as messaging
 from openpilot.common.gpio import gpio_init, gpio_set
 from openpilot.common.utils import retry
 from openpilot.common.time_helpers import system_time_valid
-from openpilot.system.hardware.tici.pins import GPIO
+from openpilot.common.hardware.tici.pins import GPIO
 from openpilot.common.swaglog import cloudlog
 from openpilot.system.qcomgpsd.modemdiag import ModemDiag, DIAG_LOG_F, setup_logs, send_recv
 from openpilot.system.qcomgpsd.structs import (dict_unpacker, position_report, relist,

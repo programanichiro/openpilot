@@ -14,7 +14,7 @@ from datetime import datetime, timedelta
 from websocket import ABNF
 from websocket._exceptions import WebSocketConnectionClosedException
 
-from cereal import messaging
+from openpilot.cereal import messaging
 
 from openpilot.common.params import Params
 from openpilot.common.timeout import Timeout
@@ -22,7 +22,7 @@ from openpilot.system.athena import athenad
 from openpilot.system.athena.athenad import MAX_RETRY_COUNT, UPLOAD_SESS, dispatcher
 from openpilot.system.athena.tests.helpers import HTTPRequestHandler, MockWebsocket, MockApi, EchoSocket
 from openpilot.selfdrive.test.helpers import http_server_context
-from openpilot.system.hardware.hw import Paths
+from openpilot.common.hardware.hw import Paths
 
 
 def seed_athena_server(host, port):

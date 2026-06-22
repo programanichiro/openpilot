@@ -11,7 +11,7 @@
 *.wav filter=lfs diff=lfs merge=lfs -text
 
 selfdrive/car/tests/test_models_segs.txt filter=lfs diff=lfs merge=lfs -text
-system/hardware/tici/updater filter=lfs diff=lfs merge=lfs -text
+common/hardware/tici/updater filter=lfs diff=lfs merge=lfs -text
 
 selfdrive/assets/icons_mici/onroad/acc_dist1_w2.png -filter -text
 selfdrive/assets/icons_mici/onroad/acc_dist2_w2.png -filter -text

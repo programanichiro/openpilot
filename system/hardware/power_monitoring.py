@@ -2,9 +2,8 @@ import time
 import threading
 
 from openpilot.common.params import Params
-from openpilot.system.hardware import HARDWARE
+from openpilot.common.hardware import HARDWARE
 from openpilot.common.swaglog import cloudlog
-from openpilot.system.statsd import statlog
 
 CAR_VOLTAGE_LOW_PASS_K = 0.011 # LPF gain for 45s tau (dt/tau / (dt/tau + 1))
 
@@ -50,7 +49,6 @@ class PowerMonitoring:
       # Low-pass battery voltage
       self.car_voltage_instant_mV = voltage
       self.car_voltage_mV = ((voltage * CAR_VOLTAGE_LOW_PASS_K) + (self.car_voltage_mV * (1 - CAR_VOLTAGE_LOW_PASS_K)))
-      statlog.gauge("car_voltage", self.car_voltage_mV / 1e3)
       g_car_voltage_mV = self.car_voltage_mV
       with open('/tmp/car_voltage.txt','w') as fp:
         fp.write("%d" % (g_car_voltage_mV))

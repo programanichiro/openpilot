@@ -2,13 +2,13 @@ import os
 import pytest
 import time
 
-import cereal.messaging as messaging
-from cereal import log
+import openpilot.cereal.messaging as messaging
+from openpilot.cereal import log
 from openpilot.common.gpio import gpio_set, gpio_init
 from panda import Panda, PandaDFU
 from openpilot.system.manager.process_config import managed_processes
-from openpilot.system.hardware import HARDWARE
-from openpilot.system.hardware.tici.pins import GPIO
+from openpilot.common.hardware import HARDWARE
+from openpilot.common.hardware.tici.pins import GPIO
 
 HERE = os.path.dirname(os.path.realpath(__file__))
 

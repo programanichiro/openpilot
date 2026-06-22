@@ -14,7 +14,7 @@ import random
 import subprocess
 
 from openpilot.common.pid import PIDController
-from openpilot.system.hardware import HARDWARE
+from openpilot.common.hardware import HARDWARE
 from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 

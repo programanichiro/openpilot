@@ -1,7 +1,7 @@
 import os
 import capnp
 import numpy as np
-from cereal import log
+from openpilot.cereal import log
 from openpilot.selfdrive.modeld.constants import ModelConstants, Plan, Meta
 from openpilot.selfdrive.controls.lib.lane_planner import LanePlanner
 from openpilot.common.params import Params

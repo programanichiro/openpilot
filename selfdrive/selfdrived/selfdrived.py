@@ -3,9 +3,10 @@ import os
 import time
 import threading
 
-import cereal.messaging as messaging
+import openpilot.cereal.messaging as messaging
 
-from cereal import car, log
+from openpilot.cereal import log
+from opendbc.car.structs import car
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
@@ -22,8 +23,8 @@ from openpilot.selfdrive.selfdrived.helpers import ExcessiveActuationCheck
 from openpilot.selfdrive.selfdrived.state import StateMachine
 from openpilot.selfdrive.selfdrived.alertmanager import AlertManager, set_offroad_alert
 
-from openpilot.system.version import get_build_metadata
-from openpilot.system.hardware import HARDWARE
+from openpilot.common.version import get_build_metadata
+from openpilot.common.hardware import HARDWARE
 
 REPLAY = "REPLAY" in os.environ
 SIMULATION = "SIMULATION" in os.environ

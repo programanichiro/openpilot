@@ -1,8 +1,8 @@
 import datetime
 import time
-from openpilot.system.hardware import HARDWARE
+from openpilot.common.hardware import HARDWARE
 
-from cereal import log
+from openpilot.cereal import log
 import pyray as rl
 from collections.abc import Callable
 from openpilot.system.ui.widgets import Widget
@@ -11,8 +11,7 @@ from openpilot.system.ui.widgets.icon_widget import IconWidget
 from openpilot.system.ui.widgets.label import UnifiedLabel, gui_label
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.selfdrive.ui.ui_state import ui_state
-from openpilot.system.version import RELEASE_BRANCHES
-import cereal.messaging as messaging
+from openpilot.common.version import RELEASE_BRANCHES
 
 HEAD_BUTTON_FONT_SIZE = 40
 HOME_PADDING = 8

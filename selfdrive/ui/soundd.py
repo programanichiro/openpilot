@@ -4,7 +4,8 @@ import time
 import wave
 
 
-from cereal import car, messaging
+from openpilot.cereal import messaging
+from opendbc.car.structs import car
 from openpilot.common.basedir import BASEDIR
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import Ratekeeper
@@ -12,7 +13,7 @@ from openpilot.common.utils import retry
 from openpilot.common.swaglog import cloudlog
 
 from openpilot.system import micd
-from openpilot.system.hardware import HARDWARE
+from openpilot.common.hardware import HARDWARE
 
 SAMPLE_RATE = 48000
 SAMPLE_BUFFER = 4096 # (approx 100ms)
