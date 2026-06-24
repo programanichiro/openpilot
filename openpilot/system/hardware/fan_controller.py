@@ -17,6 +17,7 @@ from openpilot.common.pid import PIDController
 from openpilot.common.hardware import HARDWARE
 from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
+from openpilot.selfdrive.ui.ui_state import ui_state
 
 key_raw = None
 try:
@@ -689,7 +690,25 @@ class FanController:
               self.gpslog_write_ct = 0
           elif (self.osm_proc_ct & 1) != 0:
             #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
-            if self.velocity < 50: #時速50キロ未満は1/2に間引く
+            if True:
+              #ハンドルの角度が浅いほど間引く
+              CS = ui_state.sm['carState']
+              steer_ang = abs(CS.steeringAngleDeg)
+              self.gpslog_write_ct += 1
+              if steer_ang < 10:
+                if gps_valid and self.gpslog_write_ct % 4 == 0:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+              elif steer_ang < 20:
+                if gps_valid and self.gpslog_write_ct % 3 == 0:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+              elif steer_ang < 40:
+                if gps_valid and self.gpslog_write_ct % 2 == 0:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+              else: #elif steer_ang < 80:
+                if gps_valid:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+
+            elif self.velocity < 50: #時速50キロ未満は1/2に間引く
               self.gpslog_write_ct += 1
               if gps_valid and self.gpslog_write_ct % 2 == 0:
                 gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
