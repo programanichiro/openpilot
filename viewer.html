@@ -180,6 +180,7 @@ async function loadGPS() {
 
         return {
           coord: [Number(r.lo), Number(r.la)],
+          v: Number(r.v),
           date: `${y}${m}${day}`
         };
       })
@@ -207,7 +208,7 @@ async function loadGPS() {
       ? coords.filter(c => c.date === targetDate)
       : coords;
 
-    allCoords = allCoords.concat(filteredCoords.map(c => c.coord));
+    allCoords = allCoords.concat(filteredCoords.map(c => [...c.coord, c.v]));
   }
 
   if (allCoords.length < 2) {
@@ -228,9 +229,10 @@ async function loadGPS() {
   // ----------------------------
   let safeCoords = allCoords.filter(c =>
     Array.isArray(c) &&
-    c.length === 2 &&
+    c.length === 3 &&
     Number.isFinite(c[0]) &&
-    Number.isFinite(c[1])
+    Number.isFinite(c[1]) &&
+    Number.isFinite(c[2])
   );
 
   // ----------------------------
@@ -296,7 +298,18 @@ async function loadGPS() {
       const prev = current[current.length - 1];
       const dist = haversine(prev, p);
 
-      if (dist > threshold) {
+      //console.log("p:", p);
+      const vv = (p[2] + prev[2]) / 2
+      let vv_k = 1.0;
+      if (vv > 50){
+        //console.log("vv2:", vv);
+        vv_k = 2.0; //threshold=60で時速100キロだと点の距離が最大120メートルくらいだと見込んでいる。
+      } else if (vv > 100){
+        //console.log("vv3:", vv);
+        vv_k = 2.666; //threshold=60で時速120キロだと点の距離が最大160メートルくらいだと見込んでいる。
+      }
+
+      if (dist > threshold * vv_k) {
         if (current.length >= 2) {
           segments.push(current);
         }
