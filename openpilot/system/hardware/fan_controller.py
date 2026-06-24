@@ -695,16 +695,16 @@ class FanController:
               CS = ui_state.sm['carState']
               steer_ang = abs(CS.steeringAngleDeg)
               self.gpslog_write_ct += 1
-              if steer_ang < 10:
+              if steer_ang < 6:
                 if gps_valid and self.gpslog_write_ct % 4 == 0:
                   gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
-              elif steer_ang < 20:
+              elif steer_ang < 12:
                 if gps_valid and self.gpslog_write_ct % 3 == 0:
                   gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
-              elif steer_ang < 40:
+              elif steer_ang < 18:
                 if gps_valid and self.gpslog_write_ct % 2 == 0:
                   gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
-              else: #elif steer_ang < 80:
+              else:
                 if gps_valid:
                   gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
 
