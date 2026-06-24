@@ -693,7 +693,10 @@ class FanController:
             if True:
               #ハンドルの角度が浅いほど間引く
               CS = ui_state.sm['carState']
-              steer_ang = abs(CS.steeringAngleDeg)
+              lp = ui_state.sm['liveParameters']
+              steer_ang = abs(CS.steeringAngleDeg - lp.angleOffsetDeg)
+              with open('/tmp/debug_out_k','w') as fp:
+                fp.write('steer_ang:%.2f,angleOffsetDeg:%.2f' % (steer_ang,lp.angleOffsetDeg))
               self.gpslog_write_ct += 1
               if steer_ang < 6:
                 if gps_valid and self.gpslog_write_ct % 4 == 0:
