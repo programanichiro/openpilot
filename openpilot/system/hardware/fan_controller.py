@@ -692,11 +692,15 @@ class FanController:
             #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
             if True:
               #ハンドルの角度が浅いほど間引く
-              CS = ui_state.sm['carState']
-              lp = ui_state.sm['liveParameters']
-              steer_ang = abs(CS.steeringAngleDeg - lp.angleOffsetDeg)
-              with open('/tmp/debug_out_k','w') as fp:
-                fp.write('steer_ang:%.2f,angleOffsetDeg:%.2f' % (steer_ang,lp.angleOffsetDeg))
+              steer_ang = 0
+              try:
+                with open('/dev/shm/steer_ang_info.txt','r') as fp3:
+                  steer_ang_info = fp3.read()
+                  if steer_ang_info:
+                    self.global_angle_steer0 = float(steer_ang_info)
+                    steer_ang = self.global_angle_steer0
+              except Exception as e:
+                pass
               self.gpslog_write_ct += 1
               if steer_ang < 6:
                 if gps_valid and self.gpslog_write_ct % 4 == 0:
@@ -704,7 +708,7 @@ class FanController:
               elif steer_ang < 12:
                 if gps_valid and self.gpslog_write_ct % 3 == 0:
                   gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
-              elif steer_ang < 18:
+              elif steer_ang < 24:
                 if gps_valid and self.gpslog_write_ct % 2 == 0:
                   gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
               else:
