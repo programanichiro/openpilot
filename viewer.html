@@ -301,12 +301,12 @@ async function loadGPS() {
       //console.log("p:", p);
       const vv = (p[2] + prev[2]) / 2
       let vv_k = 1.0;
-      if (vv > 50){
-        //console.log("vv2:", vv);
-        vv_k = 2.0; //threshold=60で時速100キロだと点の距離が最大120メートルくらいだと見込んでいる。
-      } else if (vv > 100){
+      if (vv > 100){
         //console.log("vv3:", vv);
         vv_k = 2.666; //threshold=60で時速120キロだと点の距離が最大160メートルくらいだと見込んでいる。
+      } else if (vv > 50){
+        //console.log("vv2:", vv);
+        vv_k = 2.0; //threshold=60で時速100キロだと点の距離が最大120メートルくらいだと見込んでいる。
       }
 
       if (dist > threshold * vv_k) {
@@ -358,9 +358,30 @@ async function loadGPS() {
     seg.forEach(c => bounds.extend(c));
   });
 
+async function fetchWithRetry(url, retries = 5) {
+
+  for(let i = 0; i < retries; i++) {
+    try {
+      const res = await fetch(url);
+      if(res.ok) {
+        return await res.json();
+      }
+    } catch(e) {
+      console.warn(`retry ${i+1}`, e);
+    }
+    await new Promise(r => setTimeout(r, 1000));
+  }
+  throw new Error("style load failed");
+}
+
+const style = await fetchWithRetry(
+  "https://tiles.openfreemap.org/styles/liberty"
+);
+
 const map = new maplibregl.Map({
   container: "map",
-  style: "https://tiles.openfreemap.org/styles/liberty",
+  style,
+//  style: "https://tiles.openfreemap.org/styles/liberty",
 //  center: [0, 0],
 //  zoom: 2
   bounds: bounds,
