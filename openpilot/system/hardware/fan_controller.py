@@ -631,7 +631,6 @@ class FanController:
               ))
 
   def osm_proc(self):
-    print("bbbb1")
     # if self.tss_type == 0:
     #   try:
     #     with open('/data/tss_type_info.txt','r') as fp:
@@ -670,7 +669,6 @@ class FanController:
     limitspeed_info_ok = False
     limitspeed_min = 30
     try:
-      print("bbbb2")
       with open('/dev/shm/gps_axs_data.txt','r') as fp:
       # with open('/dev/shm/limitspeed_info.txt','r') as fp:
         limitspeed_info_str = fp.read()
@@ -680,22 +678,17 @@ class FanController:
           #ただしa,b,cはdouble型とします
           self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp,gps_valid = map(float, limitspeed_info_str.split(","))
           self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
-          print("bbbb3")
           if self.velocity < 1.0:
-            print("bbbb4")
             self.velocity = 0 #時速1キロ未満はゼロ扱い
             if (self.osm_proc_ct & 1) != 0 and self.velocity < 0.1: #ほぼ停止
-              print("bbbb5")
               self.gpslog_push_ct += 1
               if self.gpslog_push_ct >= 11: #走行中からの遷移特別処理
                 self.gpslog_push_ct = 5
               if self.gpslog_push_ct >= 10:
                 self.gpslog_push_ct = 0
-                print("bbbb6")
                 gpslog_push() #停止中のGPSデータをまとめてgithubのgpslogリポジトリにpushする。(ローカルosmの場合。ネットだと2Hzだが、遅すぎてどうなるか未検証)
               self.gpslog_write_ct = 0
           elif (self.osm_proc_ct & 1) != 0:
-            print("bbbb7")
             #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
             if True:
               #ハンドルの角度が浅いほど間引く
@@ -731,7 +724,6 @@ class FanController:
             #self.gpslog_push_ct = 5 #次に止まったら5秒後にpushする。
             self.gpslog_push_ct += 1
             if self.gpslog_push_ct >= 60*10: #走行中でも10分ごとにpushする。
-              print("bbbb8")
               self.gpslog_push_ct = 0 #走行→停止時に9以下だと直ぐにpushが動いてしまうが承知の上。
               gpslog_push()
 
