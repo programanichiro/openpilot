@@ -349,9 +349,13 @@ async function loadGPS() {
     return Math.max(width, height) >= minMeters;
   }
 
-  const segments = splitSegments(safeCoords, 60).filter(seg => seg.length >= 50 && segmentSizeOk(seg,10));
+  let segments = splitSegments(safeCoords, 60).filter(seg => seg.length >= 50 && segmentSizeOk(seg,10));
 
   console.log("segments:", segments.length);
+  if(segments.length == 0){
+    segments = splitSegments(safeCoords, 60).filter(seg => segmentSizeOk(seg,1));
+    console.log("segmentsX:", segments.length);
+  }
 
   const bounds = new maplibregl.LngLatBounds();
   segments.forEach(seg => {
