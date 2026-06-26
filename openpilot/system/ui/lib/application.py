@@ -7,6 +7,7 @@ import time
 import signal
 import sys
 import pyray as rl
+import array
 import threading
 import platform
 import subprocess
@@ -21,6 +22,7 @@ from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware import HARDWARE, PC
 from openpilot.system.ui.lib.multilang import multilang
 from openpilot.common.realtime import Ratekeeper
+from openpilot.common.params import Params
 
 _DEFAULT_FPS = int(os.getenv("FPS", {'tizi': 20}.get(HARDWARE.get_device_type(), 60)))
 FPS_LOG_INTERVAL = 5  # Seconds between logging FPS drops
@@ -107,9 +109,18 @@ class FontWeight(StrEnum):
   DISPLAY = "Inter-Bold.fnt"
 
 
-def font_fallback(font: rl.Font) -> rl.Font:
+def font_fallback(font: rl.Font, text: str) -> rl.Font:
   """Fall back to unifont for languages that require it."""
-  if multilang.requires_unifont():
+  if multilang.requires_unifont() and font != gui_app.font(FontWeight.UNIFONT) and font != gui_app.font("JP") and font != gui_app.font("JP2") and not text.isascii(): #UNIFONTなどを要求していないこと、全てAsciiの場合も除外。
+    #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
+    if multilang._language == "ja":
+      jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JPH"), text, jp_font_path, 100) #["JPH"]だと初回に例外吐く。
+      gui_app._fonts["JPH"] = exchg_font
+      # with open('/tmp/dynamic_font_count.txt','w') as fp:
+      #  fp.write('font_count:%d' % int(exchg_font.glyphCount)) #全UIラベルで300程度。この程度なら増え過ぎ対策必須ではない。
+      exchg_font.glyphCount
+      return exchg_font
     return gui_app.font(FontWeight.UNIFONT)
   return font
 
@@ -198,6 +209,7 @@ class GuiApplication:
     self._set_log_callback()
 
     self._fonts: dict[FontWeight, rl.Font] = {}
+    self._font_path: dict[rl.Font, str] = {}
     self._width = width if width is not None else GuiApplication._default_width()
     self._height = height if height is not None else GuiApplication._default_height()
 
@@ -205,6 +217,9 @@ class GuiApplication:
       self._scale = self._calculate_auto_scale()
     else:
       self._scale = SCALE
+      if GuiApplication.big_ui() == True:
+        if Params().get_bool("C4UIOnC3X") == True:
+          self._scale = 2 #4でそのまま？
 
     # Scale, then ensure dimensions are even
     self._scaled_width = int(self._width * self._scale)
@@ -225,6 +240,7 @@ class GuiApplication:
     self._window_close_requested = False
     self._nav_stack: list[object] = []
     self._nav_stack_ticks: list[Callable[[], None]] = []
+    #self._nav_stack_widgets_to_render = 1 if (self.big_ui() and Params().get_bool("C4UIOnC3X") == False) else 2 #こうするとC4UIOnC3Xでもpopの描画がc4ライクになる。
     self._nav_stack_widgets_to_render = 1 if self.big_ui() else 2
 
     self._mouse = MouseState(self._scale)
@@ -406,6 +422,10 @@ class GuiApplication:
     if idx_to_pop == len(self._nav_stack) - 1:
       prev_widget = self._nav_stack[idx_to_pop - 1]
       prev_widget.set_enabled(True)
+      if self._nav_stack_widgets_to_render == 1 and hasattr(prev_widget, '_drag_start_pos') and self.big_ui() and Params().get_bool("C4UIOnC3X") == True:
+        prev_widget._drag_start_pos = None #これでc3Xでpop時に真ん中に移動する。
+        prev_widget._y_pos_filter.x = prev_widget._rect.height + 64
+        prev_widget._y_pos_filter.velocity.x = 0.0
 
     widget = self._nav_stack.pop(idx_to_pop)
     widget.hide_event()
@@ -672,7 +692,57 @@ class GuiApplication:
     except KeyboardInterrupt:
       pass
 
-  def font(self, font_weight: FontWeight = FontWeight.NORMAL) -> rl.Font:
+  def ensure_chars_in_font(self,old_font, chars: str, font_path: str, init_size = 128):
+    if old_font != None:
+      # ① 既存フォントからロード済み codepoints を取得
+      if False and old_font.glyphCount > 1000: #増え過ぎたら間引く。日本語なら実質300文字ちょっとなので働かない。
+        #このやり方はまずい。画面内に表示されている物を消してしまうと画面が乱れる。使われていない物を判断するのは難しい。
+        loaded_codepoints = {
+            old_font.glyphs[i].value for i in range(1, old_font.glyphCount, 2) #偶数番目を飛ばす。
+        }
+      else:
+        loaded_codepoints = {
+          old_font.glyphs[i].value for i in range(old_font.glyphCount)
+        }
+
+      # ② chars から不足している codepoints を抽出
+      missing_codepoints = set()
+      for c in chars:
+          if ord(c) not in loaded_codepoints:
+              missing_codepoints.add(ord(c))
+
+      # ③ 追加が不要ならそのまま返す
+      if not missing_codepoints:
+        return old_font
+
+      font_size = old_font.baseSize
+      rl.unload_font(old_font)
+
+      # ④ 再ロード用の全 codepoints を構築
+      all_codepoints = loaded_codepoints | missing_codepoints
+    else:
+      #元のfontが無ければ作成する。
+      all_codepoints = set()
+      for c in chars:
+        all_codepoints.add(ord(c))
+      font_size = init_size
+
+    codepoints_buf = rl.ffi.new("int[]", list(all_codepoints)) #文字列に戻さないでcodepointsを生成。
+
+    new_font = rl.load_font_ex(
+      font_path,
+      int(font_size),
+      rl.ffi.cast("int *", codepoints_buf),
+      len(all_codepoints)
+    )
+
+    return new_font
+
+  def font(self, font_weight: FontWeight = FontWeight.NORMAL, new_str: str=None) -> rl.Font:
+    if new_str:
+      #新しい文字があればfont作り直し
+      if self._font_path.get(font_weight): #[]では無い場合に例外吐く。
+        self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight])
     return self._fonts[font_weight]
 
   @property
@@ -692,7 +762,69 @@ class GuiApplication:
           rl.gen_texture_mipmaps(font.texture)
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_TRILINEAR)
         self._fonts[font_weight_file] = font
+        self._font_path[font_weight_file] = fnt_path.as_posix()
+
+    from openpilot.system.ui.widgets.keyboard import KEYBOARD_LAYOUTS
+
+    base_chars = set()
+    for layout in KEYBOARD_LAYOUTS.values():
+      base_chars.update(key for row in layout for key in row)
+    base_chars |= set("–‑✓×°§•")
+
+    base_chars = "".join(base_chars)
+    # ===========================================================
+    # 日本語フォントをbase_charsだけグリフ読み込み
+    # ===========================================================
+    jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+
+    # BMP全体のコードポイント（0x0000～0xFFFF）
+    jp_codepoint_count = rl.ffi.new("int *", 1)
+
+    # BMP 全体（U+0000～U+FFFF）からサロゲート領域を除く
+    base_chars += "⇧↑↓★☆●○°C⚪︎⚫︎⬇︎□■⬆︎" #とりあえずUIで必要な固定記号をロード。
+    jp_codepoints = rl.load_codepoints(base_chars, jp_codepoint_count)
+
+    jp_font = rl.load_font_ex(jp_font_path, 128, jp_codepoints, jp_codepoint_count[0])
+    rl.set_texture_filter(jp_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    self._fonts["JP"] = jp_font
+    self._font_path["JP"] = jp_font_path
+    rl.unload_codepoints(jp_codepoints)
+
+    # ===========================================================
+    # 日本語フォント（ASCII + 第一次水準漢字用）
+    # ===========================================================
+    jp2_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+    jp2_codepoint_count = rl.ffi.new("int *", 1)
+
+    ascii_kanji_chars  = ''.join(chr(cp) for cp in range(0x20, 0x7F))        # ASCII
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x3040, 0x309F))    # ひらがな
+    ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x30A0, 0x30FF))    # カタカナ
+    #ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x4E00, 0x9FB0))    # 漢字
+    #ascii_kanji_chars += self.load_jis1_jis2_chars()    # 漢字 , 動的ロード
+
+    jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
+
+    jp2_font = rl.load_font_ex(jp2_font_path, int(44*self._scale), jp2_codepoints, jp2_codepoint_count[0])
+    rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+    self._fonts["JP2"] = jp2_font
+    self._font_path["JP2"] = jp2_font_path
+    rl.unload_codepoints(jp2_codepoints)
+
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
+
+  def load_jis1_jis2_chars(self):
+    chars = set()
+
+    # Shift-JIS 第1・第2水準相当
+    for high in list(range(0x81, 0x9F + 1)): #+ list(range(0xE0, 0xEF + 1)):
+      for low in range(0x40, 0xFC + 1):
+        try:
+          ch = bytes([high, low]).decode("shift_jis")
+          chars.add(ch)
+        except:
+          pass
+
+    return "".join(sorted(chars))
 
   def _set_styles(self):
     rl.gui_set_style(rl.GuiControl.DEFAULT, rl.GuiControlProperty.BORDER_WIDTH, 0)
@@ -707,7 +839,7 @@ class GuiApplication:
       rl._orig_draw_text_ex = rl.draw_text_ex
 
     def _draw_text_ex_scaled(font, text, position, font_size, spacing, tint):
-      font = font_fallback(font)
+      font = font_fallback(font, text)
       return rl._orig_draw_text_ex(font, text, position, font_size * FONT_SCALE, spacing, tint)
 
     rl.draw_text_ex = _draw_text_ex_scaled
@@ -851,11 +983,19 @@ class GuiApplication:
 
   @staticmethod
   def _default_width() -> int:
-    return 2160 if GuiApplication.big_ui() else 536
+    scale = SCALE
+    if GuiApplication.big_ui() == True:
+      if Params().get_bool("C4UIOnC3X") == True:
+        scale = 2 #4でそのまま？,scale=2で最適化しているので、４にしてもレイアウトおかしくなるはず。
+    return 2160//scale if GuiApplication.big_ui() else 536
 
   @staticmethod
   def _default_height() -> int:
-    return 1080 if GuiApplication.big_ui() else 240
+    scale = SCALE
+    if GuiApplication.big_ui() == True:
+      if Params().get_bool("C4UIOnC3X") == True:
+        scale = 2 #4でそのまま？
+    return 1080//scale if GuiApplication.big_ui() else 240
 
   @staticmethod
   def big_ui() -> bool:

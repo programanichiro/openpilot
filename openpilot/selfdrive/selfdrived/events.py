@@ -573,7 +573,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.WARNING: Alert(
       "Press Resume to Exit Standstill",
       "",
-      AlertStatus.userPrompt, AlertSize.small,
+      AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
   },
 
@@ -976,6 +976,20 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.USER_DISABLE: ImmediateDisableAlert("Reverse Gear"),
     ET.NO_ENTRY: NoEntryAlert("Reverse Gear"),
   },
+  EventName.hazardWarningLights: {
+    ET.WARNING: Alert(
+      "Hazard\nLights",
+      "",
+      AlertStatus.userPrompt, AlertSize.full,
+      Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
+  },
+  EventName.longActiveBrakeError: {
+    ET.WARNING: Alert(
+      "LongActive\nBrakePressed",
+      "",
+      AlertStatus.critical, AlertSize.full,
+      Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
+  },
 
   # On cars that use stock ACC the car can decide to cancel ACC for various reasons.
   # When this happens we can no long control the car so the user needs to be warned immediately.
@@ -1051,7 +1065,7 @@ if HARDWARE.get_device_type() == 'mici':
       ET.WARNING: Alert(
         "Press Resume",
         "",
-        AlertStatus.userPrompt, AlertSize.small,
+        AlertStatus.normal, AlertSize.small,
         Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
     },
     EventName.preLaneChangeLeft: {
@@ -1095,6 +1109,20 @@ if HARDWARE.get_device_type() == 'mici':
         Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .2, creation_delay=0.5),
       ET.USER_DISABLE: ImmediateDisableAlert("Reverse"),
       ET.NO_ENTRY: NoEntryAlert("Reverse"),
+    },
+    EventName.hazardWarningLights: {
+      ET.WARNING: Alert(
+        "hazard lights",
+        "hazard warning lights",
+        AlertStatus.userPrompt, AlertSize.full,
+        Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
+    },
+    EventName.longActiveBrakeError: {
+      ET.WARNING: Alert(
+        "long brake",
+        "long active brake",
+        AlertStatus.critical, AlertSize.full,
+        Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
     },
   })
 

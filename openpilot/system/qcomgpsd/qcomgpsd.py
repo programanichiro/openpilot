@@ -10,6 +10,7 @@ from serial import Serial
 import datetime
 from typing import NoReturn
 from struct import unpack_from, calcsize, pack
+from opendbc.car import structs
 
 from openpilot.cereal import log
 import openpilot.cereal.messaging as messaging
@@ -218,6 +219,12 @@ def main() -> NoReturn:
   gpio_set(GPIO.GNSS_PWR_EN, True)
 
   pm = messaging.PubMaster(['qcomGnss', 'gpsLocation'])
+  sm = messaging.SubMaster(['carState'])
+
+  with open('/dev/shm/gps_axs_data.txt','w') as fp:
+    fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (0,0,0,0,0,0))
+
+  reverse_bearingDeg = 0 #バックに入れてスピード出たら180度にセット。
 
   while 1:
     opcode, payload = diag.recv()
@@ -300,6 +307,23 @@ def main() -> NoReturn:
       gps.speed = math.sqrt(sum([x**2 for x in vNED]))
       gps.bearingDeg = report["q_FltHeadingRad"] * 180/math.pi
 
+      sm.update()
+      # with open('/tmp/debug_out_v','w') as fp:
+      #   # fp.write("vEgo<%d>:%f" % (int(sm['carState'].gearShifter),sm['carState'].vEgo/3.6))
+      #   fp.write("%.1f" % (sm['carState'].vEgo*3.6))
+
+      if sm['carState'].gearShifter == structs.CarState.GearShifter.reverse:
+        if sm['carState'].vEgo > 1.0/3.6:
+          reverse_bearingDeg = 180
+      else:
+        if sm['carState'].vEgo > 0.1/3.6:
+          reverse_bearingDeg = 0
+
+      if reverse_bearingDeg > 0:
+        gps.bearingDeg += reverse_bearingDeg
+        if gps.bearingDeg >= 360:
+          gps.bearingDeg -= 360
+
       # TODO needs update if there is another leap second, after june 2024?
       dt_timestamp = (datetime.datetime(1980, 1, 6, 0, 0, 0, 0, datetime.UTC) +
                       datetime.timedelta(weeks=report['w_GpsWeekNumber']) +
@@ -313,6 +337,28 @@ def main() -> NoReturn:
       # quectel gps verticalAccuracy is clipped to 500, set invalid if so
       gps.hasFix = gps.verticalAccuracy != 500
       pm.send('gpsLocation', msg)
+
+      locationd_valid = 1
+      if gps.vNED[0] == 0 and gps.vNED[1] == 0 and gps.vNED[2] == 0:
+        locationd_valid = 0
+      # if gps.bearingAccuracyDeg > 60:
+      #   locationd_valid = 0
+      if report["u_HorizontalReliability"] <= 1: #0: Not set 1: Very Low 2: Low 3: Medium 4: High
+        # 信頼しない,Lowまでは許す
+        locationd_valid = 0
+
+      car_vego = gps.speed
+      try:
+        with open('/dev/shm/car_vego.txt','r') as fp:
+          car_vego_str = fp.read()
+          if car_vego_str:
+            car_vego = float(car_vego_str)
+      except Exception as e:
+        pass
+
+      with open('/dev/shm/gps_axs_data.txt','w') as fp:
+        #fprintf(fp,"%.6f,%.6f,%.2f,%.1f,%ld,%d",(double)before_lat * 1e-07,(double)before_lon * 1e-07,avr_bear/*(double)sum_bear/BEAR_BUF_MAX*/,vego/*(double)msg->g_speed() * 1e-03*/,monoTime++,locationd_valid); //最後の1はlocationd_validのダミー。常にtrue、あとで利用するかも。
+        fp.write("%.6f,%.6f,%.2f,%.1f,%ld,%d" % (gps.latitude,gps.longitude,gps.bearingDeg,car_vego,gps.unixTimestampMillis,locationd_valid))
 
     elif log_type == LOG_GNSS_OEMDRE_SVPOLY_REPORT:
       msg = messaging.new_message('qcomGnss', valid=True)

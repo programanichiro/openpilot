@@ -29,6 +29,7 @@ WIDE_CAM_MAX_SPEED = 10.0  # m/s (22 mph)
 ROAD_CAM_MIN_SPEED = 15.0  # m/s (34 mph)
 INF_POINT = np.array([1000.0, 0.0, 0.0])
 
+g_wide_cam = False
 
 class AugmentedRoadView(CameraView):
   def __init__(self, stream_type: VisionStreamType = VisionStreamType.VISION_STREAM_ROAD):
@@ -47,6 +48,9 @@ class AugmentedRoadView(CameraView):
     self._hud_renderer = HudRenderer()
     self.alert_renderer = AlertRenderer()
     self.driver_state_renderer = DriverStateRenderer()
+
+    self.hazard = False
+    self.hazard_ct = 0
 
   def _render(self, rect):
     # Only render when system is started to avoid invalid data access
@@ -103,8 +107,29 @@ class AugmentedRoadView(CameraView):
 
   def _draw_border(self, rect: rl.Rectangle):
     rl.draw_rectangle_lines_ex(rect, UI_BORDER_SIZE, rl.BLACK)
-    border_roundness = 0.12
+    border_roundness = 0.01
     border_color = BORDER_COLORS.get(ui_state.status, BORDER_COLORS[UIStatus.DISENGAGED])
+
+    # ハザード点滅
+    self.hazard_ct += 1
+    if self.hazard_ct % 7 == 0:
+      try:
+        with open('/tmp/hazard_light.txt','r') as fp:
+          hazard_light_str = fp.read()
+          if hazard_light_str:
+            hazard_light = int(hazard_light_str)
+            if hazard_light > 0:
+              # bgColorをオレンジに点滅
+              self.hazard = not self.hazard
+            elif hazard_light == 0:
+              self.hazard = False
+      except Exception as e:
+        pass
+
+    if self.hazard == True:
+      # bgColorをオレンジに点滅
+      border_color = rl.Color(int(192*13/10), int(102*13/10), 0, 255) #ウインカーと同じ色
+
     border_rect = rl.Rectangle(rect.x + UI_BORDER_SIZE, rect.y + UI_BORDER_SIZE,
                                rect.width - 2 * UI_BORDER_SIZE, rect.height - 2 * UI_BORDER_SIZE)
     rl.draw_rectangle_rounded_lines_ex(border_rect, border_roundness, 10, UI_BORDER_SIZE, border_color)
@@ -162,6 +187,8 @@ class AugmentedRoadView(CameraView):
     # Get camera configuration
     device_camera = self.device_camera or DEFAULT_DEVICE_CAMERA
     is_wide_camera = self.stream_type == WIDE_CAM
+    global g_wide_cam
+    g_wide_cam = is_wide_camera
     intrinsic = device_camera.ecam.intrinsics if is_wide_camera else device_camera.fcam.intrinsics
     calibration = self.view_from_wide_calib if is_wide_camera else self.view_from_calib
     zoom = 2.0 if is_wide_camera else 1.1

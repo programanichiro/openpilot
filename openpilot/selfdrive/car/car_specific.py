@@ -21,6 +21,7 @@ class CarSpecificEvents:
     self.low_speed_alert = False
     self.no_steer_warning = False
     self.silent_steer_warning = True
+    self.engage_time = -1
 
   def update(self, CS: car.CarState, CS_prev: car.CarState, CC: car.CarControl):
     if self.CP.brand in ('body', 'mock'):
@@ -58,10 +59,16 @@ class CarSpecificEvents:
 
     elif self.CP.brand == 'toyota':
       # TODO: when we check for unexpected disengagement, check gear not S1, S2, S3
+      # new_stand_still = False
+      if CC.enabled:
+        self.engage_time += 1
+      else:
+        self.engage_time = 0
       if self.CP.openpilotLongitudinalControl:
         # Only can leave standstill when planner wants to move
-        if CS.cruiseState.standstill and not CS.brakePressed and (CC.cruiseControl.resume or self.CP.flags & ToyotaFlags.HYBRID.value):
+        if CS.cruiseState.standstill and not CS.brakePressed: #and (CC.cruiseControl.resume or self.CP.flags & ToyotaFlags.HYBRID.value): #standstillが機械スイッチなので、その確認にはplannerの意思を見ない方がいい。
           events.add(EventName.resumeRequired)
+          self.engage_time = 0
         if CS.vEgo < self.CP.minEnableSpeed:
           events.add(EventName.belowEngageSpeed)
           if CC.actuators.accel > 0.3:
@@ -70,6 +77,12 @@ class CarSpecificEvents:
           if CS.vEgo < 0.001:
             # while in standstill, send a user alert
             events.add(EventName.manualRestart)
+
+      # global NowStandStill
+      # if NowStandStill != new_stand_still:
+      #   NowStandStill = new_stand_still
+      #   # with open('/dev/shm/stand_still.txt','w') as fp:
+      #   #   fp.write('%d' % (new_stand_still))
 
     elif self.CP.brand == 'gm':
       # Enabling at a standstill with brake is allowed
@@ -110,7 +123,41 @@ class CarSpecificEvents:
     if CS.gearShifter != GearShifter.drive and CS.gearShifter not in CI.DRIVABLE_GEARS:
       events.add(EventName.wrongGear)
     if CS.gearShifter == GearShifter.reverse:
-      events.add(EventName.reverseGear)
+      one_pedal = False
+      try:
+        with open('/dev/shm/accel_engaged.txt','r') as fp:
+          accel_engaged_str = fp.read()
+          if accel_engaged_str:
+            if int(accel_engaged_str) >= 3: #ワンペダルモード
+              one_pedal = True
+      except Exception as e:
+        pass
+      if one_pedal == True and CS.vEgo < 7/3.6 and CS.cruiseState.enabled:
+        events.add(EventName.pedalPressed) #ワンペダルでは停車時(直前(7km/h未満)でも可)にバックに入れたらディスエンゲージ
+      else:
+        events.add(EventName.reverseGear)
+    if (CS.leftBlinker or CS.rightBlinker) and CS.vEgo < 10.0/3.6: #ハザードつけっぱなしでウインカー出して時速10キロ以下スタートしようとしたら警告する。
+      try:
+        with open('/tmp/hazard_light.txt','r') as fp:
+          hazard_light_str = fp.read()
+          if hazard_light_str:
+            hazard_light = int(hazard_light_str)
+            if hazard_light > 0:
+              events.add(EventName.hazardWarningLights)
+      except Exception as e:
+        pass
+
+    if True: #longActiveがON継続の状態でブレーキが踏まれたらエラーイベントを出す。
+      try:
+        with open('/tmp/long_brake_error_tmp.txt','r') as fp:
+          long_brake_error_str = fp.read()
+          if long_brake_error_str:
+            long_brake_error = int(long_brake_error_str)
+            if long_brake_error > 0:
+              events.add(EventName.longActiveBrakeError)
+      except Exception as e:
+        pass
+
     if not CS.cruiseState.available:
       events.add(EventName.wrongCarMode)
     if CS.espDisabled:
@@ -175,7 +222,20 @@ class CarSpecificEvents:
       self.no_steer_warning = False
       self.silent_steer_warning = False
     if CS.steerFaultPermanent:
-      events.add(EventName.steerUnavailable)
+      steer_always = 0
+      try:
+        with open('/dev/shm/steer_always.txt','r') as fp:
+          steer_always_str = fp.read()
+          if steer_always_str:
+            if int(steer_always_str) >= 1:
+              steer_always = 2
+      except Exception as e:
+        pass
+      if steer_always == 0 or self.engage_time > int(5 / DT_CTRL) or self.engage_time < 0: # MADS有効時に出さない。Engage後5秒以上ならsteerUnavailableとする。< 0は初期値例外処理。
+        events.add(EventName.steerUnavailable)
+      elif self.steering_unpressed > int(0.5 / DT_CTRL):
+        # events.add(EventName.steerTempUnavailable) #なくても良さそうなら後で取り除きたい。
+        pass #何も鳴らさない
 
     # we engage when pcm is active (rising edge)
     # enabling can optionally be blocked by the car interface

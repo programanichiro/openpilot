@@ -8,9 +8,10 @@ from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.params import Params
 from openpilot.selfdrive.locationd.calibrationd import HEIGHT_INIT
 from openpilot.selfdrive.ui.ui_state import ui_state
-from openpilot.system.ui.lib.application import gui_app
+from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.shader_polygon import draw_polygon, Gradient
 from openpilot.system.ui.widgets import Widget
+from openpilot.system.ui.lib.text_measure import measure_text_cached
 
 CLIP_MARGIN = 500
 MIN_DRAW_DISTANCE = 10.0
@@ -28,6 +29,25 @@ NO_THROTTLE_COLORS = [
   rl.Color(242, 242, 242, 0),   # HSLF(112/360, 0.0, 0.95, 0.0)
 ]
 
+@dataclass
+class LeadcarLockon:
+  x: float = 0.0
+  y: float = 0.0
+  d: float = 0.0
+  a: float = 0.0
+  lxt: float = 0.0
+  lxf: float = 0.0
+  lockOK: float = 0.0
+
+LeadcarLockon_MAX = 2 #5
+leadcar_lockon = [LeadcarLockon() for _ in range(LeadcarLockon_MAX)]
+
+@dataclass
+class LeadVertices:
+  x: float = 0.0
+  y: float = 0.0
+
+lead_vertices = [LeadVertices() for _ in range(LeadcarLockon_MAX)]
 
 @dataclass
 class ModelPoints:
@@ -71,6 +91,10 @@ class ModelRenderer(Widget):
       colors=[],
       stops=[],
     )
+
+    self.global_a_rel = 0
+    self.global_a_rel_col = 0
+    self._font_semi_bold: rl.Font = gui_app.font(FontWeight.SEMI_BOLD)
 
     # Get longitudinal control setting from car parameters
     if car_params := Params().get("CarParams"):
@@ -124,11 +148,47 @@ class ModelRenderer(Widget):
       self._transform_dirty = False
 
     # Draw elements
-    self._draw_lane_lines()
+    self._draw_lane_lines(sm)
     self._draw_path(sm)
 
     if render_lead_indicator and radar_state:
       self._draw_lead_indicator()
+
+    if render_lead_indicator:
+      leads = model.leadsV3
+      leads_num = len(leads)
+
+      for i in range(leads_num):
+        if leads[i].prob > 0.2 and i < 2: # 信用度20%以上で表示。調整中。
+          self._drawLockon(leads[i],lead_vertices[i], i, rect) #drawLockon(painter, leads[i], lead_vertices[i] , i , surface_rect /*, leads_num , leads[0] , leads[1]*/);
+
+# #if 1 //lane_widthを表示
+#   std::string lane_width_txt = util::read_file("/dev/shm/lane_width.txt");
+#   //std::string lane_width_txt = util::read_file("/tmp/debug_out_v");
+#   if(lane_width_txt.empty() == false){
+#     float lane_width = std::stof(lane_width_txt);
+#     if(lane_width > -99){
+#       QString lane_w = QString("lane:") + QString::number(lane_width,'f',2) + "m";
+#       //QString lane_w = QString("vEgo:") + QString::number(lane_width,'f',1) + "km/h";
+# #if 0
+#       painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
+#       painter.drawText(QRect(x+2-str_w2/2, y + sz + homebase_h + g_yo + 10+6+2, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+#       painter.setPen(QColor(0xff, 0xff, 0xff));
+#       painter.drawText(QRect(x-str_w2/2, y + sz + homebase_h + g_yo + 10+6, str_w, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+# #else
+#       int scr_x = surface_rect.width()/2;
+#       int scr_y = surface_rect.height() - 132;
+#       int str_wl = 800;
+#       painter.setFont(InterFont(44, QFont::Normal));
+#       painter.setPen(QColor(0x0, 0x0, 0x0 , 200)); //影
+#       painter.drawText(QRect(scr_x+2-str_wl/2, scr_y+2, str_wl, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+#       painter.setPen(QColor(0xff, 0xff, 0xff));
+#       painter.drawText(QRect(scr_x-str_wl/2, scr_y, str_wl, 50), Qt::AlignTop | Qt::AlignHCenter, lane_w);
+# #endif
+#       painter.setPen(Qt::NoPen);
+#     }
+#   }
+# #endif
 
   def _update_raw_points(self, model):
     """Update raw 3D points from model data"""
@@ -150,6 +210,34 @@ class ModelRenderer(Widget):
     leads = [radar_state.leadOne, radar_state.leadTwo]
 
     for i, lead_data in enumerate(leads):
+      if i == 2:
+        # // /dev/shm/lead_three.txtからstatus,dRel,yRelを読む。
+        # std::string lead_three_txt = util::read_file("/dev/shm/lead_three.txt");
+        # int status = 0;
+        # float dRel=0,yRel=0;
+        # if(lead_three_txt.empty() == false){
+        #   int ii = 0; // インデックス
+        #   std::stringstream ss(lead_three_txt); // 入力文字列をstringstreamに変換
+        #   std::string token; // 一時的にトークンを格納する変数
+        #   while (std::getline(ss, token, ',') && ii < 3) { // カンマで分割し、一つずつ処理する
+        #     if(ii==0){
+        #       status = std::stoi(token);
+        #       if(!status){
+        #         break;
+        #       }
+        #     } else if(ii==1){
+        #       dRel = std::stof(token);
+        #     } else if(ii==2){
+        #       yRel = std::stof(token);
+        #     }
+        #     ii++; // インデックスを1つ進める
+        #   }
+        # }
+        # if(status){
+        #   float z = line.getZ()[get_path_length_idx(line, dRel)];
+        #   mapToScreen(dRel, -yRel, z + path_offset_z, &lead_vertices[i]);
+        # }
+        continue
       if lead_data and lead_data.status:
         d_rel, y_rel, v_rel = lead_data.dRel, lead_data.yRel, lead_data.vRel
         idx = self._get_path_length_idx(path_x_array, d_rel)
@@ -158,6 +246,8 @@ class ModelRenderer(Widget):
         z = self._path.raw_points[idx, 2] if idx < len(self._path.raw_points) else 0.0
         point = self._map_to_screen(d_rel, -y_rel, z + self._path_offset_z)
         if point:
+          lead_vertices[i].x = point[0]
+          lead_vertices[i].y = point[1]
           self._lead_vehicles[i] = self._update_lead_vehicle(d_rel, v_rel, point, self._rect)
 
   def _update_model(self, lead, path_x_array):
@@ -245,25 +335,71 @@ class ModelRenderer(Widget):
 
     # Calculate size and position
     sz = np.clip((25 * 30) / (d_rel / 3 + 30), 15.0, 30.0) * 2.35
-    x = np.clip(point[0], 0.0, rect.width - sz / 2)
-    y = min(point[1], rect.height - sz * 0.6)
+    x = np.clip(point[0], rect.x+0.0, rect.x+rect.width - sz / 2)
+    y = min(point[1], rect.y + rect.height - sz * 0.6)
 
     g_xo = sz / 5
     g_yo = sz / 10
 
-    glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)]
-    chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
+    homebase_h = 12
+
+    # glow = [(x + (sz * 1.35) + g_xo, y + sz + g_yo), (x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo)] #土台
+    # chevron = [(x + (sz * 1.25), y + sz), (x, y), (x - (sz * 1.25), y + sz)]
+    # draw_triangle_fanで描画できるように３角が交差しない配置に修正。
+    glow = [(x, y - g_yo), (x - (sz * 1.35) - g_xo, y + sz + g_yo),(x - (sz * 1.35) - g_xo, y + sz + g_yo + homebase_h), (x, y + sz + homebase_h + g_yo + 10),(x + (sz * 1.35) + g_xo, y + sz + g_yo + homebase_h),(x + (sz * 1.35) + g_xo, y + sz + g_yo)] #土台
+    chevron = [(x, y), (x - (sz * 1.25), y + sz),(x - (sz * 1.25), y + sz + homebase_h), (x, y + sz + homebase_h - 7),(x + (sz * 1.25), y + sz + homebase_h),(x + (sz * 1.25), y + sz)]
 
     return LeadVehicle(glow=glow, chevron=chevron, fill_alpha=int(fill_alpha))
 
-  def _draw_lane_lines(self):
+  def _draw_lane_lines(self, sm):
     """Draw lane lines and road edges"""
+    lta_enable_sw = 0
+    try:
+      with open('/dev/shm/lta_enable_sw.txt','r') as fp:
+        lta_enable_sw_str = fp.read()
+        if lta_enable_sw_str:
+          lta_enable_sw = int(lta_enable_sw_str)
+    except Exception as e:
+      pass
+
+    lta_mode = lta_enable_sw and (sm['carState'].vEgo > 16/3.6)
+    lane_collision = -1
+
     for i, lane_line in enumerate(self._lane_lines):
       if lane_line.projected_points.size == 0:
         continue
 
-      alpha = np.clip(self._lane_line_probs[i], 0.0, 0.7)
-      color = rl.Color(255, 255, 255, int(alpha * 255))
+      if lta_mode:
+        if lane_collision == -1:
+          try:
+            with open('/dev/shm/lane_collision.txt','r') as fp:
+              lane_collision_str = fp.read()
+              if lane_collision_str:
+                lane_collision = int(lane_collision_str)
+              else:
+                lane_collision = 0x80 #lane_collision.txtが無い。
+          except Exception as e:
+            lane_collision = 0x80 #lane_collision.txtが無い。
+
+        if (i == 1 and (lane_collision & 0x01)) or (i == 2 and (lane_collision & 0x02)):
+          lane_prob = self._lane_line_probs[i];
+          if lane_prob > 0.5:
+            lane_prob = 1.0
+          else:
+            lane_prob *= 2; #50％以下でも多少の影響を視覚化。
+
+          if lane_collision & 0x04:
+            #ALDP無視状態
+            color = rl.Color(128, 128, 128, int(lane_prob * 255))
+          else:
+            color = rl.Color(255, 128, 0, int(lane_prob * 255))
+        else:
+          alpha = np.clip(self._lane_line_probs[i], 0.0, 0.7)
+          color = rl.Color(255, 255, 255, int(alpha * 255))
+      else:
+        alpha = np.clip(self._lane_line_probs[i], 0.0, 0.7)
+        color = rl.Color(255, 255, 255, int(alpha * 255))
+
       draw_polygon(self._rect, lane_line.projected_points, color)
 
     for i, road_edge in enumerate(self._road_edges):
@@ -302,12 +438,47 @@ class ModelRenderer(Widget):
 
   def _draw_lead_indicator(self):
     # Draw lead vehicles if available
+    num = 0
     for lead in self._lead_vehicles:
       if not lead.glow or not lead.chevron:
+        num += 1
         continue
 
       rl.draw_triangle_fan(lead.glow, len(lead.glow), rl.Color(218, 202, 37, 255))
       rl.draw_triangle_fan(lead.chevron, len(lead.chevron), rl.Color(201, 34, 49, lead.fill_alpha))
+
+      radar_state = ui_state.sm['radarState'] if ui_state.sm.valid['radarState'] else None
+      if num == 0 and radar_state: #0番のリードカーまでの距離を表示
+        x = lead.chevron[0][0]
+        y = lead.chevron[0][1]
+        #d_rel, y_rel, v_rel = radar_state.leadOne.dRel, radar_state.leadOne.yRel, radar_state.leadOne.vRel
+        d_rel, v_rel = radar_state.leadOne.dRel, radar_state.leadOne.vRel
+
+        dist = str(int(d_rel)) + "m"
+        #str_w = 200;
+        vc_speed = ui_state.sm['carState'].vEgo
+        kmph = str(int((v_rel + vc_speed)*3.6)) + "k"
+        #str_w2 = 200;
+        font_size = 44
+        #self._font_semi_bold
+
+        color = rl.Color(0x0, 0x0, 0x0 , 200) #影
+        lock_indicator_dx = 2 #下向きの十字照準を避ける。
+        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+2+lock_indicator_dx, y-50+2),font_size,0,color)#     painter.drawText(QRect(x+2+lock_indicator_dx, y-50+2, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
+        kmph_size = measure_text_cached(self._font_semi_bold, kmph, int(font_size))
+        rl.draw_text_ex(self._font_semi_bold,kmph,rl.Vector2(x+2-lock_indicator_dx-kmph_size.x-2, y-50+2),font_size,0,color)#     painter.drawText(QRect(x+2-lock_indicator_dx-str_w2-2, y-50+2, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
+
+        color = rl.Color(0xff, 0xff, 0xff , 255)#     painter.setPen(QColor(0xff, 0xff, 0xff));
+        rl.draw_text_ex(self._font_semi_bold,dist,rl.Vector2(x+lock_indicator_dx, y-50),font_size,0,color)#     painter.drawText(QRect(x+lock_indicator_dx, y-50, str_w, 50), Qt::AlignBottom | Qt::AlignLeft, dist);
+        if self.global_a_rel >= self.global_a_rel_col:
+          self.global_a_rel_col = -0.1 #散らつきを抑えるバッファ。
+          color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), 255)
+        else:
+          self.global_a_rel_col = 0
+          color = rl.Color(245, 0, 0, 255)
+        rl.draw_text_ex(self._font_semi_bold,kmph,rl.Vector2(x-lock_indicator_dx-kmph_size.x-2, y-50),font_size,0,color)#     painter.drawText(QRect(x-lock_indicator_dx-str_w2-2, y-50, str_w2, 50), Qt::AlignBottom | Qt::AlignRight, kmph);
+        pass
+      num += 1
 
   @staticmethod
   def _get_path_length_idx(pos_x_array: np.ndarray, path_distance: float) -> int:
@@ -434,3 +605,264 @@ class ModelRenderer(Widget):
       int(inv_t * start.b + t * end.b),
       int(inv_t * start.a + t * end.a)
     ) for start, end in zip(begin_colors, end_colors, strict=True)]
+
+
+  def _drawLockon(self,lead_data,vd,num,rect): #vdにはrect.xとyが含まれている。
+    d_rel = lead_data.x[0]
+    a_rel = lead_data.a[0]
+    self.global_a_rel = a_rel
+
+    sz = max(15.0, min((25 * 30) / (d_rel / 3 + 30), 30.0)) * 2.35 #float sz = std::clamp((25 * 30) / (d_rel / 3 + 30), 15.0f, 30.0f) * 2.35;
+    #x = max(0, min(vd.x, rect.width - sz / 2)) #float x = std::clamp((float)vd.x(), 0.f, surface_rect.width() - sz / 2);
+    x = max(rect.x, min(vd.x, rect.x+rect.width - sz / 2)) #こっち？rect.xを含めた方がいいかな。
+    y = vd.y #float y = (float)vd.y();
+
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド#   painter.setCompositionMode(QPainter::CompositionMode_Plus);
+
+    prob_alpha = lead_data.prob #getModelProb();
+    if prob_alpha < 0:
+      prob_alpha = 0
+    elif prob_alpha > 1.0:
+      prob_alpha = 1.0
+    prob_alpha0 = prob_alpha
+    prob_alpha *= 245
+
+    pen_size = 2
+    pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
+
+    ww = 300; hh = 300
+    if True:
+       ww *= 1.25
+       hh *= 1.25
+
+    d = d_rel #距離をロックターケットの大きさに反映させる。
+    if d < 1:
+      d = 1
+
+    #動きに緩衝処理。
+    leadcar_lockon[num].x = leadcar_lockon[num].x + (x - leadcar_lockon[num].x) / 6
+    leadcar_lockon[num].y = leadcar_lockon[num].y + (y - leadcar_lockon[num].y) / 6
+    leadcar_lockon[num].d = leadcar_lockon[num].d + (d - leadcar_lockon[num].d) / 6
+    x = leadcar_lockon[num].x
+    y = leadcar_lockon[num].y
+    d = leadcar_lockon[num].d
+    if d < 1:
+      d = 1
+
+    leadcar_lockon[num].a = leadcar_lockon[num].a + (a_rel - leadcar_lockon[num].a) / 10
+    a_rel = leadcar_lockon[num].a
+
+    import openpilot.selfdrive.ui.onroad.augmented_road_view as road_view
+
+    dh = 50
+    g_wide_cam = road_view.g_wide_cam #extern bool g_wide_cam;
+    if g_wide_cam == False: #dhに奥行き値を反映させる。
+      dd = d
+      dd -= 25 #dd=0〜75
+      dd /= (75.0/2) #dd=0〜2
+      dd += 1 #dd=1〜3
+      if dd < 1:
+        dd = 1
+      dh /= dd
+    else: #ワイドカメラ使用でロジック変更。リアルタイムで変わる。
+      ww *= 0.5; hh *= 0.5
+      dh = 100
+      dd = d
+      dd -= 5 #dd=0〜95
+      dd /= (95.0/10) #dd=0〜10
+      dd += 1 #dd=1〜11
+      if dd < 1:
+        dd = 1
+      dh /= dd*dd
+
+    ww = ww * 2 * 5 / d
+    hh = hh * 2 * 5 / d
+    #y = min(rect.height, y-dh) + dh #y = std::fmin(surface_rect.height() /*- sz * .6*/, y - dh) + dh;
+    y = min(rect.y+rect.height-2, y-dh) + dh
+    r = rl.Rectangle(x - ww/2, y - hh - dh, ww, hh) #QRect r = QRect(x - ww/2, y /*- g_yo*/ - hh - dh, ww, hh);
+
+    #//y?ってわかりにくいな。横方向なんだが。getYは使えなさそうだし。
+    y0 = leadcar_lockon[0].x * leadcar_lockon[0].d #こうなったら画面座標から逆算。
+    y1 = leadcar_lockon[1].x * leadcar_lockon[1].d
+
+    pen_font_size = 38
+    # pen_font = self._font_semi_bold #   painter.setFont(InterFont(38, QFont::DemiBold));
+    import openpilot.selfdrive.ui.onroad.hud_renderer as hud #遅延インポート、重くないらしい。
+    if num == 0 and hud.g_lockon_disp_disable == False:
+      #推論1番
+      pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#     painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+      c_r = 15 / (r.width/2)
+      rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
+
+      if leadcar_lockon[0].x > leadcar_lockon[1].x - 20:
+        leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x+r.width - leadcar_lockon[num].lxt) / 20
+        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x+rect.width - leadcar_lockon[num].lxf) / 20
+        #painter.drawLine(r.right(),r.top() , width() , 0);
+      else:
+        leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x - leadcar_lockon[num].lxt) / 20
+        leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x - leadcar_lockon[num].lxf) / 20
+        #painter.drawLine(r.left(),r.top() , 0 , 0);
+
+      text = " "+str(num+1)
+      #上端だから不要 size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
+      rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y),pen_font_size,0,pen_color)#painter.drawText(r, Qt::AlignTop | Qt::AlignLeft, " " + QString::number(num+1));
+
+      lxt = leadcar_lockon[num].lxt
+      if lxt < r.x:
+        lxt = r.x
+      elif lxt > r.x+r.width:
+        lxt = r.x+r.width
+      rl.draw_line_ex(rl.Vector2(lxt, r.y), rl.Vector2(leadcar_lockon[num].lxf, rect.y), 2, pen_color)#painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
+
+      if ww >= 40:
+        #painter.drawText(r, Qt::AlignTop | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
+
+        #num==0のロックオンの右端20ドットくらいをa_rel数値メーターとする。
+        wwa = ww * 0.15
+        if wwa > 40:
+          wwa = 40
+        elif wwa < 10:
+          wwa = 10
+        if wwa > ww:
+          wwa = ww
+
+        hha = 0
+        if a_rel > 0:
+          hha = 1 - 0.1 / a_rel
+          a_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha*0.9))
+          if hha < 0:
+            hha = 0
+          hha = hha * hh
+# #if 0
+#         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh + (hh-hha), wwa, hha);
+#         painter.drawRect(ra);
+# #else //メーターを斜めに切る
+          meter = [(x + ww/2 - wwa/2 , y - hh - dh + hh),
+                   (x + ww/2 , y - hh - dh + hh),
+                   (x + ww/2 , y - hh - dh + (hh-hha)),
+                   (x + ww/2 - wwa/2 - wwa/2 * hha / hh , y - hh - dh + (hh-hha))]
+          rl.draw_triangle_fan(meter, len(meter), a_color)
+# #endif
+          pass
+        if a_rel < 0:
+          hha = 1 + 0.1 / a_rel
+          a_color = rl.Color(245, 0, 0, int(prob_alpha))
+          #減速は上から下へ変更。
+          if hha < 0:
+            hha = 0
+          hha = hha * hh
+# #if 0
+#         QRect ra = QRect(x - ww/2 + (ww - wwa), y /*- g_yo*/ - hh - dh , wwa, hha);
+#         painter.drawRect(ra);
+# #else //メーターを斜めに切る
+          meter = [(x + ww/2 - wwa/2 - wwa/2 * hha / hh, y - hh - dh + hha),
+                   (x + ww/2 , y - hh - dh + hha),
+                   (x + ww/2 , y - hh - dh),
+                   (x + ww/2 - wwa/2 , y - hh - dh)]
+          rl.draw_triangle_fan(meter, len(meter), a_color)
+# #endif
+          pass
+
+      if abs(y0 - y1) <= 300: #大きく横にずれた→逆
+        leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (40 - leadcar_lockon[num].lockOK) / 5
+      else:
+        leadcar_lockon[num].lockOK = leadcar_lockon[num].lockOK + (0 - leadcar_lockon[num].lockOK) / 5
+
+      td = leadcar_lockon[num].lockOK
+      #d:10〜100->1〜3へ変換
+      if td >= 3:
+        dd = leadcar_lockon[num].d
+        if dd < 10:
+          dd = 10
+
+        dd -= 10 #dd=0〜90
+        dd /= (90.0/2) #dd=0〜2
+        dd += 1 #dd=1〜3
+        td /= dd
+
+        tlw = 8
+        tlw_2 = tlw / 2
+        pen_size = tlw
+        pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))
+        rl.draw_line_ex(rl.Vector2(r.x+r.width/2, r.y-tlw_2), rl.Vector2(r.x+r.width/2, r.y-td), pen_size, pen_color)#painter.drawLine(r.center().x() , r.top()-tlw_2 , r.center().x() , r.top() - td);
+        rl.draw_line_ex(rl.Vector2(r.x-tlw_2, r.y+r.height/2), rl.Vector2(r.x-td, r.y+r.height/2), pen_size, pen_color)#painter.drawLine(r.left()-tlw_2 , r.center().y() , r.left() - td , r.center().y());
+        rl.draw_line_ex(rl.Vector2(r.x+r.width+tlw_2, r.y+r.height/2), rl.Vector2(r.x+r.width+td, r.y+r.height/2), pen_size, pen_color)#painter.drawLine(r.right()+tlw_2 , r.center().y() , r.right() + td , r.center().y());
+        rl.draw_line_ex(rl.Vector2(r.x+r.width/2, r.y+r.height+tlw_2), rl.Vector2(r.x+r.width/2, r.y+r.height+td), pen_size, pen_color)#painter.drawLine(r.center().x() , r.bottom()+tlw_2 , r.center().x() , r.bottom() + td);
+
+      pass
+
+    elif hud.g_lockon_disp_disable == False:
+      if num == 1:
+        #推論2番
+        #邪魔な前右寄りを走るバイクを認識したい。
+        if abs(y0 - y1) > 300: #大きく横にずれた
+          #painter.setPen(QPen(QColor(245, 0, 0, prob_alpha), 4));
+          #painter.drawEllipse(r); //縁を描く
+          #painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 1)); //文字を後で書くために色を再設定。->文字は赤でもいいや
+          #円を（意味不明だから）書かないで、枠ごと赤くする。推論1が推論と別のものを捉えてるのを簡単に認識できる。
+          pen_color = rl.Color(245, 0, 0, int(prob_alpha))#         painter.setPen(QPen(QColor(245, 0, 0, prob_alpha), 2));
+        else:
+          pen_color = rl.Color(int(0.09*255), int(0.945*255), int(0.26*255), int(prob_alpha))#         painter.setPen(QPen(QColor(0.09*255, 0.945*255, 0.26*255, prob_alpha), 2));
+
+        if leadcar_lockon[0].x > leadcar_lockon[1].x - 20: #多少逆転しても許容する
+          leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x - leadcar_lockon[num].lxt) / 20
+          leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x - leadcar_lockon[num].lxf) / 20
+          #painter.drawLine(r.left(),r.top() , 0 , 0);
+        else:
+          leadcar_lockon[num].lxt = leadcar_lockon[num].lxt + (r.x+r.width - leadcar_lockon[num].lxt) / 20
+          leadcar_lockon[num].lxf = leadcar_lockon[num].lxf + (rect.x+rect.width - leadcar_lockon[num].lxf) / 20
+          #painter.drawLine(r.right(),r.top() , width() , 0);
+
+        lxt = leadcar_lockon[num].lxt
+        if lxt < r.x:
+          lxt = r.x
+        elif lxt > r.x+r.width:
+          lxt = r.x+r.width
+        rl.draw_line_ex(rl.Vector2(lxt, r.y), rl.Vector2(leadcar_lockon[num].lxf, rect.y), 2, pen_color)#painter.drawLine(lxt,r.top() , leadcar_lockon[num].lxf , 0);
+
+#       if(ww >= 80){
+#         //float dy = y0 - y1;
+#         //painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(dy,'f',1) + "m");
+#         //painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(dy,'f',1));
+#       }
+        pass #num == 1
+      elif num == 2:
+#       //推論3番
+        pen_size = 1
+        pen_color = rl.Color(int(0.09*255), int(0.9*255), int(0.9*255), int(prob_alpha))#       painter.setPen(QPen(QColor(0.9*255, 0.9*255, 0.9*255, prob_alpha), 1));
+        pass #num == 2
+      else:
+#       //推論4番以降。
+#       //存在していない。
+        pen_size = 1
+        pen_color = rl.Color(int(0.8*255), int(0.2*255), int(0.2*255), int(prob_alpha))#       painter.setPen(QPen(QColor(0.8*255, 0.2*255, 0.2*255, prob_alpha), 1));
+        pass #else
+
+      if num < 2:
+        c_r = 15 / (r.width/2)
+        rl.draw_rectangle_rounded_lines_ex(r, c_r, 5, pen_size, pen_color)#     painter.drawRect(r);
+      else:
+        #3番目のサークル描画は一旦保留
+        arc_center = rl.Vector2(r.x+r.width/2,r.y+r.height/2)
+        rl.draw_ring(arc_center,float(r.width/2), float(r.width/2-pen_size), float(0), float(360*prob_alpha0), 120, pen_color)# painter.drawArc(r , 0 * 16, (int)(360 * 16 * prob_alpha0));
+
+      if ww >= 80:
+        d_lim = 12
+        g_wide_cam_requested = g_wide_cam #これで代用可能？#       extern bool g_wide_cam_requested;
+        if g_wide_cam_requested == False:
+          d_lim = 32 #ロングカメラだとちょっと枠が大きい。実測
+        if num == 0 or (num==1 and (d_rel < d_lim or abs(y0 - y1) > 300)): #num==1のとき、'2'の表示と前走車速度表示がかぶるので、こちらを消す。
+          text = " "+str(num+1)
+          size = measure_text_cached(self._font_semi_bold, text, int(pen_font_size))
+          rl.draw_text_ex(self._font_semi_bold,text,rl.Vector2(r.x,r.y+r.height - size.y),pen_font_size,0,pen_color)#         painter.drawText(r, Qt::AlignBottom | Qt::AlignLeft, " " + QString::number(num+1));
+
+#     if(ww >= 160 /*80*/){
+#       //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number((int)(lead_data.getProb()*100)) + "％");
+#       //painter.drawText(r, Qt::AlignBottom | Qt::AlignRight, QString::number(a_rel,'f',1) + "a");
+#     }
+
+      pass #hud.g_lockon_disp_disable == False
+  #   }
+
+    rl.end_blend_mode() #元のブレンドに戻す#   painter.setCompositionMode(QPainter::CompositionMode_SourceOver);
+    pass

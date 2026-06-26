@@ -326,6 +326,8 @@ class LongitudinalMpc:
     # and then treat that as a stopped car/obstacle at this new distance.
     lead_0_obstacle = lead_xv_0[:,0] + get_stopped_equivalence_factor(lead_xv_0[:,1])
     lead_1_obstacle = lead_xv_1[:,0] + get_stopped_equivalence_factor(lead_xv_1[:,1])
+    lead_0_obstacle = np.maximum(0.0, lead_0_obstacle -1.0) #自車が1m手前で早く止まるように補正。
+    lead_1_obstacle = np.maximum(0.0, lead_1_obstacle -1.0) #自車が1m手前で早く止まるように補正。
 
     # Fake an obstacle for cruise, this ensures smooth acceleration to set speed
     # when the leads are no factor.

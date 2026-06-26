@@ -41,7 +41,7 @@ class SliderBase(Widget, abc.ABC):
     self._is_dragging_circle = False
 
     self._label = self._child(UnifiedLabel(title, font_size=36, font_weight=FontWeight.SEMI_BOLD, text_color=rl.WHITE,
-                                           alignment=rl.GuiTextAlignment.TEXT_ALIGN_RIGHT,
+                                           alignment=(rl.GuiTextAlignment.TEXT_ALIGN_RIGHT if gui_app.big_ui() == False else rl.GuiTextAlignment.TEXT_ALIGN_CENTER),
                                            alignment_vertical=rl.GuiTextAlignmentVertical.TEXT_ALIGN_MIDDLE, line_height=0.9, shimmer=True))
 
   @abc.abstractmethod
@@ -90,6 +90,8 @@ class SliderBase(Widget, abc.ABC):
         self._circle_bg_txt.width + self.HORIZONTAL_PADDING * 2,
         self._rect.height,
       )
+      if gui_app.big_ui() and gui_app._scale == 2.0:
+        circle_button_rect.x -= self._circle_bg_txt.width*1.5 #スケール2倍で少し左に寄せる状況決め打ちワークアラウンド。だいたいこのくらいの数字。
       if rl.check_collision_point_rec(mouse_event.pos, circle_button_rect):
         self._start_x_circle = mouse_event.pos.x
         self._is_dragging_circle = True
