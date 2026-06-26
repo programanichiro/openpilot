@@ -57,8 +57,8 @@ git clean -xdff
 echo "[-] copying files T=$SECONDS"
 
 cd $SOURCE_DIR
-#cp -pR --parents $(./release/release_files.py) $TARGET_DIR/
-rsync -l -R --exclude='big_driving_*.onnx' $(./release/release_files.py) $TARGET_DIR/
+#cp -pR --parents $(./tools/release/release_files.py) $TARGET_DIR/
+rsync -l -R --exclude='big_driving_*.onnx' $(./tools/release/release_files.py) $TARGET_DIR/
 
 # in the directory
 cd $TARGET_DIR
