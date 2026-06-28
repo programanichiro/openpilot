@@ -95,7 +95,19 @@ class FanController:
 
       for car_name in car_names:
         car_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
-        print(f"{maker}:\n  {car_name}:\n    {car_years}")
+        if len(car_years) > 0:
+          #print(f"{maker}:\n  {car_name}:\n    {car_years}")
+          print(f"{maker}:\n  {car_name}:")
+          for car_year in car_years:
+            if isCarMatch(MIGRATION, maker+" "+car_name+" "+car_year):
+              print(f"    {car_year}:OK")
+            else:
+              print(f"    {car_year}:NG")
+        else:
+          if isCarMatch(MIGRATION, maker+" "+car_name):
+            print(f"{maker}:\n  {car_name}:OK")
+          else:
+            print(f"{maker}:\n  {car_name}:NG")
 
     self.last_ignition = False
     self.controller = PIDController(k_p=0, k_i=4e-3, rate=rate)
