@@ -19,7 +19,7 @@ from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 from openpilot.selfdrive.ui.ui_state import ui_state
 
-from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
+#from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
 
 key_raw = None
 try:
@@ -65,7 +65,7 @@ def overpass_request(query, timeout=5.0):
 class FanController:
   def __init__(self, rate: int) -> None:
 
-    if True:
+    if False:
       car_ary = getCarBrandStrs(MIGRATION,0)
       car_ary.insert(0, "auto") #選択の自動項目をセット
       print(f"makers:{car_ary}")
