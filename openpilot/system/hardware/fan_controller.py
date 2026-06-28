@@ -24,11 +24,19 @@ from opendbc.car.fingerprints import MIGRATION
 def getCarBrandStrs(MIGRATION, level, p0=None, p1=None):
     keys = MIGRATION.keys()
     if level == 0:
-        return sorted({k.split()[0] for k in keys})
+      return sorted({k.split()[0] for k in keys})
     if level == 1:
-        return sorted({k.split()[1] for k in keys if k.split()[0] == p0})
+      return sorted({
+          parts[1]
+          for k in keys
+          if (parts := k.split()) and len(parts) > 1 and parts[0] == p0
+      })
     if level == 2:
-        return sorted({" ".join(k.split()[2:]) for k in keys if k.split()[0] == p0 and k.split()[1] == p1})
+      return sorted({
+          " ".join(parts[2:])
+          for k in keys
+          if (parts := k.split()) and parts[0] == p0 and parts[1] == p1 and len(parts) > 2
+      })
     return []
 
 def isCarMatch(MIGRATION, text):
