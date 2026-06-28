@@ -89,6 +89,7 @@ class FanController:
     car_ary = getCarBrandStrs(MIGRATION,0)
     #print(f"makers:{car_ary}")
 
+    car_num = 0
     for maker in car_ary:
       car_names = getCarBrandStrs(MIGRATION,1,maker)
       #print(f"{maker}:{car_names}")
@@ -99,15 +100,17 @@ class FanController:
           #print(f"{maker}:\n  {car_name}:\n    {car_years}")
           print(f"{maker}:\n  {car_name}:")
           for car_year in car_years:
+            car_num += 1
             if isCarMatch(MIGRATION, maker+" "+car_name+" "+car_year):
-              print(f"    {car_year}:OK")
+              print(f"    {car_year}:OK,{car_num}")
             else:
-              print(f"    {car_year}:NG")
+              print(f"    {car_year}:NG,{car_num}")
         else:
+          car_num += 1
           if isCarMatch(MIGRATION, maker+" "+car_name):
-            print(f"{maker}:\n  {car_name}:OK")
+            print(f"{maker}:\n  {car_name}:OK,{car_num}")
           else:
-            print(f"{maker}:\n  {car_name}:NG")
+            print(f"{maker}:\n  {car_name}:NG,{car_num}")
 
     self.last_ignition = False
     self.controller = PIDController(k_p=0, k_i=4e-3, rate=rate)
