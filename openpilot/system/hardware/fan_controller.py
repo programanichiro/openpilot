@@ -19,6 +19,21 @@ from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 from openpilot.selfdrive.ui.ui_state import ui_state
 
+from opendbc.car.fingerprints import MIGRATION
+
+def getCarBrandStrs(MIGRATION, level, p0=None, p1=None):
+    keys = MIGRATION.keys()
+    if level == 0:
+        return sorted({k.split()[0] for k in keys})
+    if level == 1:
+        return sorted({k.split()[1] for k in keys if k.split()[0] == p0})
+    if level == 2:
+        return sorted({" ".join(k.split()[2:]) for k in keys if k.split()[0] == p0 and k.split()[1] == p1})
+    return []
+
+def isCarMatch(MIGRATION, text):
+    return text in MIGRATION
+
 key_raw = None
 try:
   with open("/data/gpslog_pass.txt", "r") as f:
@@ -62,6 +77,11 @@ def overpass_request(query, timeout=5.0):
 
 class FanController:
   def __init__(self, rate: int) -> None:
+
+    car_ary = getCarBrandStrs(MIGRATION,0)
+
+    print(f"makers:{car_ary}")
+
     self.last_ignition = False
     self.controller = PIDController(k_p=0, k_i=4e-3, rate=rate)
 
