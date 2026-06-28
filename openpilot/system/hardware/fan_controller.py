@@ -79,11 +79,15 @@ class FanController:
   def __init__(self, rate: int) -> None:
 
     car_ary = getCarBrandStrs(MIGRATION,0)
-    print(f"makers:{car_ary}")
+    #print(f"makers:{car_ary}")
 
     for maker in car_ary:
-      car_ary2 = getCarBrandStrs(MIGRATION,1,maker)
-      print(f"{maker}:{car_ary2}")
+      car_names = getCarBrandStrs(MIGRATION,1,maker)
+      #print(f"{maker}:{car_names}")
+
+      for car_name in car_names:
+        car_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
+        print(f"{maker}:\n  {car_name}:\n    {car_years}")
 
     self.last_ignition = False
     self.controller = PIDController(k_p=0, k_i=4e-3, rate=rate)
