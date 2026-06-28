@@ -19,28 +19,7 @@ from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 from openpilot.selfdrive.ui.ui_state import ui_state
 
-from opendbc.car.fingerprints import MIGRATION
-
-def getCarBrandStrs(MIGRATION, level, p0=None, p1=None):
-    keys = MIGRATION.keys()
-    if level == 0:
-      return sorted({k.split()[0] for k in keys})
-    if level == 1:
-      return sorted({
-          parts[1]
-          for k in keys
-          if (parts := k.split()) and len(parts) > 1 and parts[0] == p0
-      })
-    if level == 2:
-      return sorted({
-          " ".join(parts[2:])
-          for k in keys
-          if (parts := k.split()) and parts[0] == p0 and parts[1] == p1 and len(parts) > 2
-      })
-    return []
-
-def isCarMatch(MIGRATION, text):
-    return text in MIGRATION
+from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
 
 key_raw = None
 try:
@@ -94,6 +73,7 @@ class FanController:
       car_names = getCarBrandStrs(MIGRATION,1,maker)
       #print(f"{maker}:{car_names}")
 
+      #mockのようにcar_namesが無い車種はループが回らないから無視される。Autoはどうしようか？
       for car_name in car_names:
         car_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
         if len(car_years) > 0:
