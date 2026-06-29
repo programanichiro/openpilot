@@ -19,6 +19,7 @@ from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.html_render import HtmlModal, HtmlRenderer
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
+from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
 
 class ReviewTermsPage(TermsPage, NavScroller):
   """TermsPage with NavWidget swipe-to-dismiss for reviewing in device settings."""
@@ -170,6 +171,14 @@ class VehicleSelectMici(NavScroller):
     self._scroller.add_widgets([
       vehicle_auto_select,
     ])
+
+    car_ary = getCarBrandStrs(MIGRATION,0)
+    car_ary.insert(0, "auto") #選択の自動項目をセット
+    print(f"makers:{car_ary}")
+
+    for maker in car_ary:
+      select_maker = BigButton(maker, "")
+      self._scroller.add_widget(select_maker)
 
 class DeviceLayoutMici(NavScroller):
   def __init__(self):
