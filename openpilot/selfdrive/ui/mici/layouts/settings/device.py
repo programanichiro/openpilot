@@ -158,6 +158,7 @@ class PairBigButton(BigButton):
 
 class VehicleSelectMici(NavScroller):
   def __init__(self):
+    super().__init__()
 
     def vehicle_auto_select_callback():
       gui_app.pop_widget()
