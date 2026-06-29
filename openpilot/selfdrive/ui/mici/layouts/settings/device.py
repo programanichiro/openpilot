@@ -171,23 +171,6 @@ class VehicleSelectMici(NavScroller):
       vehicle_auto_select,
     ])
 
-class SoftwareLayoutMici(NavScroller):
-  def __init__(self):
-    super().__init__()
-
-    def uninstall_openpilot_callback():
-      #ui_state.params.put_bool("DoUninstall", True, block=True)
-      pass
-
-    uninstall_openpilot_btn = EngagedConfirmationButton("uninstall openpilot", "uninstall",
-                                                        gui_app.texture("icons_mici/settings/device/uninstall.png", 64, 64),
-                                                        uninstall_openpilot_callback, exit_on_confirm=False)
-
-    self._scroller.add_widgets([
-      uninstall_openpilot_btn,
-    ])
-
-
 class DeviceLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
@@ -266,6 +249,10 @@ class DeviceLayoutMici(NavScroller):
       pass
     device_offset_btn.set_click_callback(device_offset_btn_callback)
 
+    vehicle_panel = VehicleSelectMici()
+    vehicle_btn = BigButton("vehicle select", "")
+    vehicle_btn.set_click_callback(lambda: gui_app.push_widget(vehicle_panel))
+
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
       PairBigButton(),
@@ -275,7 +262,7 @@ class DeviceLayoutMici(NavScroller):
       regulatory_btn,
       device_offset_btn,
       reset_calibration_btn,
-      SoftwareLayoutMici(),
+      vehicle_btn,
       reboot_btn,
       self._power_off_btn,
     ])
