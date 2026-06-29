@@ -182,7 +182,7 @@ class VehicleSelectMici2(NavScroller):
       if len(model_years) > 0: #
         model_year_panel = VehicleSelectMici3(maker,car_name)
         select_model_year = BigButton(car_name, "")
-        select_model_year.set_click_callback(lambda: gui_app.push_widget(model_year_panel))
+        select_model_year.set_click_callback(lambda panel=model_year_panel: gui_app.push_widget(panel))
         self._scroller.add_widget(select_model_year)
       else:
         #年式無し
