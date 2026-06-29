@@ -157,6 +157,21 @@ class PairBigButton(BigButton):
       dlg = PairingDialog()
     gui_app.push_widget(dlg)
 
+class VehicleSelectMici2(NavScroller):
+  def __init__(self):
+    super().__init__()
+
+    def vehicle_auto_select_callback():
+      gui_app.pop_widget()
+
+    vehicle_auto_select = BigButton("AUTO SELECT   ", "")
+    vehicle_auto_select.set_value("auto")
+    vehicle_auto_select.set_click_callback(vehicle_auto_select_callback)
+
+    self._scroller.add_widgets([
+      vehicle_auto_select,
+    ])
+
 class VehicleSelectMici(NavScroller):
   def __init__(self):
     super().__init__()
@@ -179,7 +194,7 @@ class VehicleSelectMici(NavScroller):
       car_names = getCarBrandStrs(MIGRATION,1,maker)
       if len(car_names) > 0: #
         select_maker = BigButton(maker, "")
-        maker_panel = VehicleSelectMici()
+        maker_panel = VehicleSelectMici2()
         select_maker = BigButton(maker, "")
         select_maker.set_click_callback(lambda: gui_app.push_widget(maker_panel))
         self._scroller.add_widget(select_maker)
