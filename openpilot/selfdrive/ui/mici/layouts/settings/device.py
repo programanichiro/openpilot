@@ -335,7 +335,7 @@ class VehicleSelectMici(NavScroller):
       gui_app.pop_widget()
 
     vehicle_auto_select = BigButton("AUTO SELECT   ", "")
-    vehicle_auto_select.set_value("auto")
+    #vehicle_auto_select.set_value("auto")
     vehicle_auto_select.set_click_callback(vehicle_auto_select_callback)
 
     self._scroller.add_widgets([
