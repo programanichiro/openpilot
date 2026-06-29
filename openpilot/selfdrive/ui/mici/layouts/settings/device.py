@@ -156,6 +156,19 @@ class PairBigButton(BigButton):
       dlg = PairingDialog()
     gui_app.push_widget(dlg)
 
+class VehicleSelectMici(NavScroller):
+  def __init__(self):
+
+    def vehicle_auto_select_callback():
+      gui_app.pop_widget()
+
+    vehicle_auto_select = BigButton("AUTO SELECT   ", "")
+    vehicle_auto_select.set_value("auto")
+    vehicle_auto_select.set_click_callback(vehicle_auto_select_callback)
+
+    self._scroller.add_widgets([
+      vehicle_auto_select,
+    ])
 
 class DeviceLayoutMici(NavScroller):
   def __init__(self):
@@ -244,6 +257,7 @@ class DeviceLayoutMici(NavScroller):
       regulatory_btn,
       device_offset_btn,
       reset_calibration_btn,
+      VehicleSelectMici(),
       reboot_btn,
       self._power_off_btn,
     ])
