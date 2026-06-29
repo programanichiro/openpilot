@@ -181,9 +181,9 @@ class VehicleSelectMici2(NavScroller):
       model_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
       if len(model_years) > 0: #
         model_year_panel = VehicleSelectMici3(maker,car_name)
-        select_model_year = BigButton(car_name, "")
-        select_model_year.set_click_callback(lambda panel=model_year_panel: gui_app.push_widget(panel))
-        self._scroller.add_widget(select_model_year)
+        select_car_name = BigButton(car_name, "")
+        select_car_name.set_click_callback(lambda panel=model_year_panel: gui_app.push_widget(panel))
+        self._scroller.add_widget(select_car_name)
       else:
         #年式無し
         vehicle_btn = BigButton(car_name, "")
@@ -219,7 +219,7 @@ class VehicleSelectMici(NavScroller):
       if len(car_names) > 0: #
         vehicle_panel = VehicleSelectMici2(maker)
         select_maker = BigButton(maker, "")
-        select_maker.set_click_callback(lambda: gui_app.push_widget(vehicle_panel))
+        select_maker.set_click_callback(lambda panel=vehicle_panel: gui_app.push_widget(panel))
         self._scroller.add_widget(select_maker)
 
 class DeviceLayoutMici(NavScroller):
