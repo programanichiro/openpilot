@@ -236,7 +236,14 @@ class DeviceLayoutMici(NavScroller):
     device_offset_btn.set_click_callback(device_offset_btn_callback)
 
     vehicle_panel = VehicleSelectMici()
-    vehicle_btn = BigButton("vehicle select", "")
+    vehicle_btn = BigButton("vehicle select", "auto")
+    try:
+      with open('/data/fixed_fingerprint.txt','r') as fp:
+        fixed_fingerprint_str = fp.read()
+        if fixed_fingerprint_str:
+          vehicle_btn.set_value(fixed_fingerprint_str) #セットされていたらその名前にする
+    except Exception as e:
+      pass
     vehicle_btn.set_click_callback(lambda: gui_app.push_widget(vehicle_panel))
 
     self._scroller.add_widgets([
