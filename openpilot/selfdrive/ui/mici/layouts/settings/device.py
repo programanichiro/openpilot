@@ -173,12 +173,16 @@ class VehicleSelectMici(NavScroller):
     ])
 
     car_ary = getCarBrandStrs(MIGRATION,0)
-    car_ary.insert(0, "auto") #選択の自動項目をセット
     print(f"makers:{car_ary}")
 
     for maker in car_ary:
-      select_maker = BigButton(maker, "")
-      self._scroller.add_widget(select_maker)
+      car_names = getCarBrandStrs(MIGRATION,1,maker)
+      if len(car_names) > 0: #
+        select_maker = BigButton(maker, "")
+        maker_panel = VehicleSelectMici()
+        select_maker = BigButton(maker, "")
+        select_maker.set_click_callback(lambda: gui_app.push_widget(maker_panel))
+        self._scroller.add_widget(select_maker)
 
 class DeviceLayoutMici(NavScroller):
   def __init__(self):
