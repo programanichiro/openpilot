@@ -161,16 +161,19 @@ class VehicleSelectMici3(NavScroller):
   def __init__(self, maker, car_name):
     super().__init__()
 
-    def vehicle_auto_select_callback():
-      gui_app.pop_widget()
+    model_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
+    for model_year in model_years:
+      year_btn = BigButton(model_year, maker+" "+car_name)
+      year_btn.set_click_callback(self.year_select_callback) #callbackにmodel_yearを渡したい
+      self._scroller.add_widget(year_btn)
 
-    vehicle_auto_select = BigButton("AUTO SELECT   ", "")
-    vehicle_auto_select.set_value(maker+" "+car_name)
-    vehicle_auto_select.set_click_callback(vehicle_auto_select_callback)
+    self._maker = maker
+    self._car_name = car_name
 
-    self._scroller.add_widgets([
-      vehicle_auto_select,
-    ])
+  def year_select_callback():
+    #ここでcar_nameを受け取り、self._makerと結合して/data/fixed_fingerprint.txtに保存する。
+    gui_app.pop_widget()
+
 
 class VehicleSelectMici2(NavScroller):
   def __init__(self, maker):
@@ -181,7 +184,7 @@ class VehicleSelectMici2(NavScroller):
       model_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
       if len(model_years) > 0: #
         model_year_panel = VehicleSelectMici3(maker,car_name)
-        select_car_name = BigButton(car_name, "")
+        select_car_name = BigButton(car_name, maker)
         select_car_name.set_click_callback(lambda panel=model_year_panel: gui_app.push_widget(panel))
         self._scroller.add_widget(select_car_name)
       else:
@@ -189,6 +192,7 @@ class VehicleSelectMici2(NavScroller):
         vehicle_btn = BigButton(car_name, "")
         vehicle_btn.set_value(maker)
         vehicle_btn.set_click_callback(self.vehicle_select_callback) #callbackにcar_nameを渡したい
+        self._scroller.add_widget(vehicle_btn)
 
     self._maker = maker
 
