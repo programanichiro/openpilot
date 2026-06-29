@@ -157,20 +157,45 @@ class PairBigButton(BigButton):
       dlg = PairingDialog()
     gui_app.push_widget(dlg)
 
-class VehicleSelectMici2(NavScroller):
-  def __init__(self):
+class VehicleSelectMici3(NavScroller):
+  def __init__(self, maker, car_name):
     super().__init__()
 
     def vehicle_auto_select_callback():
       gui_app.pop_widget()
 
     vehicle_auto_select = BigButton("AUTO SELECT   ", "")
-    vehicle_auto_select.set_value("auto")
+    vehicle_auto_select.set_value(maker+" "+car_name)
     vehicle_auto_select.set_click_callback(vehicle_auto_select_callback)
 
     self._scroller.add_widgets([
       vehicle_auto_select,
     ])
+
+class VehicleSelectMici2(NavScroller):
+  def __init__(self, maker):
+    super().__init__()
+
+    def vehicle_auto_select_callback():
+      #ここでcar_nameを受け取り、self._makerと結合して/data/fixed_fingerprint.txtに保存する。
+      gui_app.pop_widget()
+
+    car_names = getCarBrandStrs(MIGRATION,1,maker)
+    for car_name in car_names:
+      model_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
+      if len(model_years) > 0: #
+        model_year_panel = VehicleSelectMici3(maker,car_name)
+        select_model_year = BigButton(maker, "")
+        select_model_year.set_click_callback(lambda: gui_app.push_widget(model_year_panel))
+        self._scroller.add_widget(select_model_year)
+      else:
+        #年式無し
+        vehicle_btn = BigButton(car_name, "")
+        vehicle_btn.set_value(maker)
+        vehicle_btn.set_click_callback(vehicle_auto_select_callback) #callbackにcar_nameを渡したい
+
+    self._maker = maker
+
 
 class VehicleSelectMici(NavScroller):
   def __init__(self):
@@ -187,16 +212,14 @@ class VehicleSelectMici(NavScroller):
       vehicle_auto_select,
     ])
 
-    car_ary = getCarBrandStrs(MIGRATION,0)
-    print(f"makers:{car_ary}")
+    makers = getCarBrandStrs(MIGRATION,0)
 
-    for maker in car_ary:
+    for maker in makers:
       car_names = getCarBrandStrs(MIGRATION,1,maker)
       if len(car_names) > 0: #
+        vehicle_panel = VehicleSelectMici2(maker)
         select_maker = BigButton(maker, "")
-        maker_panel = VehicleSelectMici2()
-        select_maker = BigButton(maker, "")
-        select_maker.set_click_callback(lambda: gui_app.push_widget(maker_panel))
+        select_maker.set_click_callback(lambda: gui_app.push_widget(vehicle_panel))
         self._scroller.add_widget(select_maker)
 
 class DeviceLayoutMici(NavScroller):
