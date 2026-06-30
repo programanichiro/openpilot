@@ -282,6 +282,17 @@ class DeviceLayoutMici(NavScroller):
       self._fcc_dialog = MiciFccModal(os.path.join(BASEDIR, "openpilot/selfdrive/assets/offroad/mici_fcc.html"))
     gui_app.push_widget(self._fcc_dialog)
 
+class VehicleSelecBigButton(BigButton):
+  def __init__(self,title,subtitle,callback):
+    super().__init__(title, subtitle)
+
+    self._callback = callback
+    self._title = title
+
+  def _handle_mouse_release(self, mouse_pos: MousePos):
+    super()._handle_mouse_release(mouse_pos)
+    if self._callback:
+      self._callback(self._title)
 
 class VehicleSelectMici3(NavScroller):
   def __init__(self, maker, car_name):
@@ -289,15 +300,14 @@ class VehicleSelectMici3(NavScroller):
 
     model_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
     for model_year in model_years:
-      year_btn = BigButton(model_year, maker+" "+car_name)
-      year_btn.set_click_callback(self.year_select_callback) #callbackにmodel_yearを渡したい
+      year_btn = VehicleSelecBigButton(model_year, maker+" "+car_name,self.year_select_callback)
       self._scroller.add_widget(year_btn)
 
     self._maker = maker
     self._car_name = car_name
 
-  def year_select_callback(self):
-    #ここでcar_nameを受け取り、self._makerと結合して/data/fixed_fingerprint.txtに保存する。
+  def year_select_callback(self, year_model):
+    #ここでyear_modelを受け取り、self._makerとself._car_nameと結合して/data/fixed_fingerprint.txtに保存する。
     gui_app.pop_widget()
 
 
@@ -315,14 +325,12 @@ class VehicleSelectMici2(NavScroller):
         self._scroller.add_widget(select_car_name)
       else:
         #年式無し
-        vehicle_btn = BigButton(car_name, "")
-        vehicle_btn.set_value(maker)
-        vehicle_btn.set_click_callback(self.vehicle_select_callback) #callbackにcar_nameを渡したい
+        vehicle_btn = VehicleSelecBigButton(car_name, maker,self.vehicle_select_callback)
         self._scroller.add_widget(vehicle_btn)
 
     self._maker = maker
 
-  def vehicle_select_callback(self):
+  def vehicle_select_callback(self, car_name):
     #ここでcar_nameを受け取り、self._makerと結合して/data/fixed_fingerprint.txtに保存する。
     gui_app.pop_widget()
 
@@ -334,8 +342,7 @@ class VehicleSelectMici(NavScroller):
     def vehicle_auto_select_callback():
       gui_app.pop_widget()
 
-    vehicle_auto_select = BigButton("AUTO SELECT   ", "")
-    #vehicle_auto_select.set_value("auto")
+    vehicle_auto_select = BigButton("suto select", "")
     vehicle_auto_select.set_click_callback(vehicle_auto_select_callback)
 
     self._scroller.add_widgets([
