@@ -308,7 +308,7 @@ class VehicleSelectMici3(NavScroller):
 
   def year_select_callback(self, year_model):
     #ここでyear_modelを受け取り、self._makerとself._car_nameと結合して/data/fixed_fingerprint.txtに保存する。
-    with open('/data/fixed_fingerprint.txt','r') as fp:
+    with open('/data/fixed_fingerprint.txt','w') as fp:
       fp.write(f"{self._maker} {self._car_name} {year_model}")
     gui_app.pop_widget()
     gui_app.pop_widget()
@@ -336,7 +336,7 @@ class VehicleSelectMici2(NavScroller):
 
   def vehicle_select_callback(self, car_name):
     #ここでcar_nameを受け取り、self._makerと結合して/data/fixed_fingerprint.txtに保存する。
-    with open('/data/fixed_fingerprint.txt','r') as fp:
+    with open('/data/fixed_fingerprint.txt','w') as fp:
       fp.write(f"{self._maker} {car_name}")
     gui_app.pop_widget()
     gui_app.pop_widget()
@@ -347,7 +347,10 @@ class VehicleSelectMici(NavScroller):
     super().__init__()
 
     def vehicle_auto_select_callback():
-      os.remove('/data/fixed_fingerprint.txt')
+      try:
+        os.remove('/data/fixed_fingerprint.txt')
+      except FileNotFoundError:
+        pass
       gui_app.pop_widget()
 
     vehicle_auto_select = BigButton("auto select", "")
