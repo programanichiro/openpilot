@@ -445,6 +445,10 @@ class HudRenderer(Widget):
     self.dir0 = 1.0
     self.Knight_scanner = 0
 
+    self.red_signal_scan_flag = 0
+    self.red_signal_scan_flag_txt_ct = 0
+    self.red_signal_scan_flag_2 = False
+
     self.blue_signal_chk = 0
     self.limit_vc_info = 0
     self.ip_update_state_ct = 0
@@ -678,6 +682,32 @@ class HudRenderer(Widget):
       else:
         self.osm_frame_ct_ct = 0 #ゼロに戻らなければ、osmへの通信が死んでいる。
       self.before_osm_frame_ct = osm_frame_ct2
+
+    if self.red_signal_scan_flag_txt_ct % 7 == 0:
+      try:
+        with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
+          red_signal_scan_flag = fp.read()
+          if self.accel_engaged >= 3: #self.accel_engaged == mAccelEngagedButton
+            if red_signal_scan_flag:
+              self.red_signal_scan_flag = int(red_signal_scan_flag)
+          else:
+            self.red_signal_scan_flag = 0
+      except Exception as e:
+        pass
+    self.red_signal_scan_flag_txt_ct += 1
+
+    red_signal_chk_timing = 3 if not gui_app.big_ui() else 9 #c4は60fpsなので、三倍。
+    if self.red_signal_scan_flag >= 2 and self.red_signal_scan_flag_txt_ct %(red_signal_chk_timing*2) < red_signal_chk_timing:
+      #赤信号認識中
+      if self.red_signal_scan_flag_2 == False and str(round(self.set_speed)) != "1":
+        self.red_signal_scan_flag_2 = True
+        if self.red_signal_scan_flag == 2:
+          # pikiriオンを信号認識開始に転用。
+          with open('/dev/shm/sound_py_request.txt','w') as fp2:
+            fp2.write('%d' % (103)) #pikiri.wav
+    else:
+      if self.red_signal_scan_flag < 2 and self.speed > 24:
+        self.red_signal_scan_flag_2 = False #ある程度スピードが上がらないと、このフラグも戻さない。
 
     self.road_info_txt_flag = False
     if self.ip_update_state_ct % 20 == 4:

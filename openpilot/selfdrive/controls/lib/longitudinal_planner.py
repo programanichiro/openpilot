@@ -1065,7 +1065,19 @@ class LongitudinalPlanner:
 
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
-    self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
+
+    signal_decel_mul = 1.0
+    if a_prev < 0: #減速時限定
+      try:
+        with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
+          red_signal_scan_flag = fp.read()
+          if accel_engaged_str and int(accel_engaged_str) >= 3:
+            if red_signal_scan_flag and int(red_signal_scan_flag) == 2:
+              signal_decel_mul = 2.0 #赤信号停止時の減速を強める
+      except Exception as e:
+        pass
+
+    self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory)) * signal_decel_mul
     if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
       tss2_amul = 1.0
       if self.a_desired < 0:
