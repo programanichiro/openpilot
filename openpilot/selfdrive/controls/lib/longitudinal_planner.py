@@ -1070,9 +1070,9 @@ class LongitudinalPlanner:
     if a_prev < 0: #減速時限定
       try:
         with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
-          red_signal_scan_flag = fp.read()
+          red_signal_scan_flagX_str = fp.read()
           if accel_engaged_str and int(accel_engaged_str) >= 3:
-            if red_signal_scan_flag and int(red_signal_scan_flag) == 2:
+            if red_signal_scan_flagX_str and int(red_signal_scan_flagX_str) == 2:
               signal_decel_mul = 2.0 #赤信号停止時の減速を強める
       except Exception as e:
         pass
