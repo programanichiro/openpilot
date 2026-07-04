@@ -1087,6 +1087,7 @@ class LongitudinalPlanner:
             if a2 > tss2_amul:
               tss2_amul = a2
       self.a_desired *= tss2_amul
+    self.a_desired *= self.a_desired_mul
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
@@ -1094,7 +1095,7 @@ class LongitudinalPlanner:
       v_desired_trajectory_min = np.minimum(v_cruise_car_limit, v_117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
       v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
-    self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
+    self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k), v_desired_trajectory_min)
     # self.a_desired_mulはself.v_desired_trajectoryではなくself.v_desired_filter.xにかけたほうがいいかもしれない？20260704
     # if v_cruise2 > v_desired_trajectory_min: #加速禁止
     #   self.a_desired_trajectory = np.minimum(self.a_desired_trajectory, 0)
