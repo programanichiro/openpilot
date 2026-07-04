@@ -1066,17 +1066,6 @@ class LongitudinalPlanner:
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
-    if False and self.a_desired < 0: #理屈としては良さそうだけど減速が安定しない。なぜ？
-      signal_decel_mul = 1.0
-      try:
-        with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
-          red_signal_scan_flagX_str = fp.read()
-          if accel_engaged_str and int(accel_engaged_str) >= 3:
-            if red_signal_scan_flagX_str and int(red_signal_scan_flagX_str) == 3: #3:赤信号停止動作中
-              signal_decel_mul = 2.0 #赤信号停止時の減速を強める
-      except Exception as e:
-        pass
-      self.a_desired *= signal_decel_mul
     if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
       tss2_amul = 1.0
       if self.a_desired < 0:
@@ -1089,6 +1078,16 @@ class LongitudinalPlanner:
       self.a_desired *= tss2_amul
     self.a_desired *= self.a_desired_mul
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
+    if True: #False and self.a_desired < 0: #理屈としては良さそうだけど減速が安定しない。なぜ？
+      try:
+        with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
+          red_signal_scan_flagX_str = fp.read()
+          if accel_engaged_str and int(accel_engaged_str) >= 3:
+            if red_signal_scan_flagX_str and int(red_signal_scan_flagX_str) == 3: #3:赤信号停止動作中
+              #赤信号停止時の減速を強める
+              self.v_desired_filter.x = 0 #もうゼロでいいや
+      except Exception as e:
+        pass
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if tss_type < 2 and phv_2019 == False:
