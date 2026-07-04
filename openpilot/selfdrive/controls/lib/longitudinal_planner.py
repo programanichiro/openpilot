@@ -1077,7 +1077,6 @@ class LongitudinalPlanner:
               tss2_amul = a2
       self.a_desired *= tss2_amul
     self.a_desired *= self.a_desired_mul
-    self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
     if True: #False and self.a_desired < 0: #理屈としては良さそうだけど減速が安定しない。なぜ？
       try:
         with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
@@ -1085,9 +1084,16 @@ class LongitudinalPlanner:
           if accel_engaged_str and int(accel_engaged_str) >= 3:
             if red_signal_scan_flagX_str and int(red_signal_scan_flagX_str) == 3: #3:赤信号停止動作中
               #赤信号停止時の減速を強める
-              self.v_desired_filter.x = 0 #もうゼロでいいや
+              #3メートル先で止まるための加速度は
+              l = 3.0 #m
+              a = -vk_ego**2 / (2 * l) #vk_egoはm/s,lはl[m]先で止まるための距離
+              if a < -3.5:
+                a = -3.5 #減速の上限を-3.5m/s^2にする
+              if a < self.a_desired:
+                self.a_desired = a
       except Exception as e:
         pass
+    self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if tss_type < 2 and phv_2019 == False:
