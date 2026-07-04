@@ -1066,8 +1066,8 @@ class LongitudinalPlanner:
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
-    if False and self.a_desired < 0: #理屈としては良さそうだけど減速が安定しない。なぜ？
-      signal_decel_mul = 1.0
+    signal_decel_mul = 1.0
+    if True: #False #self.a_desired < 0: #理屈としては良さそうだけど減速が安定しない。なぜ？
       try:
         with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
           red_signal_scan_flagX_str = fp.read()
@@ -1076,7 +1076,7 @@ class LongitudinalPlanner:
               signal_decel_mul = 2.0 #赤信号停止時の減速を強める
       except Exception as e:
         pass
-      self.a_desired *= signal_decel_mul
+      #self.a_desired *= signal_decel_mul
     if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
       tss2_amul = 1.0
       if self.a_desired < 0:
@@ -1094,7 +1094,7 @@ class LongitudinalPlanner:
       v_desired_trajectory_min = np.minimum(v_cruise_car_limit, v_117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
       v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
-    self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
+    self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul / signal_decel_mul), v_desired_trajectory_min)
     # self.a_desired_mulはself.v_desired_trajectoryではなくself.v_desired_filter.xにかけたほうがいいかもしれない？20260704
     # if v_cruise2 > v_desired_trajectory_min: #加速禁止
     #   self.a_desired_trajectory = np.minimum(self.a_desired_trajectory, 0)
