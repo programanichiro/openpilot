@@ -304,6 +304,9 @@ class HudRenderer(Widget):
     set_speed_color = rl.Color(255, 255, 255, int(255 * 0.9 * alpha))
     max_color = rl.Color(255, 255, 255, int(255 * 0.9 * alpha))
 
+    if self.red_signal_scan_flag == 3:
+      set_speed_color = rl.Color(255, 0, 0, 255)
+
     set_speed = self.set_speed
     if self.is_cruise_set and not ui_state.is_metric:
       set_speed *= KM_TO_MILE
