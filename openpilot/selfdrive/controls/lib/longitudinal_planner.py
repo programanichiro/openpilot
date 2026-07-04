@@ -576,7 +576,7 @@ class LongitudinalPlanner:
           with open('/dev/shm/red_signal_eP_iP_set.txt','w') as fp:
             fp.write('%d' % (0))
 
-    if (hasLead == True and distLead_near == True) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or vk_ego < 0.1/3.6:
+    if (red_signal_scan_flag != 3 and hasLead == True and distLead_near == True) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or vk_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         red_signal_scan_flag_1 = 0
 
