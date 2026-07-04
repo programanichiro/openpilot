@@ -1065,19 +1065,18 @@ class LongitudinalPlanner:
 
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
-
-    signal_decel_mul = 1.0
-    if a_prev < 0: #減速時限定
+    self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
+    if self.a_desired < 0:
+      signal_decel_mul = 1.0
       try:
         with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
           red_signal_scan_flagX_str = fp.read()
           if accel_engaged_str and int(accel_engaged_str) >= 3:
-            if red_signal_scan_flagX_str and int(red_signal_scan_flagX_str) == 2:
+            if red_signal_scan_flagX_str and int(red_signal_scan_flagX_str) == 3: #3:赤信号停止動作中
               signal_decel_mul = 2.0 #赤信号停止時の減速を強める
       except Exception as e:
         pass
-
-    self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory)) * signal_decel_mul
+      self.a_desired *= signal_decel_mul
     if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
       tss2_amul = 1.0
       if self.a_desired < 0:
@@ -1096,6 +1095,7 @@ class LongitudinalPlanner:
     else:
       v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
     self.v_desired_trajectory = np.minimum(self.v_desired_trajectory * (self.v_cruise_onep_k * self.a_desired_mul), v_desired_trajectory_min)
+    # self.a_desired_mulはself.v_desired_trajectoryではなくself.v_desired_filter.xにかけたほうがいいかもしれない？20260704
     # if v_cruise2 > v_desired_trajectory_min: #加速禁止
     #   self.a_desired_trajectory = np.minimum(self.a_desired_trajectory, 0)
 
