@@ -1066,7 +1066,7 @@ class LongitudinalPlanner:
     # Interpolate 0.05 seconds and save as starting point for next iteration
     a_prev = self.a_desired
     self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
-    if self.a_desired < 0:
+    if False and self.a_desired < 0: #理屈としては良さそうだけど減速が安定しない。なぜ？
       signal_decel_mul = 1.0
       try:
         with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
