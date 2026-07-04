@@ -33,6 +33,7 @@ red_signal_scan_ct_2 = 0 #red_signal_scan_flagが2になった瞬間から加算
 red_signal_scan_span = 0 #red_signal_scan_flagが3になった瞬間のred_signal_scan_ct_2を保持する。
 red_signal_speed_down_before = 0
 red_signal_scan_flag = 0 #0:何もしない, 1:赤信号センシング, 2:赤信号検出, 3:赤信号停止動作中
+g_red_signal_scan_flag = 0
 with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
   fp.write('%d' % (0))
 path_x_old_signal = 0
@@ -430,7 +431,7 @@ class LongitudinalPlanner:
     #   except Exception as e:
     #     pass
 
-    global red_signal_scan_ct , red_signal_scan_ct_2 , red_signal_speed_down_before , red_signal_scan_span , long_speeddown_flag , before_v_cruise_kph_max_1
+    global red_signal_scan_ct , red_signal_scan_ct_2 , red_signal_speed_down_before , red_signal_scan_span , long_speeddown_flag , before_v_cruise_kph_max_1, g_red_signal_scan_flag
     red_signal_scan_flag_1 = red_signal_scan_flag
     red_signal_speed_down = 1.0
     desired_path_x_rate = 1.0 #一般的な減速制御
@@ -590,6 +591,7 @@ class LongitudinalPlanner:
           rssf = 0
       with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
         fp.write('%d' % (rssf))
+        g_red_signal_scan_flag = rssf
 
     if hasLead == False and one_pedal == True and vk_ego < 0.1/3.6: #速度ゼロでIPモード時にレバー下に入れたら
       if v_cruise_kph < before_v_cruise_kph_max_1 and before_v_cruise_kph_max_1 < 200: #200km/h以下の場合のみ。初回の誤設定を弾く。
@@ -634,6 +636,7 @@ class LongitudinalPlanner:
         red_signal_scan_flag = 2
         with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
           fp.write('%d' % (red_signal_scan_flag))
+          g_red_signal_scan_flag = red_signal_scan_flag
     if OP_ENABLE_v_cruise_kph != 0 and OP_ENABLE_v_cruise_kph > v_cruise_kph:
       OP_ENABLE_v_cruise_kph = v_cruise_kph
       if accel_engaged_str and int(accel_engaged_str) >= 3 and (OP_ENABLE_v_cruise_kph <= min_acc_speed or vk_ego*3.6 <= min_acc_speed): #ワンペダルモード
@@ -1076,22 +1079,16 @@ class LongitudinalPlanner:
             if a2 > tss2_amul:
               tss2_amul = a2
       self.a_desired *= tss2_amul
-    if True: #False and self.a_desired < 0: #理屈としては良さそうだけど減速が安定しない。なぜ？
-      try:
-        with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
-          red_signal_scan_flagX_str = fp.read()
-          if accel_engaged_str and int(accel_engaged_str) >= 3:
-            if red_signal_scan_flagX_str and int(red_signal_scan_flagX_str) == 3: #3:赤信号停止動作中
-              #赤信号停止時の減速を強める
-              #3メートル先で止まるための加速度は
-              l = 3.0 #m
-              a = -vk_ego**2 / (2 * l) #vk_egoはm/s,lはl[m]先で止まるための距離
-              if a < -3.5:
-                a = -3.5 #減速の上限を-3.5m/s^2にする
-              if a < self.a_desired:
-                self.a_desired = a
-      except Exception as e:
-        pass
+    if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
+      if accel_engaged_str and int(accel_engaged_str) >= 3:
+        #赤信号停止時の減速を強める
+        #3メートル先で止まるための加速度は
+        l = 3.0 #[m]
+        a = -vk_ego**2 / (2 * l) #vk_egoはm/s,lはl[m]先で止まるための距離
+        if a < ACCEL_MIN:
+          a = ACCEL_MIN #減速の上限をACCEL_MIN[m/s^2]にする
+        if a < self.a_desired:
+          self.a_desired = a
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
