@@ -579,6 +579,8 @@ class LongitudinalPlanner:
     if (hasLead == True and distLead_near == True) or sm['selfdriveState'].enabled == False or sm['carState'].gasPressed == True or vk_ego < 0.1/3.6:
       if set_red_signal_scan_flag_3 == False:
         red_signal_scan_flag_1 = 0
+        with open('/tmp/debug_out_v','w') as fp:
+          fp.write("red_signal_scan_flag_1=0:%d" % (CVS_FRAME))
 
     if red_signal_scan_flag_1 != red_signal_scan_flag:
       red_signal_scan_flag = red_signal_scan_flag_1
