@@ -307,6 +307,8 @@ async function loadGPS() {
       } else if (vv > 50){
         //console.log("vv2:", vv);
         vv_k = 2.0; //threshold=60で時速100キロだと点の距離が最大120メートルくらいだと見込んでいる。
+//      } else if (vv > 20){
+//        vv_k = 1.333; //たまたま飛んだだけか？
       }
 
       if (dist > threshold * vv_k) {
