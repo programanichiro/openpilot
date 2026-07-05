@@ -531,30 +531,30 @@ class LongitudinalPlanner:
           red_signal_scan_ct = 10000
           #まずは音を鳴らす。
           try:
-            if accel_engaged_str:
-              if int(accel_engaged_str) >= 3: #ワンペダルモード
-                  # fp.write('%d' % (3)) #デバッグ用にpo.wavを鳴らしてみる。
-                lock_off = False
-                if os.path.isfile('/dev/shm/lockon_disp_disable.txt'):
-                  with open('/dev/shm/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
-                    lockon_disp_disable_str = fp.read()
-                    if lockon_disp_disable_str:
-                      lockon_disp_disable = int(lockon_disp_disable_str)
-                      if lockon_disp_disable != 0:
-                        lock_off = True #ロックオンOFFで停車コードOFF
-                if lock_off == False:
+            # fp.write('%d' % (3)) #デバッグ用にpo.wavを鳴らしてみる。
+            lock_off = False
+            if os.path.isfile('/dev/shm/lockon_disp_disable.txt'):
+              with open('/dev/shm/lockon_disp_disable.txt','r') as fp: #臨時でロックオンボタンに連動
+                lockon_disp_disable_str = fp.read()
+                if lockon_disp_disable_str:
+                  lockon_disp_disable = int(lockon_disp_disable_str)
+                  if lockon_disp_disable != 0:
+                    lock_off = True #ロックオンOFFで停車コードOFF
+            if lock_off == False:
+              if accel_engaged_str:
+                if int(accel_engaged_str) >= 3: #ワンペダルモード
                   with open('/dev/shm/signal_start_prompt_info.txt','w') as fp:
                     fp.write('%d' % (1)) #prompt.wav音を鳴らしてみる。
                   OP_ENABLE_v_cruise_kph = v_cruise_kph
                   OP_ENABLE_gas_speed = 1.0 / 3.6
                   #one_pedal_chenge_restrict_time = 10 , ここは意味的に要らないか。
-                  red_signal_scan_flag_1 = 3 #赤信号停止状態
-                  set_red_signal_scan_flag_3 = True #セットした瞬間
-                  red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
-                  if self.red_signal_eP_iP_flag != 1:
-                    self.red_signal_eP_iP_flag = 1
-                    with open('/dev/shm/red_signal_eP_iP_set.txt','w') as fp:
-                      fp.write('%d' % (1))
+              red_signal_scan_flag_1 = 3 #赤信号停止状態
+              set_red_signal_scan_flag_3 = True #セットした瞬間
+              red_signal_scan_span = red_signal_scan_ct_2 #2〜3までのフレーム数
+              if self.red_signal_eP_iP_flag != 1:
+                self.red_signal_eP_iP_flag = 1
+                with open('/dev/shm/red_signal_eP_iP_set.txt','w') as fp:
+                  fp.write('%d' % (1))
           except Exception as e:
             pass
       else:
@@ -586,9 +586,9 @@ class LongitudinalPlanner:
       rssf = red_signal_scan_flag
       if red_signal_scan_flag <= 1:
         red_signal_scan_span = 0
-      if accel_engaged_str:
-        if int(accel_engaged_str) < 3: #ワンペダルモード以外
-          rssf = 0
+      # if accel_engaged_str:
+      #   if int(accel_engaged_str) < 3: #ワンペダルモード以外
+      #     rssf = 0
       with open('/dev/shm/red_signal_scan_flag.txt','w') as fp:
         fp.write('%d' % (rssf))
         g_red_signal_scan_flag = rssf
@@ -1080,7 +1080,7 @@ class LongitudinalPlanner:
               tss2_amul = a2
       self.a_desired *= tss2_amul
     if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
-      if accel_engaged_str and int(accel_engaged_str) >= 3:
+      if True: #accel_engaged_str and int(accel_engaged_str) >= 3:
         #赤信号停止時の減速を強める
         l = 3.0 #[m] 3メートル先で止まるための加速度を計算。
         if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
