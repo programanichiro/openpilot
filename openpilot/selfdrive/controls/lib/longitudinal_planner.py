@@ -1085,9 +1085,8 @@ class LongitudinalPlanner:
         l = 3.0 #[m] 3メートル先で止まるための加速度を計算。
         if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
           l = md.position.x[-1] # [m]パス終端までの残距離を使う
-          with open('/tmp/debug_out_v','w') as fp:
-            fp.write("stop_line_length:%.1f" % (float(l)))
-          l -= 1.0 #1m手前で止まるようにする
+          if l > 3.0:
+            l = 3.0 #3m以上離れているときは3mで止まるようにする
           if l < 1.0:
             l = 1.0 #1m未満は危ないので1mにする
 
