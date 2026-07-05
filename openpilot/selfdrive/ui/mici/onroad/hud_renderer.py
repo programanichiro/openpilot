@@ -217,8 +217,8 @@ class HudRenderer(Widget):
     if True: #self.is_cruise_set:
       self._draw_set_speed(rect)
 
-    if gui_app.big_ui():
-      self._draw_current_speed(rect)
+    # if gui_app.big_ui():
+    #   self._draw_current_speed(rect)
 
     self._draw_steering_wheel(rect)
     self._ip_draw(rect)
