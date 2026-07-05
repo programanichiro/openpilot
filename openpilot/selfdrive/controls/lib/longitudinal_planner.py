@@ -1082,13 +1082,21 @@ class LongitudinalPlanner:
     if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
       if accel_engaged_str and int(accel_engaged_str) >= 3:
         #赤信号停止時の減速を強める
-        #3メートル先で止まるための加速度は
-        l = 3.0 #[m]
+        l = 3.0 #[m] 3メートル先で止まるための加速度を計算。
+        if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
+          l = md.position.x[-1] # [m]パス終端までの残距離を使う
+          with open('/tmp/debug_out_v','w') as fp:
+            fp.write("stop_line_length:%.1f" % (float(l)))
+          l -= 1.0 #1m手前で止まるようにする
+          if l < 1.0:
+            l = 1.0 #1m未満は危ないので1mにする
+
         a = -vk_ego**2 / (2 * l) #vk_egoはm/s,lはl[m]先で止まるための距離
         if a < ACCEL_MIN:
           a = ACCEL_MIN #減速の上限をACCEL_MIN[m/s^2]にする
         if a < self.a_desired:
           self.a_desired = a
+
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
