@@ -306,6 +306,9 @@ class HudRenderer(Widget):
 
     if self.red_signal_scan_flag == 3:
       set_speed_color = rl.Color(255, 0, 0, 255)
+    elif self.red_signal_scan_flag >= 2 and self.red_signal_scan_flag_txt_ct %(self.red_signal_chk_timing*2) < self.red_signal_chk_timing:
+      #赤信号認識中の点滅
+      set_speed_color = rl.Color(255, 0, 0, 255)
 
     set_speed = self.set_speed
     if self.is_cruise_set and not ui_state.is_metric:
@@ -533,6 +536,7 @@ class HudRenderer(Widget):
     self._accel_ctrl_disable_changed_ct = 0
     self._dexp_sw_mode_button_changed_ct = 0
     self._long_speeddown_disable_changed_ct = 0
+    self.red_signal_chk_timing = 3 if not gui_app.big_ui() else 9 #c4は60fpsなので、三倍。
 
   def user_interacting(self) -> bool:
     if self._press_set_speed_MAX_ct > 0:
@@ -699,8 +703,7 @@ class HudRenderer(Widget):
         pass
     self.red_signal_scan_flag_txt_ct += 1
 
-    red_signal_chk_timing = 3 if not gui_app.big_ui() else 9 #c4は60fpsなので、三倍。
-    if self.red_signal_scan_flag >= 2 and self.red_signal_scan_flag_txt_ct %(red_signal_chk_timing*2) < red_signal_chk_timing:
+    if self.red_signal_scan_flag >= 2 and self.red_signal_scan_flag_txt_ct %(self.red_signal_chk_timing*2) < self.red_signal_chk_timing:
       #赤信号認識中
       if self.red_signal_scan_flag_2 == False and str(round(self.set_speed)) != "1":
         self.red_signal_scan_flag_2 = True
