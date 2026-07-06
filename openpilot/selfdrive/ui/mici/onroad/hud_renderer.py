@@ -697,7 +697,7 @@ class HudRenderer(Widget):
       try:
         with open('/dev/shm/red_signal_scan_flag.txt','r') as fp:
           red_signal_scan_flag = fp.read()
-          if self.accel_engaged >= 3: #self.accel_engaged == mAccelEngagedButton
+          if True: #self.accel_engaged >= 3: #self.accel_engaged == mAccelEngagedButton
             if red_signal_scan_flag:
               self.red_signal_scan_flag = int(red_signal_scan_flag)
           else:
@@ -708,7 +708,7 @@ class HudRenderer(Widget):
 
     if self.red_signal_scan_flag >= 2 and self.red_signal_scan_flag_txt_ct %(self.red_signal_chk_timing*2) < self.red_signal_chk_timing:
       #赤信号認識中
-      if self.red_signal_scan_flag_2 == False and str(round(self.set_speed)) != "1":
+      if self.red_signal_scan_flag_2 == False: and (str(round(self.set_speed)) != "1" or self.accel_engaged <= 2): #MAXが1の時は、赤信号認識中でも音を鳴らさない。
         self.red_signal_scan_flag_2 = True
         if self.red_signal_scan_flag == 2:
           # pikiriオンを信号認識開始に転用。
