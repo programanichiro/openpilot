@@ -164,7 +164,8 @@ class NoEntryAlert(Alert):
 
 class SoftDisableAlert(Alert):
   def __init__(self, alert_text_2: str):
-    super().__init__("TAKE CONTROL0 IMMEDIATELY", alert_text_2,
+    #super().__init__("TAKE CONTROL0 IMMEDIATELY", alert_text_2,
+    super().__init__(f"TCI {alert_text_2}", alert_text_2,
                      AlertStatus.userPrompt, AlertSize.full,
                      Priority.MID, VisualAlert.steerRequired,
                      AudibleAlert.warningSoft, 2.),
