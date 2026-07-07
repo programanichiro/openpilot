@@ -1087,8 +1087,8 @@ class LongitudinalPlanner:
           l = md.position.x[-1] # [m]パス終端までの残距離を使う
           if l > 3.0:
             l = 3.0 #3m以上離れているときは3mで止まるようにする
-          if l < 1.0:
-            l = 1.0 #1m未満は危ないので1mにする
+          if l < 0.1:
+            l = 0.1 #0.1m未満は0.1mとして計算する
 
         a = -vk_ego**2 / (2 * l) #vk_egoはm/s,lはl[m]先で止まるための距離
         if a < ACCEL_MIN:
