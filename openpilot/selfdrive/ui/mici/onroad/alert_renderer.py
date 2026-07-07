@@ -73,7 +73,7 @@ ALERT_STARTUP_PENDING = Alert(
 )
 
 ALERT_CRITICAL_TIMEOUT = Alert(
-  text1="TAKE CONTROL IMMEDIATELY",
+  text1="TAKE CONTROL5 IMMEDIATELY",
   text2="System Unresponsive",
   size=AlertSize.full,
   status=AlertStatus.critical,
