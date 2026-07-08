@@ -270,7 +270,7 @@ class RadarD:
       stop_distance = 0.0
       red_signal_flag = 0
 
-    if red_signal_flag == 3:
+    if red_signal_flag == 3 and stop_distance > 0:
       pseudo_lead = {
         "dRel": stop_distance,
         "yRel": 0.0,
