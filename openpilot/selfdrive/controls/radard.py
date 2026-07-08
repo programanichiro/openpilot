@@ -260,33 +260,6 @@ class RadarD:
   def publish(self, pm: messaging.PubMaster):
     assert self.radar_state is not None
 
-    # 赤信号停止モード時、パス終端を疑似前走車として挿入
-    try:
-      with open('/dev/shm/red_signal_stop_distance.txt', 'r') as fp:
-        stop_distance = float(fp.read().strip())
-      with open('/dev/shm/red_signal_scan_flag.txt', 'r') as fp:
-        red_signal_flag = int(fp.read().strip())
-    except:
-      stop_distance = 0.0
-      red_signal_flag = 0
-
-    if red_signal_flag == 3 and stop_distance > 0:
-      pseudo_lead = {
-        "dRel": stop_distance,
-        "yRel": 0.0,
-        "vRel": -self.v_ego,
-        "vLead": 0.0,
-        "vLeadK": 0.0,
-        "aLeadK": 0.0,
-        "aLeadTau": 0.0,
-        "fcw": False,
-        "modelProb": 0.95,
-        "status": True,
-        "radar": False,
-        "radarTrackId": -1,
-      }
-      self.radar_state.leadOne = pseudo_lead
-
     radar_msg = messaging.new_message("radarState")
     radar_msg.valid = self.radar_state_valid
     radar_msg.radarState = self.radar_state
