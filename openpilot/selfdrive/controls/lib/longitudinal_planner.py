@@ -1054,8 +1054,6 @@ class LongitudinalPlanner:
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
-    if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
-      v_cruise = 0.0 #赤信号停止動作中はv_cruiseをゼロにする。これでMPCの計算が変わる。
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     self.mpc.update(sm['radarState'], v_cruise, personality=sm['selfdriveState'].personality)
 
@@ -1087,6 +1085,12 @@ class LongitudinalPlanner:
         l = 3.0 #[m] 3メートル先で止まるための加速度を計算。
         if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
           l = md.position.x[-1] # [m]パス終端までの残距離を使う
+          try:
+            with open('/dev/shm/red_signal_stop_distance.txt', 'w') as fp:
+              fp.write('%.2f' % (l))
+          except Exception:
+            pass
+
           if l > 3.0:
             l = 3.0 #3m以上離れているときは3mで止まるようにする
           if l < 0.1:
