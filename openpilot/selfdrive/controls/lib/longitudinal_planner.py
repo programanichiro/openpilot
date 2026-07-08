@@ -1054,6 +1054,8 @@ class LongitudinalPlanner:
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
+    if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
+      v_cruise = 0.0 #赤信号停止動作中はv_cruiseをゼロにする。これでMPCの計算が変わる。
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
     self.mpc.update(sm['radarState'], v_cruise, personality=sm['selfdriveState'].personality)
 
