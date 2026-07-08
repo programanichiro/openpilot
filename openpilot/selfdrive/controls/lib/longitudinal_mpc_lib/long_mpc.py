@@ -292,35 +292,34 @@ class LongitudinalMpc:
 
   def process_lead(self, lead):
     v_ego = self.x0[1]
-    if lead is not None and lead.status:
+    # 赤信号停止モード時、パス終端を疑似前走車として挿入
+    try:
+      with open('/dev/shm/red_signal_stop_distance.txt', 'r') as fp:
+        stop_distance = float(fp.read().strip())
+      with open('/dev/shm/red_signal_scan_flag.txt', 'r') as fp:
+        red_signal_flag = int(fp.read().strip())
+      if stop_distance < 0:
+        stop_distance = 0.0
+    except:
+      stop_distance = 0.0
+      red_signal_flag = 0
+
+    if red_signal_flag == 3:  # 赤信号停止モード時
+      x_lead = stop_distance
+      v_lead = 0.0
+      a_lead = 0.0
+      a_lead_tau = _LEAD_ACCEL_TAU
+    elif lead is not None and lead.status:
       x_lead = lead.dRel
       v_lead = lead.vLead
       a_lead = lead.aLeadK
       a_lead_tau = lead.aLeadTau
     else:
-      # 赤信号停止モード時、パス終端を疑似前走車として挿入
-      try:
-        with open('/dev/shm/red_signal_stop_distance.txt', 'r') as fp:
-          stop_distance = float(fp.read().strip())
-        with open('/dev/shm/red_signal_scan_flag.txt', 'r') as fp:
-          red_signal_flag = int(fp.read().strip())
-        if stop_distance < 0:
-          stop_distance = 0.0
-      except:
-        stop_distance = 0.0
-        red_signal_flag = 0
-
-      if red_signal_flag == 3:  # 赤信号停止モード時
-        x_lead = stop_distance
-        v_lead = 0.0
-        a_lead = 0.0
-        a_lead_tau = _LEAD_ACCEL_TAU
-      else:
-        # Fake a fast lead car, so mpc can keep running in the same mode
-        x_lead = 50.0
-        v_lead = v_ego + 10.0
-        a_lead = 0.0
-        a_lead_tau = _LEAD_ACCEL_TAU
+      # Fake a fast lead car, so mpc can keep running in the same mode
+      x_lead = 50.0
+      v_lead = v_ego + 10.0
+      a_lead = 0.0
+      a_lead_tau = _LEAD_ACCEL_TAU
 
     # MPC will not converge if immediate crash is expected
     # Clip lead distance to what is still possible to brake for
