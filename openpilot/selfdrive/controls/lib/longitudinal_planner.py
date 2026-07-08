@@ -1085,6 +1085,12 @@ class LongitudinalPlanner:
         l = 3.0 #[m] 3メートル先で止まるための加速度を計算。
         if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
           l = md.position.x[-1] # [m]パス終端までの残距離を使う
+          try:
+            with open('/dev/shm/red_signal_stop_distance.txt', 'w') as fp:
+              fp.write('%.2f' % (l))
+          except Exception:
+            pass
+
           if l > 3.0:
             l = 3.0 #3m以上離れているときは3mで止まるようにする
           if l < 0.1:
