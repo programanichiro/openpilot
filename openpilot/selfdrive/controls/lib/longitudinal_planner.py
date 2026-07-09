@@ -1055,7 +1055,12 @@ class LongitudinalPlanner:
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
     self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
-    self.mpc.update(sm['radarState'], v_cruise, personality=sm['selfdriveState'].personality)
+    stop_d = 0
+    if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
+      #赤信号停止時の減速を強める
+      if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
+        stop_d = md.position.x[-1] # [m]パス終端までの残距離を使う
+    self.mpc.update(sm['radarState'], v_cruise, personality=sm['selfdriveState'].personality, red_signal_flag=g_red_signal_scan_flag, stop_distance=stop_d)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
@@ -1079,18 +1084,12 @@ class LongitudinalPlanner:
             if a2 > tss2_amul:
               tss2_amul = a2
       self.a_desired *= tss2_amul
-    if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
+    if False: #以下無しの擬似前走車だけで試す。g_red_signal_scan_flag == 3: #3:赤信号停止動作中
       if True: #accel_engaged_str and int(accel_engaged_str) >= 3:
         #赤信号停止時の減速を強める
         l = 3.0 #[m] 3メートル先で止まるための加速度を計算。
-        if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
-          l = md.position.x[-1] # [m]パス終端までの残距離を使う
-          try:
-            with open('/dev/shm/red_signal_stop_distance.txt', 'w') as fp:
-              fp.write('%.2f' % (l))
-          except Exception:
-            pass
-
+        if stop_d != 0:
+          l = stop_d # [m]パス終端までの残距離を使う
           if l > 3.0:
             l = 3.0 #3m以上離れているときは3mで止まるようにする
           if l < 0.1:

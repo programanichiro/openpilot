@@ -290,20 +290,9 @@ class LongitudinalMpc:
     lead_xv = np.column_stack((x_lead_traj, v_lead_traj))
     return lead_xv
 
-  def process_lead(self, lead):
+  def process_lead(self, lead, red_signal_flag, stop_distance):
     v_ego = self.x0[1]
     # 赤信号停止モード時、パス終端を疑似前走車として挿入
-    try:
-      with open('/dev/shm/red_signal_stop_distance.txt', 'r') as fp:
-        stop_distance = float(fp.read().strip())
-      with open('/dev/shm/red_signal_scan_flag.txt', 'r') as fp:
-        red_signal_flag = int(fp.read().strip())
-      if stop_distance < 0:
-        stop_distance = 0.0
-    except:
-      stop_distance = 0.0
-      red_signal_flag = 0
-
     if red_signal_flag == 3:  # 赤信号停止モード時
       x_lead = stop_distance
       v_lead = 0.0
@@ -330,13 +319,13 @@ class LongitudinalMpc:
     lead_xv = self.extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
     return lead_xv
 
-  def update(self, radarstate, v_cruise, personality=log.LongitudinalPersonality.standard):
+  def update(self, radarstate, v_cruise, personality=log.LongitudinalPersonality.standard, red_signal_flag=0, stop_distance=0.0):
     t_follow = get_T_FOLLOW(personality)
     v_ego = self.x0[1]
     self.status = radarstate.leadOne.status or radarstate.leadTwo.status
 
-    lead_xv_0 = self.process_lead(radarstate.leadOne)
-    lead_xv_1 = self.process_lead(radarstate.leadTwo)
+    lead_xv_0 = self.process_lead(radarstate.leadOne, red_signal_flag, stop_distance)
+    lead_xv_1 = self.process_lead(radarstate.leadTwo, red_signal_flag, stop_distance)
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
