@@ -163,26 +163,6 @@ class LongitudinalPlanner:
     if self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value): #47700はTSS2相当の操舵範囲
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
 
-  @staticmethod
-  def parse_model(model_msg):
-    if (len(model_msg.position.x) == ModelConstants.IDX_N and
-      len(model_msg.velocity.x) == ModelConstants.IDX_N and
-      len(model_msg.acceleration.x) == ModelConstants.IDX_N):
-      x = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.position.x)
-      v = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.velocity.x)
-      a = np.interp(T_IDXS_MPC, ModelConstants.T_IDXS, model_msg.acceleration.x)
-      j = np.zeros(len(T_IDXS_MPC))
-    else:
-      x = np.zeros(len(T_IDXS_MPC))
-      v = np.zeros(len(T_IDXS_MPC))
-      a = np.zeros(len(T_IDXS_MPC))
-      j = np.zeros(len(T_IDXS_MPC))
-    if len(model_msg.meta.disengagePredictions.gasPressProbs) > 1:
-      throttle_prob = model_msg.meta.disengagePredictions.gasPressProbs[1]
-    else:
-      throttle_prob = 1.0
-    return x, v, a, j, throttle_prob
-
   def update(self, sm):
     if len(sm['carControl'].orientationNED) == 3:
       accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
@@ -203,7 +183,7 @@ class LongitudinalPlanner:
     except Exception as e:
       pass
 
-    hasLead = sm['radarState'].leadOne.status
+    hasLead = sm['radarState'].leadOne.present
     # hasLeadの短時間切り替えによるカメラのバタつきを抑える。
     if self.hasLead_1s != hasLead:
       if self.hasLead_1s_frame >= 15: #30カウントくらいで1秒
@@ -359,7 +339,7 @@ class LongitudinalPlanner:
       OP_ACCEL_PUSH = True #アクセル押した
 
     md = sm['modelV2']
-    # hasLead = sm['radarState'].leadOne.status
+    # hasLead = sm['radarState'].leadOne.present
     #distLead_near = sm['radarState'].leadOne.dRel < np.interp(vk_ego*3.6 , [30,80] , [50,120]) #前走車が近ければTrue
     distLead_near = hasLead #and sm['radarState'].leadOne.dRel < np.interp(vk_ego*3.6 , [30,80] , [60,130]) #前走車が近ければTrue,最近前走者が遠くてもワンペダル遷移してしまうので、ちょっと調整。
     global signal_scan_ct,path_x_old_signal,path_x_old_signal_check , red_signal_scan_flag
@@ -972,7 +952,8 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
     if tss_type < 2 and phv_2019 == False and self.v_desired_filter.x > v_117 / 3.6:
       self.v_desired_filter.x = v_117 / 3.6
-    _, _, _, _, throttle_prob = self.parse_model(sm['modelV2'])
+    throttle_probs = sm['modelV2'].meta.disengagePredictions.gasPressProbs
+    throttle_prob = throttle_probs[1] if len(throttle_probs) > 1 else 1.0
     # Don't clip at low speeds since throttle_prob doesn't account for creep
     self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
 
@@ -1135,7 +1116,7 @@ class LongitudinalPlanner:
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
 
-    plan_send.valid = sm.all_checks(service_list=['carState', 'controlsState', 'selfdriveState', 'radarState'])
+    plan_send.valid = sm.all_checks()
 
     longitudinalPlan = plan_send.longitudinalPlan
     longitudinalPlan.modelMonoTime = sm.logMonoTime['modelV2']
@@ -1146,7 +1127,7 @@ class LongitudinalPlanner:
     longitudinalPlan.accels = self.a_desired_trajectory.tolist()
     longitudinalPlan.jerks = self.j_desired_trajectory.tolist()
 
-    longitudinalPlan.hasLead = sm['radarState'].leadOne.status
+    longitudinalPlan.hasLead = sm['radarState'].leadOne.present
     longitudinalPlan.longitudinalPlanSource = self.mpc.source
     longitudinalPlan.fcw = self.fcw
 

@@ -238,7 +238,7 @@ class ModelRenderer(Widget):
         #   mapToScreen(dRel, -yRel, z + path_offset_z, &lead_vertices[i]);
         # }
         continue
-      if lead_data and lead_data.status:
+      if lead_data and lead_data.present:
         d_rel, y_rel, v_rel = lead_data.dRel, lead_data.yRel, lead_data.vRel
         idx = self._get_path_length_idx(path_x_array, d_rel)
 
@@ -266,7 +266,7 @@ class ModelRenderer(Widget):
       road_edge.projected_points = self._map_line_to_polygon(road_edge.raw_points, 0.025, 0.0, max_idx, max_distance)
 
     # Update path using raw points
-    if lead and lead.status:
+    if lead and lead.present:
       lead_d = lead.dRel * 2.0
       max_distance = np.clip(lead_d - min(lead_d * 0.35, 10.0), 0.0, max_distance)
 
