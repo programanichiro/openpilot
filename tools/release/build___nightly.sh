@@ -30,6 +30,9 @@ git push origin --delete __nightly || true
 
 git checkout __nightly
 git reset --hard __nightly
+
+git config --local lfs.locksverify false
+
 git push --set-upstream origin __nightly
 
 git fetch --depth 1 origin __nightly

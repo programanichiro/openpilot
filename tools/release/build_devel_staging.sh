@@ -29,6 +29,9 @@ git push origin --delete devel-staging || true
 
 git checkout devel-staging
 git reset --hard devel-staging
+
+git config --local lfs.locksverify false
+
 git push --set-upstream origin devel-staging
 
 git fetch --depth 1 origin devel-staging
