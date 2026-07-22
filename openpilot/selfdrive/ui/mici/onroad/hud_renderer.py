@@ -571,7 +571,8 @@ class HudRenderer(Widget):
           pr = int(signal_start_prompt_info_str)
           if pr == 1:
             with open('/dev/shm/sound_py_request.txt','w') as fp2:
-              fp2.write('%d' % (6)) #prompt.wav->warning.wav、音がちょっと合わない気がする
+              #fp2.write('%d' % (6)) #prompt.wav->warning.wav、音がちょっと合わない気がする
+              fp2.write('%d' % (104)) #prompt_old.wave
             with open('/dev/shm/signal_start_prompt_info.txt','w') as fp3:
               fp3.write('%d' % (0))
           elif pr == 2:
