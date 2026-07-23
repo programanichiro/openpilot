@@ -79,6 +79,8 @@ START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 
 
 A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
+J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
+A_CRUISE_MIN = -1.2
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 ALLOW_THROTTLE_THRESHOLD = 0.4
 MIN_ALLOW_THROTTLE_SPEED = 2.5
@@ -95,18 +97,26 @@ def get_max_accel(v_ego):
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
 
-def limit_accel_in_turns(v_ego, angle_steers, a_target, CP):
-  """
-  This function returns a limited long acceleration allowed, depending on the existing lateral acceleration
-  this should avoid accelerating when losing the target in turns
-  """
-  # FIXME: This function to calculate lateral accel is incorrect and should use the VehicleModel
-  # The lookup table for turns should also be updated if we do this
-  a_total_max = np.interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
-  a_y = v_ego ** 2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)
-  a_x_allowed = math.sqrt(max(a_total_max ** 2 - a_y ** 2, 0.))
+def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, accel_coast, allow_throttle):
+  max_accel = ACCEL_MAX if e2e else get_max_accel(v_ego)
 
-  return [a_target[0], min(a_target[1], a_x_allowed)]
+  if not e2e:
+    a_total_max = np.interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
+    a_y = v_ego ** 2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)
+    a_x_allowed = math.sqrt(max(a_total_max ** 2 - a_y ** 2, 0.))
+    max_accel = min(max_accel, a_x_allowed)
+    if not allow_throttle:
+      clipped_accel_coast = max(accel_coast, ACCEL_MIN)
+      coast_limit = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [max_accel, clipped_accel_coast])
+      max_accel = min(max_accel, coast_limit)
+
+  target_accel = np.clip(v_cruise - v_ego, A_CRUISE_MIN, max_accel)
+  if not e2e:
+    j_cruise = np.interp(v_ego, A_CRUISE_MAX_BP, J_CRUISE_VALS)
+    target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * dt, a_cruise_prev + j_cruise * dt))
+
+  cruise_should_stop = v_cruise == 0.0
+  return target_accel, cruise_should_stop
 
 
 class LongitudinalPlanner:
@@ -119,7 +129,7 @@ class LongitudinalPlanner:
 
     self.a_desired = init_a
     self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
-    self.prev_accel_clip = [ACCEL_MIN, ACCEL_MAX]
+    self.a_cruise = 0.0
     self.output_a_target = 0.0
     self.output_should_stop = False
 
@@ -221,11 +231,11 @@ class LongitudinalPlanner:
       # v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
         v_cruise_kph = (109 + ((v_cruise_kph+6) - 109) * 2 - 6) if v_cruise_kph > (109 - 6) else v_cruise_kph #最大115に。
 
-#100,101,102,103,104,105,106,107,108,109
-#100,101,102,103,105,107,109,111,113,115 ;407 *今これ
-#100,101,102,104,106,108,110,112,114,116
-#100,101,103,105,107,109,111,113,115,117 ;409
-#100,102,104,106,108,110,112,114,116,118 ;410
+      #100,101,102,103,104,105,106,107,108,109
+      #100,101,102,103,105,107,109,111,113,115 ;407 *今これ
+      #100,101,102,104,106,108,110,112,114,116
+      #100,101,103,105,107,109,111,113,115,117 ;409
+      #100,102,104,106,108,110,112,114,116,118 ;410
 
       if CVS_FRAME % 5 == 3 and CVS_FRAME < 30:
         with open('/data/tss_type_info.txt','w') as fp:
@@ -691,24 +701,24 @@ class LongitudinalPlanner:
       with open('/dev/shm/accel_ctrl_disable.txt','w') as fp:
         fp.write('%d' % (0 if lever_up_down > 0 else 1))
 
-#  struct LeadData {
-#    dRel @0 :Float32;
-#    yRel @1 :Float32;
-#    vRel @2 :Float32;
-#    aRel @3 :Float32;
-#    vLead @4 :Float32;
-#    dPath @6 :Float32;
-#    vLat @7 :Float32;
-#    vLeadK @8 :Float32;
-#    aLeadK @9 :Float32;
-#    fcw @10 :Bool;
-#    status @11 :Bool;
-#    aLeadTau @12 :Float32;
-#    modelProb @13 :Float32;
-#    radar @14 :Bool;
-#
-#    aLeadDEPRECATED @5 :Float32;
-#  }
+    #  struct LeadData {
+    #    dRel @0 :Float32;
+    #    yRel @1 :Float32;
+    #    vRel @2 :Float32;
+    #    aRel @3 :Float32;
+    #    vLead @4 :Float32;
+    #    dPath @6 :Float32;
+    #    vLat @7 :Float32;
+    #    vLeadK @8 :Float32;
+    #    aLeadK @9 :Float32;
+    #    fcw @10 :Bool;
+    #    status @11 :Bool;
+    #    aLeadTau @12 :Float32;
+    #    modelProb @13 :Float32;
+    #    radar @14 :Bool;
+    #
+    #    aLeadDEPRECATED @5 :Float32;
+    #  }
     add_v_by_lead = False #前走車に追いつくための増速処理
 
     global accel_lead_ctrl
@@ -922,27 +932,39 @@ class LongitudinalPlanner:
 
       # if red_signal_scan_span > 0: これでブレーキングの強さが変わったら制御しづらいのでやめる。
       #   v_cruise *= np.interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
-    v_cruise_initialized = sm['carState'].vCruise != V_CRUISE_UNSET
+
+    if sm['controlsState'].forceDecel:
+      v_cruise = 0.0
 
     long_control_off = sm['controlsState'].longControlState == LongCtrlState.off
-    force_slow_decel = sm['controlsState'].forceDecel
 
     # Reset current state when not engaged, or user is controlling the speed
     reset_state = long_control_off if self.CP.openpilotLongitudinalControl else not sm['selfdriveState'].enabled
     # PCM cruise speed may be updated a few cycles later, check if initialized
+    v_cruise_initialized = sm['carState'].vCruise != V_CRUISE_UNSET
     reset_state = reset_state or not v_cruise_initialized
+
+    throttle_probs = sm['modelV2'].meta.disengagePredictions.gasPressProbs
+    throttle_prob = throttle_probs[1] if len(throttle_probs) > 1 else 1.0
+    self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
+
+    steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
+
+    if reset_state:
+      self.v_desired_filter.x = v_ego
+      self.a_desired = np.clip(sm['carState'].aEgo, ACCEL_MIN, ACCEL_MAX)
+
+    # Prevent divergence, smooth in current v_ego
+    self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
 
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-    accel_clip = [ACCEL_MIN, get_max_accel(v_ego)]
     steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['liveParameters'].angleOffsetDeg
-    accel_clip = limit_accel_in_turns(v_ego, steer_angle_without_offset, accel_clip, self.CP)
 
     if reset_state:
       self.v_desired_filter.x = v_ego
-      # Clip aEgo to cruise limits to prevent large accelerations when becoming active
-      self.a_desired = np.clip(sm['carState'].aEgo, accel_clip[0], accel_clip[1])
+      self.a_desired = np.clip(sm['carState'].aEgo, ACCEL_MIN, ACCEL_MAX)
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
@@ -952,18 +974,6 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
     if tss_type < 2 and phv_2019 == False and self.v_desired_filter.x > v_117 / 3.6:
       self.v_desired_filter.x = v_117 / 3.6
-    throttle_probs = sm['modelV2'].meta.disengagePredictions.gasPressProbs
-    throttle_prob = throttle_probs[1] if len(throttle_probs) > 1 else 1.0
-    # Don't clip at low speeds since throttle_prob doesn't account for creep
-    self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
-
-    if not self.allow_throttle:
-      clipped_accel_coast = max(accel_coast, accel_clip[0])
-      clipped_accel_coast_interp = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [accel_clip[1], clipped_accel_coast])
-      accel_clip[1] = min(accel_clip[1], clipped_accel_coast_interp)
-
-    if force_slow_decel:
-      v_cruise = 0.0
 
     self.a_desired_mul = 1.0
     vl = 0
@@ -1041,7 +1051,7 @@ class LongitudinalPlanner:
       #赤信号停止時の減速を強める
       if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
         stop_d = md.position.x[-1] # [m]パス終端までの残距離を使う
-    self.mpc.update(sm['radarState'], v_cruise, personality=sm['selfdriveState'].personality, red_signal_flag=g_red_signal_scan_flag, stop_distance=stop_d)
+    self.mpc.update(sm['radarState'], personality=sm['selfdriveState'].personality, red_signal_flag=g_red_signal_scan_flag, stop_distance=stop_d)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
@@ -1052,37 +1062,8 @@ class LongitudinalPlanner:
     if self.fcw:
       cloudlog.info("FCW triggered")
 
-    # Interpolate 0.05 seconds and save as starting point for next iteration
+    # Save starting point for next iteration
     a_prev = self.a_desired
-    self.a_desired = float(np.interp(self.dt, CONTROL_N_T_IDX, self.a_desired_trajectory))
-    if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
-      tss2_amul = 1.0
-      if self.a_desired < 0:
-        tss2_amul = np.interp(vk_ego,[0,10/3.6],[1.1,1.0]) #減速を強める
-        if accel_engaged_str:
-          if int(accel_engaged_str) >= 3 and v_cruise_kph <= 1.2: #ワンペダルモードで実際にMAX=1のとき
-            a2 = 1.04
-            if a2 > tss2_amul:
-              tss2_amul = a2
-      self.a_desired *= tss2_amul
-    if False: #以下無しの擬似前走車だけで試す。g_red_signal_scan_flag == 3: #3:赤信号停止動作中
-      if True: #accel_engaged_str and int(accel_engaged_str) >= 3:
-        #赤信号停止時の減速を強める
-        l = 3.0 #[m] 3メートル先で止まるための加速度を計算。
-        if stop_d != 0:
-          l = stop_d # [m]パス終端までの残距離を使う
-          if l > 3.0:
-            l = 3.0 #3m以上離れているときは3mで止まるようにする
-          if l < 0.1:
-            l = 0.1 #0.1m未満は0.1mとして計算する
-
-        a = -vk_ego**2 / (2 * l) #vk_egoはm/s,lはl[m]先で止まるための距離
-        if a < ACCEL_MIN:
-          a = ACCEL_MIN #減速の上限をACCEL_MIN[m/s^2]にする
-        if a < self.a_desired:
-          self.a_desired = a
-
-    self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.a_desired + a_prev) / 2.0
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if tss_type < 2 and phv_2019 == False:
@@ -1099,19 +1080,31 @@ class LongitudinalPlanner:
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    if sm['selfdriveState'].experimentalMode:
-      output_a_target = min(output_a_target_e2e, output_a_target_mpc)
-      self.output_should_stop = output_should_stop_e2e or output_should_stop_mpc
-      if output_a_target < output_a_target_mpc:
-        self.mpc.source = LongitudinalPlanSource.e2e
-    else:
-      output_a_target = output_a_target_mpc
-      self.output_should_stop = output_should_stop_mpc
+    self.a_cruise, cruise_should_stop = get_cruise_accel(sm['selfdriveState'].experimentalMode, v_cruise, v_ego,
+                                                          self.a_cruise, steer_angle_without_offset, self.CP, self.dt,
+                                                          accel_coast, self.allow_throttle)
 
-    for idx in range(2):
-      accel_clip[idx] = np.clip(accel_clip[idx], self.prev_accel_clip[idx] - 0.05, self.prev_accel_clip[idx] + 0.05)
-    self.output_a_target = np.clip(output_a_target, accel_clip[0], accel_clip[1])
-    self.prev_accel_clip = accel_clip
+    candidates = [(output_a_target_mpc, self.mpc.source, output_should_stop_mpc),
+                  (self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop)]
+    if sm['selfdriveState'].experimentalMode:
+      candidates.append((output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e))
+
+    output_a_target, self.mpc.source, _ = min(candidates, key=lambda c: c[0])
+    self.output_should_stop = any(should_stop for _, _, should_stop in candidates)
+    self.output_a_target = np.clip(output_a_target, ACCEL_MIN, ACCEL_MAX)
+
+    self.a_desired = float(self.output_a_target)
+    if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
+      tss2_amul = 1.0
+      if self.a_desired < 0:
+        tss2_amul = np.interp(vk_ego,[0,10/3.6],[1.1,1.0]) #減速を強める
+        if accel_engaged_str:
+          if int(accel_engaged_str) >= 3 and v_cruise_kph <= 1.2: #ワンペダルモードで実際にMAX=1のとき
+            a2 = 1.04
+            if a2 > tss2_amul:
+              tss2_amul = a2
+      self.a_desired *= tss2_amul
+    self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.output_a_target + a_prev) / 2.0
 
   def publish(self, sm, pm):
     plan_send = messaging.new_message('longitudinalPlan')
