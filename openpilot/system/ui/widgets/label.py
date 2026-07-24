@@ -144,6 +144,10 @@ class Label(Widget):
     self._font_size = size
     self._update_text(self._text)
 
+  def set_icon(self, icon):
+    self._icon = icon
+    self._update_text(self._text)
+
   def _update_text(self, text):
     self._emojis = []
     self._text_size = []
@@ -607,7 +611,7 @@ class UnifiedLabel(Widget):
             self._scroll_pause_t = None
 
         elif self._scroll_state == ScrollState.SCROLLING:
-          self._scroll_offset -= 0.8 / 60. * gui_app.target_fps
+          self._scroll_offset -= 0.8 / (60 if not gui_app.big_ui() else 20) * gui_app.target_fps
           # don't fully hide
           if self._scroll_offset <= -size.x - self._rect.width / 3:
             self._scroll_offset = 0

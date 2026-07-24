@@ -1,6 +1,6 @@
 import math
 import pyray as rl
-from typing import TYPE_CHECKING, Union
+from typing import Union
 from enum import Enum
 from collections.abc import Callable
 from openpilot.system.ui.widgets import Widget
@@ -9,13 +9,10 @@ from openpilot.system.ui.widgets.scroller import DO_ZOOM
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.common.filter_simple import BounceFilter
 
-if TYPE_CHECKING:
+try:
   from openpilot.common.params import Params
-else:
-  try:
-    from openpilot.common.params import Params
-  except (ImportError, OSError):
-    Params = None
+except ImportError:
+  Params = None
 
 SCROLLING_SPEED_PX_S = 50
 COMPLICATION_SIZE    = 36
@@ -337,6 +334,33 @@ class BigMultiToggle(BigToggle):
       self._draw_pill(x, y, checked_idx == i)
       y += 35
 
+class BigMultiToggleAA(BigMultiToggle):
+  def _draw_content(self, _):
+    BigButton._draw_content(self, _)
+
+    checked_idx = self._options.index(self.value)
+
+    x = self._rect.x + self._rect.width - self._txt_enabled_toggle.width
+    y = self._rect.y
+
+    y -= 35
+    for i in range(len(self._options)):
+      if i > 0:
+        self._draw_pill(x, y, checked_idx == i)
+      y += 35
+
+class BigMultiToggleKN(BigMultiToggle):
+  def _draw_content(self, _):
+    BigButton._draw_content(self, _)
+
+    checked_idx = self._options.index(self.value)
+
+    x = self._rect.x + self._rect.width - self._txt_enabled_toggle.width
+    y = self._rect.y
+
+    for i in range(3): #ビット的に点灯させる。
+      self._draw_pill(x, y, (checked_idx & (1 << i)) != 0)
+      y += 35
 
 class GreyBigButton(BigButton):
   """Users should manage newlines with this class themselves"""

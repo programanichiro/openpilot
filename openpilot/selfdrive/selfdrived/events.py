@@ -12,6 +12,8 @@ from openpilot.common.constants import CV
 from openpilot.common.git import get_short_branch
 from openpilot.common.realtime import DT_CTRL
 from openpilot.selfdrive.locationd.calibrationd import MIN_SPEED_FILTER
+from openpilot.system.micd import SAMPLE_RATE, SAMPLE_BUFFER
+from openpilot.selfdrive.ui.feedback.feedbackd import FEEDBACK_MAX_DURATION
 from openpilot.common.hardware import HARDWARE
 
 AlertSize = log.SelfdriveState.AlertSize
@@ -160,7 +162,8 @@ class NoEntryAlert(Alert):
 
 class SoftDisableAlert(Alert):
   def __init__(self, alert_text_2: str):
-    super().__init__("TAKE CONTROL IMMEDIATELY", alert_text_2,
+    #super().__init__("TAKE CONTROL0 IMMEDIATELY", alert_text_2,
+    super().__init__(f"TCI {alert_text_2}", alert_text_2,
                      AlertStatus.userPrompt, AlertSize.full,
                      Priority.MID, VisualAlert.steerRequired,
                      AudibleAlert.warningSoft, 2.),
@@ -175,7 +178,8 @@ class UserSoftDisableAlert(SoftDisableAlert):
 
 class ImmediateDisableAlert(Alert):
   def __init__(self, alert_text_2: str):
-    super().__init__("TAKE CONTROL IMMEDIATELY", alert_text_2,
+    #super().__init__("TAKE CONTROL IMMEDIATELY", alert_text_2,
+    super().__init__(f"TCI2 {alert_text_2}", alert_text_2,
                      AlertStatus.critical, AlertSize.full,
                      Priority.HIGHEST, VisualAlert.steerRequired,
                      AudibleAlert.warningImmediate, 4.),
@@ -268,6 +272,14 @@ def too_distracted_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubM
     mins_left = sm['driverMonitoringState'].lockoutMinutesRemaining
     return NoEntryAlert("Too Distracted", f"{mins_left} minute{'s' if mins_left != 1 else ''} Left", priority=Priority.HIGH)
   return NoEntryAlert("Pay Attention to Engage", priority=Priority.HIGH)
+
+
+def audio_feedback_alert(CP: car.CarParams, CS: car.CarState, sm: messaging.SubMaster, metric: bool, soft_disable_time: int, personality) -> Alert:
+  duration = FEEDBACK_MAX_DURATION - ((sm['audioFeedback'].blockNum + 1) * SAMPLE_BUFFER / SAMPLE_RATE)
+  return NormalPermanentAlert(
+    "Recording Audio Feedback",
+    f"{round(duration)} second{'s' if round(duration) != 1 else ''} remaining. Press again to save early.",
+    priority=Priority.LOW)
 
 
 # *** debug alerts ***
@@ -392,7 +404,6 @@ def invalid_lkas_setting_alert(CP: car.CarParams, CS: car.CarState, sm: messagin
 EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   # ********** events with no alerts **********
 
-  EventName.noGps: {},
   EventName.stockFcw: {},
   EventName.actuatorsApiUnavailable: {},
 
@@ -407,14 +418,6 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.WARNING: longitudinal_maneuver_alert,
     ET.PERMANENT: NormalPermanentAlert("Longitudinal Maneuver Mode",
                                        "Ensure road ahead is clear"),
-  },
-
-  EventName.bigModelLoading: {
-    ET.NO_ENTRY: NoEntryAlert("Big Model Loading"),
-  },
-
-  EventName.bigModelReady: {
-    ET.PERMANENT: EngagementAlert(AudibleAlert.complete),
   },
 
   EventName.lateralManeuver: {
@@ -580,7 +583,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.WARNING: Alert(
       "Press Resume to Exit Standstill",
       "",
-      AlertStatus.userPrompt, AlertSize.small,
+      AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
   },
 
@@ -630,7 +633,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
 
   # Thrown when the fan is driven at >50% but is not rotating
   EventName.fanMalfunction: {
-    ET.PERMANENT: NormalPermanentAlert("Fan Malfunction", "Contact comma.ai/support"),
+    ET.PERMANENT: NormalPermanentAlert("Fan Malfunction", "Likely Hardware Issue"),
   },
 
   # Camera is not outputting frames
@@ -781,11 +784,14 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   EventName.sensorDataInvalid: {
     ET.PERMANENT: Alert(
       "Sensor Data Invalid",
-      "Contact comma.ai/support",
+      "Possible Hardware Issue",
       AlertStatus.normal, AlertSize.mid,
       Priority.LOWER, VisualAlert.none, AudibleAlert.none, .2, creation_delay=1.),
     ET.NO_ENTRY: NoEntryAlert("Sensor Data Invalid"),
     ET.SOFT_DISABLE: soft_disable_alert("Sensor Data Invalid"),
+  },
+
+  EventName.noGps: {
   },
 
   EventName.tooDistracted: {
@@ -846,6 +852,11 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: NoEntryAlert("Electronic Stability Control Disabled"),
   },
 
+  EventName.lowBattery: {
+    ET.SOFT_DISABLE: soft_disable_alert("Low Battery"),
+    ET.NO_ENTRY: NoEntryAlert("Low Battery"),
+  },
+
   # Different openpilot services communicate between each other at a certain
   # interval. If communication does not follow the regular schedule this alert
   # is thrown. This can mean a service crashed, did not broadcast a message for
@@ -899,6 +910,13 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.NO_ENTRY: posenet_invalid_alert,
   },
 
+  # When the localizer detects an acceleration of more than 40 m/s^2 (~4G) we
+  # alert the driver the device might have fallen from the windshield.
+  EventName.deviceFalling: {
+    ET.SOFT_DISABLE: soft_disable_alert("Device Fell Off Mount"),
+    ET.NO_ENTRY: NoEntryAlert("Device Fell Off Mount"),
+  },
+
   EventName.lowMemory: {
     ET.SOFT_DISABLE: soft_disable_alert("Low Memory: Reboot Your Device"),
     ET.PERMANENT: low_memory_alert,
@@ -919,6 +937,14 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   EventName.controlsMismatch: {
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Controls Mismatch"),
     ET.NO_ENTRY: NoEntryAlert("Controls Mismatch"),
+  },
+
+  # Sometimes the USB stack on the device can get into a bad state
+  # causing the connection to the panda to be lost
+  EventName.usbError: {
+    ET.SOFT_DISABLE: soft_disable_alert("USB Error: Reboot Your Device"),
+    ET.PERMANENT: NormalPermanentAlert("USB Error: Reboot Your Device"),
+    ET.NO_ENTRY: NoEntryAlert("USB Error: Reboot Your Device"),
   },
 
   # This alert can be thrown for the following reasons:
@@ -960,6 +986,20 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.USER_DISABLE: ImmediateDisableAlert("Reverse Gear"),
     ET.NO_ENTRY: NoEntryAlert("Reverse Gear"),
   },
+  EventName.hazardWarningLights: {
+    ET.WARNING: Alert(
+      "Hazard\nLights",
+      "",
+      AlertStatus.userPrompt, AlertSize.full,
+      Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
+  },
+  EventName.longActiveBrakeError: {
+    ET.WARNING: Alert(
+      "LongActive\nBrakePressed",
+      "",
+      AlertStatus.critical, AlertSize.full,
+      Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
+  },
 
   # On cars that use stock ACC the car can decide to cancel ACC for various reasons.
   # When this happens we can no long control the car so the user needs to be warned immediately.
@@ -973,7 +1013,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   # and this alert is thrown.
   EventName.relayMalfunction: {
     ET.IMMEDIATE_DISABLE: ImmediateDisableAlert("Harness Relay Malfunction"),
-    ET.PERMANENT: NormalPermanentAlert("Harness Relay Malfunction", "Contact comma.ai/support"),
+    ET.PERMANENT: NormalPermanentAlert("Harness Relay Malfunction", "Check Hardware"),
     ET.NO_ENTRY: NoEntryAlert("Harness Relay Malfunction"),
   },
 
@@ -1008,6 +1048,10 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
   EventName.userBookmark: {
     ET.PERMANENT: NormalPermanentAlert("Bookmark Saved", duration=1.5),
   },
+
+  EventName.audioFeedback: {
+    ET.PERMANENT: audio_feedback_alert,
+  },
 }
 
 
@@ -1031,7 +1075,7 @@ if HARDWARE.get_device_type() == 'mici':
       ET.WARNING: Alert(
         "Press Resume",
         "",
-        AlertStatus.userPrompt, AlertSize.small,
+        AlertStatus.normal, AlertSize.small,
         Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
     },
     EventName.preLaneChangeLeft: {
@@ -1075,6 +1119,20 @@ if HARDWARE.get_device_type() == 'mici':
         Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .2, creation_delay=0.5),
       ET.USER_DISABLE: ImmediateDisableAlert("Reverse"),
       ET.NO_ENTRY: NoEntryAlert("Reverse"),
+    },
+    EventName.hazardWarningLights: {
+      ET.WARNING: Alert(
+        "hazard lights",
+        "hazard warning lights",
+        AlertStatus.userPrompt, AlertSize.full,
+        Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
+    },
+    EventName.longActiveBrakeError: {
+      ET.WARNING: Alert(
+        "long brake",
+        "long active brake",
+        AlertStatus.critical, AlertSize.full,
+        Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
     },
   })
 
