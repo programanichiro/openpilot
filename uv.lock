@@ -6,6 +6,15 @@ requires-python = ">=3.12.3, <3.13"
 overrides = [{ name = "opendbc", editable = "opendbc_repo" }]
 
 [[package]]
+name = "attrs"
+version = "26.1.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/9a/8e/82a0fe20a541c03148528be8cac2408564a6c9a0cc7e9171802bc1d26985/attrs-26.1.0.tar.gz", hash = "sha256:d03ceb89cb322a8fd706d4fb91940737b6642aa36998fe130a9bc96c985eff32", size = 952055, upload-time = "2026-03-19T14:22:25.026Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl", hash = "sha256:c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309", size = 67548, upload-time = "2026-03-19T14:22:23.645Z" },
+]
+
+[[package]]
 name = "certifi"
 version = "2026.6.17"
 source = { registry = "https://pypi.org/simple" }
@@ -114,6 +123,16 @@ wheels = [
 ]
 
 [[package]]
+name = "comma-deps-bzip2"
+version = "1.0.8.post95"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/f8/ac/539d76e9bcebbc53d62274a19c47522b118dce3261fc6baea045f93c98b6/comma_deps_bzip2-1.0.8.post95-py3-none-macosx_11_0_arm64.whl", hash = "sha256:be466743b7fc56fa18c2c389a46bdeb0fc885cf3cf39b779d748ce540609ebd5", size = 42832, upload-time = "2026-06-24T23:58:39.592Z" },
+    { url = "https://files.pythonhosted.org/packages/a1/fe/5206bd6d716022cea259c4878c6a1927ab3555f4caa48a74efaa83d8f418/comma_deps_bzip2-1.0.8.post95-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:7c015d720cc5462f87062b4482c54684de6a237b4edb60612c2f58721413682f", size = 38629, upload-time = "2026-06-24T23:58:40.496Z" },
+    { url = "https://files.pythonhosted.org/packages/39/0e/78218f9a645ad9d27000153795d6819b3b52ca62d882aa46a413e40887be/comma_deps_bzip2-1.0.8.post95-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:3188a197aaf3efbfac975193887c59600b91a3b4eb7f62cc975377133cd48834", size = 36271, upload-time = "2026-06-24T23:58:41.2Z" },
+]
+
+[[package]]
 name = "comma-deps-capnproto"
 version = "1.0.1.post93"
 source = { registry = "https://pypi.org/simple" }
@@ -121,6 +140,14 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/19/a6/97c22a112e23f530db28f8ecf7b191ec16685d282fdbe892dff7437bdf6d/comma_deps_capnproto-1.0.1.post93-py3-none-macosx_11_0_arm64.whl", hash = "sha256:6717e8e34ef12116502f244b23f092984c1d15afa4e40b956450b74a0d4d2520", size = 2407330, upload-time = "2026-07-08T19:30:41.395Z" },
     { url = "https://files.pythonhosted.org/packages/6d/f2/79a15ff5f2c97a741923a97357f6a4235e4ced928ba1d4079d01c66df4b0/comma_deps_capnproto-1.0.1.post93-py3-none-manylinux_2_28_aarch64.whl", hash = "sha256:a70349446e2ec17b281ebaaae02ca4c35495f4210043c716c55139a05a826090", size = 2506341, upload-time = "2026-07-08T19:30:45.607Z" },
     { url = "https://files.pythonhosted.org/packages/80/a9/f61fe62045c4ea867f51f2d74b4edfabd6c272c62a3281a9f1f33825a725/comma_deps_capnproto-1.0.1.post93-py3-none-manylinux_2_28_x86_64.whl", hash = "sha256:f98cdba8f8c7f08a7a0c0a4b7cc0bfcf515e29ad8f1b5cb8eda4e253bef5e6e3", size = 2590769, upload-time = "2026-07-08T19:30:49.728Z" },
+]
+
+[[package]]
+name = "comma-deps-catch2"
+version = "2.13.10.post93"
+source = { registry = "https://pypi.org/simple" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/88/ee/b4ef7758d04a024775d49558ca930fec19aa37cd691ad9182b7141f4d4d7/comma_deps_catch2-2.13.10.post93-py3-none-any.whl", hash = "sha256:8f23293251b5db48c08885d8816ca252b3fb11b0c1c26775bae36e8b217e865e", size = 137085, upload-time = "2026-07-08T19:30:53.44Z" },
 ]
 
 [[package]]
@@ -386,6 +413,19 @@ wheels = [
 ]
 
 [[package]]
+name = "hypothesis"
+version = "6.47.5"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "attrs" },
+    { name = "sortedcontainers" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/45/f2/f77da8271b1abb630cb2090ead2f5aa4acc9639d632e8e68187f52527e4b/hypothesis-6.47.5.tar.gz", hash = "sha256:e0c1e253fc97e7ecdb9e2bbff2cf815d8739e0d1d3d093d67c3af5bb6a7211b0", size = 326641, upload-time = "2022-06-25T20:58:48.926Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/d3/a7/389bbaade2cbbb2534cb2715986041ed01c6d792152c527e71f7f68e93b5/hypothesis-6.47.5-py3-none-any.whl", hash = "sha256:87049b781ee11ec1c7948565b889ab02e428a1e32d427ab4de8fdb3649242d06", size = 387311, upload-time = "2022-06-25T20:58:45.281Z" },
+]
+
+[[package]]
 name = "idna"
 version = "3.18"
 source = { registry = "https://pypi.org/simple" }
@@ -581,6 +621,7 @@ source = { editable = "msgq_repo" }
 
 [package.metadata]
 requires-dist = [
+    { name = "catch2", marker = "extra == 'dev'", git = "https://github.com/commaai/dependencies.git?subdirectory=catch2&rev=release-catch2" },
     { name = "codespell", marker = "extra == 'dev'" },
     { name = "cppcheck", marker = "extra == 'dev'" },
     { name = "cpplint", marker = "extra == 'dev'" },
@@ -658,8 +699,10 @@ name = "openpilot"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
+    { name = "cffi" },
     { name = "comma-deps-acados" },
     { name = "comma-deps-capnproto" },
+    { name = "comma-deps-catch2" },
     { name = "comma-deps-ffmpeg" },
     { name = "comma-deps-gcc-arm-none-eabi" },
     { name = "comma-deps-git-lfs" },
@@ -667,6 +710,7 @@ dependencies = [
     { name = "comma-deps-raylib" },
     { name = "comma-deps-zeromq" },
     { name = "comma-deps-zstd" },
+    { name = "cython" },
     { name = "inputs" },
     { name = "jeepney" },
     { name = "numpy" },
@@ -703,6 +747,7 @@ submodules = [
 testing = [
     { name = "codespell" },
     { name = "coverage" },
+    { name = "hypothesis" },
     { name = "pytest" },
     { name = "pytest-xdist" },
     { name = "ruff" },
@@ -710,6 +755,7 @@ testing = [
 ]
 tools = [
     { name = "comma-deps-bootstrap-icons" },
+    { name = "comma-deps-bzip2" },
     { name = "comma-deps-imgui" },
     { name = "comma-deps-libusb" },
     { name = "comma-deps-ncurses" },
@@ -722,10 +768,13 @@ standalone = [
 
 [package.metadata]
 requires-dist = [
+    { name = "cffi" },
     { name = "codespell", marker = "extra == 'testing'" },
     { name = "comma-deps-acados" },
     { name = "comma-deps-bootstrap-icons", marker = "extra == 'tools'" },
+    { name = "comma-deps-bzip2", marker = "extra == 'tools'" },
     { name = "comma-deps-capnproto" },
+    { name = "comma-deps-catch2" },
     { name = "comma-deps-ffmpeg" },
     { name = "comma-deps-gcc-arm-none-eabi" },
     { name = "comma-deps-git-lfs" },
@@ -737,6 +786,8 @@ requires-dist = [
     { name = "comma-deps-zeromq" },
     { name = "comma-deps-zstd" },
     { name = "coverage", marker = "extra == 'testing'" },
+    { name = "cython" },
+    { name = "hypothesis", marker = "extra == 'testing'", specifier = "==6.47.*" },
     { name = "inputs" },
     { name = "jeepney" },
     { name = "matplotlib", marker = "extra == 'dev'" },
@@ -800,6 +851,7 @@ requires-dist = [
     { name = "libusb-package" },
     { name = "libusb1" },
     { name = "opendbc", git = "https://github.com/commaai/opendbc.git?rev=master" },
+    { name = "pycryptodome", marker = "extra == 'dev'", specifier = ">=3.9.8" },
     { name = "pytest", marker = "extra == 'dev'" },
     { name = "pytest-mock", marker = "extra == 'dev'" },
     { name = "pytest-timeout", marker = "extra == 'dev'" },
@@ -1147,6 +1199,15 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/94/e7/b2c673351809dca68a0e064b6af791aa332cf192da575fd474ed7d6f16a2/six-1.17.0.tar.gz", hash = "sha256:ff70335d468e7eb6ec65b95b99d3a2836546063f63acc5171de367e834932a81", size = 34031, upload-time = "2024-12-04T17:35:28.174Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/b7/ce/149a00dd41f10bc29e5921b496af8b574d8413afcd5e30dfa0ed46c2cc5e/six-1.17.0-py2.py3-none-any.whl", hash = "sha256:4721f391ed90541fddacab5acf947aa0d3dc7d27b2e1e8eda2be8970586c3274", size = 11050, upload-time = "2024-12-04T17:35:26.475Z" },
+]
+
+[[package]]
+name = "sortedcontainers"
+version = "2.4.0"
+source = { registry = "https://pypi.org/simple" }
+sdist = { url = "https://files.pythonhosted.org/packages/e8/c4/ba2f8066cceb6f23394729afe52f3bf7adec04bf9ed2c820b39e19299111/sortedcontainers-2.4.0.tar.gz", hash = "sha256:25caa5a06cc30b6b83d11423433f65d1f9d76c4c6a0c90e3379eaa43b9bfdb88", size = 30594, upload-time = "2021-05-16T22:03:42.897Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/32/46/9cb0e58b2deb7f82b84065f37f3bffeb12413f947f9388e4cac22c4621ce/sortedcontainers-2.4.0-py2.py3-none-any.whl", hash = "sha256:a163dcaede0f1c021485e957a39245190e74249897e2ae4b2aa38595db237ee0", size = 29575, upload-time = "2021-05-16T22:03:41.177Z" },
 ]
 
 [[package]]

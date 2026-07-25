@@ -10,13 +10,24 @@ MAX_CURVATURE = 0.2
 MAX_VEL_ERR = 5.0  # m/s
 MIN_STABLE_DELAY = 0.3
 
+#新処理をTSS2で使用
 # EU guidelines
+
+#k_vs_47700 =     [1.0, 0.96, 0.92, 0.92 , 0.92] #47700用減少補正。ツインウェイブ曲がれた。ちょっと内寄り気味
+#k_vs_47700 =     [1.0, 0.96, 0.92, 0.91 , 0.91] #47700用減少補正。
+#k_vs_47700 =     [1.0, 0.96, 0.92, 0.87 , 0.85] #47700用減少補正。参考、ツインウェイブ曲がれない。後半オーバーする
+#k_vs_org_47700 = [0  , 0.01, 0.02, 0.035, 0.05]
+k_vs_47700 =     [1.0, 0.96, 0.92, 0.91 , 0.90, 0.85 ] #47700用減少補正。
+k_vs_org_47700 = [0  , 0.01, 0.02, 0.035, 0.05, 0.075] #ツインウェイブ終盤オーバーステア対策
+with open('/dev/shm/curvature_info.txt','w') as fp:
+  fp.write('%.9f/%.3f' % (0 , 1.0))
+
 MAX_LATERAL_JERK = 5.0  # m/s^3
 MAX_LATERAL_ACCEL_NO_ROLL = 3.0  # m/s^2
 
 
 def should_stop(v_ego: float, a_target: float) -> bool:
-  return bool(v_ego < 0.3 and a_target < 0.1)
+  return bool(v_ego < 0.25 and a_target < 0.1)
 
 def clamp(val, min_val, max_val):
   clamped_val = float(np.clip(val, min_val, max_val))
@@ -53,8 +64,10 @@ def get_accel_from_plan(speeds, accels, t_idxs, action_t=DT_MDL):
       v_target = np.interp(action_t, t_idxs, speeds)
     a_target = 2 * (v_target - v_now) / (action_t) - a_now
   else:
+    v_now = 0.0
+    v_target = 0.0
     a_target = 0.0
-  return a_target
+  return a_target, should_stop(v_now, a_target)
 
 def curv_from_psis(psi_target, psi_rate, vego, action_t):
   vego = np.clip(vego, MIN_SPEED, np.inf)

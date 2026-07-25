@@ -7,6 +7,8 @@ from openpilot.common.params import Params
 from openpilot.common.hardware import PC, TICI
 from openpilot.system.manager.process import PythonProcess, NativeProcess, DaemonProcess
 
+params0 = Params()
+
 WEBCAM = os.getenv("USE_WEBCAM") is not None
 
 def driverview(started: bool, params: Params, CP: car.CarParams) -> bool:
@@ -29,7 +31,7 @@ def ublox(started: bool, params: Params, CP: car.CarParams) -> bool:
   use_ublox = ublox_available()
   if use_ublox != params.get_bool("UbloxAvailable"):
     params.put_bool("UbloxAvailable", use_ublox, block=True)
-  return started and use_ublox
+  return (started or params.get_bool("GpsAlwaysSwitch")) and use_ublox #startedをGpsAlwaysSwitchで常に有効に。
 
 def joystick(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and params.get_bool("JoystickDebugMode")
@@ -47,7 +49,7 @@ def not_long_maneuver(started: bool, params: Params, CP: car.CarParams) -> bool:
   return started and not params.get_bool("LongitudinalManeuverMode")
 
 def qcomgps(started: bool, params: Params, CP: car.CarParams) -> bool:
-  return started and not ublox_available()
+  return (started or params.get_bool("GpsAlwaysSwitch")) and not ublox_available()
 
 def always_run(started: bool, params: Params, CP: car.CarParams) -> bool:
   return True
@@ -116,6 +118,7 @@ procs = [
   PythonProcess("tombstoned", "openpilot.system.tombstoned", always_run, enabled=not PC),
   PythonProcess("updated", "openpilot.system.updated.updated", only_offroad, enabled=not PC),
   PythonProcess("uploader", "openpilot.system.loggerd.uploader", always_run),
+  PythonProcess("feedbackd", "openpilot.selfdrive.ui.feedback.feedbackd", only_onroad),
 
   # debug procs
   NativeProcess("bridge", "openpilot/cereal/messaging", ["./bridge"], notcar),

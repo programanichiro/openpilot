@@ -46,9 +46,8 @@ echo "[-] committing version $VERSION T=$SECONDS"
 git add -f .
 git commit -a -m "openpilot v$VERSION release"
 
-# Build and test before launch_chffrplus.sh creates the on-device package
-# symlinks. SConstruct uses the same package roots for build subprocesses.
-export PYTHONPATH="$BUILD_DIR:$BUILD_DIR/msgq_repo:$BUILD_DIR/opendbc_repo:$BUILD_DIR/rednose_repo:$BUILD_DIR/teleoprtc_repo:$BUILD_DIR/tinygrad_repo"
+# Build
+export PYTHONPATH="$BUILD_DIR"
 scons
 
 if [ -z "$PANDA_DEBUG_BUILD" ]; then

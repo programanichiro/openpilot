@@ -7,10 +7,10 @@ from openpilot.common.params import Params
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.system.ui.widgets.scroller import NavRawScrollPanel, NavScroller
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton
-from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog
+from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog, BigInputDialog
 from openpilot.selfdrive.ui.mici.widgets.pairing_dialog import PairingDialog
 from openpilot.selfdrive.ui.mici.onroad.driver_camera_dialog import DriverCameraDialog
-from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage
+from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage, QRCodeWidget
 from openpilot.system.ui.lib.application import gui_app, FontWeight, MousePos
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.widgets import Widget
@@ -19,6 +19,7 @@ from openpilot.system.ui.widgets.label import UnifiedLabel
 from openpilot.system.ui.widgets.html_render import HtmlRenderer
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
+from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
 
 class ReviewTermsPage(TermsPage, NavScroller):
   """TermsPage with NavWidget swipe-to-dismiss for reviewing in device settings."""
@@ -80,6 +81,7 @@ class EngagedConfirmationCircleButton(BigCircleButton):
                red: bool = False, icon_offset: tuple[int, int] = (0, 0)):
     super().__init__(icon, red, icon_offset)
     self.set_click_callback(lambda: _engaged_confirmation_click(callback, title, icon, exit_on_confirm=exit_on_confirm, red=red))
+    #self.set_click_callback(callback) #操作不能であればこちら
 
 
 class EngagedConfirmationButton(BigButton):
@@ -155,7 +157,6 @@ class PairBigButton(BigButton):
       dlg = PairingDialog()
     gui_app.push_widget(dlg)
 
-
 class DeviceLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
@@ -175,6 +176,28 @@ class DeviceLayoutMici(NavScroller):
       params.remove("LiveParametersV2")
       params.remove("LiveDelay")
       params.put_bool("OnroadCycleRequested", True, block=True)
+
+    def device_offset_btn_callback():
+      device_offset = device_offset_btn.value
+      device_offset = device_offset.removesuffix(" [cm]")
+
+      def device_offset_callback(offset: str):
+        if offset:
+          try:
+            with open('/data/device_offset.txt','w') as fp:
+              fp.write("%s" % (offset))
+          except Exception as e:
+            device_offset_btn.set_value("")
+            return
+
+          if offset == "0" or not offset:
+            device_offset_btn.set_value("")
+          else:
+            device_offset_btn.set_value(offset+" [cm]")
+
+      #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はcomma再起動＆キャリブレーションリセットが必要。
+      dlg = BigInputDialog("Device offset", device_offset, confirm_callback=device_offset_callback)
+      gui_app.push_widget(dlg)
 
     reset_calibration_btn = EngagedConfirmationButton("reset calibration", "reset", gui_app.texture("icons_mici/settings/device/lkas.png", 122, 64),
                                                       reset_calibration_callback)
@@ -200,6 +223,28 @@ class DeviceLayoutMici(NavScroller):
     terms_btn = BigButton("terms &\nconditions", "", gui_app.texture("icons_mici/settings/device/info.png", 64, 64))
     terms_btn.set_click_callback(lambda: gui_app.push_widget(ReviewTermsPage()))
 
+    icon_device_offset = gui_app.texture("icons_mici/settings/device_icon.png",64,64)
+    device_offset_btn = BigButton("device offset          ", "", icon_device_offset)
+    try:
+      with open('/data/device_offset.txt','r') as fp:
+        device_offset_str = fp.read()
+        if device_offset_str:
+          device_offset_btn.set_value(device_offset_str+" [cm]")
+    except Exception as e:
+      pass
+    device_offset_btn.set_click_callback(device_offset_btn_callback)
+
+    vehicle_panel = VehicleSelectMici()
+    vehicle_btn = BigButton("vehicle select", "auto")
+    try:
+      with open('/data/fixed_fingerprint.txt','r') as fp:
+        fixed_fingerprint_str = fp.read()
+        if fixed_fingerprint_str:
+          vehicle_btn.set_value(fixed_fingerprint_str) #セットされていたらその名前にする
+    except Exception as e:
+      pass
+    vehicle_btn.set_click_callback(lambda: gui_app.push_widget(vehicle_panel))
+
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
       PairBigButton(),
@@ -207,12 +252,119 @@ class DeviceLayoutMici(NavScroller):
       driver_cam_btn,
       terms_btn,
       regulatory_btn,
+      device_offset_btn,
       reset_calibration_btn,
+      vehicle_btn,
       reboot_btn,
       self._power_off_btn,
     ])
+
+    device_dir = "0000"
+    if Params().get("DongleId") != UNREGISTERED_DONGLE_ID:
+      device_dir = Params().get("DongleId")[:4] #ドングルIDの頭文字４つ
+
+    try:
+      with open("/data/gpslog_pass.txt", "r") as f:
+        key_raw = f.read().strip()
+        key_raw = key_raw[:-8] #後ろ8文字を削る
+
+        username = Params().get("GithubUsername")
+        if username:
+          self._scroller.add_widgets([
+            QRCodeWidget(f"https://{username}.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=latest"),
+          ])
+    except Exception:
+      pass
 
   def _on_regulatory(self):
     if not self._fcc_dialog:
       self._fcc_dialog = MiciFccModal(os.path.join(BASEDIR, "openpilot/selfdrive/assets/offroad/mici_fcc.html"))
     gui_app.push_widget(self._fcc_dialog)
+
+class VehicleSelecBigButton(BigButton):
+  def __init__(self,title,subtitle,callback):
+    super().__init__(title, subtitle)
+
+    self._callback = callback
+    self._title = title
+
+  def _handle_mouse_release(self, mouse_pos: MousePos):
+    super()._handle_mouse_release(mouse_pos)
+    if self._callback:
+      self._callback(self._title)
+
+class VehicleSelectMici3(NavScroller):
+  def __init__(self, maker, car_name):
+    super().__init__()
+
+    model_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
+    for model_year in model_years:
+      year_btn = VehicleSelecBigButton(model_year, maker+" "+car_name,self.year_select_callback)
+      self._scroller.add_widget(year_btn)
+
+    self._maker = maker
+    self._car_name = car_name
+
+  def year_select_callback(self, year_model):
+    #ここでyear_modelを受け取り、self._makerとself._car_nameと結合して/data/fixed_fingerprint.txtに保存する。
+    with open('/data/fixed_fingerprint.txt','w') as fp:
+      fp.write(f"{self._maker} {self._car_name} {year_model}")
+    gui_app.pop_widget()
+    gui_app.pop_widget()
+    gui_app.pop_widget()
+
+
+class VehicleSelectMici2(NavScroller):
+  def __init__(self, maker):
+    super().__init__()
+
+    car_names = getCarBrandStrs(MIGRATION,1,maker)
+    for car_name in car_names:
+      model_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
+      if len(model_years) > 0: #
+        model_year_panel = VehicleSelectMici3(maker,car_name)
+        select_car_name = BigButton(car_name, maker)
+        select_car_name.set_click_callback(lambda panel=model_year_panel: gui_app.push_widget(panel))
+        self._scroller.add_widget(select_car_name)
+      else:
+        #年式無し
+        vehicle_btn = VehicleSelecBigButton(car_name, maker,self.vehicle_select_callback)
+        self._scroller.add_widget(vehicle_btn)
+
+    self._maker = maker
+
+  def vehicle_select_callback(self, car_name):
+    #ここでcar_nameを受け取り、self._makerと結合して/data/fixed_fingerprint.txtに保存する。
+    with open('/data/fixed_fingerprint.txt','w') as fp:
+      fp.write(f"{self._maker} {car_name}")
+    gui_app.pop_widget()
+    gui_app.pop_widget()
+
+
+class VehicleSelectMici(NavScroller):
+  def __init__(self):
+    super().__init__()
+
+    def vehicle_auto_select_callback():
+      try:
+        os.remove('/data/fixed_fingerprint.txt')
+      except FileNotFoundError:
+        pass
+      gui_app.pop_widget()
+
+    vehicle_auto_select = BigButton("auto select", "")
+    vehicle_auto_select.set_click_callback(vehicle_auto_select_callback)
+
+    self._scroller.add_widgets([
+      vehicle_auto_select,
+    ])
+
+    makers = getCarBrandStrs(MIGRATION,0)
+
+    for maker in makers:
+      car_names = getCarBrandStrs(MIGRATION,1,maker)
+      if len(car_names) > 0: #
+        vehicle_panel = VehicleSelectMici2(maker)
+        select_maker = BigButton(maker, "")
+        select_maker.set_click_callback(lambda panel=vehicle_panel: gui_app.push_widget(panel))
+        self._scroller.add_widget(select_maker)

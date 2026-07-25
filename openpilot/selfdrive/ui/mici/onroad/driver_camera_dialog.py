@@ -10,6 +10,15 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.nav_widget import NavWidget
 from openpilot.system.ui.widgets.label import gui_label
 
+device_y_offset = 0
+try:
+  with open('/data/device_offset.txt','r') as fp:
+    device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+    if device_offset_str:
+      device_y_offset = float(device_offset_str)
+      device_y_offset /= 100.0 #cmからmへ変換
+except Exception as e:
+  pass
 
 class DriverCameraView(CameraView):
   def _calc_frame_matrix(self, rect: rl.Rectangle):
@@ -17,6 +26,7 @@ class DriverCameraView(CameraView):
     driver_view_ratio = 1.5
     base[0, 0] *= driver_view_ratio
     base[1, 1] *= driver_view_ratio
+    base[0, 2] += (device_y_offset*(50 if gui_app.big_ui() else 30)/0.12) / (rect.width / 2) #12cmで30くらい,_renderでのx_offsetへの影響を加味して(rect.width / 2)で割っている。
     return base
 
 
@@ -152,11 +162,11 @@ class BaseDriverCameraDialog(Widget):
   def _load_eye_textures(self):
     """Lazy load eye textures"""
     if self._eye_fill_texture is None:
-      self._eye_fill_texture = gui_app.texture("icons_mici/onroad/eye_fill.png", self._eye_size, self._eye_size)
+      self._eye_fill_texture = gui_app.texture("icons_mici/onroad/eye_fill.png", self._eye_size, self._eye_size*213/300)
     if self._eye_orange_texture is None:
-      self._eye_orange_texture = gui_app.texture("icons_mici/onroad/eye_orange.png", self._eye_size, self._eye_size)
+      self._eye_orange_texture = gui_app.texture("icons_mici/onroad/eye_orange.png", self._eye_size, self._eye_size*266/300)
     if self._glasses_texture is None:
-      self._glasses_texture = gui_app.texture("icons_mici/onroad/glasses.png", self._glasses_size, self._glasses_size)
+      self._glasses_texture = gui_app.texture("icons_mici/onroad/glasses.png", self._glasses_size, self._glasses_size*110/300)
 
   def _draw_face_detection(self, rect: rl.Rectangle):
     dm_state = ui_state.sm["driverMonitoringState"]
@@ -185,7 +195,7 @@ class BaseDriverCameraDialog(Widget):
     scale_y = rect.height / 1080.0
     fbox_x = rect.x + rect.width / 2 + offset_x * scale_x
     fbox_y = rect.y + rect.height / 2 + offset_y * scale_y
-    box_size = 75
+    box_size = 75 if not gui_app.big_ui() else 115
     line_thickness = 3
 
     line_color = rl.Color(255, 255, 255, int(alpha * 255))
@@ -216,7 +226,7 @@ class BaseDriverCameraDialog(Widget):
     for eye_x, eye_y, eye_prob in [(left_eye_x, left_eye_y, left_eye_prob), (right_eye_x, right_eye_y, right_eye_prob)]:
       fill_opacity = eye_prob
       orange_opacity = 1.0 - eye_prob
-
+      #print(f"fill_opacity {fill_opacity}")
       rl.draw_texture_v(self._eye_orange_texture, (eye_x, eye_y), rl.Color(255, 255, 255, int(255 * orange_opacity)))
       rl.draw_texture_v(self._eye_fill_texture, (eye_x, eye_y), rl.Color(255, 255, 255, int(255 * fill_opacity)))
 
@@ -226,6 +236,7 @@ class BaseDriverCameraDialog(Widget):
     glasses_y = rect.y
     glasses_pos = rl.Vector2(glasses_x, glasses_y)
     glasses_prob = driver_data.sunglassesProb
+    #print(f"glasses_prob {glasses_prob}")
     rl.draw_texture_v(self._glasses_texture, glasses_pos, rl.Color(70, 80, 161, int(255 * glasses_prob)))
 
 
