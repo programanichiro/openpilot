@@ -1095,7 +1095,7 @@ class LongitudinalPlanner:
     self.output_a_target = np.clip(output_a_target, ACCEL_MIN, ACCEL_MAX)
 
     self.a_desired = float(self.output_a_target)
-    if tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
+    if False: #tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
       tss2_amul = 1.0
       if self.a_desired < 0:
         tss2_amul = np.interp(vk_ego,[0,10/3.6],[1.1,1.0]) #減速を強める
