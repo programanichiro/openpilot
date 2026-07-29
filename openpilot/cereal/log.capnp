@@ -129,7 +129,7 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     userBookmark @95;
     excessiveActuation @96;
     bigModelLoading @100;
-    bigModelReady @101;
+    bigModelFailed @102;
 
     hazardWarningLights @102;
     longActiveBrakeError @103;
@@ -139,6 +139,7 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     deviceFallingDEPRECATED @71;
     usbErrorDEPRECATED @78;
     audioFeedbackDEPRECATED @97;
+    bigModelReadyDEPRECATED @101;
   }
 }
 
