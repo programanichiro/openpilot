@@ -8,8 +8,7 @@ from collections.abc import Callable
 from openpilot.system.ui.lib.application import gui_app, MousePos, MAX_TOUCH_SLOTS, MouseEvent
 
 class DeviceLike(Protocol):
-  @property
-  def awake(self) -> bool: ...
+  awake: bool
 
 
 def _get_device() -> DeviceLike:

@@ -1,6 +1,7 @@
 import multiprocessing
 import unittest
 import msgq
+from parameterized import parameterized_class
 from typing import Optional
 
 WAIT_TIMEOUT = 5
@@ -91,10 +92,12 @@ class TestEvents(unittest.TestCase):
     assert msgq.wait_for_one_event([h.recv_called_event for h in handles], WAIT_TIMEOUT) == 1
 
 
-class FakeSocketsTestBase:
+@parameterized_class([{"prefix": None}, {"prefix": "test"}])
+class TestFakeSockets(unittest.TestCase):
   prefix: Optional[str] = None
 
   def setUp(self):
+    super().setUp()
     msgq.toggle_fake_events(True)
     if self.prefix is not None:
       msgq.set_fake_prefix(self.prefix)
@@ -104,6 +107,7 @@ class FakeSocketsTestBase:
   def tearDown(self):
     msgq.toggle_fake_events(False)
     msgq.delete_fake_prefix()
+    super().tearDown()
 
   def test_event_handle_init(self):
     handle = msgq.fake_event_handle("controlsState", override=True)
@@ -159,7 +163,7 @@ class FakeSocketsTestBase:
       _ = sub_sock.receive()
       assert not recv_called.peek()
     except RuntimeError:
-      raise AssertionError("event.wait() timed out")
+      self.fail("event.wait() timed out")
 
   def test_synced_pub_sub(self):
     carState_handle = msgq.fake_event_handle("carState", enable=True)
@@ -194,15 +198,7 @@ class FakeSocketsTestBase:
         frame = int.from_bytes(msg, 'little')
         assert frame == i
     except RuntimeError:
-      raise AssertionError("event.wait() timed out")
+      self.fail("event.wait() timed out")
     finally:
       p.kill()
       p.join()
-
-
-class TestFakeSockets(FakeSocketsTestBase, unittest.TestCase):
-  pass
-
-
-class TestFakeSocketsWithPrefix(FakeSocketsTestBase, unittest.TestCase):
-  prefix = "test"

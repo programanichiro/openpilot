@@ -9,13 +9,14 @@ from openpilot.cereal import log
 from opendbc.car.structs import car
 from msgq.visionipc import VisionIpcClient, VisionStreamType
 
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.gps import get_gps_location_service
 
-from openpilot.selfdrive.car.car_events import CarEvents
+from openpilot.selfdrive.car.car_specific import CarSpecificEvents
 from openpilot.selfdrive.locationd.helpers import PoseCalibrator, Pose
 from openpilot.selfdrive.selfdrived.events import Events, ET
 from openpilot.selfdrive.selfdrived.helpers import ExcessiveActuationCheck
@@ -44,6 +45,8 @@ MonitoringPolicy = log.DriverMonitoringState.MonitoringPolicy
 
 IGNORED_SAFETY_MODES = (SafetyModel.silent, SafetyModel.noOutput)
 
+ACCEL_PUSH_COUNT = 0
+accel_engaged_str = '0'
 
 class SelfdriveD:
   def __init__(self, CP=None):
@@ -59,16 +62,12 @@ class SelfdriveD:
     else:
       self.CP = CP
 
-    self.car_events = CarEvents(self.CP)
+    self.car_events = CarSpecificEvents(self.CP)
 
     self.pose_calibrator = PoseCalibrator()
     self.calibrated_pose: Pose | None = None
     self.excessive_actuation_check = ExcessiveActuationCheck()
     self.excessive_actuation = self.params.get("Offroad_ExcessiveActuation") is not None
-    self.big_model_loading = False
-    self.big_model_active = False
-    self.big_model_failed = False
-    self.big_model_ready_t = 0.
 
     # Setup sockets
     self.pm = messaging.PubMaster(['selfdriveState', 'onroadEvents'])
@@ -90,7 +89,7 @@ class SelfdriveD:
     self.sm = messaging.SubMaster(['deviceState', 'pandaStates', 'peripheralState', 'modelV2', 'liveCalibration',
                                    'carOutput', 'driverMonitoringState', 'longitudinalPlan', 'livePose', 'liveDelay',
                                    'managerState', 'liveParameters', 'radarState', 'liveTorqueParameters',
-                                   'controlsState', 'carControl', 'driverAssistance', 'alertDebug', 'userBookmark',
+                                   'controlsState', 'carControl', 'driverAssistance', 'alertDebug', 'userBookmark', 'audioFeedback',
                                    'lateralManeuverPlan'] + \
                                    self.camera_packets + self.sensor_packets + self.gps_packets,
                                   ignore_alive=ignore, ignore_avg_freq=ignore,
@@ -133,7 +132,7 @@ class SelfdriveD:
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
     # Determine startup event
-    self.startup_event = EventName.startup if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
+    self.startup_event = EventName.startup #if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
     if HARDWARE.get_device_type() == 'mici':
       self.startup_event = None
     if not car_recognized:
@@ -158,27 +157,6 @@ class SelfdriveD:
       self.events.add(EventName.joystickDebug)
       self.startup_event = None
 
-    loading = self.params.get_bool("UsbGpuLoading")
-    if self.big_model_loading and not loading:
-      self.big_model_ready_t = time.monotonic()
-    self.big_model_loading = loading
-    if self.big_model_loading:
-      self.events.add(EventName.bigModelLoading)
-
-    big_active = self.params.get("UsbGpuActive")
-    usbgpu_present = self.sm['deviceState'].chestnutPresent
-    model_unavailable = big_active is True and self.sm.seen['modelV2'] and not self.sm.alive['modelV2']
-    big_failed = big_active is False or model_unavailable or (self.big_model_active and not usbgpu_present)
-    if big_failed and not self.big_model_failed:
-      self.events.add(EventName.bigModelFailed)
-    self.big_model_failed = big_failed
-
-    # soft disable if the big model fails
-    if big_active:
-      self.big_model_active = True
-    if not self.enabled and not model_unavailable:
-      self.big_model_active = False
-
     if self.sm.recv_frame['lateralManeuverPlan'] > 0:
       self.events.add(EventName.lateralManeuver)
       self.startup_event = None
@@ -196,9 +174,12 @@ class SelfdriveD:
       self.events.add(EventName.selfdriveInitializing)
       return
 
-    # Check for user bookmark press
+    # Check for user bookmark press (bookmark button or end of LKAS button feedback)
     if self.sm.updated['userBookmark']:
       self.events.add(EventName.userBookmark)
+
+    if self.sm.updated['audioFeedback']:
+      self.events.add(EventName.audioFeedback)
 
     # Don't add any more events while in dashcam mode
     if self.CP.passive:
@@ -245,8 +226,33 @@ class SelfdriveD:
           # body always wants to enable
           self.events.add(EventName.pcmEnable)
 
+      global ACCEL_PUSH_COUNT,accel_engaged_str
+      engage_disable = False
+      if CS.gasPressed:
+        accel_engaged = False
+        if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
+          try:
+            with open('/dev/shm/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
+              accel_engaged_str = fp.read()
+          except Exception as e:
+            pass
+        if accel_engaged_str:
+          if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+            accel_engaged = True
+          if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+            accel_engaged = True
+            ACCEL_PUSH_COUNT = 100
+        if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
+          engage_disable = True
+        ACCEL_PUSH_COUNT += 1
+      else:
+        if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+          engage_disable = True
+        ACCEL_PUSH_COUNT = 0
+
       # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-      if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+      #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+      if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
         (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
         (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
         self.events.add(EventName.pedalPressed)
@@ -256,7 +262,7 @@ class SelfdriveD:
       self.events.add(EventName.overheat)
     if self.sm['deviceState'].freeSpacePercent < 7 and not SIMULATION:
       self.events.add(EventName.outOfSpace)
-    if self.sm['deviceState'].memoryUsagePercent > 90 and not SIMULATION:
+    if self.sm['deviceState'].memoryUsagePercent > 94 and not SIMULATION:
       self.events.add(EventName.lowMemory)
 
     # Alert if fan isn't spinning for 5 seconds
@@ -342,9 +348,6 @@ class SelfdriveD:
     # All events here should at least have NO_ENTRY and SOFT_DISABLE.
     num_events = len(self.events)
 
-    if self.big_model_active and big_failed:
-      self.events.add(EventName.modeldLagging)
-
     not_running = {p.name for p in self.sm['managerState'].processes if not p.running and p.shouldBeRunning}
     if self.sm.recv_frame['managerState'] and len(not_running):
       if not_running != self.not_running_prev:
@@ -367,6 +370,8 @@ class SelfdriveD:
         self.events.add(EventName.radarTempUnavailable)
       elif any(self.sm['radarState'].radarErrors.to_dict().values()):
         self.events.add(EventName.radarFault)
+    if not self.sm.valid['pandaStates']:
+      self.events.add(EventName.usbError)
     if CS.canTimeout:
       self.events.add(EventName.canBusMissing)
     elif not CS.canValid:
@@ -375,13 +380,12 @@ class SelfdriveD:
     # generic catch-all. ideally, a more specific event should be added above instead
     has_disable_events = self.events.contains(ET.NO_ENTRY) and (self.events.contains(ET.SOFT_DISABLE) or self.events.contains(ET.IMMEDIATE_DISABLE))
     no_system_errors = (not has_disable_events) or (len(self.events) == num_events)
-    warmup_sec = 5.
-    big_model_settling = self.big_model_loading or time.monotonic() < self.big_model_ready_t + warmup_sec
-    if not self.sm.all_checks() and no_system_errors and not big_model_settling:  # the load holds modelV2 and friends back on purpose
+    if not self.sm.all_checks() and no_system_errors:
       if not self.sm.all_alive():
         self.events.add(EventName.commIssue)
       elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
+        # self.events.add(EventName.commIssueAvgFreq)
+        pass
       else:
         self.events.add(EventName.commIssue)
 
@@ -396,7 +400,7 @@ class SelfdriveD:
     else:
       self.logged_comm_issue = None
 
-    if not self.CP.notCar and not big_model_settling:  # localization has nothing to work with during the load
+    if not self.CP.notCar:
       if not self.sm['livePose'].posenetOK:
         self.events.add(EventName.posenetInvalid)
       if not self.sm['livePose'].inputsOK:
@@ -440,7 +444,7 @@ class SelfdriveD:
 
     # GPS checks
     gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
-    if not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500):
+    if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID and not gps_ok and self.sm['livePose'].inputsOK and (self.distance_traveled > 1500 and self.distance_traveled < 3000):
       self.events.add(EventName.noGps)
     if gps_ok:
       self.distance_traveled = 0
@@ -456,7 +460,7 @@ class SelfdriveD:
       if any(not be.pressed and be.type == ButtonType.gapAdjustCruise for be in CS.buttonEvents):
         self.personality = (self.personality - 1) % 3
         self.params.put('LongitudinalPersonality', self.personality)
-        self.events.add(EventName.personalityChanged)
+        # self.events.add(EventName.personalityChanged)イチロウパイロットでは要らない。
 
   def data_sample(self):
     _car_state = messaging.recv_one(self.car_state_sock)

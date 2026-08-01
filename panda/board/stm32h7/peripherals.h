@@ -96,7 +96,6 @@ void peripherals_init(void) {
   RCC->AHB1ENR |= RCC_AHB1ENR_DMA2EN;  // SPI DMA
   RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN;
   RCC->AHB4ENR |= RCC_AHB4ENR_BDMAEN; // Audio DMA
-  RCC->APB4ENR |= RCC_APB4ENR_DTSEN; // Digital Temperature Sensor
 
   // Connectivity
   RCC->APB2ENR |= RCC_APB2ENR_SPI4EN;  // SPI

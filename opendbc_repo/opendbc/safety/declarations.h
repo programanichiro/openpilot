@@ -140,6 +140,7 @@ typedef struct {
   const int max_curvature_error;         // rad/m * curvature_to_can, max deviation from measured curvature (0 disables)
   const float curvature_error_min_speed; // min speed for the curvature error check [m/s]
   const int max_steer_power;             // max steer power if EPS supports it (0 disables)
+  const bool inactive_curvature_is_zero; // true resets desired to 0 on violation, false resets to measured curvature
 } CurvatureSteeringLimits;
 
 // parameters for lateral accel/jerk angle limiting using a simple vehicle model
@@ -253,6 +254,9 @@ void speed_mismatch_check(const float speed_2);
 void safety_tick(const safety_config *safety_config);
 
 // This can be set by the safety hooks
+extern bool lateral_controls_allowed;
+extern bool set_me_prev;
+
 extern bool controls_allowed;
 extern bool relay_malfunction;
 extern bool gas_pressed;

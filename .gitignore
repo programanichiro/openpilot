@@ -39,8 +39,6 @@ bin/
 *.os-*
 *.so
 *.a
-st[0-9A-Za-z][0-9A-Za-z][0-9A-Za-z][0-9A-Za-z][0-9A-Za-z][0-9A-Za-z]
-*.unchunked
 *.clb
 *.class
 *.pyxbldc
@@ -56,7 +54,7 @@ compare_runtime*.html
 openpilot/selfdrive/modeld/models/tg_input_devices.json
 
 # build artifacts
-docs/_site/
+docs_site/
 openpilot/selfdrive/pandad/pandad
 openpilot/cereal/services.h
 openpilot/cereal/gen
@@ -86,11 +84,11 @@ build/
 .ionide
 .vscode/*
 .history/
-!.vscode/settings.json
-!.vscode/tasks.json
-!.vscode/launch.json
-!.vscode/extensions.json
-!.vscode/*.code-snippets
+# !.vscode/settings.json
+# !.vscode/tasks.json
+# !.vscode/launch.json
+# !.vscode/extensions.json
+# !.vscode/*.code-snippets
 
 # agents
 .claude/

@@ -123,11 +123,11 @@ class WebRTCBaseStream(abc.ABC):
       self._consumer_tracks.append(track)
       self.incoming_audio_tracks.append(track)
 
-  def _find_offer_video(self, remote_sdp: str, used_mids: set[str]) -> Tuple[str, int]:
+  def _find_offer_video(self, remote_sdp: str) -> Tuple[str, int]:
     desc = Description(remote_sdp, Description.Type.Offer)
     for i in range(desc.media_count()):
       media = desc.media(i)
-      if media is None or media.type() != "video" or media.mid() in used_mids:
+      if media is None or media.type() != "video":
         continue
       for payload_type in media.payload_types():
         with contextlib.suppress(ValueError):
@@ -136,9 +136,8 @@ class WebRTCBaseStream(abc.ABC):
             return media.mid(), payload_type
     raise ValueError("Remote SDP does not offer H264 video")
 
-  def _make_video_media(self, track: TiciVideoStreamTrack, remote_sdp: str, used_mids: set[str]) -> Tuple[Description.Video, int, int, str]:
-    mid, payload_type = self._find_offer_video(remote_sdp, used_mids)
-    used_mids.add(mid)
+  def _make_video_media(self, track: TiciVideoStreamTrack, remote_sdp: str) -> Tuple[Description.Video, int, int, str]:
+    mid, payload_type = self._find_offer_video(remote_sdp)
     ssrc = random.randint(1, 0xFFFFFFFF)
     cname = f"teleoprtc-{random.getrandbits(32):08x}"
     stream_id = f"stream-{random.getrandbits(32):08x}"
@@ -148,9 +147,8 @@ class WebRTCBaseStream(abc.ABC):
     return media, ssrc, payload_type, cname
 
   def _add_producer_tracks(self, remote_sdp: Optional[str] = None):
-    used_mids: set[str] = set()
     for track in self.outgoing_video_tracks:
-      media, ssrc, payload_type, cname = self._make_video_media(track, remote_sdp or "", used_mids)
+      media, ssrc, payload_type, cname = self._make_video_media(track, remote_sdp or "")
       rtc_track = self.peer_connection.add_track(media)
 
       rtp_config = RtpPacketizationConfig(ssrc, cname, payload_type, H264RtpPacketizer.CLOCK_RATE)
@@ -356,6 +354,7 @@ class WebRTCBaseStream(abc.ABC):
         await task
     self._sender_tasks.clear()
     self.peer_connection.close()
+    self.peer_connection.reset_callbacks()
     self.messaging_channel = None
     self.incoming_camera_tracks.clear()
     self.incoming_audio_tracks.clear()

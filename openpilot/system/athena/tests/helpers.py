@@ -43,10 +43,11 @@ class MockApi:
 
 
 class MockWebsocket:
+  sock = socket.socket()
+
   def __init__(self, recv_queue, send_queue):
     self.recv_queue = recv_queue
     self.send_queue = send_queue
-    self.sock = socket.socket()
 
   def recv(self):
     data = self.recv_queue.get()
@@ -58,7 +59,7 @@ class MockWebsocket:
     self.send_queue.put_nowait((data, opcode))
 
   def close(self):
-    self.sock.close()
+    pass
 
 
 class HTTPRequestHandler(http.server.SimpleHTTPRequestHandler):

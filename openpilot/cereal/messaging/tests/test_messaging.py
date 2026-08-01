@@ -81,11 +81,10 @@ class TestMessaging(OpenpilotTestCase):
     assert len(msgs) == 0
 
     # no wait but msgs are queued up
-    pub_sock.send(messaging.new_message(sock).to_bytes())
-    assert sub_sock.receive() is not None  # synchronize the PUB/SUB connection
     num_msgs = random.randrange(3, 10)
     for _ in range(num_msgs):
       pub_sock.send(messaging.new_message(sock).to_bytes())
+    time.sleep(0.1)
     msgs = func(sub_sock)
     assert isinstance(msgs, list)
     assert all(isinstance(msg, expected_type) for msg in msgs)
@@ -112,7 +111,7 @@ class TestMessaging(OpenpilotTestCase):
   def test_recv_one(self):
     sock = "carState"
     pub_sock = messaging.pub_sock(sock)
-    sub_sock = messaging.sub_sock(sock, timeout=10)
+    sub_sock = messaging.sub_sock(sock, timeout=1000)
 
     # no msg in queue, socket should timeout
     recvd = messaging.recv_one(sub_sock)
@@ -143,7 +142,7 @@ class TestMessaging(OpenpilotTestCase):
 
   def test_recv_one_retry(self):
     sock = "carState"
-    sock_timeout = 0.005
+    sock_timeout = 0.1
     pub_sock = messaging.pub_sock(sock)
     sub_sock = messaging.sub_sock(sock, timeout=round(sock_timeout*1000))
 

@@ -23,7 +23,7 @@ EXPORT_DIR = os.path.join(LONG_MPC_DIR, "c_generated_code")
 JSON_FILE = os.path.join(LONG_MPC_DIR, "acados_ocp_long.json")
 
 LongitudinalPlanSource = log.LongitudinalPlan.LongitudinalPlanSource
-MPC_SOURCES = (LongitudinalPlanSource.lead0, LongitudinalPlanSource.lead1)
+MPC_SOURCES = (LongitudinalPlanSource.lead0, LongitudinalPlanSource.lead1, LongitudinalPlanSource.cruise)
 
 X_DIM = 3
 U_DIM = 1
@@ -55,6 +55,8 @@ FCW_IDXS = T_IDXS < 5.0
 T_DIFFS = np.diff(T_IDXS, prepend=[0.])
 COMFORT_BRAKE = 2.5
 STOP_DISTANCE = 6.0
+CRUISE_MIN_ACCEL = -1.2
+CRUISE_MAX_ACCEL = 1.6
 MIN_X_LEAD_FACTOR = 0.5
 
 def get_jerk_factor(personality=log.LongitudinalPersonality.standard):
@@ -284,9 +286,15 @@ class LongitudinalMpc:
     lead_xv = np.column_stack((x_lead_traj, v_lead_traj))
     return lead_xv
 
-  def process_lead(self, lead):
+  def process_lead(self, lead, red_signal_flag, stop_distance):
     v_ego = self.x0[1]
-    if lead is not None and lead.present:
+    # 赤信号停止モード時、パス終端を疑似前走車として挿入
+    if red_signal_flag == 3:  # 赤信号停止モード時
+      x_lead = stop_distance
+      v_lead = 0.0
+      a_lead = 0.0
+      a_lead_tau = _LEAD_ACCEL_TAU
+    elif lead is not None and lead.present:
       x_lead = lead.dRel
       v_lead = lead.vLead
       a_lead = lead.aLeadK
@@ -307,19 +315,30 @@ class LongitudinalMpc:
     lead_xv = self.extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
     return lead_xv
 
-  def update(self, radarstate, personality=log.LongitudinalPersonality.standard):
+  def update(self, radarstate, v_cruise, personality=log.LongitudinalPersonality.standard, red_signal_flag=0, stop_distance=0.0):
     t_follow = get_T_FOLLOW(personality)
+    v_ego = self.x0[1]
 
-    lead_xv_0 = self.process_lead(radarstate.leadOne)
-    lead_xv_1 = self.process_lead(radarstate.leadTwo)
+    lead_xv_0 = self.process_lead(radarstate.leadOne, red_signal_flag, stop_distance)
+    lead_xv_1 = self.process_lead(radarstate.leadTwo, red_signal_flag, stop_distance)
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
     # and then treat that as a stopped car/obstacle at this new distance.
     lead_0_obstacle = lead_xv_0[:,0] + get_stopped_equivalence_factor(lead_xv_0[:,1])
     lead_1_obstacle = lead_xv_1[:,0] + get_stopped_equivalence_factor(lead_xv_1[:,1])
+    lead_0_obstacle = np.maximum(0.0, lead_0_obstacle -1.0) #自車が1m手前で早く止まるように補正。
+    lead_1_obstacle = np.maximum(0.0, lead_1_obstacle -1.0) #自車が1m手前で早く止まるように補正。
 
-    x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle])
+    # Fake an obstacle for cruise, this ensures smooth acceleration to set speed
+    # when the leads are no factor.
+    v_lower = v_ego + (T_IDXS * CRUISE_MIN_ACCEL * 1.05)
+    # TODO does this make sense when max_a is negative?
+    v_upper = v_ego + (T_IDXS * CRUISE_MAX_ACCEL * 1.05)
+    v_cruise_clipped = np.clip(v_cruise * np.ones(N+1), v_lower, v_upper)
+    cruise_obstacle = np.cumsum(T_DIFFS * v_cruise_clipped) + get_safe_obstacle_distance(v_cruise_clipped, t_follow)
+
+    x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle, cruise_obstacle])
     self.source = MPC_SOURCES[np.argmin(x_obstacles[0])]
 
     self.yref[:,:] = 0.0

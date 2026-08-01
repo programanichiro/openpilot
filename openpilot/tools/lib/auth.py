@@ -32,6 +32,9 @@ from urllib.parse import parse_qs, urlencode
 from openpilot.tools.lib.api import APIError, CommaApi, UnauthorizedError
 from openpilot.tools.lib.auth_config import set_token, get_token
 
+PORT = 3000
+
+
 class ClientRedirectServer(HTTPServer):
   query_params: dict[str, Any] = {}
 
@@ -55,7 +58,7 @@ class ClientRedirectHandler(BaseHTTPRequestHandler):
     pass  # this prevent http server from dumping messages to stdout
 
 
-def auth_redirect_link(method, port):
+def auth_redirect_link(method):
   provider_id = {
     'google': 'g',
     'apple': 'a',
@@ -64,7 +67,7 @@ def auth_redirect_link(method, port):
 
   params = {
     'redirect_uri': f"https://api.comma.ai/v2/auth/{provider_id}/redirect/",
-    'state': f'service,localhost:{port}',
+    'state': f'service,localhost:{PORT}',
   }
 
   if method == 'google':
@@ -95,9 +98,9 @@ def auth_redirect_link(method, port):
 
 
 def login(method):
-  # Let the OS select an available port to avoid colliding with other services.
-  web_server = ClientRedirectServer(('localhost', 0), ClientRedirectHandler)
-  oauth_uri = auth_redirect_link(method, web_server.server_port)
+  oauth_uri = auth_redirect_link(method)
+
+  web_server = ClientRedirectServer(('localhost', PORT), ClientRedirectHandler)
   print(f'To sign in, use your browser and navigate to {oauth_uri}')
   webbrowser.open(oauth_uri, new=2)
 

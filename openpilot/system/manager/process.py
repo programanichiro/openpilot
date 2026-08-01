@@ -228,7 +228,7 @@ class DaemonProcess(ManagerProcess):
     pass
 
 
-def ensure_running(procs: ValuesView[ManagerProcess], started: bool, params: Params, CP: car.CarParams,
+def ensure_running(procs: ValuesView[ManagerProcess], started: bool, params=None, CP: car.CarParams=None,
                    not_run: list[str] | None=None) -> list[ManagerProcess]:
   if not_run is None:
     not_run = []

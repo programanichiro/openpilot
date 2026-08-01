@@ -11,6 +11,7 @@ from openpilot.selfdrive.ui.ui_state import device, ui_state
 from openpilot.selfdrive.ui.layouts.onboarding import OnboardingWindow
 from openpilot.selfdrive.ui.body.layouts.onroad import BodyLayout
 
+from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
 
 class MainState(IntEnum):
   HOME = 0
@@ -21,8 +22,9 @@ class MainState(IntEnum):
 class MainLayout(Widget):
   def __init__(self):
     super().__init__()
+    self.params = Params()
 
-    self._pm = messaging.PubMaster(['bookmarkButton', 'userBookmark'])
+    self._pm = messaging.PubMaster(['bookmarkButton'])
 
     self._sidebar = Sidebar()
     self._current_mode = MainState.HOME
@@ -87,7 +89,10 @@ class MainLayout(Widget):
       self._sidebar.set_visible(not ui_state.ignition)
       return
 
-    if ui_state.started:
+    branch = self.params.get("GitBranch")
+    dongleId = self.params.get("DongleId")
+    ok = "release" in branch or "debug" in branch or "d9000cf782e6" in dongleId #miciだと自分制限していないな。もうそろそろいいか？
+    if ui_state.started and ok:
       # Don't hide sidebar from interactive timeout
       if self._current_mode != MainState.ONROAD:
         self._sidebar.set_visible(False)
@@ -111,9 +116,9 @@ class MainLayout(Widget):
     self.open_settings(PanelType.DEVICE)
 
   def _on_bookmark_clicked(self):
-    for service in ('bookmarkButton', 'userBookmark'):
-      msg = messaging.new_message(service, valid=True)
-      self._pm.send(service, msg)
+    user_bookmark = messaging.new_message('bookmarkButton')
+    user_bookmark.valid = True
+    self._pm.send('bookmarkButton', user_bookmark)
 
   def _on_onroad_clicked(self):
     self._sidebar.set_visible(not self._sidebar.is_visible)
