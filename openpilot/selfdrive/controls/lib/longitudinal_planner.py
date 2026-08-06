@@ -101,7 +101,7 @@ def get_max_accel(v_ego):
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
 
-def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, accel_coast, allow_throttle):
+def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, accel_coast, allow_throttle, Max_1):
   max_accel = ACCEL_MAX if e2e else get_max_accel(v_ego)
 
   if not e2e:
@@ -114,18 +114,28 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
       coast_limit = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [max_accel, clipped_accel_coast])
       max_accel = min(max_accel, coast_limit)
 
+  _A_CRUISE_DECEL_GAIN = A_CRUISE_DECEL_GAIN
+  _A_CRUISE_ACCEL_GAIN = A_CRUISE_ACCEL_GAIN
+  _J_CRUISE_DECEL_SCALE = J_CRUISE_DECEL_SCALE
+  _J_CRUISE_ACCEL_SCALE = J_CRUISE_ACCEL_SCALE
+  if Max_1: #ワンペダルモード
+    _A_CRUISE_DECEL_GAIN = np.interp(v_ego, [20/3.6, 40/3.6], [A_CRUISE_DECEL_GAIN, 1])
+    _A_CRUISE_ACCEL_GAIN = np.interp(v_ego, [20/3.6, 40/3.6], [A_CRUISE_ACCEL_GAIN, 1])
+    _J_CRUISE_DECEL_SCALE = np.interp(v_ego, [20/3.6, 40/3.6], [J_CRUISE_DECEL_SCALE, 1])
+    _J_CRUISE_ACCEL_SCALE = np.interp(v_ego, [20/3.6, 40/3.6], [J_CRUISE_ACCEL_SCALE, 1])
+
   v_err = v_cruise - v_ego
   if v_err < 0.0:
-    v_err *= A_CRUISE_DECEL_GAIN
+    v_err *= _A_CRUISE_DECEL_GAIN
   else:
-    v_err *= A_CRUISE_ACCEL_GAIN
+    v_err *= _A_CRUISE_ACCEL_GAIN
   target_accel = np.clip(v_err, A_CRUISE_MIN, max_accel)
   if not e2e:
     j_cruise = np.interp(v_ego, A_CRUISE_MAX_BP, J_CRUISE_VALS)
     if v_err < 0.0:
-      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * J_CRUISE_DECEL_SCALE * dt, a_cruise_prev + j_cruise * dt))
+      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_DECEL_SCALE * dt, a_cruise_prev + j_cruise * dt))
     else:
-      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * J_CRUISE_ACCEL_SCALE * dt, a_cruise_prev + j_cruise * dt))
+      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_ACCEL_SCALE * dt, a_cruise_prev + j_cruise * dt))
 
   return target_accel
 
@@ -1094,7 +1104,7 @@ class LongitudinalPlanner:
 
     self.a_cruise = get_cruise_accel(sm['selfdriveState'].experimentalMode, v_cruise, v_ego,
                                      self.a_cruise, steer_angle_without_offset, self.CP, self.dt,
-                                     accel_coast, self.allow_throttle)
+                                     accel_coast, self.allow_throttle,OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
     candidates = [(output_a_target_mpc, self.mpc.source, output_should_stop_mpc),
