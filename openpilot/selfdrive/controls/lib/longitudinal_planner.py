@@ -81,8 +81,8 @@ A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MIN = -1.2
-A_CRUISE_ACCEL_GAIN = 0.6
-J_CRUISE_ACCEL_SCALE = 0.4
+A_CRUISE_ACCEL_GAIN = 0.55
+J_CRUISE_ACCEL_SCALE = 0.45
 A_CRUISE_DECEL_GAIN = 0.4
 J_CRUISE_DECEL_SCALE = 0.6
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
@@ -119,10 +119,10 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
   _J_CRUISE_DECEL_SCALE = J_CRUISE_DECEL_SCALE
   _J_CRUISE_ACCEL_SCALE = J_CRUISE_ACCEL_SCALE
   if Max_1: #ワンペダルモード
-    _A_CRUISE_DECEL_GAIN = np.interp(v_ego, [20/3.6, 40/3.6], [A_CRUISE_DECEL_GAIN, 1])
-    _A_CRUISE_ACCEL_GAIN = np.interp(v_ego, [20/3.6, 40/3.6], [A_CRUISE_ACCEL_GAIN, 1])
-    _J_CRUISE_DECEL_SCALE = np.interp(v_ego, [20/3.6, 40/3.6], [J_CRUISE_DECEL_SCALE, 1])
-    _J_CRUISE_ACCEL_SCALE = np.interp(v_ego, [20/3.6, 40/3.6], [J_CRUISE_ACCEL_SCALE, 1])
+    _A_CRUISE_DECEL_GAIN = np.interp(v_ego, [15/3.6, 35/3.6], [A_CRUISE_DECEL_GAIN, 1])
+    _A_CRUISE_ACCEL_GAIN = np.interp(v_ego, [15/3.6, 35/3.6], [A_CRUISE_ACCEL_GAIN, 1])
+    _J_CRUISE_DECEL_SCALE = np.interp(v_ego, [15/3.6, 35/3.6], [J_CRUISE_DECEL_SCALE, 1])
+    _J_CRUISE_ACCEL_SCALE = np.interp(v_ego, [15/3.6, 35/3.6], [J_CRUISE_ACCEL_SCALE, 1])
 
   v_err = v_cruise - v_ego
   if v_err < 0.0:
