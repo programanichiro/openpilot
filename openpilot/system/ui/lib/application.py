@@ -799,7 +799,7 @@ class GuiApplication:
           rl.gen_texture_mipmaps(font.texture)
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_TRILINEAR)
         self._fonts[font_weight_file] = font
-        self._font_path[font_weight_file] = fnt_path.as_posix()
+        self._font_path[font_weight_file] = (fspath / font_weight_file).as_posix()
 
     from openpilot.system.ui.widgets.keyboard import KEYBOARD_LAYOUTS
 
