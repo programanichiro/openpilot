@@ -20,7 +20,7 @@ from typing import NamedTuple
 from importlib.resources import as_file, files
 from openpilot.common.swaglog import cloudlog
 from openpilot.common.hardware import HARDWARE, PC
-from openpilot.system.ui.lib.multilang import multilang
+from openpilot.system.ui.lib.multilang import FONT_FALLBACK_LANGUAGES, TRANSLATIONS_DIR, multilang
 from openpilot.common.realtime import Ratekeeper
 from openpilot.common.params import Params
 
@@ -94,24 +94,32 @@ FONT_SCALE = 1.242 if BIG_UI else 1.16
 
 ASSETS_DIR = files("openpilot.selfdrive").joinpath("assets")
 FONT_DIR = ASSETS_DIR.joinpath("fonts")
+EXTRA_FONT_CHARS = "–‑✓×°§•X⚙✕◀▶✔⌫⇧␣○●↳çêüñ–‑✓×°§•€£¥"
+NOTO_FONTS = {
+  "ja": "NotoSansCJKjp-Regular.otf",
+  "ko": "NotoSansCJKkr-Regular.otf",
+  "th": "NotoSansThai-Regular.ttf",
+  "zh-CHS": "NotoSansCJKsc-Regular.otf",
+  "zh-CHT": "NotoSansCJKtc-Regular.otf",
+}
 
 
 class FontWeight(StrEnum):
-  NORMAL = "Inter-Regular.fnt" if BIG_UI else "Inter-Medium.fnt"
-  MEDIUM = "Inter-Medium.fnt"
-  BOLD = "Inter-Bold.fnt"
-  SEMI_BOLD = "Inter-SemiBold.fnt"
-  UNIFONT = "unifont.fnt"
+  NORMAL = "Inter-Regular.ttf" if BIG_UI else "Inter-Medium.ttf"
+  MEDIUM = "Inter-Medium.ttf"
+  BOLD = "Inter-Bold.ttf"
+  SEMI_BOLD = "Inter-SemiBold.ttf"
+  UNIFONT = "unifont.otf"
 
   # Small UI fonts
-  DISPLAY_REGULAR = "Inter-Regular.fnt"
-  ROMAN = "Inter-Regular.fnt"
-  DISPLAY = "Inter-Bold.fnt"
+  DISPLAY_REGULAR = "Inter-Regular.ttf"
+  ROMAN = "Inter-Regular.ttf"
+  DISPLAY = "Inter-Bold.ttf"
 
 
 def font_fallback(font: rl.Font, text: str) -> rl.Font:
-  """Fall back to unifont for languages that require it."""
-  if multilang.requires_unifont() and font != gui_app.font(FontWeight.UNIFONT) and font != gui_app.font("JP") and font != gui_app.font("JP2") and not text.isascii(): #UNIFONTなどを要求していないこと、全てAsciiの場合も除外。
+  """Use a Noto fallback for languages not covered by Inter."""
+  if multilang.requires_font_fallback() and font != gui_app.font(FontWeight.UNIFONT) and font != gui_app.font("JP") and font != gui_app.font("JP2") and not text.isascii(): #UNIFONTなどを要求していないこと、全てAsciiの場合も除外。
     #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
     if multilang._language == "ja":
       jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
@@ -121,7 +129,7 @@ def font_fallback(font: rl.Font, text: str) -> rl.Font:
       #  fp.write('font_count:%d' % int(exchg_font.glyphCount)) #全UIラベルで300程度。この程度なら増え過ぎ対策必須ではない。
       exchg_font.glyphCount
       return exchg_font
-    return gui_app.font(FontWeight.UNIFONT)
+    return gui_app.fallback_font()
   return font
 
 
@@ -210,6 +218,7 @@ class GuiApplication:
 
     self._fonts: dict[FontWeight, rl.Font] = {}
     self._font_path: dict[rl.Font, str] = {}
+    self._fallback_fonts: dict[str, rl.Font] = {}
     self._width = width if width is not None else GuiApplication._default_width()
     self._height = height if height is not None else GuiApplication._default_height()
 
@@ -573,6 +582,9 @@ class GuiApplication:
     for font in self._fonts.values():
       rl.unload_font(font)
     self._fonts = {}
+    for font in self._fallback_fonts.values():
+      rl.unload_font(font)
+    self._fallback_fonts = {}
 
     if self._render_texture is not None:
       rl.unload_render_texture(self._render_texture)
@@ -745,6 +757,21 @@ class GuiApplication:
         self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight])
     return self._fonts[font_weight]
 
+  def fallback_font(self) -> rl.Font:
+    language = multilang.language
+    if language not in self._fallback_fonts:
+      chars = set(map(chr, range(32, 127))) | set(EXTRA_FONT_CHARS)
+      chars.update(TRANSLATIONS_DIR.joinpath(f"app_{language}.po").read_text(encoding="utf-8"))
+      codepoints = sorted(map(ord, chars))
+      codepoint_buffer = rl.ffi.new("int[]", codepoints)
+      with as_file(FONT_DIR) as fspath:
+        font = rl.load_font_ex((fspath / NOTO_FONTS[language]).as_posix(), 48,
+                               rl.ffi.cast("int *", codepoint_buffer), len(codepoints))
+      rl.gen_texture_mipmaps(font.texture)
+      rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_TRILINEAR)
+      self._fallback_fonts[language] = font
+    return self._fallback_fonts[language]
+
   @property
   def width(self):
     return self._width
@@ -754,10 +781,20 @@ class GuiApplication:
     return self._height
 
   def _load_fonts(self):
+    base_chars = set(map(chr, range(32, 127))) | set(EXTRA_FONT_CHARS)
+    unifont_chars = set(base_chars)
+    for language, code in multilang.languages.items():
+      unifont_chars.update(language)
+      if code not in FONT_FALLBACK_LANGUAGES:
+        base_chars.update(TRANSLATIONS_DIR.joinpath(f"app_{code}.po").read_text(encoding="utf-8"))
+
     for font_weight_file in FontWeight:
       with as_file(FONT_DIR) as fspath:
-        fnt_path = fspath / font_weight_file
-        font = rl.load_font(fnt_path.as_posix())
+        unifont = font_weight_file == FontWeight.UNIFONT
+        codepoints = sorted(map(ord, unifont_chars if unifont else base_chars))
+        codepoint_buffer = rl.ffi.new("int[]", codepoints)
+        font = rl.load_font_ex((fspath / font_weight_file).as_posix(), 16 if unifont else 200,
+                               rl.ffi.cast("int *", codepoint_buffer), len(codepoints))
         if font_weight_file != FontWeight.UNIFONT:
           rl.gen_texture_mipmaps(font.texture)
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_TRILINEAR)
@@ -810,6 +847,8 @@ class GuiApplication:
     self._font_path["JP2"] = jp2_font_path
     rl.unload_codepoints(jp2_codepoints)
 
+    if multilang.requires_font_fallback():
+      self.fallback_font()
     rl.gui_set_font(self._fonts[FontWeight.NORMAL])
 
   def load_jis1_jis2_chars(self):
