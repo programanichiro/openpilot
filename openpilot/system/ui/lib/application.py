@@ -127,7 +127,6 @@ def font_fallback(font: rl.Font, text: str) -> rl.Font:
       gui_app._fonts["JPH"] = exchg_font
       # with open('/tmp/dynamic_font_count.txt','w') as fp:
       #  fp.write('font_count:%d' % int(exchg_font.glyphCount)) #全UIラベルで300程度。この程度なら増え過ぎ対策必須ではない。
-      exchg_font.glyphCount
       return exchg_font
     return gui_app.fallback_font()
   return font
