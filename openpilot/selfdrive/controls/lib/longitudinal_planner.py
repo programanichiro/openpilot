@@ -138,9 +138,9 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
   if not e2e:
     j_cruise = np.interp(v_ego, A_CRUISE_MAX_BP, J_CRUISE_VALS)
     if v_err < 0.0:
-      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_DECEL_SCALE * dt, a_cruise_prev + j_cruise * dt))
+      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_DECEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_DECEL_SCALE * dt))
     else:
-      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_ACCEL_SCALE * dt, a_cruise_prev + j_cruise * dt))
+      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_ACCEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_ACCEL_SCALE * dt))
 
   return target_accel
 
