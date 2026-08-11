@@ -30,7 +30,7 @@ DESCRIPTIONS = {
     "without a turn signal activated while driving over 31 mph (50 km/h)."
   ),
   "AlwaysOnDM": tr_noop("Enable driver monitoring even when openpilot is not engaged."),
-  'RecordFront': tr_noop("Upload data from the driver facing camera and help improve the driver monitoring algorithm."),
+  'RecordFront': tr_noop("Upload data from the cabin camera and help improve the driver monitoring algorithm."),
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
   "AccelMethodSwitch": tr_noop("Switch Accel Method to Official version or recommendation. A reboot is required."),
@@ -81,7 +81,7 @@ class TogglesLayout(Widget):
         False,
       ),
       "RecordFront": (
-        lambda: tr("Record and Upload Driver Camera"),
+        lambda: tr("Record and Upload Cabin Camera"),
         DESCRIPTIONS["RecordFront"],
         "monitoring.png",
         True,
