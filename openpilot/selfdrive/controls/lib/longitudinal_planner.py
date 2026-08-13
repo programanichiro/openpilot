@@ -18,7 +18,7 @@ from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 
-from opendbc.car.toyota.values import TSS2_CAR,ToyotaFlags
+from opendbc.car.toyota.values import ToyotaFlags
 params = Params()
 #g_tss_type = 0
 CVS_FRAME = 0
@@ -196,7 +196,7 @@ class LongitudinalPlanner:
     self.weak_one_pedal = False #True:チョン押し後の16オーバー判定無効
     self.max_one_pedal = False #True:低速から16オーバーエンゲージした
 
-    if self.CP.carFingerprint in TSS2_CAR or (self.CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value): #47700はTSS2相当の操舵範囲
+    if (self.CP.flags & ToyotaFlags.TSS2) or (self.CP.flags & ToyotaFlags.POWER_STEERING_TSS2.value): #47700はTSS2相当の操舵範囲
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
 
   def update(self, sm):
@@ -248,7 +248,7 @@ class LongitudinalPlanner:
     global CVS_FRAME , handle_center , OP_ENABLE_PREV , OP_ENABLE_v_cruise_kph , OP_ENABLE_gas_speed , OP_ENABLE_ACCEL_RELEASE , OP_ACCEL_PUSH , on_onepedal_ct , cruise_info_power_up , one_pedal_chenge_restrict_time #, g_tss_type
     min_acc_speed = 31
     v_cruise_kph = sm['carState'].vCruise
-    if self.CP.carFingerprint not in TSS2_CAR:
+    if not (self.CP.flags & ToyotaFlags.TSS2):
       tss_type = 1
       v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
       if phv_2019 == False:
