@@ -132,6 +132,9 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     bigModelLoading @100;
     bigModelFailed @102;
 
+    hazardWarningLights @104;
+    longActiveBrakeError @105;
+
     lowBatteryDEPRECATED @40;
     soundsUnavailableDEPRECATED @47;
     deviceFallingDEPRECATED @71;
@@ -704,13 +707,6 @@ struct UsbState {
     manufacturer @6 :Text;
     product @5 :Text;
     linkErrorCount @7 :UInt16;
-    usb3Lane @8 :Usb3Lane;
-
-    enum Usb3Lane {
-      unknown @0;
-      a @1;
-      b @2;
-    }
   }
 }
 

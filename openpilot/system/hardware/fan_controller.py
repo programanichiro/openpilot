@@ -1,18 +1,651 @@
 #!/usr/bin/env python3
 import numpy as np
+import os
+import json
+import base64
+import shutil
+from cryptography.hazmat.primitives.ciphers.aead import AESGCM
+import sqlite3
+import datetime
+import threading
+import requests
+import math
+import random
+import subprocess
 
 from openpilot.common.pid import PIDController
 from openpilot.common.hardware import HARDWARE
+from openpilot.common.params import Params
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
+from openpilot.selfdrive.ui.ui_state import ui_state
+
+#from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
+
+key_raw = None
+try:
+  with open("/data/gpslog_pass.txt", "r") as f:
+    key_raw = f.read().strip()
+    key_raw = key_raw[:-8] #後ろ8文字を削る
+    key = base64.urlsafe_b64decode(key_raw.encode("utf-8"))
+    aesgcm = AESGCM(key)
+except Exception:
+  pass
 
 # raise fan setpoint on tici/tizi to reduce noise
 # after raising LMH threshold in AGNOS 18.1 to prevent CPU throttling
 OFFSET = 0 if HARDWARE.get_device_type() == "mici" else 5
 
+# ----------------------------------------------------------
+# tile config
+# ----------------------------------------------------------
+
+TILE_DIR = "/data/osm_data/tiles"
+GRID_SIZE = 0.18  # 約20km
+
+SERVERS = [
+  "http://overpass.kumi.systems/api/interpreter",
+    # "https://overpass-api.de/api/interpreter",
+    # "https://overpass.private.coffee/api/interpreter",
+    # "https://maps.mail.ru/osm/tools/overpass/api/interpreter",
+    # "https://overpass.openstreetmap.ru/api/interpreter"
+]
+
+def overpass_request(query, timeout=5.0):
+  shuffled = random.sample(SERVERS, len(SERVERS))  # 重複なしシャッフル
+  for url in shuffled:
+      try:
+          r = requests.get(url, params={"data": query}, timeout=timeout)
+          r.raise_for_status()
+          return r.json()
+      except Exception:
+          continue
+
+  raise Exception("All Overpass servers failed")
 
 class FanController:
   def __init__(self, rate: int) -> None:
     self.last_ignition = False
     self.controller = PIDController(k_p=0, k_i=4e-3, rate=rate)
+
+    #ここが2Hzだから、limitspeed.db操作に利用する。
+    self.db_path = "/data/limitspeed.db" #例によって遅くないか？
+
+    # テーブルを作成するSQL
+    create_table_sql = """
+    CREATE TABLE speeds (
+        id INTEGER PRIMARY KEY,
+        latitude REAL,
+        longitude REAL,
+        bearing REAL,
+        velocity REAL,
+        timestamp REAL
+    );
+    """
+
+    # データベースに接続してカーソルを取得
+    speeds_table_size = 0
+    try:
+      speeds_table_size = os.path.getsize(self.db_path)
+    except Exception as e:
+      pass
+
+    self.conn = sqlite3.connect(self.db_path)
+    self.cur = self.conn.cursor()
+    #self.date = datetime.datetime.now()
+
+    # テーブルが存在しない場合にのみ作成する
+    table_exists_query = "SELECT name FROM sqlite_master WHERE type='table' AND name='speeds'"
+    result = self.cur.execute(table_exists_query)
+    table_exists = bool(result.fetchone())
+
+    if not table_exists:
+      # テーブルを作成
+      self.cur.execute(create_table_sql)
+      # データベースに反映
+      self.conn.commit()
+    else:
+      if speeds_table_size > 3 * 1024 * 1024: #テーブルサイズが3Mを超えたら
+        # 奇数番目のレコードを削除
+        self.cur.execute("SELECT * FROM speeds")
+        records = self.cur.fetchall()
+        # 削除条件となる日時を計算
+        delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
+        for index, record in enumerate(records):
+          if index % 2 != 1:
+            row_id , latitude, longitude, bearing, velocity,timestamp = record
+            self.cur.execute("DELETE FROM speeds WHERE id = ? and timestamp < ?", (row_id,delete_date)) #60日前の奇数番目のレコードを削除
+        self.conn.commit() #一旦コミットしないとVACUUMできない。
+
+      self.conn.execute("VACUUM") #起動のたびにゴミ掃除
+      # self.conn.execute("REINDEX") #検索インデックスの振り直し？ こちらは保留。
+      self.conn.commit()
+
+
+    # 削除条件となる日時を計算
+    # delete_date = datetime.datetime.now().timestamp() - 30*24*3600 #30日前
+    # # テーブルから削除する
+    # self.cur.execute("DELETE FROM speeds WHERE timestamp < ?", (delete_date,))
+    # # 変更を保存,月単位の削除なら起動時に一回で十分。 -> しばらく削除しないで様子見。随時最適化とDELEモード実装でテーブル増加に対処できるか様子見中。
+    # self.conn.commit()
+
+    self.latitude = 0
+    self.longitude = 0
+    self.bearing = 0
+    self.velocity = 0
+    self.timestamp = 0
+    self.get_limit_avg = 0
+    self.get_limitspeed_old = 0
+    self.velo_ave_ct_old = 0
+    self.db_add = 0
+    self.db_none = 0
+    self.db_del = 0
+    self.min_distance_old = 0
+    self.gpslog_push_ct = 0
+    self.gpslog_write_ct = 0
+    #self.tss_type = 0
+
+    # # カーソルと接続を閉じる
+    # self.cur.close()
+    # self.conn.close()
+
+    self.thread = None
+    self.th_id = 0
+    self.th_ct = 0
+    self.road_info_list_select = 0
+    self.distance = 50
+    self.min_road_v_kph = 0
+    self.before_road_info_list = None
+    self.before_road_nodes_all = []
+    self.before_road_coords_all = []
+    self.road_nodes_all_ct = 0
+    self.before_road_nodes_all_ct = 0
+    self.frame_ct = 0
+    self.frame_ct2 = 0
+    self.frame_net_off = 0
+
+    self.osm_proc_ct = 0
+    self.osm_local_mode = False
+    if os.path.exists(TILE_DIR):
+      self.osm_local_mode = True
+    #self.debug_ct_osm = 0
+    self.osm_front_back_long_mode = 0 #0→1→2の順で検索。2が最終的に最も広い範囲を取る。
+
+    if False:
+      car_ary = getCarBrandStrs(MIGRATION,0)
+      car_ary.insert(0, "auto") #選択の自動項目をセット
+      print(f"makers:{car_ary}")
+
+      car_num = 0
+      for maker in car_ary:
+        car_names = getCarBrandStrs(MIGRATION,1,maker)
+        #print(f"{maker}:{car_names}")
+
+        #mockのようにcar_namesが無い車種はループが回らないから無視される。あとauto用の例外処理も。
+        if len(car_names) == 0:
+          print(f"{maker}:OK")
+
+        for car_name in car_names:
+          car_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
+          if len(car_years) > 0:
+            #print(f"{maker}:\n  {car_name}:\n    {car_years}")
+            print(f"{maker}:\n  {car_name}:")
+            for car_year in car_years:
+              car_num += 1
+              if isCarMatch(MIGRATION, maker+" "+car_name+" "+car_year):
+                print(f"    {car_year}:OK,{car_num}")
+              else:
+                print(f"    {car_year}:NG,{car_num}")
+          else:
+            car_num += 1
+            if isCarMatch(MIGRATION, maker+" "+car_name):
+              print(f"{maker}:\n  {car_name}:OK,{car_num}")
+            else:
+              print(f"{maker}:\n  {car_name}:NG,{car_num}")
+
+  def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
+
+    if self.osm_local_mode:
+      if self.osm_front_back_long_mode == 0:
+        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 1.0)
+      elif self.osm_front_back_long_mode == 1:
+        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 2.0)
+      else:
+        return query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max, self.bearing , 8.0)
+
+    #overpass_url = "https://overpass.private.coffee/api/interpreter"
+    query = f"""
+    [out:json];
+    way({lat_min},{lon_min},{lat_max},{lon_max})["highway"];
+    out body;
+    """
+    #response = requests.get(overpass_url, params={'data': query}, timeout=10)
+    #data = response.json()
+    data = overpass_request(query)
+    return data
+
+  def get_node_coordinates(self,node_ids):
+
+    if self.osm_local_mode:
+      return get_node_coordinates(node_ids)
+
+    """
+    Overpass APIを使用して、指定されたノードIDの座標を取得する関数
+    """
+    # Overpass APIのエンドポイントURL
+    #overpass_url = "https://overpass.private.coffee/api/interpreter"
+
+    # ノードIDをunionで結合して文字列に変換。うまくいった？
+    union_query = "".join(f"node({node_id});" for node_id in node_ids)
+
+    # Overpass Queryを作成
+    overpass_query = f"""
+        [out:json];
+        (
+            {union_query}
+        );
+        out;
+    """
+
+    # Overpass APIにリクエストを送信してデータを取得
+    # response = requests.get(overpass_url, params={"data": overpass_query}, timeout=10)
+    # data = response.json()
+    data = overpass_request(overpass_query)
+
+    # ノードの情報を処理して座標を取得
+    coordinates = []
+    if True:
+      for node_id in node_ids:
+        for element in data["elements"]:
+          if element["type"] == "node":
+            if node_id == element["id"]:
+              latitude = element["lat"]
+              longitude = element["lon"]
+              coordinates.append((latitude, longitude))
+              break
+
+    return coordinates
+
+  def calculate_bearing(self,lat1, lon1, lat2, lon2):
+    """
+    2つの緯度経度から方位を計算する関数
+    """
+    # 緯度経度をラジアンに変換
+    lat1_rad = math.radians(lat1)
+    lon1_rad = math.radians(lon1)
+    lat2_rad = math.radians(lat2)
+    lon2_rad = math.radians(lon2)
+
+    # 方位を計算
+    delta_lon = lon2_rad - lon1_rad
+    y = math.sin(delta_lon) * math.cos(lat2_rad)
+    x = math.cos(lat1_rad) * math.sin(lat2_rad) - math.sin(lat1_rad) * math.cos(lat2_rad) * math.cos(delta_lon)
+    bearing_rad = math.atan2(y, x)
+
+    # ラジアンを度に変換して0〜360の範囲に補正
+    bearing_deg = math.degrees(bearing_rad)
+    bearing_deg = (bearing_deg + 360) % 360
+
+    return bearing_deg
+
+  def point_to_segment_distance(self, px, py, ax, ay, bx, by):
+      """
+      点Pと線分ABの最短距離を返す
+      """
+
+      # ベクトルAB
+      abx = bx - ax
+      aby = by - ay
+
+      # ベクトルAP
+      apx = px - ax
+      apy = py - ay
+
+      # ABの長さ二乗
+      ab_len_sq = abx * abx + aby * aby
+
+      # AとBが同一点だった場合
+      if ab_len_sq == 0:
+          dx = px - ax
+          dy = py - ay
+
+          dy *= 111000 * math.cos(math.radians(px))
+          dx *= 111000
+          return math.sqrt(dx * dx + dy * dy) #線分までの距離をメートルで返している。
+
+      # 射影係数 t
+      # t=0 -> A
+      # t=1 -> B
+      # 0<t<1 -> 線分内部
+      t = (apx * abx + apy * aby) / ab_len_sq
+
+      # 線分外なら端点距離
+      if t < 0:
+          nearest_x = ax
+          nearest_y = ay
+
+      elif t > 1:
+          nearest_x = bx
+          nearest_y = by
+
+      # 線分内なら垂線の足
+      else:
+          nearest_x = ax + t * abx
+          nearest_y = ay + t * aby
+
+      dx = px - nearest_x
+      dy = py - nearest_y
+
+      #緯度経度を距離に変換するための係数（約111,000m/度）
+      dy *= 111000 * math.cos(math.radians(px))
+      dx *= 111000
+
+      return math.sqrt(dx * dx + dy * dy) #線分までの距離をメートルで返している。
+
+
+  def find_nearest_segment_distance(self, target_lat, target_lon, coordinates):
+      """
+      polyline全体の中で最短距離を返す
+      """
+
+      min_distance = math.inf
+      nearest_segment_index = None
+
+      for i in range(len(coordinates) - 1):
+
+          ax, ay = coordinates[i]
+          bx, by = coordinates[i + 1]
+
+          dist = self.point_to_segment_distance(
+              target_lat,
+              target_lon,
+              ax, ay,
+              bx, by
+          )
+
+          if dist < min_distance:
+              min_distance = dist
+              nearest_segment_index = i
+
+      return min_distance, nearest_segment_index+1
+
+  def find_nearest_coordinate(self, target_lat, target_lon, coordinates):
+    """
+    座標配列から最も近い座標のインデックスを返す関数
+    """
+    min_distance = math.inf  # 初期値として無限大を設定
+    nearest_index = None
+
+    for i, (lat, lon) in enumerate(coordinates):
+        # 2つの座標間の距離を計算
+        distance = (target_lat - lat) ** 2 + (target_lon - lon) ** 2 #math.sqrtしなくても良い
+
+        # より近い座標が見つかった場合、最小距離とインデックスを更新
+        if distance < min_distance:
+            min_distance = distance
+            nearest_index = i
+    if nearest_index == 0:
+      return 1
+    return nearest_index
+
+  def check_angle_match(self, road_bear , car_bear , limit_ang):
+          abs_bear = math.fabs(road_bear - car_bear)
+          diff_bear = 360 - abs_bear if abs_bear > 180 else abs_bear
+          return diff_bear <= limit_ang or diff_bear >= 180 - limit_ang
+
+  def get_distance(self, lat1, lon1, lat2, lon2):
+      """
+      2つの緯度経度から距離を計算する関数
+      """
+      # 緯度経度をラジアンに変換
+      lat1_rad = math.radians(lat1)
+      lon1_rad = math.radians(lon1)
+      lat2_rad = math.radians(lat2)
+      lon2_rad = math.radians(lon2)
+
+      # 緯度と経度の差を計算
+      delta_lat = lat2_rad - lat1_rad
+      delta_lon = lon2_rad - lon1_rad
+
+      # 地球の半径（メートル）
+      earth_radius = 6371000
+
+      # ハバースイン法を使って距離を計算
+      a = math.sin(delta_lat / 2) ** 2 + math.cos(lat1_rad) * math.cos(lat2_rad) * math.sin(delta_lon / 2) ** 2
+      c = 2 * math.atan2(math.sqrt(a), math.sqrt(1 - a))
+      distance = earth_radius * c
+
+      return distance
+
+  def osm_fetch(self):
+    try:
+      if self.osm_front_back_long_mode == 0:
+        self.th_id += 1
+        #self.th_ct += 1
+        #print("スレッドct:", th_ct)
+
+      # 矩形領域内の道路データをクエリ
+      lat_diff = self.distance / 111111  # 緯度1度あたりの距離
+      lon_diff = self.distance / (111111 * math.cos(math.radians(self.latitude)))  # 経度1度あたりの距離
+
+      # now_latitude = self.latitude #20260429通信遅れを考慮して座標も保存値を使わない。
+      # now_longitude = self.longitude
+      # now_car_bear = self.bearing #通信遅れを考慮して、角度だけは保存値を使わない。
+      lat_min = self.latitude - lat_diff
+      lat_max = self.latitude + lat_diff
+      lon_min = self.longitude - lon_diff
+      lon_max = self.longitude + lon_diff
+      car_v_kph = self.velocity #km/h
+
+      # 道路の位置情報を抽出
+      road_info_list = []
+      if car_v_kph > 0.1 or self.before_road_info_list == None: #初回は必ず通る。
+        response_data = self.query_roads_in_bbox(lat_min, lon_min, lat_max, lon_max)
+
+        if "elements" in response_data:
+          for element in response_data["elements"]:
+            if element["type"] == "way":
+                road_coordinates = []
+                if "nodes" in element:
+                    road_coords = []
+                    for node_id in element["nodes"]:
+                        road_coords.append(node_id)
+                    road_coordinates = road_coords
+                else:
+                    road_coordinates = [] #"NA"
+                road_name = element.get("tags", {}).get("name", "---")
+                speed_limit = element.get("tags", {}).get("maxspeed", "0")
+                if speed_limit == "":
+                  speed_limit = "0"
+                if speed_limit != "0" and road_name == "":
+                  road_name = "---" #速度ありで空文字は---にする。
+                if road_name == "" and self.osm_local_mode == True and self.osm_front_back_long_mode == 2:
+                  road_name = "---" #速度なしでも無名道路の可能性があるので---にする。
+                if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
+                  road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
+        self.before_road_info_list = road_info_list
+      else:
+        #停止時は前回のをそのまま使う。段階検索するとself.before_road_info_listは後段の広域検索の結果になる。
+        road_info_list = self.before_road_info_list
+
+      if len(road_info_list) > 0:
+        road_nodes_all = []
+        for road_info in road_info_list:
+          road_nodes_all += road_info["nodes"]
+
+        if self.before_road_nodes_all == road_nodes_all:
+          #段階検索をすると、ここには全く来なくなる可能性あり。
+          road_coords_all = self.before_road_coords_all #停車しているときなど、ノードが全く前回と同じなら通信しない。
+          self.before_road_nodes_all_ct += 1
+        else:
+          road_coords_all = self.get_node_coordinates(road_nodes_all) #API一回でnode列から座標列へ変換する。
+          self.before_road_nodes_all = road_nodes_all #参照渡しで十分。
+          self.before_road_coords_all = road_coords_all #参照渡しで十分。
+          self.road_nodes_all_ct += 1
+          self.frame_net_off = 0 #通信成功
+        # with open('/tmp/debug_out_o','w') as fp:
+        #   fp.write('road_acces:%d, %d, %d' % (self.before_road_nodes_all_ct,self.road_nodes_all_ct,self.th_id))
+
+        index_range = 0
+        for road_info in road_info_list:
+          length = len(road_info["nodes"])
+          road_coords = road_coords_all[index_range:index_range+length]
+          if True:
+            road_coords2 = []
+            road_bear = []
+            latlon_ct = 0
+            latlon_before = (0,0)
+            for latlon in road_coords:
+              if latlon_ct == 0:
+                latlon_before = latlon
+                road_coords2.append(latlon)
+                road_bear.append(-1)
+              else:
+                bear = self.calculate_bearing(latlon_before[0] , latlon_before[1] , latlon[0] , latlon[1])
+                road_coords2.append(latlon)
+                road_bear.append(int(bear))
+                latlon_before = latlon
+              latlon_ct += 1
+            road_info["bears"] = road_bear
+            road_info["coords"] = road_coords2 #"nodes"は再利用するため"coords"に名前を変える。
+          index_range += length
+
+        #方位マッチしない道路を取り除く。
+        road_info_list2 = []
+        min_road_v_kph0 = 0
+        limit_match_ang = 10
+        while len(road_info_list2) == 0 and limit_match_ang <= 20: #全くマッチしなかったら、check_angle_matchの範囲を広げてもう一回。
+          for road_info in road_info_list:
+            road_name = road_info["road_name"]
+            speed_limit = road_info["speed_limit"]
+            coords = road_info["coords"]
+            bears = road_info["bears"]
+            if self.osm_local_mode == False:
+              idx = self.find_nearest_coordinate(self.latitude,self.longitude,coords) #now_latitude, now_longitude, 20260429通信遅れを考慮して座標も保存値を使わない。
+              ang_mul = 1.0
+            else:
+              min_distance, idx = self.find_nearest_segment_distance(self.latitude, self.longitude, coords)
+              ang_mul = 1.0 if min_distance > 3.0 else 1.5 #距離3m以内なら、角度のマッチング範囲を広げる。
+            #road_info_list2は距離の短い順にソートしているわけでもなさそう。これでも精度的にはかなり十分だが。
+            #自車から道路までの距離ロジックは線分coordsに対してちょっと手間をかける必要がある。
+            #ddddd += ('[%d;%d]' % (int(bears[idx]),int(self.bearing)))
+            if self.check_angle_match(bears[idx],self.bearing , limit_match_ang * ang_mul): #now_car_bear,通信遅れを考慮して、角度だけは保存値を使わない。
+              #ddddd += "="
+              dup = False
+              if self.osm_local_mode:
+                #min_distance, nearest_segment_index = self.find_nearest_segment_distance(self.latitude, self.longitude, coords)
+                if min_distance > 10.0: #ローカルモードなら、距離10m以上の道は弾く。
+                  dup = True
+              # if dup == False and self.osm_front_back_long_mode == 2 and road_name == "---" and speed_limit == "0": #後段の長方形で取った無名速度なし道路は、30m以上離れているなら弾く。
+              #   road_dist =self.get_distance(coords[idx][0],coords[idx][1],self.latitude,self.longitude)
+              #   if road_dist > self.distance*2 and self.osm_front_back_long_mode == 2:
+              #     dup = True
+              if dup == False:
+                if speed_limit == "0" or speed_limit == "":
+                  road_info_list_ct = 0
+                  for road_info_tmp in road_info_list2: #速度を持たない同じ名前の道の登録は弾く。
+                    if road_info_tmp["road_name"] == road_name:
+                      dup = True
+                      break
+                    if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
+                      dup = True #他に名前のある道があれば---は弾く
+                      break
+                    if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
+                      del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
+                      break
+                    road_info_list_ct += 1
+                else:
+                  road_info_list_ct = 0
+                  for road_info_tmp in road_info_list2: #速度を持つ道が、速度を持たない状態で記録されていたら、削除する。
+                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == speed_limit:
+                      dup = True #速度と名前が同じでも弾く。
+                      break
+                    if road_info_tmp["road_name"] == road_name and road_info_tmp["speed_limit"] == "0":
+                      del road_info_list2[road_info_list_ct]
+                      break
+                    if road_info_tmp["road_name"] != "---" and road_info_tmp["road_name"] != "" and (road_name == "---" or road_name == ""):
+                      dup = True #他に名前のある道があれば---は弾く
+                      break
+                    if (road_info_tmp["road_name"] == "---" or road_info_tmp["road_name"] == "") and (road_name != "---" and road_name != ""):
+                      del road_info_list2[road_info_list_ct] #名前のある道を登録するなら、名前のない道は消す。
+                      break
+                    road_info_list_ct += 1
+              if (dup == False) and (road_name != "" or speed_limit != "0"):
+                road_info["bearing"] = bears[idx]
+                road_info_list2.append(road_info)
+                if speed_limit != "0" and speed_limit != "":
+                  speed_limit_num = int(speed_limit)
+                  if min_road_v_kph0 == 0 or math.fabs(speed_limit_num - car_v_kph) < math.fabs(min_road_v_kph0 - car_v_kph):
+                    min_road_v_kph0 = speed_limit_num #リストの中の一番近い速度を取る。
+          limit_match_ang += 10 #10,20のみ実行
+
+        if len(road_info_list2) >= 2 and self.osm_local_mode and self.osm_front_back_long_mode == 2:
+          road_name_enable = False
+          for road_info2 in road_info_list2:
+            road_name = road_info2["road_name"]
+            speed_limit = road_info2["speed_limit"]
+            if speed_limit != "0" or road_name != "---":
+              road_name_enable = True
+              break
+
+          if road_name_enable == True: #名前か制限速度ありの道路が一つでもあれば、無名道は全て消す
+            for i in range(len(road_info_list2)-1, -1, -1): #逆ループで削除すれば、ループ破綻しない。
+              ri = road_info_list2[i]
+              if ri["speed_limit"] == "0" and ri["road_name"] == "---":
+                del road_info_list2[i]
+
+        road_info_list = road_info_list2
+
+        self.min_road_v_kph = min_road_v_kph0
+
+      #ここでもしlen(road_info_list) == 0 なら長方形取得をやり直す。
+      if self.osm_local_mode == True and self.osm_front_back_long_mode <= 1 and len(road_info_list) == 0:
+          #方位マッチする道路が一つもなかったら、前後長方形で再検索する。
+        self.osm_front_back_long_mode += 1 #0→1→2の順で検索。2が最終的に最も広い範囲を取る。
+        self.osm_fetch()
+        self.osm_front_back_long_mode = 0 #もし時速50キロ以上なら1に戻して、0モードをスキップするのもいいか？（th_idのインクリメントが怪しくなるのだけ留意。必ず要カウントアップ）
+        return
+
+      with open('/dev/shm/road_info.txt','w') as fp:
+        # fp.write('th_id:%s\n' % (self.th_id))
+        if len(road_info_list) != 0:
+          self.road_info_list_select += 1
+          self.road_info_list_select %= len(road_info_list)
+        road_info_list_select_ct = 0
+        for road_info in road_info_list:
+          if road_info_list_select_ct == self.road_info_list_select:
+            road_name = road_info["road_name"]
+            if road_name == "---":
+              road_name = "－－－" #"–––" #"無名道"
+            # if self.osm_front_back_long_mode == 1:
+            #   road_name = "*"+road_name #長方形で取ったやつは道路名の前に*をつける。
+            # elif self.osm_front_back_long_mode == 2:
+            #   road_name += "*" #長方形で取ったやつは道路名の後に*をつける。
+            speed_limit = road_info["speed_limit"]
+            road_bearing = road_info.get("bearing", 9999)
+            fp.write('%d,%s,%s,%d' % (self.th_id , speed_limit , road_name,road_bearing))
+            break
+          road_info_list_select_ct += 1
+        if len(road_info_list) == 0:
+          self.min_road_v_kph = 0
+          fp.write('%d,0,--,9999' % (self.th_id))
+          # self.debug_ct_osm += 1
+          # fp.write('%d,0,--,%s<%f,%f>' % (self.th_id,str(self.bearing)+ddddd+str(self.debug_ct_osm),self.latitude,self.longitude))
+          # fp.write(' road_name:%s\n' % ("--"))
+          # fp.write(' speed_max:%s\n' % (0))
+      if self.frame_net_off == 0: #通信成功なら
+        self.frame_ct2 += 1 #カウントアップ
+    except Exception as e:
+      self.min_road_v_kph = 0
+      self.frame_net_off = 1 #通信失敗
+
+    #self.th_ct -= 1
+    self.thread = None
+
+  def __del__(self):
+    # カーソルと接続を閉じる
+    self.cur.close()
+    self.conn.close()
+    pass
 
   def update(self, cur_temp: float, ignition: bool) -> int:
     self.controller.pos_limit = 100 if ignition else 30
@@ -22,7 +655,1051 @@ class FanController:
       self.controller.reset()
     self.last_ignition = ignition
 
+    self.osm_proc_ct += 1
+    if (self.osm_proc_ct & 1) != 0 or self.osm_local_mode == False:
+      self.osm_proc() #localモードなら1Hzで十分。
+
     return int(self.controller.update(
                  error=(cur_temp - (75 + OFFSET)),  # temperature setpoint in C
                  feedforward=np.interp(cur_temp, [60.0 + OFFSET, 100.0 + OFFSET], [0, 100])
               ))
+
+  def osm_proc(self):
+    # if self.tss_type == 0:
+    #   try:
+    #     with open('/data/tss_type_info.txt','r') as fp:
+    #       tss_type_str = fp.read()
+    #       if tss_type_str:
+    #         if int(tss_type_str) == 2: #TSS2
+    #           self.tss_type = 2
+    #         elif int(tss_type_str) == 1: #TSSP
+    #           self.tss_type = 1
+    #   except Exception as e:
+    #     pass
+
+    rec_mode = False
+    rec_speed = 0
+    add_v_by_lead = False
+    try:
+      with open('/dev/shm/limitspeed_sw.txt','r') as fp:
+        limitspeed_sw_str = fp.read()
+        if limitspeed_sw_str:
+          if int(limitspeed_sw_str) == 2: #RECモード
+            rec_mode = True
+
+      with open('/dev/shm/cruise_info.txt','r') as fp:
+        cruise_info_str = fp.read()
+        if cruise_info_str:
+          #",30"とかの状況を考慮
+          if cruise_info_str.startswith(','):
+              add_v_by_lead = True
+              cruise_info_str = cruise_info_str[1:]  # 先頭のカンマを取り除く
+          if rec_mode:
+            rec_speed = int(cruise_info_str) #MAX km/h
+    except Exception as e:
+      pass
+
+    #"/dev/shm/limitspeed_info.txt"からlatitude, longitude, bearing, velocity,timestampを読み出して速度30km/h以上ならspeedsに挿入する
+    limitspeed_info_ok = False
+    limitspeed_min = 30
+    try:
+      with open('/dev/shm/gps_axs_data.txt','r') as fp:
+      # with open('/dev/shm/limitspeed_info.txt','r') as fp:
+        limitspeed_info_str = fp.read()
+        if limitspeed_info_str:
+          limitspeed_info_ok = True
+          #pythonを用い、カンマで区切られた文字列を分離して変数a,b,cに格納するプログラムを書いてください。
+          #ただしa,b,cはdouble型とします
+          self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp,gps_valid = map(float, limitspeed_info_str.split(","))
+          self.velocity *= 3.6 #gps_axs_data.txtなら時速に直す、GPSからの速度だし追従増速中も判定できないから、あまり信用ならん。
+          if self.velocity < 1.0:
+            self.velocity = 0 #時速1キロ未満はゼロ扱い
+            if (self.osm_proc_ct & 1) != 0 and self.velocity < 0.1: #ほぼ停止
+              self.gpslog_push_ct += 1
+              if self.gpslog_push_ct >= 11: #走行中からの遷移特別処理
+                self.gpslog_push_ct = 5
+              if self.gpslog_push_ct >= 10:
+                self.gpslog_push_ct = 0
+                gpslog_push() #停止中のGPSデータをまとめてgithubのgpslogリポジトリにpushする。(ローカルosmの場合。ネットだと2Hzだが、遅すぎてどうなるか未検証)
+              self.gpslog_write_ct = 0
+          elif (self.osm_proc_ct & 1) != 0:
+            #走行中のGPSデータを集める。後ほどgithubのgpslogリポジトリにpushする。
+            if True:
+              #ハンドルの角度が浅いほど間引く
+              steer_ang = 0
+              try:
+                with open('/dev/shm/steer_ang_info.txt','r') as fp3:
+                  steer_ang_info = fp3.read()
+                  if steer_ang_info:
+                    self.global_angle_steer0 = float(steer_ang_info)
+                    steer_ang = self.global_angle_steer0
+              except Exception as e:
+                pass
+              self.gpslog_write_ct += 1
+              if steer_ang < 6:
+                if gps_valid and self.gpslog_write_ct % 4 == 0:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+              elif steer_ang < 12:
+                if gps_valid and self.gpslog_write_ct % 3 == 0:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+              elif steer_ang < 24:
+                if gps_valid and self.gpslog_write_ct % 2 == 0:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+              else:
+                if gps_valid:
+                  gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+
+            elif self.velocity < 50: #時速50キロ未満は1/2に間引く
+              self.gpslog_write_ct += 1
+              if gps_valid and self.gpslog_write_ct % 2 == 0:
+                gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+            elif gps_valid:
+              gps_local_write(self.latitude, self.longitude, self.bearing, self.velocity, self.timestamp)
+            #self.gpslog_push_ct = 5 #次に止まったら5秒後にpushする。
+            self.gpslog_push_ct += 1
+            if self.gpslog_push_ct >= 60*10: #走行中でも10分ごとにpushする。
+              self.gpslog_push_ct = 0 #走行→停止時に9以下だと直ぐにpushが動いてしまうが承知の上。
+              gpslog_push()
+
+          if add_v_by_lead:
+            self.velocity /= 1.15; #前走車追従中は、増速前の推定速度を学習する。
+          self.timestamp /= 1000 #gps_axs_data.txtなら秒に直す
+          # self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp = map(float, limitspeed_info_str.split(","))
+          if rec_mode == True and rec_speed >= 30 and self.velocity >= limitspeed_min:
+            self.velocity = rec_speed
+          # if self.tss_type < 2 and self.velocity > 119:
+          #   self.velocity = 119 #TSSPでは最高119(メーター125)km/h ->やらなくていい？
+          limit_m = self.velocity/3.6
+          if limit_m < 10:
+            limit_m = 10 #10m以内の範囲には登録しない。
+          if self.velocity >= limitspeed_min and (self.get_limit_avg * 0.7 < self.velocity or self.get_limitspeed_old == 0) and ((int(self.get_limit_avg/5) * 5) != int(self.velocity/5) * 5 or self.get_limitspeed_old == 0 or ((self.min_distance_old**0.5) * 100 / 0.0009 > limit_m and self.velo_ave_ct_old < 10)):
+            # データを挿入するSQL , self.velocityが平均速度と同等であれば登録しない。もしくは平均より10km/h遅くても登録しない。
+            insert_data_sql = """
+            INSERT INTO speeds (latitude, longitude, bearing, velocity,timestamp)
+            VALUES (?, ?, ?, ?, ?);
+            """
+            self.cur.execute(insert_data_sql,(self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp))
+            #print("緯度: {}, 経度: {}, 方位: {}, 速度: {}, 日時: {}".format(self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp))
+            # 変更を保存
+            self.conn.commit()
+            self.db_add += 1
+          else:
+            self.db_none += 1
+    except Exception as e:
+      pass
+    #speedsから距離と方位が近いデータを100個読み、100m以内で速度の上位20パーセントの平均を計算する。int(それ/10)*10を現在道路の制限速度と見做す。
+    get_limitspeed = 0
+    sql_bearing = 9999 #SQLからの角度取得は無効
+    if limitspeed_info_ok or (self.latitude != 0 or self.longitude != 0):
+      #self.latitude, self.longitude, self.bearing, self.velocity,self.timestamp
+      query = '''
+          SELECT *
+          FROM (SELECT * , ABS(bearing - ?) AS abs_bear FROM speeds)
+          WHERE
+              CASE
+                  WHEN abs_bear > 180 THEN 360 - abs_bear
+              ELSE
+                  abs_bear
+              END <= 10
+              OR
+              CASE
+                  WHEN abs_bear > 180 THEN 360 - abs_bear
+              ELSE
+                  abs_bear
+              END >= 170
+          ORDER BY ((latitude - ?) * (latitude - ?) + (longitude - ?) * (longitude - ?))
+          LIMIT 100
+      '''
+
+      # クエリを実行し、結果を取得
+      self.cur.execute(query, (self.bearing, self.latitude, self.latitude, self.longitude, self.longitude , ))
+      # if limitspeed_info_ok == False: #limitspeed_info_ok == False(ファイル読み込み失敗)のフォローは一度きり
+      #   self.latitude = 0
+      #   self.longitude = 0
+      # やめてみる。ファイル読み込み失敗のときは、前回の座標を使う。 -> 走行中に一度でも読み込めれば、以降はファイル読み込み失敗しても前回の座標で処理する。 -> 走行中に一度も読み込めないときは、座標0,0で処理する。
+
+      # データ内容を検査して走行速度を推定する。
+      earth_ang = 0.0009 #大体200m四方
+      earth_ang *= np.interp(self.velocity, [0, 50.0], [0.3, 1.0])#検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+      rows = []
+      velo_max = 0
+      velo_max_ct = 0
+      for row in self.cur: #一度ループさせると消える。
+        row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+        velo_max_ct += 1
+        if velo_max < velocity and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+          rows.append(row) #取っておく
+          velo_max = velocity
+
+      if velo_max > 0:
+        #この時点でrowsは自車近傍に絞られている。
+        velo_ave = 0
+        velo_ave_ct = 0
+        self.min_distance_old = 0
+
+        if True: #self.velocity < 110 or self.tss_type == 2: #TSSPで120km/h高速対応にするため、こちらは110超では通さない。,TSS2なら使って良い。
+          velo_70 = (velo_max - limitspeed_min) * 0.7 + limitspeed_min #まず70〜90を検査する。
+          #velo_95 = (velo_max - limitspeed_min) * 0.95 + limitspeed_min
+          for row in rows: #rowsは何度でも使える。
+            row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            if velo_70 <= velocity: #rowsが自車近傍のみなので、以降の条件はいらない,and velocity <= velo_95 and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+              velo_ave_ct += 1
+              velo_ave += velocity
+              distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
+              if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
+                sql_bearing = bearing #limitspeed_info.txt由来で、0〜360度の小数値のはず。
+                self.min_distance_old = distance #最も近い距離のポイント
+
+        del_speed_max = 0
+        del_speed_min = 10000
+        if velo_ave_ct < 4: #70〜95の間のサンプルが少なければ80以上で再取得する。
+          velo_ave = 0
+          velo_ave_ct = 0
+          self.min_distance_old = 0
+          velo_80 = (velo_max - limitspeed_min) * 0.8 + limitspeed_min
+          for row in rows: #rowsは何度でも使える。
+            row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            if velo_80 <= velocity: #rowsが自車近傍のみなので、以降の条件はいらない,and abs(latitude-self.latitude) < earth_ang and abs(longitude-self.longitude) < earth_ang:
+              velo_ave_ct += 1
+              velo_ave += velocity
+              distance = (latitude-self.latitude) **2 + (longitude-self.longitude) **2
+              if distance != 0 and (distance < self.min_distance_old or self.min_distance_old == 0):
+                self.min_distance_old = distance #最も近い距離のポイント
+        elif velo_ave_ct > 20: #サンプルが多い時は最大と最小の速度を削除してみる
+          del_speed_max_id = 0
+          del_speed_min_id = 0
+          for row in rows: #rowsは何度でも使える。
+            row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            if del_speed_max <= velocity:
+              del_speed_max = velocity
+              del_speed_max_id = row_id
+            if del_speed_min >= velocity:
+              del_speed_min = velocity
+              del_speed_min_id = row_id
+
+        #削除処理
+        if del_speed_max > 0 and del_speed_min < 10000 and del_speed_max != del_speed_min:
+          self.cur.execute("DELETE FROM speeds WHERE id IN (?, ?)", (del_speed_max_id,del_speed_min_id)) #二つまとめて削除
+          #self.cur.execute("DELETE FROM speeds WHERE id = ?", (del_speed_max_id,)) #一つ削除ならこう
+          self.conn.commit()
+          self.db_del += 2
+
+        #削除条件、◯ボタンOFF、cruise_info.txt31以上のとき車速以上の速度のデータを削除する
+        try:
+          if rec_mode: #RECモード
+            pass #try節を続行
+          else:
+            raise Exception("try節を脱出")
+
+          cri = rec_speed #もっと単純に、MAX値(>=30)より速いデータを全部刈り取ってしまう。完全にお掃除モード
+          if cri >= 30:
+            pass #try節を続行
+          else:
+            raise Exception("try節を脱出")
+
+          del_db_del = False
+          for row in rows: #rowsは何度でも使える。
+            row_id , latitude, longitude, bearing, velocity,timestamp , abs_bear = row #サブクエリ使うとabs_bearがくっついてしまう
+            if velocity > cri: #MAX値より速いデータを削除
+              self.cur.execute("DELETE FROM speeds WHERE id = ?", (row_id,)) #一つずつループして削除、一つでもカンマが必要。
+              self.db_del += 1
+              del_db_del = True
+              # with open('/tmp/debug_out_d','w') as fp:
+              #   fp.write('del:%.1f km/h[%d]' % (velocity,row_id))
+
+          if del_db_del == True:
+            self.conn.commit()
+
+        except Exception as e:
+          pass
+
+        self.velo_ave_ct_old = velo_ave_ct
+        if velo_ave_ct > 0:
+          velo_ave /= velo_ave_ct
+          get_limitspeed = velo_ave
+          self.get_limit_avg = get_limitspeed
+
+    # try:
+    #   with open('/dev/shm/limitspeed_navi.txt','r') as fp: #navdから取得できる案内中の制限速度があれば、OSMより優先する。
+    #     limitspeed_navi_str = fp.read()
+    #     if limitspeed_navi_str:
+    #       limitspeed_navi = int(limitspeed_navi_str)
+    #       if limitspeed_navi > 0:
+    #         self.min_road_v_kph = limitspeed_navi #OSMからの取得値に上書きする。
+    #         if limitspeed_navi+14 < get_limitspeed:
+    #           get_limitspeed = limitspeed_navi+14 #40km/hだったら54より上がらないように
+    # except Exception as e:
+    #   pass
+
+    # if self.min_road_v_kph > 20: #高速と並走する道があると恐ろしいのでやらない。
+    #   if self.min_road_v_kph+14 < get_limitspeed:
+    #     get_limitspeed = self.min_road_v_kph+14 #40km/hだったら54より上がらないように
+
+    #制限速度があれば"/dev/shm/limitspeed_data.txt"へ999で書き込む。なければ111となる。
+    self.get_limitspeed_old = get_limitspeed
+    if get_limitspeed > 0:
+      if get_limitspeed < self.min_road_v_kph:
+        get_limitspeed = self.min_road_v_kph #これを採用するかはちょっと様子を見たい。
+      with open('/dev/shm/limitspeed_data.txt','w') as fp:
+        fp.write('%d,%.2f,999,%.2f,%d,%.1fm,+%d,-%d' % (int(get_limitspeed/10) * 10 , get_limitspeed , sql_bearing , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_add , self.db_del))
+    elif self.min_road_v_kph > 0:
+      with open('/dev/shm/limitspeed_data.txt','w') as fp:
+        fp.write('%d,%.2f,999,%.2f,%d,%.1fm,=%d,-%d' % (int(self.min_road_v_kph/10) * 10 , self.min_road_v_kph , sql_bearing , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
+    else:
+      with open('/dev/shm/limitspeed_data.txt','w') as fp:
+        fp.write('%d,%.2f,111,%.2f,%d,%.1fm,=%d,-%d' % (int(self.get_limit_avg/10) * 10 , self.get_limit_avg , sql_bearing , self.velo_ave_ct_old , (self.min_distance_old**0.5) * 100 / 0.0009 , self.db_none , self.db_del))
+
+    # # もしここで削除するなら、近傍の古いデータだけにするとか、単純な月単位よりも細かく制御したい。
+    # # 変更を保存
+    # self.conn.commit()
+
+    #osmアクセスで制限速度を取得する試み。
+    # with open('/tmp/debug_out_o','w') as fp:
+    #   fp.write('osm_fetch:%d, %.5f, %.5f' % (self.thread == None,self.latitude,self.longitude))
+    if self.thread == None and (self.latitude != 0 or self.longitude != 0):
+      try:
+        if self.osm_local_mode:
+          self.distance = 25 * np.interp(self.velocity, [0, 50.0], [0.3, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.3〜1倍
+        else:
+          self.distance = 50 * np.interp(self.velocity, [0, 50.0], [0.5, 1.0]) #検出範囲に速度を反映する。０〜50km/h -> 0.5〜1倍
+        self_thread = threading.Thread(target=self.osm_fetch) #argsにselfは要らない。
+        self.thread = self_thread
+        #self_thread.setDaemon(True)
+        self_thread.start()
+        # self.frame_ct2 += 1
+      except Exception as e:
+        self.thread = None
+      #同期でテスト。
+      #self.osm_fetch()
+
+    self.frame_ct += 1
+    per = float(self.frame_ct2) / self.frame_ct
+    if self.frame_ct2 >= 200:
+      self.frame_ct2 = 100
+      self.frame_ct = self.frame_ct2 / per
+    elif self.frame_ct >= 1000:
+      self.frame_ct = 100
+      self.frame_ct2 = self.frame_ct * per
+    # with open('/tmp/debug_out_o','w') as fp:
+    #   fp.write('up:%d(%d/%d) %.5f, %.5f' % (int(per * 100),self.frame_ct2,self.frame_ct,self.latitude,self.longitude))
+    with open('/dev/shm/osm_access_counter.txt','w') as fp:
+      fp.write('%d,%d,%d' % (int(per * 100),self.frame_ct2,self.frame_ct))
+
+
+#############################################################
+#osm_local_mode用の関数
+#############################################################
+
+# ----------------------------------------------------------
+# tile index
+# 生成側と完全一致必須
+# ----------------------------------------------------------
+
+def tile_xy(lat, lon):
+    return (
+        math.floor(lon / GRID_SIZE),
+        math.floor(lat / GRID_SIZE)
+    )
+
+
+def tile_path(tx, ty):
+    return os.path.join(
+        TILE_DIR,
+        f"tile_{ty}_{tx}.sqlite"
+    )
+
+
+# ----------------------------------------------------------
+# db cache
+# ----------------------------------------------------------
+
+#_current_conn = None #削除
+
+def get_conn(tx, ty):
+
+    path = tile_path(tx, ty)
+
+    if not os.path.exists(path):
+        return None
+
+    conn = sqlite3.connect(
+        path,
+        check_same_thread=False
+    )
+
+    conn.row_factory = sqlite3.Row
+
+    return conn
+
+
+# ----------------------------------------------------------
+# bbox → tile一覧
+# ----------------------------------------------------------
+
+def tiles_in_bbox(lat_min, lon_min, lat_max, lon_max):
+
+    tx_min, ty_min = tile_xy(lat_min, lon_min)
+    tx_max, ty_max = tile_xy(lat_max, lon_max)
+
+    result = []
+
+    for ty in range(ty_min, ty_max + 1):
+        for tx in range(tx_min, tx_max + 1):
+            result.append((tx, ty))
+
+    return result
+
+
+# ----------------------------------------------------------
+# query_roads_in_bbox
+# 全国版ロジックそのまま
+# ----------------------------------------------------------
+osm_tiles = None
+
+# ----------------------------------------------------------
+# meter scale
+# ----------------------------------------------------------
+
+def latlon_to_meter_scale(lat):
+
+    lat_rad = math.radians(lat)
+
+    meter_per_lat = 111320.0
+
+    meter_per_lon = (
+        111320.0 *
+        math.cos(lat_rad)
+    )
+
+    return meter_per_lat, meter_per_lon
+
+
+# ----------------------------------------------------------
+# world -> vehicle local
+#
+# front:
+#   + front
+#   - back
+#
+# side:
+#   + right
+#   - left
+# ----------------------------------------------------------
+
+def world_to_vehicle_local(
+    car_lat,
+    car_lon,
+    car_bear,
+    lat,
+    lon
+):
+
+    meter_per_lat, meter_per_lon = \
+        latlon_to_meter_scale(car_lat)
+
+    dy = (
+        lat - car_lat
+    ) * meter_per_lat
+
+    dx = (
+        lon - car_lon
+    ) * meter_per_lon
+
+    rad = math.radians(car_bear)
+
+    sin_r = math.sin(rad)
+    cos_r = math.cos(rad)
+
+    front_m = (
+        dx * sin_r +
+        dy * cos_r
+    )
+
+    side_m = (
+        dx * cos_r -
+        dy * sin_r
+    )
+
+    return front_m, side_m
+
+
+# ----------------------------------------------------------
+# query roads
+# ----------------------------------------------------------
+
+def query_roads_in_bbox(
+    lat_min,
+    lon_min,
+    lat_max,
+    lon_max,
+    car_bear,
+    front_back_multiply
+):
+
+    global osm_tiles
+    osm_tiles = None
+
+    # ------------------------------------------------------
+    # bbox center
+    # ------------------------------------------------------
+
+    car_lat = (
+        lat_min + lat_max
+    ) * 0.5
+
+    car_lon = (
+        lon_min + lon_max
+    ) * 0.5
+
+    # ------------------------------------------------------
+    # meter scale
+    # ------------------------------------------------------
+
+    meter_per_lat, meter_per_lon = \
+        latlon_to_meter_scale(car_lat)
+
+    # ------------------------------------------------------
+    # bbox half size
+    # ------------------------------------------------------
+
+    half_h_m = (
+        (lat_max - lat_min)
+        * meter_per_lat
+        * 0.5
+    )
+
+    half_w_m = (
+        (lon_max - lon_min)
+        * meter_per_lon
+        * 0.5
+    )
+
+    # ------------------------------------------------------
+    # search rect size
+    # ------------------------------------------------------
+
+    side_limit_m = max(
+        half_h_m,
+        half_w_m
+    )
+
+    front_limit_m = side_limit_m * front_back_multiply # 4.0
+
+    # ------------------------------------------------------
+    # rough bbox
+    #
+    # rotated rect outer bbox
+    # ------------------------------------------------------
+
+    rough_radius_m = front_limit_m
+
+    lat_expand = (
+        rough_radius_m /
+        meter_per_lat
+    )
+
+    lon_expand = (
+        rough_radius_m /
+        meter_per_lon
+    )
+
+    query_lat_min = car_lat - lat_expand
+    query_lat_max = car_lat + lat_expand
+
+    query_lon_min = car_lon - lon_expand
+    query_lon_max = car_lon + lon_expand
+
+    # ------------------------------------------------------
+    # tiles
+    # ------------------------------------------------------
+
+    tiles = tiles_in_bbox(
+        query_lat_min,
+        query_lon_min,
+        query_lat_max,
+        query_lon_max
+    )
+
+    osm_tiles = tiles
+
+    elements = []
+
+    seen_way_ids = set()
+    tile_exist = False
+
+    # ------------------------------------------------------
+    # tile loop
+    # ------------------------------------------------------
+
+    for tx, ty in tiles:
+
+        conn = get_conn(tx, ty)
+
+        if conn == None:
+            continue
+
+        tile_exist = True
+        cur = conn.cursor()
+
+        # --------------------------------------------------
+        # rough candidate search
+        # --------------------------------------------------
+
+        sql = """
+        SELECT
+            ways.id,
+            ways.name,
+            ways.highway,
+            ways.maxspeed
+        FROM ways
+        JOIN way_nodes
+          ON ways.id = way_nodes.way_id
+        JOIN nodes
+          ON way_nodes.node_id = nodes.id
+        WHERE
+          nodes.lat BETWEEN ? AND ?
+          AND
+          nodes.lon BETWEEN ? AND ?
+        """
+
+        rows = cur.execute(sql, (
+            query_lat_min,
+            query_lat_max,
+            query_lon_min,
+            query_lon_max
+        )).fetchall()
+
+        # --------------------------------------------------
+        # way loop
+        # --------------------------------------------------
+
+        for r in rows:
+
+            way_id = r["id"]
+
+            # ----------------------------------------------
+            # tile duplicate remove
+            # ----------------------------------------------
+
+            if way_id in seen_way_ids:
+                continue
+
+            # ----------------------------------------------
+            # full way geometry
+            # ----------------------------------------------
+
+            node_sql = """
+            SELECT
+                nodes.id,
+                nodes.lat,
+                nodes.lon
+            FROM way_nodes
+            JOIN nodes
+              ON way_nodes.node_id = nodes.id
+            WHERE way_nodes.way_id = ?
+            ORDER BY way_nodes.rowid
+            """
+
+            node_rows = cur.execute(
+                node_sql,
+                (way_id,)
+            ).fetchall()
+
+            # ----------------------------------------------
+            # rotated rectangle hit test
+            # ----------------------------------------------
+
+            hit = False
+
+            node_ids = []
+
+            for n in node_rows:
+
+                node_ids.append(
+                    n["id"]
+                )
+
+                front_m, side_m = \
+                    world_to_vehicle_local(
+                        car_lat,
+                        car_lon,
+                        car_bear,
+                        n["lat"],
+                        n["lon"]
+                    )
+
+                if (
+                    abs(front_m) <= front_limit_m
+                    and
+                    abs(side_m) <= side_limit_m
+                ):
+
+                    hit = True
+
+            # ----------------------------------------------
+            # reject
+            # ----------------------------------------------
+
+            if not hit:
+                continue
+
+            seen_way_ids.add(
+                way_id
+            )
+
+            # ----------------------------------------------
+            # append
+            # ----------------------------------------------
+
+            elements.append({
+                "type": "way",
+                "id": way_id,
+                "nodes": node_ids,
+                "tags": {
+                    "name": r["name"],
+                    "highway": r["highway"],
+                    "maxspeed": r["maxspeed"]
+                }
+            })
+
+        conn.close()
+
+    if tile_exist == False:
+       raise Exception("no tile")
+
+    return {
+        "elements": elements
+    }
+
+def query_roads_in_bboxZ(lat_min, lon_min, lat_max, lon_max): #正方形取得の旧バージョン、先にこちらで検査する。
+    global osm_tiles
+    osm_tiles = None
+
+    tiles = tiles_in_bbox(
+        lat_min,
+        lon_min,
+        lat_max,
+        lon_max
+    )
+
+    osm_tiles = tiles
+
+    elements = []
+
+    seen_way_ids = set()
+    tile_exist = False
+
+    for tx, ty in tiles:
+
+        conn = get_conn(tx, ty)
+
+        if conn == None:
+            continue
+
+        tile_exist = True
+        cur = conn.cursor()
+
+        sql = """
+        SELECT
+            ways.id,
+            ways.name,
+            ways.highway,
+            ways.maxspeed
+        FROM ways
+        JOIN way_nodes
+          ON ways.id = way_nodes.way_id
+        JOIN nodes
+          ON way_nodes.node_id = nodes.id
+        WHERE
+          nodes.lat BETWEEN ? AND ?
+          AND
+          nodes.lon BETWEEN ? AND ?
+        """
+
+        rows = cur.execute(sql, (
+            lat_min,
+            lat_max,
+            lon_min,
+            lon_max
+        )).fetchall()
+
+        for r in rows:
+
+            # tile跨ぎ重複だけ除去
+            if r["id"] in seen_way_ids:
+                continue
+
+            seen_way_ids.add(r["id"])
+
+            node_sql = """
+            SELECT node_id
+            FROM way_nodes
+            WHERE way_id = ?
+            ORDER BY rowid
+            """
+
+            node_rows = cur.execute(
+                node_sql,
+                (r["id"],)
+            ).fetchall()
+
+            node_ids = [
+                x["node_id"]
+                for x in node_rows
+            ]
+
+            elements.append({
+                "type": "way",
+                "id": r["id"],
+                "nodes": node_ids,
+                "tags": {
+                    "name": r["name"],
+                    "highway": r["highway"],
+                    "maxspeed": r["maxspeed"]
+                }
+            })
+
+        conn.close()
+
+    if tile_exist == False:
+       raise Exception("no tile")
+
+    return {
+        "elements": elements
+    }
+
+
+# ----------------------------------------------------------
+# get_node_coordinates
+# 全国版ロジックそのまま
+# ----------------------------------------------------------
+
+def get_node_coordinatesZ(node_ids): #グリッド跨いだ場合
+
+    if len(node_ids) == 0:
+        return []
+
+    placeholders = ",".join(
+        "?" for _ in node_ids
+    )
+
+    coordinates = []
+    node_map = {}
+
+    remaining = set(node_ids)
+
+    tile_files = osm_tiles #os.listdir(TILE_DIR)
+
+    for tx, ty in tile_files:
+
+        path = tile_path(tx,ty)
+
+        conn = sqlite3.connect(
+            path,
+            check_same_thread=False
+        )
+
+        conn.row_factory = sqlite3.Row
+
+        cur = conn.cursor()
+
+        sql = f"""
+        SELECT
+            id,
+            lat,
+            lon
+        FROM nodes
+        WHERE id IN ({placeholders})
+        """
+
+        rows = cur.execute(
+            sql,
+            node_ids
+        ).fetchall()
+
+        conn.close()
+
+        for r in rows:
+
+            node_map[r["id"]] = (
+                r["lat"],
+                r["lon"]
+            )
+
+            if r["id"] in remaining:
+                remaining.remove(r["id"])
+
+        if len(remaining) == 0:
+            break
+
+    # 元順序維持
+    for node_id in node_ids:
+
+        if node_id in node_map:
+            coordinates.append(
+                node_map[node_id]
+            )
+
+    return coordinates
+
+def get_node_coordinates(node_ids):
+    #ここはquery_roads_in_bboxを通らずにくる可能性があるから、そのとき_current_connは作られていない。なので毎度get_node_coordinatesZでconnt作らざるを得ない。
+    return get_node_coordinatesZ(node_ids)
+    #_current_conn流用の旧処理は削除
+
+GPS_DIR0 = "/data/gpslog"
+if Params().get("DongleId") != UNREGISTERED_DONGLE_ID:
+  GPS_DIR = GPS_DIR0+"/"+Params().get("DongleId")[:4] #ドングルIDの頭文字４つ
+else:
+  GPS_DIR = GPS_DIR0+"/0000" #ドングルID無し
+
+MAX_FILE_SIZE = 100 * 1024  # 100KB
+#MAX_FILE_SIZE = 10 * 1024  # 10KBでテスト
+MAX_FILES = 100
+
+def gps_local_write(latitude, longitude, bearing, velocity, timestamp):
+    if not os.path.isdir(GPS_DIR0):
+      return
+
+    if latitude==0 and longitude==0:
+      return
+
+    no_car_vego = True
+    try:
+      with open('/dev/shm/car_vego.txt','r') as fp:
+        no_car_vego = False
+    except Exception as e:
+      pass
+
+    if no_car_vego == True:
+      return #car_vego.txtがなければ座標記録しない。
+
+    os.makedirs(GPS_DIR, exist_ok=True)
+
+    files = sorted(
+      f for f in os.listdir(GPS_DIR)
+      if f.endswith(".jsonl")
+    )
+
+    files_exchange = False
+    if files:
+      current_file = os.path.join(GPS_DIR, files[-1])
+      current_index = int(os.path.splitext(files[-1])[0])
+
+      if os.path.getsize(current_file) >= MAX_FILE_SIZE:
+        current_index += 1
+        current_file = os.path.join(
+            GPS_DIR,
+            f"{current_index:09d}.jsonl"
+        )
+        files.append(os.path.basename(current_file))
+        files_exchange = True
+    else:
+      current_file = os.path.join(GPS_DIR, "000000001.jsonl")
+      files = ["000000001.jsonl"]
+
+    record = {
+      "t": int(timestamp),
+      "la": latitude,
+      "lo": longitude,
+      "b": bearing,
+      "v": round(velocity, 2)
+    }
+
+    with open(current_file, "a") as f:
+      if key_raw == None:
+        f.write(json.dumps(record, separators=(",", ":")) + "\n")
+      else:
+        nonce = os.urandom(12)
+        data = json.dumps(record, separators=(",", ":")).encode("utf-8")
+        cipher = aesgcm.encrypt(nonce, data, None)
+        line = base64.urlsafe_b64encode(nonce + cipher).decode("utf-8")
+        f.write(line + "\n")
+
+    if len(files) > MAX_FILES:
+      os.remove(os.path.join(GPS_DIR, files[0]))
+
+    # ----------------------------
+    # index.json（逆スキャンで全列挙）
+    # ----------------------------
+    index_path = os.path.join(GPS_DIR, "index.json")
+    if files_exchange or (not os.path.exists(index_path)): #ファイルが切り替わったとき、もしくはindex.jsonが存在しないときに更新する。
+      try:
+        current_index = int(os.path.splitext(os.path.basename(current_file))[0])
+
+        files_list = []
+
+        for i in range(current_index, 0, -1):
+          fname = f"{i:09d}.jsonl"
+          fpath = os.path.join(GPS_DIR, fname)
+
+          if os.path.exists(fpath):
+            files_list.append(fname)
+          else:
+            # 途切れたらそこで終了（連番前提）
+            break
+
+        with open(index_path, "w") as f:
+          f.write(json.dumps({
+            "latest": os.path.basename(current_file),
+            "files": files_list
+          }))
+      except Exception:
+        pass
+
+push_thread = None
+
+def gpslog_push_commit_fetch():
+  global push_thread
+  def run(cmd):
+    return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
+  # pull
+  pull = run(["git", "pull"])
+  if pull.returncode != 0:
+    push_thread = None
+    return #ネット未接続
+  shutil.copy2("/data/openpilot/viewer.html", GPS_DIR0+"/viewer.html") #viewer.html更新
+  run(["git", "commit", "-m", "gps"])
+  # 未push確認
+  check = run(["git", "rev-list", "@{u}..HEAD"]) # @{u}はorigin/mainになる
+  if check.returncode != 0 or not check.stdout.strip():
+    push_thread = None
+    return # pushするものがない
+  # push
+  run(["git", "push"])
+  push_thread = None
+
+def gpslog_push_fetch():
+  global push_thread
+  def run(cmd):
+    return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
+  # あえて、更新がなければpullしない
+  # pull = run(["git", "pull"])
+  # if pull.returncode != 0:
+  #   return #ネット未接続
+  # 未push確認
+  check = run(["git", "rev-list", "@{u}..HEAD"]) # @{u}はorigin/mainになる
+  if check.returncode != 0 or not check.stdout.strip():
+    push_thread = None
+    return # pushするものがない
+  # push
+  run(["git", "push"])
+  push_thread = None
+
+def gpslog_push():
+  global push_thread
+  if push_thread:
+    return
+  def run(cmd):
+    return subprocess.run(cmd, cwd=GPS_DIR0, text=True, capture_output=True)
+  # 変更があるならコミット作成
+  status = run(["git", "status", "--porcelain"])
+  if status.stdout.strip():
+    run(["git", "add", "."]) #addはワーカスレッドには出さない。
+    tmp_thread = threading.Thread(target=gpslog_push_commit_fetch)
+    push_thread = tmp_thread
+    tmp_thread.start()
+  else:
+    tmp_thread = threading.Thread(target=gpslog_push_fetch)
+    push_thread = tmp_thread
+    tmp_thread.start()

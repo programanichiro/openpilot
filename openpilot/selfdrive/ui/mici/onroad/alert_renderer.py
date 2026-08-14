@@ -22,8 +22,8 @@ ALERT_MARGIN = 18
 ALERT_FONT_SMALL = 66 - 50
 ALERT_FONT_BIG = 88 - 40
 
-SELFDRIVE_STATE_TIMEOUT = 5  # Seconds
-SELFDRIVE_UNRESPONSIVE_TIMEOUT = 10  # Seconds
+SELFDRIVE_STATE_TIMEOUT = 10  # Seconds
+SELFDRIVE_UNRESPONSIVE_TIMEOUT = 15  # Seconds
 
 # Constants
 ALERT_COLORS = {
@@ -90,11 +90,11 @@ ALERT_CRITICAL_REBOOT = Alert(
 class AlertRenderer(Widget):
   def __init__(self):
     super().__init__()
-
+    v_align = rl.GuiTextAlignmentVertical.TEXT_ALIGN_MIDDLE if gui_app.big_ui() else rl.GuiTextAlignmentVertical.TEXT_ALIGN_TOP
     self._alert_text1_label = UnifiedLabel(text="", font_size=ALERT_FONT_BIG, font_weight=FontWeight.DISPLAY, line_height=0.86,
-                                           letter_spacing=-0.02)
+                                           letter_spacing=-0.02, alignment_vertical=v_align)
     self._alert_text2_label = UnifiedLabel(text="", font_size=ALERT_FONT_SMALL, font_weight=FontWeight.ROMAN, line_height=0.86,
-                                           letter_spacing=0.025)
+                                           letter_spacing=0.025, alignment_vertical=v_align)
 
     self._prev_alert: Alert | None = None
     self._text_gen_time = 0
