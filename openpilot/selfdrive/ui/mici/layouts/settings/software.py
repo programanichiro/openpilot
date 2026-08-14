@@ -259,6 +259,7 @@ class TargetBranchButton(BigButton):
   def _on_select(self, branch: str):
     ui_state.params.put("UpdaterTargetBranch", branch, block=True)
     self.set_value(branch)
+    os.system("echo 16 > /data/force_prebuild")
     subprocess.run("pkill -SIGUSR1 -f openpilot.system.updated.updated", shell=True)
 
 
