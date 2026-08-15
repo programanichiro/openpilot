@@ -91,7 +91,7 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
-  if [ ! -f $DIR/common/params_pyx.so ] || [ ! -f $DIR/msgq_repo/msgq/ipc_pyx.so ]; then
+  if [ ! -f $DIR/openpilot/common/libparams_c.so ] || [ ! -f $DIR/msgq_repo/msgq/ipc_pyx.so ]; then
     echo 1 > $DIR/../force_prebuild
   fi
 
