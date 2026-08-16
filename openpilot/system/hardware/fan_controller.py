@@ -12,6 +12,7 @@ import requests
 import math
 import random
 import subprocess
+import re
 
 from openpilot.common.pid import PIDController
 from openpilot.common.hardware import HARDWARE
@@ -460,6 +461,10 @@ class FanController:
                   road_name = "---" #速度ありで空文字は---にする。
                 if road_name == "" and self.osm_local_mode == True and self.osm_front_back_long_mode == 2:
                   road_name = "---" #速度なしでも無名道路の可能性があるので---にする。
+                #もし道路名がAAAAA(BBBB)かAAAAA（BBBB）なら、[BBBB]とする
+                match = re.search(r"[（(]([^（）()]*)[）)]$", road_name)
+                if match:
+                  road_name = f"[{match.group(1)}]"
                 if True or speed_limit != "0" or road_name != "---": #方向のみ取得もあるので、全パターン記録する。
                   road_info_list.append({"road_name": road_name, "speed_limit": speed_limit , "nodes": road_coordinates})
         self.before_road_info_list = road_info_list
