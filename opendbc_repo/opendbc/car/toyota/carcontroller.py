@@ -1,7 +1,9 @@
+import os
 import math
 import numpy as np
 from opendbc.car import Bus, make_tester_present_msg, rate_limit, structs, ACCELERATION_DUE_TO_GRAVITY, DT_CTRL
 from opendbc.car.lateral import apply_meas_steer_torque_limits, apply_std_steer_angle_limits, common_fault_avoidance
+from opendbc.car.can_definitions import CanData
 from opendbc.car.carlog import carlog
 from opendbc.car.common.filter_simple import FirstOrderFilter, HighPassFilter
 from opendbc.car.common.pid import PIDController
@@ -32,14 +34,29 @@ MAX_STEER_RATE_FRAMES = 17  # tx control frames needed before torque can be cut
 # EPS allows user torque above threshold for 50 frames before permanently faulting
 MAX_USER_TORQUE = 500
 
+# PCM compensatory force calculation threshold interpolation values
+COMPENSATORY_CALCULATION_THRESHOLD_V = [-0.2, -0.2, -0.05]  # m/s^2
+COMPENSATORY_CALCULATION_THRESHOLD_BP = [0., 20., 32.]  # m/s
 
 def get_long_tune(CP, params):
   if CP.flags & ToyotaFlags.TSS2:
-    kiBP = [2., 5.]
-    kiV = [0.5, 0.25]
+    if CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
+      kiBP = [2., 5.]
+      kiV = [0.5, 0.25]
+    else: # 低速域でI項を強くして減速要求が抜けないようにする
+      #ichiro pilot
+      # kiBP = [0., 1., 2., 5.]
+      # kiV  = [1.8, 1.2, 0.8, 0.5]
+      kiBP = [0., 1., 2., 5., 9.]
+      kiV  = [3.5, 2.0, 1.5, 0.5, 0.25]
   else:
-    kiBP = [0., 5., 35.]
-    kiV = [3.6, 2.4, 1.5]
+    if CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
+      kiBP = [0., 5., 35.]
+      kiV = [3.6, 2.4, 1.5]
+    else:
+      # cydia method
+      kiBP = [0.]
+      kiV = [1.2]
 
   return PIDController(0.0, (kiBP, kiV), k_f=1.0,
                        pos_limit=params.ACCEL_MAX, neg_limit=params.ACCEL_MIN,
@@ -56,6 +73,7 @@ class CarController(CarControllerBase):
     self.standstill_req = False
     self.permit_braking = True
     self.steer_rate_counter = 0
+    self.prohibit_neg_calculation = True
     self.distance_button = 0
 
     # *** start long control state ***
@@ -74,6 +92,23 @@ class CarController(CarControllerBase):
     self.secoc_lta_message_counter = 0
     self.secoc_acc_message_counter = 0
     self.secoc_prev_reset_counter = 0
+
+    self.now_gear = structs.CarState.GearShifter.park
+    self.lock_flag = False
+    self.lock_speed = 0
+    try:
+      with open('/data/run_auto_lock.txt','r') as fp:
+        lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいに書いておく。ファイルが無いか0でオートロック無し。
+        if lock_speed_str:
+          self.lock_speed = int(lock_speed_str)
+    except Exception as e:
+      pass
+    self.before_ang = 0
+    self.before_ang_ct = 0
+    self.new_torques = []
+    self.accel_engage_counter = 0
+    self.lane_return_power = 100
+    self.last_standstill = False
 
   def update(self, CC, CS, now_nanos):
     actuators = CC.actuators
@@ -103,6 +138,46 @@ class CarController(CarControllerBase):
 
     # *** steer torque ***
     new_torque = int(round(actuators.torque * self.params.STEER_MAX))
+    if (not self.CP.flags & ToyotaFlags.TSS2) and (CS.knight_scanner_bit3 & 0x02): # knight_scanner_bit3.txt ⚪︎⚫︎⚪︎
+      if abs(self.before_ang - CS.out.steeringAngleDeg) > 3.0/100: #1秒で3度以上
+        # ハンドルが大きく動いたら
+        self.before_ang_ct *= 0.9
+      else:
+        if self.before_ang_ct < 100:
+          self.before_ang_ct += 1
+      self.before_ang = CS.out.steeringAngleDeg
+
+      new_torque0 = new_torque
+      self.new_torques.append(float(new_torque0))
+      if len(self.new_torques) > 10:
+        self.new_torques.pop(0)
+        #5〜ct〜55 -> 1〜10回の平均
+        l = int(self.before_ang_ct) / 5
+        l = int(1 if l < 1 else (l if l < 10 else 10))
+        sum_steer = 0
+        for i in range(l): #i=0..9
+          sum_steer += self.new_torques[9-i]
+        new_torque = sum_steer / l
+        # with open('/tmp/debug_out_v','w') as fp:
+        #   fp.write("ct:%d,%+.2f/%+.2f(%+.3f)" % (int(l),new_torque,new_torque0,new_torque-new_torque0))
+    try:
+      with open('/dev/shm/lane_d_info.txt','r') as fp:
+        lane_d_info_str = fp.read()
+        if lane_d_info_str:
+          lane_d_info = float(lane_d_info_str)
+          # nn_lane_d_info = 0 if new_torque == 0 else lane_d_info / new_torque
+          # with open('/tmp/debug_out_v','w') as fp:
+          #   fp.write('ns:%.7f/%.5f(%.1f%%)' % (new_torque,lane_d_info,nn_lane_d_info*100))
+          #new_torqueはマイナスで右に曲がる。
+          if CS.out.steeringPressed:
+            self.lane_return_power = 0
+          elif self.lane_return_power < 100:
+            self.lane_return_power += 1
+          new_torque -= lane_d_info * self.lane_return_power * 15 #引くとセンターへ車体を戻す。
+          # with open('/tmp/debug_out_v','w') as fp:
+          #   fp.write('lane_return_power:%d' % (self.lane_return_power))
+    except Exception as e:
+      pass
     apply_torque = apply_meas_steer_torque_limits(new_torque, self.last_torque, CS.out.steeringTorqueEps, self.params)
 
     # >100 degree/sec steering fault prevention
@@ -170,8 +245,15 @@ class CarController(CarControllerBase):
     steer_alert = hud_control.visualAlert in (VisualAlert.steerRequired, VisualAlert.ldw)
     lead = hud_control.leadVisible or CS.out.vEgo < 12.  # at low speed we always assume the lead is present so ACC can be engaged
 
-    # *** gas and brake ***
-    if self.CP.openpilotLongitudinalControl:
+    # on entering standstill, send standstill request for older TSS-P cars that aren't designed to stay engaged at a stop
+    if (self.CP.flags & ToyotaFlags.SMART_DSU.value or self.CP.flags & ToyotaFlags.DSU_BYPASS.value):
+      if CS.out.standstill and not self.CP.openpilotLongitudinalControl and not self.last_standstill:
+        self.standstill_req = True
+      if CS.pcm_acc_status != 8:
+        # pcm entered standstill or it's disabled
+        self.standstill_req = False
+
+    if not (self.CP.flags & ToyotaFlags.SMART_DSU.value or self.CP.flags & ToyotaFlags.DSU_BYPASS.value) and self.CP.openpilotLongitudinalControl: #TSS2用か？
       # if user engages at a stop with foot on brake, PCM starts in a special cruise standstill mode. on resume press,
       # brakes can take a while to ramp up causing a lurch forward. prevent resume press until planner wants to move.
       # don't use CC.cruiseControl.resume since it is gated on CS.cruiseState.standstill which goes false for 3s after resume press
@@ -184,6 +266,20 @@ class CarController(CarControllerBase):
         if not should_resume and CS.out.cruiseState.standstill:
           self.standstill_req = True
 
+    self.last_standstill = CS.out.standstill
+
+    if self.lock_speed > 0: #auto door lock , unlock
+      gear = CS.out.gearShifter
+      if self.now_gear != gear or (CS.out.doorOpen and self.lock_flag == True): #ギアが変わるか、ドアが開くか。
+        if gear == structs.CarState.GearShifter.park and CS.out.doorOpen == False: #ロックしたまま開ける時の感触がいまいちなので、パーキングでアンロックする。
+          can_sends.append(CanData(0x750, b'\x40\x05\x30\x11\x00\x40\x00\x00', 0)) #auto unlock
+        self.lock_flag = False #ドアが空いてもフラグはおろす。
+      elif gear == structs.CarState.GearShifter.drive and self.lock_flag == False and CS.out.vEgo >= self.lock_speed/3.6: #時速30km/h以上でオートロック
+        can_sends.append(CanData(0x750, b'\x40\x05\x30\x11\x00\x80\x00\x00', 0)) #auto lock
+        self.lock_flag = True
+      self.now_gear = gear
+
+    if self.CP.openpilotLongitudinalControl:
       if self.frame % 3 == 0:
         # Press distance button until we are at the correct bar length. Only change while enabled to avoid skipping startup popup
         if self.frame % 6 == 0 and self.CP.openpilotLongitudinalControl:
@@ -193,6 +289,7 @@ class CarController(CarControllerBase):
           else:
             self.distance_button = 0
 
+      if self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT and self.frame % 3 == 0:
         # internal PCM gas command can get stuck unwinding from negative accel so we apply a generous rate limit
         pcm_accel_cmd = actuators.accel
         if CC.longActive:
@@ -249,10 +346,115 @@ class CarController(CarControllerBase):
 
         pcm_accel_cmd = float(np.clip(pcm_accel_cmd, self.params.ACCEL_MIN, self.params.ACCEL_MAX))
 
+        try:
+          with open('/dev/shm/cruise_info.txt','r') as fp:
+            cruise_info_str = fp.read()
+            if cruise_info_str:
+              if cruise_info_str == "1" or cruise_info_str == ",1": #クリープしたければ以下を通さない。
+                with open('/dev/shm/accel_engaged.txt','r') as fp:
+                  accel_engaged_str = fp.read()
+                  eP_iP = False
+                  if int(accel_engaged_str) == 4 and os.path.exists('/dev/shm/red_signal_eP_iP_set.txt'):
+                    with open('/dev/shm/red_signal_eP_iP_set.txt','r') as fp:
+                      red_signal_eP_iP_set_str = fp.read()
+                      if red_signal_eP_iP_set_str and int(red_signal_eP_iP_set_str) == 1:
+                        eP_iP = True
+                  if int(accel_engaged_str) == 3 or eP_iP == True: #ワンペダルモードでもeP(一時的な赤信号手前を除く)では通さない
+                    if pcm_accel_cmd > 0:
+                      pcm_accel_cmd = 0
+                      # actuators_accel = 0
+        except Exception as e:
+          pass
         main_accel_cmd = 0. if self.CP.flags & ToyotaFlags.SECOC.value else pcm_accel_cmd
         can_sends.append(toyotacan.create_accel_command(self.packer, main_accel_cmd, pcm_cancel_cmd, self.permit_braking, self.standstill_req, lead,
                                                         CS.acc_type, fcw_alert, self.distance_button))
         if self.CP.flags & ToyotaFlags.SECOC.value:
+          acc_cmd_2 = toyotacan.create_accel_command_2(self.packer, pcm_accel_cmd)
+          acc_cmd_2 = add_mac(self.secoc_key,
+                              int(CS.secoc_synchronization['TRIP_CNT']),
+                              int(CS.secoc_synchronization['RESET_CNT']),
+                              self.secoc_acc_message_counter,
+                              acc_cmd_2)
+          self.secoc_acc_message_counter += 1
+          can_sends.append(acc_cmd_2)
+
+        self.accel = pcm_accel_cmd
+
+      elif self.frame % 3 == 0:
+        actuators_accel = actuators.accel
+
+        pcm_accel_cmd = actuators.accel
+        # GVC does not overshoot ego acceleration when starting from stop, but still has a similar delay
+        if not self.CP.flags & ToyotaFlags.SECOC.value:
+          a_ego_blended = float(np.interp(CS.out.vEgo, [1.0, 2.0], [CS.gvc, CS.out.aEgo]))
+        else:
+          a_ego_blended = CS.out.aEgo
+          
+        if CC.longActive:
+          error = pcm_accel_cmd - a_ego_blended
+          pcm_accel_cmd = self.long_pid.update(error,
+                                               speed=CS.out.vEgo,
+                                               feedforward=pcm_accel_cmd,
+                                               freeze_integrator=actuators.longControlState != LongCtrlState.pid)
+        else:
+          self.long_pid.reset()
+
+        actuators_accel = pcm_accel_cmd
+
+        comp_thresh = float(np.interp(CS.out.vEgo, COMPENSATORY_CALCULATION_THRESHOLD_BP, COMPENSATORY_CALCULATION_THRESHOLD_V))
+        # prohibit negative compensatory calculations when first activating long after accelerator depression or engagement
+        if not CC.longActive:
+          self.prohibit_neg_calculation = True
+        # don't reset until a reasonable compensatory value is reached
+        if CS.pcm_neutral_force > comp_thresh * self.CP.mass:
+          self.prohibit_neg_calculation = False
+        # limit minimum to only positive until first positive is reached after engagement, don't calculate when long isn't active
+        if CC.longActive and not self.prohibit_neg_calculation:
+          accel_offset = CS.pcm_neutral_force / self.CP.mass
+        else:
+          accel_offset = 0.
+        # only calculate pcm_accel_cmd when long is active to prevent disengagement from accelerator depression
+        if CC.longActive:
+          pcm_accel_cmd = float(np.clip(actuators_accel + accel_offset, self.params.ACCEL_MIN, self.params.ACCEL_MAX))
+        else:
+          pcm_accel_cmd = 0.
+
+        try:
+          with open('/dev/shm/cruise_info.txt','r') as fp:
+            cruise_info_str = fp.read()
+            if cruise_info_str:
+              if cruise_info_str == "1" or cruise_info_str == ",1": #クリープしたければ以下を通さない。
+                with open('/dev/shm/accel_engaged.txt','r') as fp:
+                  accel_engaged_str = fp.read()
+                  eP_iP = False
+                  if int(accel_engaged_str) == 4 and os.path.exists('/dev/shm/red_signal_eP_iP_set.txt'):
+                    with open('/dev/shm/red_signal_eP_iP_set.txt','r') as fp:
+                      red_signal_eP_iP_set_str = fp.read()
+                      if red_signal_eP_iP_set_str and int(red_signal_eP_iP_set_str) == 1:
+                        eP_iP = True
+                  if int(accel_engaged_str) == 3 or eP_iP == True: #ワンペダルモードでもeP(一時的な赤信号手前を除く)では通さない
+                    if pcm_accel_cmd > 0:
+                      pcm_accel_cmd = 0
+                      actuators_accel = 0
+        except Exception as e:
+          pass
+
+        # calculate amount of acceleration PCM should apply to reach target, given pitch.
+        # clipped to only include downhill angles, avoids erroneously unsetting PERMIT_BRAKING when stopping on uphills
+        accel_due_to_pitch = math.sin(min(self.pitch.x, 0.0)) * ACCELERATION_DUE_TO_GRAVITY
+        # TODO: on uphills this sometimes sets PERMIT_BRAKING low not considering the creep force
+        net_acceleration_request = pcm_accel_cmd + accel_due_to_pitch
+        
+        net_acceleration_request_min = min(actuators_accel + accel_due_to_pitch, net_acceleration_request)
+        if net_acceleration_request_min < 0.2 or stopping or not CC.longActive:
+          self.permit_braking = True
+        elif net_acceleration_request_min > 0.3:
+          self.permit_braking = False
+
+        can_sends.append(toyotacan.create_accel_command_cydia(self.packer, pcm_accel_cmd, actuators_accel, CS.out.aEgo, CC.longActive, pcm_cancel_cmd, self.permit_braking, self.standstill_req,
+                                                        lead, CS.acc_type, fcw_alert, self.distance_button))
+
+        if self.CP.flags & ToyotaFlags.SECOC.value: #未検証
           acc_cmd_2 = toyotacan.create_accel_command_2(self.packer, pcm_accel_cmd)
           acc_cmd_2 = add_mac(self.secoc_key,
                               int(CS.secoc_synchronization['TRIP_CNT']),
@@ -269,8 +471,10 @@ class CarController(CarControllerBase):
       if pcm_cancel_cmd:
         if self.CP.flags & ToyotaFlags.UNSUPPORTED_DSU:
           can_sends.append(toyotacan.create_acc_cancel_command(self.packer))
-        else:
+        elif self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT:
           can_sends.append(toyotacan.create_accel_command(self.packer, 0, pcm_cancel_cmd, True, False, lead, CS.acc_type, False, self.distance_button))
+        else:
+          can_sends.append(toyotacan.create_accel_command_cydia(self.packer, 0, 0, 0, False, pcm_cancel_cmd, True, False, lead, CS.acc_type, False, self.distance_button))
 
     # *** hud ui ***
     if self.CP.carFingerprint != CAR.TOYOTA_PRIUS_V:

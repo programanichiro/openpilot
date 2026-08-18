@@ -253,6 +253,9 @@ void speed_mismatch_check(const float speed_2);
 void safety_tick(const safety_config *safety_config);
 
 // This can be set by the safety hooks
+extern bool lateral_controls_allowed;
+extern bool set_me_prev;
+
 extern bool controls_allowed;
 extern bool relay_malfunction;
 extern bool gas_pressed;
