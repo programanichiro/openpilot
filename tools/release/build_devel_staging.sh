@@ -61,7 +61,12 @@ echo "[-] copying files T=$SECONDS"
 
 cd $SOURCE_DIR
 #cp -pR --parents $(./tools/release/release_files.py) $TARGET_DIR/
-rsync -l -R --exclude='big_driving_*.onnx' $(./tools/release/release_files.py) $TARGET_DIR/
+#rsync -l -R --exclude='big_driving_*.onnx' $(./tools/release/release_files.py) $TARGET_DIR/
+./tools/release/release_files.py |
+  rsync -l -R \
+    --from0 --files-from=- \
+    --exclude='big_driving_*.onnx' \
+    ./ "$TARGET_DIR/"
 
 # in the directory
 cd $TARGET_DIR
