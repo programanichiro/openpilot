@@ -986,14 +986,6 @@ class LongitudinalPlanner:
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-    steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['vehicleParameters'].angleOffsetDeg
-
-    if reset_state:
-      self.v_desired_filter.x = v_ego
-      self.a_desired = np.clip(sm['carState'].aEgo, ACCEL_MIN, ACCEL_MAX)
-
-    # Prevent divergence, smooth in current v_ego
-    self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
     if limitspeed_set == True and self.ac_vc_time == 0 and cruise_info_power_up == False and self.v_desired_filter.x > self.limitspeed_point / 3.6: #増速した時を除く
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
