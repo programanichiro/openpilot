@@ -115,9 +115,9 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
   if turbo_boost or (CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value): #公式縦制御
     c_gain = 1.0
     c_scale = 1.0
-  elif Max_1: #ワンペダルモード
-    c_gain = np.interp(v_ego, [10/3.6, 25/3.6], [c_gain, 1])
-    c_scale = np.interp(v_ego, [10/3.6, 25/3.6], [c_scale, 1])
+  elif Max_1: #ワンペダルモード,少し強める。
+    c_gain = np.interp(v_ego, [10/3.6, 25/3.6], [0.7, 1])
+    c_scale = np.interp(v_ego, [10/3.6, 25/3.6], [0.7, 1])
 
   v_err = v_cruise - v_ego
   v_err *= c_gain
