@@ -81,10 +81,6 @@ A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
 A_CRUISE_MIN = -1.2
-A_CRUISE_ACCEL_GAIN = 0.55
-J_CRUISE_ACCEL_SCALE = 0.45
-A_CRUISE_DECEL_GAIN = 0.4
-J_CRUISE_DECEL_SCALE = 0.6
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 ALLOW_THROTTLE_THRESHOLD = 0.4
 MIN_ALLOW_THROTTLE_SPEED = 2.5
@@ -101,7 +97,7 @@ def get_max_accel(v_ego):
 def get_coast_accel(pitch):
   return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
 
-def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, accel_coast, allow_throttle, Max_1):
+def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, accel_coast, allow_throttle, Max_1, turbo_boost):
   max_accel = ACCEL_MAX if e2e else get_max_accel(v_ego)
 
   if not e2e:
@@ -114,32 +110,20 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
       coast_limit = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [max_accel, clipped_accel_coast])
       max_accel = min(max_accel, coast_limit)
 
-  _A_CRUISE_DECEL_GAIN = A_CRUISE_DECEL_GAIN
-  _A_CRUISE_ACCEL_GAIN = A_CRUISE_ACCEL_GAIN
-  _J_CRUISE_DECEL_SCALE = J_CRUISE_DECEL_SCALE
-  _J_CRUISE_ACCEL_SCALE = J_CRUISE_ACCEL_SCALE
-  if True: #CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value: #公式縦制御
-    _A_CRUISE_DECEL_GAIN = 1
-    _A_CRUISE_ACCEL_GAIN = 1
-    _J_CRUISE_DECEL_SCALE = 1
-    _J_CRUISE_ACCEL_SCALE = 1
+  c_gain = 0.5
+  c_scale = 0.5
+  if turbo_boost or (CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value): #公式縦制御
+    c_gain = 1.0
+    c_scale = 1.0
   elif Max_1: #ワンペダルモード
-    _A_CRUISE_DECEL_GAIN = np.interp(v_ego, [10/3.6, 25/3.6], [A_CRUISE_DECEL_GAIN, 1])
-    _A_CRUISE_ACCEL_GAIN = np.interp(v_ego, [10/3.6, 25/3.6], [A_CRUISE_ACCEL_GAIN, 1])
-    _J_CRUISE_DECEL_SCALE = np.interp(v_ego, [10/3.6, 25/3.6], [J_CRUISE_DECEL_SCALE, 1])
-    _J_CRUISE_ACCEL_SCALE = np.interp(v_ego, [10/3.6, 25/3.6], [J_CRUISE_ACCEL_SCALE, 1])
+    c_gain = np.interp(v_ego, [10/3.6, 25/3.6], [c_gain, 1])
+    c_scale = np.interp(v_ego, [10/3.6, 25/3.6], [c_scale, 1])
 
   v_err = v_cruise - v_ego
-  if v_err < 0.0:
-    v_err *= _A_CRUISE_DECEL_GAIN
-  else:
-    v_err *= _A_CRUISE_ACCEL_GAIN
+  v_err *= c_gain
   target_accel = np.clip(v_err, A_CRUISE_MIN, max_accel)
   j_cruise = np.interp(v_ego, A_CRUISE_MAX_BP, J_CRUISE_VALS)
-  if v_err < 0.0:
-    target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_DECEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_DECEL_SCALE * dt))
-  else:
-    target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_ACCEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_ACCEL_SCALE * dt))
+  target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * c_scale * dt, a_cruise_prev + j_cruise * c_scale * dt))
 
   return target_accel
 
@@ -993,6 +977,16 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = v_117 / 3.6
 
     self.a_desired_mul = 1.0
+    turbo_boost = False
+    try:
+      with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
+        start_accel_power_up_disp_enable_str = fp.read()
+        if start_accel_power_up_disp_enable_str:
+          start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
+          if start_accel_power_up_disp_enable != 0:
+            turbo_boost = True
+    except Exception as e:
+      pass
     vl = 0
     vd = 0
     lcd = 0
@@ -1025,15 +1019,8 @@ class LongitudinalPlanner:
         vd = math.sqrt(vd) #sqrt(vd)
         add_k = np.interp(vk_ego,[0,10/3.6],[0.12,0.25]) #0.2固定だと雨の日ホイールスピンする
         self.a_desired_mul = 1 + add_k*vd*lcd #1.2〜1倍で、(最大100km/hかv_cruise)*0.60に達すると1になる。→新方法は折れ線グラフの表から決定。速度が大きくなると大体目標値-20くらいにしている。これから検証。
-        try:
-          with open('/dev/shm/start_accel_power_up_disp_enable.txt','r') as fp:
-            start_accel_power_up_disp_enable_str = fp.read()
-            if start_accel_power_up_disp_enable_str:
-              start_accel_power_up_disp_enable = int(start_accel_power_up_disp_enable_str)
-              if start_accel_power_up_disp_enable == 0:
-                self.a_desired_mul = 1 #スタート加速増なし
-        except Exception as e:
-          self.a_desired_mul = 1 #ファイルがなくてもスタート加速増なし
+        if not turbo_boost:
+          self.a_desired_mul = 1 #スタート加速増なし
 
     if self.a_desired_mul == 1.0 or vk_ego < 1/3.6:
       cruise_info_power_up = False
@@ -1100,7 +1087,7 @@ class LongitudinalPlanner:
 
     self.a_cruise = get_cruise_accel(sm['selfdriveState'].experimentalMode, v_cruise, v_ego,
                                      self.a_cruise, steer_angle_without_offset, self.CP, self.dt,
-                                     accel_coast, self.allow_throttle,OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2)
+                                     accel_coast, self.allow_throttle,OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2 , turbo_boost)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
     candidates = [(output_a_target_mpc, self.mpc.source, output_should_stop_mpc),
