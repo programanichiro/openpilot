@@ -118,7 +118,7 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
   _A_CRUISE_ACCEL_GAIN = A_CRUISE_ACCEL_GAIN
   _J_CRUISE_DECEL_SCALE = J_CRUISE_DECEL_SCALE
   _J_CRUISE_ACCEL_SCALE = J_CRUISE_ACCEL_SCALE
-  if True #CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value: #公式縦制御
+  if True: #CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value: #公式縦制御
     _A_CRUISE_DECEL_GAIN = 1
     _A_CRUISE_ACCEL_GAIN = 1
     _J_CRUISE_DECEL_SCALE = 1
