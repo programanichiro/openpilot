@@ -135,12 +135,11 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
   else:
     v_err *= _A_CRUISE_ACCEL_GAIN
   target_accel = np.clip(v_err, A_CRUISE_MIN, max_accel)
-  if not e2e:
-    j_cruise = np.interp(v_ego, A_CRUISE_MAX_BP, J_CRUISE_VALS)
-    if v_err < 0.0:
-      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_DECEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_DECEL_SCALE * dt))
-    else:
-      target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_ACCEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_ACCEL_SCALE * dt))
+  j_cruise = np.interp(v_ego, A_CRUISE_MAX_BP, J_CRUISE_VALS)
+  if v_err < 0.0:
+    target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_DECEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_DECEL_SCALE * dt))
+  else:
+    target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * _J_CRUISE_ACCEL_SCALE * dt, a_cruise_prev + j_cruise * _J_CRUISE_ACCEL_SCALE * dt))
 
   return target_accel
 
@@ -153,10 +152,9 @@ class LongitudinalPlanner:
     self.dt = dt
     self.allow_throttle = True
 
-    self.a_desired = init_a
     self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
-    self.a_cruise = 0.0
-    self.output_a_target = 0.0
+    self.a_cruise = init_a
+    self.output_a_target = init_a
     self.output_should_stop = False
 
     self.v_desired_trajectory = np.zeros(CONTROL_N)
@@ -946,7 +944,7 @@ class LongitudinalPlanner:
       else:
         t_v = 9/3.6  #m/s完全停止しない。クリープ速度。
         v_cruise = t_v
-        if vk_ego < t_v and self.a_desired > 0: #クリープ発進を滑らかに。
+        if vk_ego < t_v and self.output_a_target > 0: #クリープ発進を滑らかに。
           creep_a_mul = np.interp(vk_ego*3.6
                                ,[0  ,1  ,2  ,3  ,6  ,7  ,8  ,9  ]
                                ,[1.0,1.0,0.7,0.6,0.5,0.7,0.9,1.0])
@@ -978,7 +976,8 @@ class LongitudinalPlanner:
 
     if reset_state:
       self.v_desired_filter.x = v_ego
-      self.a_desired = np.clip(sm['carState'].aEgo, ACCEL_MIN, ACCEL_MAX)
+      self.output_a_target = np.clip(sm['carState'].aEgo, ACCEL_MIN, ACCEL_MAX)
+      self.a_cruise = self.output_a_target
 
     # Prevent divergence, smooth in current v_ego
     self.v_desired_filter.x = max(0.0, self.v_desired_filter.update(v_ego))
@@ -1009,7 +1008,7 @@ class LongitudinalPlanner:
         lcd /= ((70 + add_lead_distance) -to_lead_distance) #70m離れていたら1.0(時速50km以下の時、時速100kmでは130mとなる)
         if lcd > 1:
           lcd = 1
-    if (hasLead == False or lcd > 0) and self.a_desired > 0 and vk_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
+    if (hasLead == False or lcd > 0) and self.output_a_target > 0 and vk_ego >= 1/3.6 and sm['carState'].gasPressed == False: #前走者がいない。加速中
       if hasLead == False:
         lcd = 1.0 #前走車がいなければlcd=1扱い。
       vl = v_cruise
@@ -1045,9 +1044,9 @@ class LongitudinalPlanner:
       ePedal = False
       if accel_engaged_str and int(accel_engaged_str) == 4: #eペダルモード以外
         ePedal = True
-      if sm['carState'].gasPressed == False and self.a_desired > 0 and ePedal == False:
-        self.a_desired = 0 #アクセル離して加速ならゼロに。
-      if self.a_desired < 0 and ePedal == False:
+      if sm['carState'].gasPressed == False and self.output_a_target > 0 and ePedal == False:
+        self.output_a_target = 0 #アクセル離して加速ならゼロに。
+      if self.output_a_target < 0 and ePedal == False:
         #ワンペダル停止の減速を強めてみる。
         self.a_desired_mul = np.interp(vk_ego,[0.0,10/3.6,20/3.6,40/3.6],[1.0,1.02,1.06,1.17]) #30km/hあたりから減速が強くなり始める->低速でもある程度強くしてみる。
 
@@ -1063,7 +1062,7 @@ class LongitudinalPlanner:
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
-    self.mpc.set_cur_state(self.v_desired_filter.x, self.a_desired)
+    self.mpc.set_cur_state(self.v_desired_filter.x, self.output_a_target)
     stop_d = 0
     if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
       #赤信号停止時の減速を強める
@@ -1081,7 +1080,7 @@ class LongitudinalPlanner:
       cloudlog.info("FCW triggered")
 
     # Save starting point for next iteration
-    a_prev = self.a_desired
+    a_prev = self.output_a_target
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
     if tss_type < 2 and phv_2019 == False:
@@ -1113,17 +1112,6 @@ class LongitudinalPlanner:
     self.output_should_stop = any(should_stop for _, _, should_stop in candidates)
     self.output_a_target = np.clip(output_a_target, ACCEL_MIN, ACCEL_MAX)
 
-    self.a_desired = float(self.output_a_target)
-    if False: #tss_type == 2 and not (self.CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value):
-      tss2_amul = 1.0
-      if self.a_desired < 0:
-        tss2_amul = np.interp(vk_ego,[0,10/3.6],[1.1,1.0]) #減速を強める
-        if accel_engaged_str:
-          if int(accel_engaged_str) >= 3 and v_cruise_kph <= 1.2: #ワンペダルモードで実際にMAX=1のとき
-            a2 = 1.04
-            if a2 > tss2_amul:
-              tss2_amul = a2
-      self.a_desired *= tss2_amul
     self.v_desired_filter.x = self.v_desired_filter.x + self.dt * (self.output_a_target + a_prev) / 2.0
 
   def publish(self, sm, pm):
