@@ -100,6 +100,9 @@ function launch {
   # start manager
   cd openpilot/system/manager
   if [ -f $DIR/../agnos_update ] || [ ! -f $DIR/prebuilt ] && [ -f $DIR/../force_prebuild ]; then
+    cd ../../../
+    git submodule update --init --recursive
+    cd openpilot/system/manager
     ./build.py
   fi
   ./manager.py
