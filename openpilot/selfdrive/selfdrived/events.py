@@ -515,8 +515,8 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
       #"Steering Assist Temporarily Unavailable",
       "Steering Assist Silent Unavailable",
       "",
-      AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.prompt, 1.8),
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1.8),
   },
 
   EventName.driverDistracted1: {
