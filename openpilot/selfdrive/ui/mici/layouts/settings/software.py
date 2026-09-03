@@ -75,6 +75,10 @@ class SoftwareInfoLayoutMici(Widget):
 
 
 class CheckUpdateButton(BigButton):
+  UPDATER_PROC = "openpilot.system.updated.updated"
+  CHECK_FOR_UPDATE = "SIGUSR1"
+  DOWNLOAD_UPDATE = "SIGHUP"
+
   def __init__(self):
     self._txt_update_icon = gui_app.texture("icons_mici/settings/device/update.png", 64, 75)
     self._txt_up_to_date_icon = gui_app.texture("icons_mici/settings/device/up_to_date.png", 64, 64)
@@ -98,10 +102,10 @@ class CheckUpdateButton(BigButton):
       gui_app.push_widget(dlg)
       return
 
-    self._signal_updater("SIGHUP" if self.get_value() == "download update" else "SIGUSR1")
+    self._signal_updater(self.DOWNLOAD_UPDATE if self.get_value() == "download update" else self.CHECK_FOR_UPDATE)
 
   def check_for_update(self):
-    self._signal_updater("SIGUSR1")
+    self._signal_updater(self.CHECK_FOR_UPDATE)
 
   def _signal_updater(self, sig: str):
     self.set_enabled(False)
@@ -115,7 +119,7 @@ class CheckUpdateButton(BigButton):
         os.system("echo 13 > /data/force_prebuild")
       else:
         os.system("echo 15 > /data/force_prebuild")
-      subprocess.run(f"pkill -{sig} -f openpilot.system.updated.updated", shell=True)
+      subprocess.run(f"pkill -{sig} -f {self.UPDATER_PROC}", shell=True)
 
     threading.Thread(target=run, daemon=True).start()
 
@@ -263,7 +267,7 @@ class TargetBranchButton(BigButton):
 
   def _on_click(self):
     if not ui_state.params.get("UpdaterAvailableBranches"):
-      gui_app.push_widget(BigDialog("", tr("Please connect to Wi-Fi to switch branches.")))
+      gui_app.push_widget(BigDialog("", tr("Failed to get available branches. Ensure you're connected to the internet and try again.")))
       return
     gui_app.push_widget(BranchSelectPage(self._on_select))
 
