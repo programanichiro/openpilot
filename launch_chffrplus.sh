@@ -102,8 +102,8 @@ function launch {
   MODELS_DIR="$DIR/openpilot/selfdrive/modeld/models"
   BIG_ONNX="$MODELS_DIR/big_driving_supercombo.onnx"
   BIG_PKL="$MODELS_DIR/big_driving_tinygrad.pkl.chunkmanifest"
-  if [ -f "$BIG_ONNX" ] && { [ ! -f "$BIG_PKL" ] || [ "$BIG_ONNX" -nt "$BIG_PKL" ]; }; then
-    echo 1 > $DIR/../force_prebuild
+  if [ ! -f $DIR/../force_prebuild ] && [ -f "$BIG_ONNX" ] && { [ ! -f "$BIG_PKL" ] || [ "$BIG_ONNX" -nt "$BIG_PKL" ]; }; then
+    echo 101 > $DIR/../force_prebuild
   fi
 
   # start manager
