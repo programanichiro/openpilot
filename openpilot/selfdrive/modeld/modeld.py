@@ -42,6 +42,12 @@ LONG_SMOOTH_SECONDS = 0.3
 MIN_LAT_CONTROL_SPEED = 0.3
 BIG_MODEL_TIMEOUT = 60
 
+# The chestnut receives both camera frames over USB every frame. The comma 3X does not bin,
+# so it sends 1928x1208 twice (~7.5MB, ~22ms of copy) and blows the 50ms budget, which trips
+# "Driving Model Lagging". Point-sample down to this geometry instead: its jit is already
+# compiled (camera_configs covers both devices), so nothing on the chestnut side changes.
+CHESTNUT_FRAME_SIZE = (1344, 760)
+
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
                           lat_action_t: float, long_action_t: float, v_ego: float) -> log.ModelDataV2.Action:
@@ -187,11 +193,42 @@ class ModelState:
     self.chestnut = chestnut
 
     self.frame_skip = ModelConstants.MODEL_RUN_FREQ // ModelConstants.MODEL_CONTEXT_FREQ
-    self.frame_copy_size = nv12_copy_size(*get_nv12_info(cam_w, cam_h)[:3])
+
+    model_w, model_h = cam_w, cam_h
+    if chestnut and cam_w * cam_h > CHESTNUT_FRAME_SIZE[0] * CHESTNUT_FRAME_SIZE[1]:
+      model_w, model_h = CHESTNUT_FRAME_SIZE
+    self.src_copy_size = nv12_copy_size(*get_nv12_info(cam_w, cam_h)[:3])
+    self.frame_copy_size = nv12_copy_size(*get_nv12_info(model_w, model_h)[:3])
+    self._init_decimation(cam_w, cam_h, model_w, model_h)
+
     self.input_queues, self.npy, self.frame_views = make_input_queues(
       self.input_shapes, self.frame_skip, device=self.model_device, frame_copy_size=self.frame_copy_size)
     self.parser = Parser()
-    self.run_model = jits['run_model'][(cam_w,cam_h)]
+    self.run_model = jits['run_model'][(model_w, model_h)]
+
+  def _init_decimation(self, src_w: int, src_h: int, dst_w: int, dst_h: int) -> None:
+    # transforms map model coords to source pixels, so fold the sampling ratio in
+    self.tfm_scale = np.diag([dst_w / src_w, dst_h / src_h, 1.0]).astype(np.float32)
+    if (src_w, src_h) == (dst_w, dst_h):
+      self._decim = None
+      return
+    s_stride, s_y_h = get_nv12_info(src_w, src_h)[:2]
+    d_stride, d_y_h = get_nv12_info(dst_w, dst_h)[:2]
+    # UV is interleaved at half resolution, so pick whole UV pairs to keep U and V aligned
+    uv_pairs = np.arange(dst_w // 2) * (src_w // 2) // (dst_w // 2)
+    uv_cols = np.empty(dst_w, dtype=np.intp)
+    uv_cols[0::2], uv_cols[1::2] = uv_pairs * 2, uv_pairs * 2 + 1
+    self._decim = (s_stride, s_y_h, d_stride, d_y_h, dst_w, dst_h,
+                   np.ix_(np.arange(dst_h) * src_h // dst_h, np.arange(dst_w) * src_w // dst_w),
+                   np.ix_(np.arange(dst_h // 2) * (src_h // 2) // (dst_h // 2), uv_cols))
+
+  def _copy_frame(self, src: np.ndarray, dst: np.ndarray) -> None:
+    if self._decim is None:
+      np.copyto(dst, src)
+      return
+    s_stride, s_y_h, d_stride, d_y_h, dst_w, dst_h, y_ix, uv_ix = self._decim
+    dst[:d_stride * d_y_h].reshape(d_y_h, d_stride)[:dst_h, :dst_w] = src[:s_stride * s_y_h].reshape(s_y_h, s_stride)[y_ix]
+    dst[d_stride * d_y_h:].reshape(-1, d_stride)[:dst_h // 2, :dst_w] = src[s_stride * s_y_h:].reshape(-1, s_stride)[uv_ix]
 
   def slice_outputs(self, model_outputs: np.ndarray, output_slices: dict[str, slice]) -> dict[str, np.ndarray]:
     parsed_model_outputs = {k: model_outputs[np.newaxis, v] for k,v in output_slices.items()}
@@ -200,7 +237,7 @@ class ModelState:
   def run(self, bufs: dict[str, VisionBuf], transforms: dict[str, np.ndarray],
           inputs: dict[str, np.ndarray], after_enqueue: Callable[[], None] | None = None) -> dict[str, np.ndarray]:
     for key, buf in bufs.items():
-      np.copyto(self.frame_views[key], np.frombuffer(buf.data, dtype=np.uint8, count=self.frame_copy_size))
+      self._copy_frame(np.frombuffer(buf.data, dtype=np.uint8, count=self.src_copy_size), self.frame_views[key])
 
     # Model decides when action is completed, so desire input is just a pulse triggered on rising edge
     inputs['desire_pulse'][0] = 0
@@ -208,8 +245,8 @@ class ModelState:
     self.prev_desire[:] = inputs['desire_pulse']
     self.npy['traffic_convention'][:] = inputs['traffic_convention']
     self.npy['action_t'][:] = inputs['action_t']
-    self.npy['tfm'][:,:] = transforms['img'][:,:]
-    self.npy['big_tfm'][:,:] = transforms['big_img'][:,:]
+    self.npy['tfm'][:,:] = self.tfm_scale @ transforms['img']
+    self.npy['big_tfm'][:,:] = self.tfm_scale @ transforms['big_img']
 
     outs, = self.run_model(**{k: self.input_queues[k] for k in MODELD_INPUTS})
     if after_enqueue is not None:
@@ -225,7 +262,7 @@ class ModelState:
     return outputs_dict
 
   def warmup(self) -> None:
-    dummy_frames = {k: np.zeros(self.frame_copy_size, dtype=np.uint8) for k in self.vision_input_names}
+    dummy_frames = {k: np.zeros(self.src_copy_size, dtype=np.uint8) for k in self.vision_input_names}
     eye = np.eye(3, dtype=np.float32)
     dims = {'desire_pulse': ModelConstants.DESIRE_LEN, 'traffic_convention': 2, 'action_t': 2}
     self.run(dummy_frames, dict.fromkeys(self.vision_input_names, eye), {k: np.zeros(v, dtype=np.float32) for k, v in dims.items()})
