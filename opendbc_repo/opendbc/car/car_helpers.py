@@ -1,6 +1,7 @@
 import os
 import time
 
+from openpilot.common.params import Params
 from opendbc.car import gen_empty_fingerprint
 from opendbc.car.can_definitions import CanRecvCallable, CanSendCallable
 from opendbc.car.carlog import carlog
@@ -10,6 +11,7 @@ from opendbc.car.fw_versions import ObdCallback, get_fw_versions_ordered, get_pr
 from opendbc.car.mock.values import CAR as MOCK
 from opendbc.car.values import BRANDS
 from opendbc.car.vin import get_vin, is_valid_vin, VIN_UNKNOWN
+from opendbc.car.fingerprints import MIGRATION
 
 FRAME_FINGERPRINT = 100  # 1s
 
@@ -89,6 +91,18 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
   ecu_rx_addrs = set()
 
   start_time = time.monotonic()
+  Params().put_bool('DisengageOnAccelerator',False) #アクセル解除ボタン強制OFF
+  Params().put_bool('IsMetric',True) #km/hを使う。イチロウパイロットはmphの車で多分うまく動かない
+  try:
+    with open('/data/fixed_fingerprint.txt','r') as fp:
+      fixed_fingerprint_str = fp.read()
+      if fixed_fingerprint_str:
+        fixed_fingerprint = MIGRATION.get(fixed_fingerprint_str)
+        #skip_fw_query = True #直指定でもfw読み出し(car_fw, vin)は必要。
+        #disable_fw_cache = True #キャッシュなしで検証
+  except Exception as e:
+    pass
+
   if not skip_fw_query:
     if cached_params is not None and cached_params.brand != "mock" and len(cached_params.carFw) > 0 and \
        (cached_params.carVin != VIN_UNKNOWN or os.environ.get("REPLAY")) and not disable_fw_cache:
@@ -107,7 +121,7 @@ def fingerprint(can_recv: CanRecvCallable, can_send: CanSendCallable, set_obd_mu
       car_fw = get_fw_versions_ordered(can_recv, can_send, set_obd_multiplexing, vin, ecu_rx_addrs)
       cached = False
 
-    exact_fw_match, fw_candidates = match_fw_to_car(car_fw, vin)
+    exact_fw_match, fw_candidates = match_fw_to_car(car_fw, vin) if not fixed_fingerprint else (False,[])
   else:
     vin_rx_addr, vin_rx_bus, vin = -1, -1, VIN_UNKNOWN
     exact_fw_match, fw_candidates, car_fw = True, set(), []

@@ -284,9 +284,15 @@ class LongitudinalMpc:
     lead_xv = np.column_stack((x_lead_traj, v_lead_traj))
     return lead_xv
 
-  def process_lead(self, lead):
+  def process_lead(self, lead, red_signal_flag, stop_distance):
     v_ego = self.x0[1]
-    if lead is not None and lead.present:
+    # 赤信号停止モード時、パス終端を疑似前走車として挿入
+    if red_signal_flag == 3:  # 赤信号停止モード時
+      x_lead = stop_distance
+      v_lead = 0.0
+      a_lead = 0.0
+      a_lead_tau = _LEAD_ACCEL_TAU
+    elif lead is not None and lead.present:
       x_lead = lead.dRel
       v_lead = lead.vLead
       a_lead = lead.aLeadK
@@ -307,17 +313,19 @@ class LongitudinalMpc:
     lead_xv = self.extrapolate_lead(x_lead, v_lead, a_lead, a_lead_tau)
     return lead_xv
 
-  def update(self, radarstate, personality=log.LongitudinalPersonality.standard):
+  def update(self, radarstate, personality=log.LongitudinalPersonality.standard, red_signal_flag=0, stop_distance=0.0):
     t_follow = get_T_FOLLOW(personality)
 
-    lead_xv_0 = self.process_lead(radarstate.leadOne)
-    lead_xv_1 = self.process_lead(radarstate.leadTwo)
+    lead_xv_0 = self.process_lead(radarstate.leadOne, red_signal_flag, stop_distance)
+    lead_xv_1 = self.process_lead(radarstate.leadTwo, red_signal_flag, stop_distance)
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
     # and then treat that as a stopped car/obstacle at this new distance.
     lead_0_obstacle = lead_xv_0[:,0] + get_stopped_equivalence_factor(lead_xv_0[:,1])
     lead_1_obstacle = lead_xv_1[:,0] + get_stopped_equivalence_factor(lead_xv_1[:,1])
+    lead_0_obstacle = np.maximum(0.0, lead_0_obstacle -1.0) #自車が1m手前で早く止まるように補正。
+    lead_1_obstacle = np.maximum(0.0, lead_1_obstacle -1.0) #自車が1m手前で早く止まるように補正。
 
     x_obstacles = np.column_stack([lead_0_obstacle, lead_1_obstacle])
     self.source = MPC_SOURCES[np.argmin(x_obstacles[0])]

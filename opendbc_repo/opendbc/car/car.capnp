@@ -174,7 +174,11 @@ struct CarState {
   standstill @18 :Bool;
   wheelSpeeds @2 :WheelSpeeds;
 
+  # gas pedal, 0.0-1.0
+  gas @3 :Float32;        # this is user pedal only
   gasPressed @4 :Bool;    # this is user pedal only
+
+  engineRpm @46 :Float32;
 
   brakePressed @6 :Bool;  # this is user pedal only
   regenBraking @45 :Bool; # this is user pedal only
@@ -286,7 +290,7 @@ struct CarState {
 
   deprecated :group {
     errors @0 :List(OnroadEventDEPRECATED.EventName);
-    gas @3 :Float32;
+    #gas @3 :Float32;
     brake @5 :Float32;
     brakeLights @19 :Bool;
     steeringRateLimited @29 :Bool;
@@ -294,7 +298,7 @@ struct CarState {
     canRcvTimeout @49 :Bool;
     events @13 :List(OnroadEventDEPRECATED);
     clutchPressed @28 :Bool;
-    engineRpm @46 :Float32;
+    #engineRpm @46 :Float32;
   }
 }
 
