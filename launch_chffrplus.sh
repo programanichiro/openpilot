@@ -100,9 +100,9 @@ function launch {
   # big model: force a rebuild when the compiled tinygrad pkl is missing or older
   # than the onnx it comes from. skipped entirely on branches without the big model.
   MODELS_DIR="$DIR/openpilot/selfdrive/modeld/models"
-  BIG_ONNX="$MODELS_DIR/big_driving_supercombo.onnx"
-  BIG_PKL="$MODELS_DIR/big_driving_tinygrad.pkl.chunkmanifest"
-  if [ ! -f $DIR/../force_prebuild ] && [ -f "$BIG_ONNX" ] && { [ ! -f "$BIG_PKL" ] || [ "$BIG_ONNX" -nt "$BIG_PKL" ]; }; then
+  BIG_PKL_0="$MODELS_DIR/big_driving_tinygrad.pkl"
+  BIG_PKL_MAN="$MODELS_DIR/big_driving_tinygrad.pkl.chunkmanifest"
+  if [ ! -f $DIR/../force_prebuild ] && [ -f "$BIG_PKL_0" ] && { [ ! -f "$BIG_PKL_MAN" ] || [ "$BIG_PKL_0" -nt "$BIG_PKL_MAN" ]; }; then
     echo 101 > $DIR/../force_prebuild
   fi
 
