@@ -47,7 +47,9 @@ git lfs uninstall
 
 MODEL_BACKUP=$(mktemp -d)
 
-cp openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk* $MODEL_BACKUP/
+# ビッグモデルは onnx 配布から pkl 配布に変わった（#38930）。740MB あり LFS を外して push する
+# このフローでは素の git に入らないため、事前分割した chunk をブランチ側で持ち回す。
+cp openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl.chunk* $MODEL_BACKUP/
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
@@ -66,7 +68,7 @@ cd $SOURCE_DIR
 ./tools/release/release_files.py |
   rsync -l -R \
     --from0 --files-from=- \
-    --exclude='big_driving_*.onnx' \
+    --exclude='big_driving_tinygrad.pkl' \
     ./ "$TARGET_DIR/"
 
 # in the directory
@@ -81,13 +83,13 @@ mkdir -p openpilot/selfdrive/modeld/models
 
 cp $MODEL_BACKUP/* openpilot/selfdrive/modeld/models/
 
-rm -f openpilot/selfdrive/modeld/models/big_driving_*.onnx
+rm -f openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl
 
 # remove accidental git index entry
-git rm --cached openpilot/selfdrive/modeld/models/big_driving_*.onnx || true
+git rm --cached openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl || true
 
 # ensure chunks are tracked
-git add openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk*
+git add openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl.chunk*
 
 rm -rf $MODEL_BACKUP
 
