@@ -48,7 +48,7 @@ BIG_MODEL_TIMEOUT = 60
 # 大モデルのハングで manager に殺されて再起動したときの挙動を選ぶ。
 #   True  : 大モデルを読み直す。22〜29秒かかり、その間はエンゲージできないが、復旧すれば大モデルに戻る。
 #   False : 小モデルで約1秒で復帰する。その走行中は大モデルを使わない（次のイグニッションONで復活）。
-RELOAD_BIG_MODEL_AFTER_HANG = False
+RELOAD_BIG_MODEL_AFTER_HANG = True
 
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
