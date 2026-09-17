@@ -20,6 +20,13 @@ from openpilot.common.swaglog import cloudlog, add_file_handler
 from openpilot.common.version import get_build_metadata
 from openpilot.common.hardware.hw import Paths
 
+# 大モデルの GPU 呼び出しで modeld がブロックすると例外が飛ばず、modeld 内のフォールバックも
+# 走らないまま modelV2 が止まる。SIGINT では抜けられないので SIGKILL で落として再起動させる。
+# modelV2 が止まり続ける秒数のしきい値と、起動直後にモデルのロードで無音になる分の猶予。
+# 猶予はロード時間 + modeld の BIG_MODEL_TIMEOUT(60秒) を見込んだ値。
+MODELD_STALL_THRESHOLD = 3.0
+MODELD_LOAD_GRACE = 120.0
+
 
 def manager_init() -> None:
   save_bootlog()
@@ -111,7 +118,7 @@ def manager_thread() -> None:
     ignore.append("pandad")
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
 
-  sm = messaging.SubMaster(['deviceState', 'carParams', 'pandaStates'], poll='deviceState')
+  sm = messaging.SubMaster(['deviceState', 'carParams', 'pandaStates', 'modelV2'], poll='deviceState')
   pm = messaging.PubMaster(['managerState'])
 
   params.put_bool("IsOffroad", True, block=True)
@@ -119,6 +126,9 @@ def manager_thread() -> None:
 
   started_prev = False
   ignition_prev = False
+  modeld_alive_prev = False
+  modeld_started_t = 0.0
+  modeld_stall_t = None
 
   while True:
     sm.update(1000)
@@ -140,6 +150,27 @@ def manager_thread() -> None:
 
     started_prev = started
     ignition_prev = ignition
+
+    # modeld が大モデルの GPU 待ちで固まると modelV2 が止まったまま復帰しない。chestnut を積んで
+    # いない機体は大モデルを使わないので、この監視は作動しない。
+    modeld = managed_processes['modeld']
+    modeld_alive = modeld.proc is not None and modeld.proc.is_alive()
+    now = time.monotonic()
+    if modeld_alive and not modeld_alive_prev:
+      modeld_started_t = now  # 起動直後はモデルのロード中で modelV2 が出ないため猶予を置く
+    modeld_alive_prev = modeld_alive
+
+    stalled = (started and modeld_alive and sm['deviceState'].chestnutPresent
+               and sm.seen['modelV2'] and not sm.alive['modelV2']
+               and now - modeld_started_t > MODELD_LOAD_GRACE)
+    if not stalled:
+      modeld_stall_t = None
+    elif modeld_stall_t is None:
+      modeld_stall_t = now
+    elif now - modeld_stall_t > MODELD_STALL_THRESHOLD:
+      cloudlog.error(f"modelV2 stopped for {now - modeld_stall_t:.1f}s, killing modeld to recover")
+      modeld.signal(signal.SIGKILL)
+      modeld_stall_t = None
 
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore)
 
