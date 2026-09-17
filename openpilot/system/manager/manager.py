@@ -170,7 +170,9 @@ def manager_thread() -> None:
       modeld_stall_t = now
     elif now - modeld_stall_t > MODELD_STALL_THRESHOLD:
       cloudlog.error(f"modelV2 stopped for {now - modeld_stall_t:.1f}s, killing modeld to recover")
-      modeld.signal(signal.SIGKILL)
+      # signal() で直接殺すと proc が残り、start() の早期 return で二度と再起動されない。
+      # proc を None に戻すのは stop() の中だけなので、こちらを使う。
+      modeld.stop(sig=signal.SIGKILL)
       modeld_stall_t = None
 
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore)
