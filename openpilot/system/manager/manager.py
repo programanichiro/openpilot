@@ -175,6 +175,12 @@ def manager_thread() -> None:
       modeld.stop(sig=signal.SIGKILL)
       modeld_stall_t = None
 
+    # 大モデルの失敗後、小モデルへ切り替えた直後に modeld が落ちることがある。openpilot は自然死した
+    # プロセスを再起動しない（proc が残り start() が早期 return する）ので、modeld に限って回収する。
+    if started and not modeld_alive and modeld.proc is not None:
+      cloudlog.error("modeld died, reaping so it can restart")
+      modeld.stop()
+
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore)
 
     running = ' '.join("{}{}\u001b[0m".format("\u001b[32m" if p.proc.is_alive() else "\u001b[31m", p.name)
