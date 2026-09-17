@@ -177,7 +177,9 @@ def manager_thread() -> None:
 
     # 大モデルの失敗後、小モデルへ切り替えた直後に modeld が落ちることがある。openpilot は自然死した
     # プロセスを再起動しない（proc が残り start() が早期 return する）ので、modeld に限って回収する。
-    if started and not modeld_alive and modeld.proc is not None:
+    # ChestnutActive で絞っているので、再起動した modeld が大モデルを飛ばせば None になり救済は1回で
+    # 止まる。クラッシュが続いても無限ループにならない。upstream のフォールバックが直るまでの繋ぎ。
+    if started and not modeld_alive and modeld.proc is not None and params.get("ChestnutActive") is not None:
       cloudlog.error("modeld died, reaping so it can restart")
       modeld.stop()
 
