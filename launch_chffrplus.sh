@@ -97,13 +97,20 @@ function launch {
     echo 1 > $DIR/../force_prebuild
   fi
 
-  # big model: force a rebuild when the compiled tinygrad pkl is missing or older
-  # than the onnx it comes from. skipped entirely on branches without the big model.
+  # chestnut が USB 列挙だけされて PCIe リンクが上がっていない場合、warp のアクションは失敗せずに
+  # return するため scons は成功扱いになる。big warp が欠けたまま modeld は小モデルへ静かに
+  # フォールバックし、以後どの経路でも再ビルドされない。ここで拾って、chestnut が正常な次回起動で
+  # ビルドさせる。モデル更新は updater が force_prebuild を書くので任せる。big pkl は配布済みで
+  # 何からもコンパイルされないため、日付比較は不要。
   MODELS_DIR="$DIR/openpilot/selfdrive/modeld/models"
-  BIG_PKL_0="$MODELS_DIR/big_driving_tinygrad.pkl"
-  BIG_PKL_MAN="$MODELS_DIR/big_driving_tinygrad.pkl.chunkmanifest"
-  if [ ! -f $DIR/../force_prebuild ] && [ -f "$BIG_PKL_0" ] && { [ ! -f "$BIG_PKL_MAN" ] || [ "$BIG_PKL_0" -nt "$BIG_PKL_MAN" ]; }; then
-    echo 101 > $DIR/../force_prebuild
+  BIG_PKL="$MODELS_DIR/big_driving_tinygrad.pkl"
+  if [ ! -f $DIR/../force_prebuild ] && { [ -f "$BIG_PKL" ] || [ -f "$BIG_PKL.chunkmanifest" ]; }; then
+    for size in 1344x760 1928x1208; do
+      if [ ! -f "$MODELS_DIR/big_driving_warp_${size}_tinygrad.pkl" ]; then
+        echo 101 > $DIR/../force_prebuild
+        break
+      fi
+    done
   fi
 
   # start manager

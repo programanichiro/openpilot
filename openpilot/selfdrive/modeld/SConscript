@@ -35,8 +35,8 @@ mac_brew_string = f'HOME={os.path.expanduser("~")}' if arch == 'Darwin' else ''
 
 warp_deps = [File("#openpilot/system/camerad/cameras/nv12_info.py")]
 compiler = Dir('#tinygrad_repo/examples/openpilot').abspath
-# Upstream pins the compiler to the isolcpus core 7, but this device keeps cores 4-7 offline
-# (cpu/present 0-7, cpu/online 0-3) so taskset dies with EINVAL before the compiler even starts.
+# upstream はコンパイラを isolcpus のコア7にピン留めするが、車両 OFF の省電力状態ではコア4-7が
+# オフラインになる (cpu/present 0-7, cpu/online 0-3) ため、taskset がコンパイラ起動前に EINVAL で落ちる。
 taskset = '' if arch == 'comma_arm64' else ''
 
 def chestnut_action(command):
