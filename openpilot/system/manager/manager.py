@@ -20,6 +20,11 @@ from openpilot.common.swaglog import cloudlog, add_file_handler
 from openpilot.common.version import get_build_metadata
 from openpilot.common.hardware.hw import Paths
 
+# 大モデルの GPU 呼び出しで modeld がブロックすると例外が飛ばず、modeld 内のフォールバックも
+# 走らないまま modelV2 が止まる。SIGINT では抜けられないので SIGKILL で落として再起動させる。
+# modelV2 がこの秒数止まり続けたら異常とみなす。
+MODELD_STALL_THRESHOLD = 3.0
+
 
 def manager_init() -> None:
   save_bootlog()
@@ -111,7 +116,7 @@ def manager_thread() -> None:
     ignore.append("pandad")
   ignore += [x for x in os.getenv("BLOCK", "").split(",") if len(x) > 0]
 
-  sm = messaging.SubMaster(['deviceState', 'carParams', 'pandaStates'], poll='deviceState')
+  sm = messaging.SubMaster(['deviceState', 'carParams', 'pandaStates', 'modelV2'], poll='deviceState')
   pm = messaging.PubMaster(['managerState'])
 
   params.put_bool("IsOffroad", True, block=True)
@@ -119,6 +124,9 @@ def manager_thread() -> None:
 
   started_prev = False
   ignition_prev = False
+  modeld_alive_prev = False
+  modeld_ready = False
+  modeld_stall_t = None
 
   while True:
     sm.update(1000)
@@ -140,6 +148,40 @@ def manager_thread() -> None:
 
     started_prev = started
     ignition_prev = ignition
+
+    # modeld が大モデルの GPU 待ちで固まると modelV2 が止まったまま復帰しない。判定に deviceState の
+    # chestnutPresent は使えない。USB が抜けた瞬間に False になり、まさに救いたい場面で監視が外れる。
+    # 代わりに ChestnutActive を見る。これは大モデルを読み込んだ modeld だけが書くので、chestnut を
+    # 積んでいない機体では None のままとなり、この監視は作動しない。
+    modeld = managed_processes['modeld']
+    modeld_alive = modeld.proc is not None and modeld.proc.is_alive()
+    if modeld_alive and not modeld_alive_prev:
+      modeld_ready = False  # 再起動したらモデルのロード完了待ちに戻す
+    modeld_alive_prev = modeld_alive
+    if modeld_alive and sm.alive['modelV2']:
+      modeld_ready = True  # 一度でも modelV2 が出ればロード完了。以降の停止は異常とみなす
+
+    now = time.monotonic()
+    stalled = (started and modeld_alive and modeld_ready and not sm.alive['modelV2']
+               and params.get("ChestnutActive") is not None)
+    if not stalled:
+      modeld_stall_t = None
+    elif modeld_stall_t is None:
+      modeld_stall_t = now
+    elif now - modeld_stall_t > MODELD_STALL_THRESHOLD:
+      cloudlog.error(f"modelV2 stopped for {now - modeld_stall_t:.1f}s, killing modeld to recover")
+      # signal() で直接殺すと proc が残り、start() の早期 return で二度と再起動されない。
+      # proc を None に戻すのは stop() の中だけなので、こちらを使う。
+      modeld.stop(sig=signal.SIGKILL)
+      modeld_stall_t = None
+
+    # 大モデルの失敗後、小モデルへ切り替えた直後に modeld が落ちることがある。openpilot は自然死した
+    # プロセスを再起動しない（proc が残り start() が早期 return する）ので、modeld に限って回収する。
+    # ChestnutActive で絞っているので、再起動した modeld が大モデルを飛ばせば None になり救済は1回で
+    # 止まる。クラッシュが続いても無限ループにならない。upstream のフォールバックが直るまでの繋ぎ。
+    if started and not modeld_alive and modeld.proc is not None and params.get("ChestnutActive") is not None:
+      cloudlog.error("modeld died, reaping so it can restart")
+      modeld.stop()
 
     ensure_running(managed_processes.values(), started, params=params, CP=sm['carParams'], not_run=ignore)
 
