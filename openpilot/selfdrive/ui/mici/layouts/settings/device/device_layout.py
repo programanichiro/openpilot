@@ -12,7 +12,8 @@ from openpilot.selfdrive.ui.mici.widgets.info import InfoLayoutMici
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog, BigInputDialog
 from openpilot.selfdrive.ui.mici.onroad.cabin_camera_dialog import CabinCameraDialog
-from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage, QRCodeWidget
+from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage
+from openpilot.selfdrive.ui.mici.widgets.qr import QR
 from openpilot.system.ui.lib.application import gui_app, MousePos
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.selfdrive.ui.ui_state import device, ui_state
@@ -261,7 +262,7 @@ class DeviceLayoutMici(NavScroller):
         username = Params().get("GithubUsername")
         if username:
           self._scroller.add_widgets([
-            QRCodeWidget(f"https://{username}.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=latest"),
+            QR(f"https://{username}.github.io/gpslog/viewer.html?pass={key_raw}&dgl={device_dir}&date=latest"),
           ])
     except Exception:
       pass
