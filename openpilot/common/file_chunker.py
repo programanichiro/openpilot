@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-import glob
 import io
 import sys
 import math
@@ -25,13 +24,6 @@ def chunk_file(path, targets):
   manifest_path, *chunk_paths = targets
   actual_num_chunks = max(1, math.ceil(os.path.getsize(path) / CHUNK_SIZE))
   assert len(chunk_paths) >= actual_num_chunks, f"Allowed {len(chunk_paths)} chunks but needs at least {actual_num_chunks}, for path {path}"
-
-  # remove stale chunks left over from a previous run with a different num_chunks
-  keep = set(chunk_paths)
-  for old in glob.glob(f"{path}.chunk*of*"):
-    if old not in keep:
-      os.remove(old)
-
   Path(manifest_path).unlink(missing_ok=True)
   with open(path, 'rb') as f:
     for chunk_path in chunk_paths:
