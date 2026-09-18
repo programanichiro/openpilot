@@ -133,8 +133,8 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     bigModelLoading @100;
     bigModelFailed @102;
 
-    hazardWarningLights @104;
-    longActiveBrakeError @105;
+    hazardWarningLights @105;
+    longActiveBrakeError @106;
 
     lowBatteryDEPRECATED @40;
     soundsUnavailableDEPRECATED @47;
