@@ -118,6 +118,9 @@ function launch {
   if [ -f "$DIR/../agnos_update" ] || [ ! -f "$DIR/prebuilt" ] && [ -f "$DIR/../force_prebuild" ]; then
     cd ../../../
     git submodule update --init --recursive
+    # リリースブランチではビッグモデルが LFS ポインタのまま入っている。実体が無いと modeld が
+    # 読み込みに失敗して小モデルに落ちるので、ここで取得する。取得済みなら即座に返る。
+    git lfs pull
     cd openpilot/system/manager
     ./build.py
   fi
