@@ -1,6 +1,9 @@
 #!/usr/bin/env bash
 set -ex
 
+# キーが無いと終了コード5を返すので、set -e で落ちないようにする
+git config --unset-all lfs.https://huggingface.co/commaai/openpilot-lfs.git/info/lfs.access || true
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 SOURCE_DIR="$(git -C $DIR rev-parse --show-toplevel)"
@@ -29,10 +32,15 @@ cd $TARGET_DIR
 git branch -D __nightly-chestnut || true
 git push origin --delete __nightly-chestnut || true
 
-git checkout __nightly-chestnut
-git reset --hard __nightly-chestnut
+# origin と remotes(公式) の両方に同名の追跡 ref があると DWIM が曖昧になるので upstream を明示する。
+# origin 側の追跡 ref は push --delete が失敗したときに残骸として残ることがある。
+git checkout -B __nightly-chestnut remotes/__nightly-chestnut
 
 git config --local lfs.locksverify false
+
+# LFS の upload 先(Hugging Face)は認証必須で、pre-push フックが走ると Username を聞かれて止まる。
+# このブランチでは LFS を使わず、ビッグモデルはポインタのままコミットするので先に外しておく。
+git lfs uninstall
 
 git push --set-upstream origin __nightly-chestnut
 
@@ -40,7 +48,6 @@ git fetch --depth 1 origin __nightly-chestnut
 
 git reset --hard origin/__nightly-chestnut
 git clean -xdff
-git lfs uninstall
 
 # ----------------------------------------
 # .gitattributes を退避
