@@ -13,7 +13,8 @@ source $DIR/identity.sh
 
 git lfs update --force
 git lfs install
-git lfs pull
+# ビッグモデルは 737MB あり LFS のまま配る。実体は不要なのでポインタのまま残す。
+git lfs pull -X "openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl"
 
 echo "[-] Setting up target repo T=$SECONDS"
 
@@ -42,14 +43,13 @@ git clean -xdff
 git lfs uninstall
 
 # ----------------------------------------
-# backup chunked model files
+# .gitattributes を退避
 # ----------------------------------------
 
-MODEL_BACKUP=$(mktemp -d)
-
-# ビッグモデルは onnx 配布から pkl 配布に変わった（#38930）。740MB あり LFS を外して push する
-# このフローでは素の git に入らないため、事前分割した chunk をブランチ側で持ち回す。
-cp openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl.chunk* $MODEL_BACKUP/
+# release_files.py は .gitattributes を除外するので、ブランチにあるものを持ち回す。起点が upstream の
+# __nightly-chestnut なので、LFS 指定はビッグモデルの1行だけになっている。
+GITATTR_BACKUP=$(mktemp -d)
+cp .gitattributes $GITATTR_BACKUP/
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
@@ -65,10 +65,9 @@ echo "[-] copying files T=$SECONDS"
 cd $SOURCE_DIR
 #cp -pR --parents $(./tools/release/release_files.py) $TARGET_DIR/
 #rsync -l -R --exclude='big_driving_*.onnx' $(./tools/release/release_files.py) $TARGET_DIR/
-./tools/release/release_files.py |
+INCLUDE_BIG_MODEL=1 ./tools/release/release_files.py |
   rsync -l -R \
     --from0 --files-from=- \
-    --exclude='big_driving_tinygrad.pkl' \
     ./ "$TARGET_DIR/"
 
 # in the directory
@@ -76,22 +75,11 @@ cd $TARGET_DIR
 rm -f panda/board/obj/panda.bin.signed
 
 # ----------------------------------------
-# restore chunked model files
+# .gitattributes を復元
 # ----------------------------------------
 
-mkdir -p openpilot/selfdrive/modeld/models
-
-cp $MODEL_BACKUP/* openpilot/selfdrive/modeld/models/
-
-rm -f openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl
-
-# remove accidental git index entry
-git rm --cached openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl || true
-
-# ensure chunks are tracked
-git add openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl.chunk*
-
-rm -rf $MODEL_BACKUP
+cp $GITATTR_BACKUP/.gitattributes .
+rm -rf $GITATTR_BACKUP
 
 # include source commit hash and build date in commit
 GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)
