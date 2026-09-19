@@ -1,4 +1,5 @@
 from __future__ import annotations
+import os
 
 import pyray as rl
 import re
@@ -240,7 +241,7 @@ class MiciOffroadAlerts(Scroller):
     update_alert_data = AlertData(key="UpdateAvailable", text="", severity=-1)
     self.sorted_alerts.append(update_alert_data)
     update_alert_item = AlertItem(update_alert_data)
-    update_alert_item.set_click_callback(lambda: HARDWARE.reboot())
+    update_alert_item.set_click_callback(lambda: (os.system("echo 26 > /data/force_prebuild") or HARDWARE.reboot()))
     self.alert_items.append(update_alert_item)
     self._scroller.add_widget(update_alert_item)
 

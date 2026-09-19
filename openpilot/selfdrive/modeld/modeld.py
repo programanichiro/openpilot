@@ -40,10 +40,15 @@ from openpilot.selfdrive.modeld.helpers import MODELS_DIR, chestnut_present, che
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
-LAT_SMOOTH_SECONDS = 0.0
+LAT_SMOOTH_SECONDS = 0.1
 LONG_SMOOTH_SECONDS = 0.3
 MIN_LAT_CONTROL_SPEED = 0.3
 BIG_MODEL_TIMEOUT = 60
+
+# 大モデルのハングで manager に殺されて再起動したときの挙動を選ぶ。
+#   True  : 大モデルを読み直す。22〜29秒かかり、その間はエンゲージできないが、復旧すれば大モデルに戻る。
+#   False : 小モデルで約1秒で復帰する。その走行中は大モデルを使わない（次のイグニッションONで復活）。
+RELOAD_BIG_MODEL_AFTER_HANG = False
 
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
@@ -226,6 +231,10 @@ def main(demo=False):
   cloudlog.warning("modeld init")
 
   CHESTNUT = chestnut_present() and chestnut_compiled()
+  if not RELOAD_BIG_MODEL_AFTER_HANG:
+    # ChestnutActive はイグニッションONとオフロード遷移で消える。modeld はこの判定の後に remove する
+    # ので、起動時に値が残っていれば同一走行中の再起動、つまりハング後の再起動と分かる。
+    CHESTNUT = CHESTNUT and Params().get("ChestnutActive") is None
   if CHESTNUT:
     os.environ['HCQDEV_WAIT_TIMEOUT_MS'] = '3000'
   params = Params()
@@ -434,7 +443,7 @@ def main(demo=False):
       modelv2_send.modelV2.meta.laneChangeState = DH.lane_change_state
       modelv2_send.modelV2.meta.laneChangeDirection = DH.lane_change_direction
 
-      fill_driving_model_data(drivingdata_send, modelv2_send)
+      fill_driving_model_data(drivingdata_send, modelv2_send, sm['carState'].steeringAngleDeg, DH, v_ego)
       fill_pose_msg(posenet_send, model_output, meta_main.frame_id, vipc_dropped_frames, meta_main.timestamp_eof, extrinsics_calibration_seen)
       pm.send('modelV2', modelv2_send)
       pm.send('drivingModelData', drivingdata_send)

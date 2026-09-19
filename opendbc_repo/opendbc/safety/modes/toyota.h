@@ -39,6 +39,7 @@
 #define TOYOTA_COMMON_RX_CHECKS(lta)                                                                                                       \
   {.msg = {{ 0xaa, 0, 8, 83U, .ignore_checksum = true, .ignore_counter = true}, { 0 }, { 0 }}},      \
   {.msg = {{0x260, 0, 8, 50U, .ignore_counter = true, .ignore_quality_flag=!(lta)}, { 0 }, { 0 }}},  \
+  {.msg = {{0x1D3, 0, 8, 33U, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}}, /* MADS Cruise Main */    \
 
 #define TOYOTA_RX_CHECKS(lta)                                                                                                               \
   TOYOTA_COMMON_RX_CHECKS(lta)                                                                                                              \
@@ -95,6 +96,25 @@ static bool toyota_get_quality_flag_valid(const CANPacket_t *msg) {
 }
 
 static void toyota_rx_hook(const CANPacket_t *msg) {
+  // if (msg->bus == 2U) {
+  //   if (msg->addr == 0x412) {
+  //     bool set_me = (msg->data[0] & 0xC0) > 0; // LKAS_STATUS
+  //     if(set_me && !set_me_prev) {
+  //       lateral_controls_allowed = true;
+  //       //print("activate by LKAS_STATUS\n");
+  //     }
+  //     set_me_prev = set_me;
+  //   }
+  //   if (msg->addr == 0x412) {
+  //     bool set_me = (msg->data[3] & 0xC0) > 0; // LDA_ON_MESSAGE
+  //     if(set_me && !set_me_prev)
+  //     {
+  //       lateral_controls_allowed = true;
+  //       //print("ACTIVATE by LDA_ON_MESSAGE\n\n");
+  //     }
+  //     set_me_prev = set_me;
+  //   }
+  // } else
   if (msg->bus == 0U) {
 
     // get eps motor torque (0.66 factor in dbc)
@@ -155,6 +175,11 @@ static void toyota_rx_hook(const CANPacket_t *msg) {
       }
     }
 
+    // wrap lateral controls on main
+    //lateral_controls_allowed = (msg->addr != 0x1D3) ? lateral_controls_allowed : GET_BIT(msg, 15U); // Signal: PCM_CRUISE_2/MAIN_ON at 15th bit
+    acc_main_on = (msg->addr != 0x1D3U) ? acc_main_on : GET_BIT(msg, 15U);
+    lateral_controls_allowed = (msg->addr != 0x1D3U) ? lateral_controls_allowed : acc_main_on;
+    
     // sample speed
     if (msg->addr == 0xaaU) {
       int speed = 0;
@@ -344,7 +369,9 @@ static bool toyota_tx_hook(const CANPacket_t *msg) {
   if (msg->addr == 0x750U) {
     // this address is sub-addressed. only allow tester present to radar (0xF)
     bool invalid_uds_msg = (GET_BYTES(msg, 0, 4) != 0x003E020FU) || (GET_BYTES(msg, 4, 4) != 0x0U);
-    if (invalid_uds_msg) {
+    bool invalid_door_lock_msg = (GET_BYTES(msg, 0, 4) != 0x11300540U) || (GET_BYTES(msg, 4, 4) != 0x00004000U);
+    bool invalid_door_unlock_msg = (GET_BYTES(msg, 0, 4) != 0x11300540U) || (GET_BYTES(msg, 4, 4) != 0x00008000U);
+    if (invalid_uds_msg && invalid_door_lock_msg && invalid_door_unlock_msg) {
       tx = false;
     }
   }
