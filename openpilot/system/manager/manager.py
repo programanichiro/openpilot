@@ -23,7 +23,7 @@ from openpilot.common.hardware.hw import Paths
 # 大モデルの GPU 呼び出しで modeld がブロックすると例外が飛ばず、modeld 内のフォールバックも
 # 走らないまま modelV2 が止まる。SIGINT では抜けられないので SIGKILL で落として再起動させる。
 # modelV2 がこの秒数止まり続けたら異常とみなす。
-MODELD_STALL_THRESHOLD = 1.5
+MODELD_STALL_THRESHOLD = 3.0
 
 
 def manager_init() -> None:
