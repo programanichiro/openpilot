@@ -97,6 +97,18 @@ function launch {
     echo 1 > $DIR/../force_prebuild
   fi
 
+  # big_*_tinygrad.pkl は LFS 配布。実体が引かれていないとポインタ(131〜134バイト)のまま存在し、
+  # modeld が読み込みに失敗して小モデルに落ちる。ビルドブロックまで進めて git lfs pull を走らせる。
+  # 実体は最小の warp でも 863KB あるので、桁で判別できる。
+  if [ ! -f $DIR/../force_prebuild ]; then
+    for f in "$DIR"/openpilot/selfdrive/modeld/models/big_*_tinygrad.pkl; do
+      if [ -f "$f" ] && [ "$(stat -c%s "$f")" -lt 1024 ]; then
+        echo 101 > $DIR/../force_prebuild
+        break
+      fi
+    done
+  fi
+
   # start manager
   cd openpilot/system/manager
   if [ -f "$DIR/../agnos_update" ] || [ ! -f "$DIR/prebuilt" ] && [ -f "$DIR/../force_prebuild" ]; then
