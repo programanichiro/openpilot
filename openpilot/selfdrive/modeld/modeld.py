@@ -47,11 +47,6 @@ LONG_SMOOTH_SECONDS = 0.3
 MIN_LAT_CONTROL_SPEED = 0.3
 BIG_MODEL_TIMEOUT = 60
 
-# 大モデルのハングで manager に殺されて再起動したときの挙動を選ぶ。
-#   True  : 大モデルを読み直す。22〜29秒かかり、その間はエンゲージできないが、復旧すれば大モデルに戻る。
-#   False : 小モデルで約1秒で復帰する。その走行中は大モデルを使わない（次のイグニッションONで復活）。
-RELOAD_BIG_MODEL_AFTER_HANG = False
-
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
                           lat_action_t: float, long_action_t: float, v_ego: float) -> log.ModelDataV2.Action:
@@ -234,10 +229,6 @@ def main(demo=False):
   cloudlog.warning("modeld init")
 
   CHESTNUT = chestnut_present() and chestnut_compiled()
-  if not RELOAD_BIG_MODEL_AFTER_HANG:
-    # ChestnutActive はイグニッションONとオフロード遷移で消える。modeld はこの判定の後に remove する
-    # ので、起動時に値が残っていれば同一走行中の再起動、つまりハング後の再起動と分かる。
-    CHESTNUT = CHESTNUT and Params().get("ChestnutActive") is None
   if CHESTNUT:
     os.environ['HCQDEV_WAIT_TIMEOUT_MS'] = '3000'
   params = Params()
@@ -415,8 +406,7 @@ def main(demo=False):
                        run_count % round(ModelConstants.MODEL_RUN_FREQ / SERVICE_LIST['chestnutGpuState'].frequency) == 0)
       model_output = model.run(bufs, transforms, inputs, chestnut_state.send if send_chestnut else None)
     except Exception:
-      #if not model.chestnut:
-      if not params.get_bool("ChestnutActive"):
+      if not model.chestnut:
         raise
       # fallback to small model
       cloudlog.exception("big model failed, fall back to small")
