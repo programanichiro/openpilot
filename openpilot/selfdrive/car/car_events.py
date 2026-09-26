@@ -216,8 +216,9 @@ class CarEvents:
 
         # if the user overrode recently, show a less harsh alert
         if self.silent_steer_warning or CS.standstill or self.steering_unpressed < int(1.5 / DT_CTRL):
-          self.silent_steer_warning = True
-          events.add(EventName.steerTempUnavailableSilent)
+          if CS.steeringPressed == False:
+            self.silent_steer_warning = True
+            events.add(EventName.steerTempUnavailableSilent)
         else:
           events.add(EventName.steerTempUnavailable)
     else:
