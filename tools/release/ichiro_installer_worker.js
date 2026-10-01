@@ -81,11 +81,10 @@ export default {
     // ブランチ名が無いとどのブランチを入れたいのか決まらない。既定値を持たせると
     // 意図しないブランチを入れてしまうので、指定を促して終わる。
     if (path === "") {
-      return new Response(
-        `specify a branch name in the URL\n\n  https://${url.host}/<branch>\n\n` +
-        `example:\n\n  https://${url.host}/release3X4\n`,
-        { status: 400, headers: { "Content-Type": "text/plain; charset=utf-8" } },
-      );
+      return new Response("specify a branch name\n", {
+        status: 400,
+        headers: { "Content-Type": "text/plain; charset=utf-8" },
+      });
     }
 
     const branch = decodeURIComponent(path);
