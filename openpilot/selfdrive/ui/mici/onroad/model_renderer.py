@@ -261,6 +261,9 @@ class ModelRenderer(Widget):
       radar = sm['radarState']
       leads = [(lead.present, lead.dRel + RADAR_TO_CAMERA, lead.yRel) for lead in (radar.leadOne, radar.leadTwo)]
 
+    # ロックオンは [0] と [1] を別々に描くので、下の重複排除で潰される前の値を控えておく
+    lockon_leads = list(leads)
+
     # both leads can be the same vehicle
     if leads[0][0] and abs(leads[1][1] - leads[0][1]) < 3.0:
       leads[1] = (False, 0.0, 0.0)
@@ -270,7 +273,16 @@ class ModelRenderer(Widget):
     available = ss.enabled or ss.engageable or cs.brakePressed
     lane = (self._lane_lines[1].raw_points + self._lane_lines[2].raw_points) / 2
     opacity = 0.4 if ui_state.status == UIStatus.DISENGAGED else 0.8
-    for i, (lead, (present, d_rel, y_rel)) in enumerate(zip(self._lead_vehicles, leads, strict=True)):
+
+    # ロックオンの座標。_get_lead_bar の遠端 bar[0] と bar[3] は x=d_rel, y=±幅/2 の2点で、
+    # その中点が旧 _map_to_screen(d_rel, -y_rel, z) と同じ点になる。下のループの visible に
+    # 相乗りすると、同一車両とみなされた [1] が更新されず古い値が残るので別に回す。
+    if len(lane) > 0:
+      for i, (present, d_rel, y_rel) in enumerate(lockon_leads[:LeadcarLockon_MAX]):
+        if present:
+          lead_vertices[i].x, lead_vertices[i].y = self._get_lead_bar(lane, d_rel, y_rel)[[0, 3]].mean(axis=0)
+
+    for lead, (present, d_rel, y_rel) in zip(self._lead_vehicles, leads, strict=True):
       visible = available and present and d_rel < MAX_DRAW_DISTANCE and len(lane) > 0
       # snap to a new vehicle instead of sliding over
       if not visible or abs(y_rel - lead.y_filter.x) > 3.0:
@@ -278,11 +290,6 @@ class ModelRenderer(Widget):
       lead.fade_filter.update(opacity if visible else 0.0)
       if visible:
         lead.bar = self._get_lead_bar(lane, lead.d_filter.update(d_rel), lead.y_filter.update(y_rel))
-        # ロックオン描画用の座標。bar の遠端 bar[0] と bar[3] は x=d_rel, y=±幅/2 の2点なので、
-        # その中点が旧 _map_to_screen(d_rel, -y_rel, z) と同じ点になる。bar[1] と bar[2] は
-        # _get_lead_bar の中で長さ調整のため書き換えられるが、遠端の2点は触られない。
-        if i < LeadcarLockon_MAX:
-          lead_vertices[i].x, lead_vertices[i].y = lead.bar[[0, 3]].mean(axis=0)
 
   def _get_lead_bar(self, lane, d_rel, y_rel):
     # bar on the road behind the lead, following the lane
