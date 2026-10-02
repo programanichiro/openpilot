@@ -261,6 +261,9 @@ class ModelRenderer(Widget):
       radar = sm['radarState']
       leads = [(lead.present, lead.dRel + RADAR_TO_CAMERA, lead.yRel) for lead in (radar.leadOne, radar.leadTwo)]
 
+    # ロックオンは [0] と [1] を別々に描くので、下の重複排除で潰される前の値を控えておく
+    lockon_leads = list(leads)
+
     # both leads can be the same vehicle
     if leads[0][0] and abs(leads[1][1] - leads[0][1]) < 3.0:
       leads[1] = (False, 0.0, 0.0)
@@ -282,10 +285,13 @@ class ModelRenderer(Widget):
         lead.bar = self._get_lead_bar(lane, lead.d_filter.update(d_rel), lead.y_filter.update(y_rel))
         if i < LeadcarLockon_MAX:
           lead_vertices[i].x, lead_vertices[i].y = lead.bar[[0, 3]].mean(axis=0)
-      else:
-        lead_bar = self._get_lead_bar(lane, lead.d_filter.update(d_rel), lead.y_filter.update(y_rel))
-        if i < LeadcarLockon_MAX:
-          lead_vertices[i].x, lead_vertices[i].y = lead_bar[[0, 3]].mean(axis=0)
+      elif len(lane) > 0:
+        # 重複排除で潰される前の値を使う。潰された [1] は leads 側が 0 になっているため
+        d_rel, y_rel = lockon_leads[i][1], lockon_leads[i][2]
+        if d_rel > 0:
+          lead_bar = self._get_lead_bar(lane, lead.d_filter.update(d_rel), lead.y_filter.update(y_rel))
+          if i < LeadcarLockon_MAX:
+            lead_vertices[i].x, lead_vertices[i].y = lead_bar[[0, 3]].mean(axis=0)
       i += 1
 
   def _get_lead_bar(self, lane, d_rel, y_rel):
