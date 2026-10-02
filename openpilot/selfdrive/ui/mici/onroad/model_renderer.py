@@ -270,7 +270,7 @@ class ModelRenderer(Widget):
     available = ss.enabled or ss.engageable or cs.brakePressed
     lane = (self._lane_lines[1].raw_points + self._lane_lines[2].raw_points) / 2
     opacity = 0.4 if ui_state.status == UIStatus.DISENGAGED else 0.8
-    for lead, (present, d_rel, y_rel) in zip(self._lead_vehicles, leads, strict=True):
+    for i, (lead, (present, d_rel, y_rel)) in enumerate(zip(self._lead_vehicles, leads, strict=True)):
       visible = available and present and d_rel < MAX_DRAW_DISTANCE and len(lane) > 0
       # snap to a new vehicle instead of sliding over
       if not visible or abs(y_rel - lead.y_filter.x) > 3.0:
@@ -278,6 +278,11 @@ class ModelRenderer(Widget):
       lead.fade_filter.update(opacity if visible else 0.0)
       if visible:
         lead.bar = self._get_lead_bar(lane, lead.d_filter.update(d_rel), lead.y_filter.update(y_rel))
+        # ロックオン描画用の座標。bar の遠端 bar[0] と bar[3] は x=d_rel, y=±幅/2 の2点なので、
+        # その中点が旧 _map_to_screen(d_rel, -y_rel, z) と同じ点になる。bar[1] と bar[2] は
+        # _get_lead_bar の中で長さ調整のため書き換えられるが、遠端の2点は触られない。
+        if i < LeadcarLockon_MAX:
+          lead_vertices[i].x, lead_vertices[i].y = lead.bar[[0, 3]].mean(axis=0)
 
   def _get_lead_bar(self, lane, d_rel, y_rel):
     # bar on the road behind the lead, following the lane
