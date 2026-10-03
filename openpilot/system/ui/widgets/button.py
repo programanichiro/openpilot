@@ -22,6 +22,12 @@ class ButtonStyle(IntEnum):
   KEYBOARD = 7
   FORGET_WIFI = 8
 
+  HudSOff = 100
+  HudSOn = 101
+  HudUnder = 102
+  HudBOff = 103
+  HudBOn = 104
+
 
 ICON_PADDING = 15
 DEFAULT_BUTTON_FONT_SIZE = 60
@@ -39,6 +45,12 @@ BUTTON_TEXT_COLOR = {
   ButtonStyle.NO_EFFECT: rl.Color(228, 228, 228, 255),
   ButtonStyle.KEYBOARD: rl.Color(221, 221, 221, 255),
   ButtonStyle.FORGET_WIFI: rl.Color(51, 51, 51, 255),
+
+  ButtonStyle.HudSOff: rl.Color(0x90, 0x90, 0x90, 0xd0),
+  ButtonStyle.HudSOn: rl.Color(0x37, 0xb8, 0x68, 0xe0),
+  ButtonStyle.HudUnder: rl.Color(228, 228, 228, 255),
+  ButtonStyle.HudBOff: rl.Color(228, 228, 228, 255),
+  ButtonStyle.HudBOn: rl.Color(228, 228, 228, 255),
 }
 
 BUTTON_DISABLED_TEXT_COLORS = {
@@ -57,6 +69,12 @@ BUTTON_BACKGROUND_COLORS = {
   ButtonStyle.NO_EFFECT: rl.Color(51, 51, 51, 255),
   ButtonStyle.KEYBOARD: rl.Color(68, 68, 68, 255),
   ButtonStyle.FORGET_WIFI: rl.Color(189, 189, 189, 255),
+
+  ButtonStyle.HudSOff: rl.Color(0, 0, 0, 0x40),
+  ButtonStyle.HudSOn: rl.Color(0, 0, 0, 0x40),
+  ButtonStyle.HudUnder: rl.Color(0, 0, 0, 0),
+  ButtonStyle.HudBOff: rl.Color(0, 0, 0, 0x40),
+  ButtonStyle.HudBOn: rl.Color(0x17, 0x86, 0x44, 200),
 }
 
 BUTTON_PRESSED_BACKGROUND_COLORS = {
@@ -71,6 +89,12 @@ BUTTON_PRESSED_BACKGROUND_COLORS = {
   ButtonStyle.NO_EFFECT: rl.Color(51, 51, 51, 255),
   ButtonStyle.KEYBOARD: rl.Color(51, 51, 51, 255),
   ButtonStyle.FORGET_WIFI: rl.Color(130, 130, 130, 255),
+
+  ButtonStyle.HudSOff: rl.Color(0x30, 0x30, 0x30, 0x40),
+  ButtonStyle.HudSOn: rl.Color(0x30, 0x30, 0x30, 0x40),
+  ButtonStyle.HudUnder: rl.Color(0, 0, 0, 0x40),
+  ButtonStyle.HudBOff: rl.Color(0x30, 0x30, 0x30, 0x40),
+  ButtonStyle.HudBOn: rl.Color(0x17, 0x86, 0x44, 255),
 }
 
 BUTTON_DISABLED_BACKGROUND_COLORS = {
@@ -106,6 +130,9 @@ class Button(Widget):
 
   def set_text(self, text):
     self._label.set_text(text)
+
+  def set_icon(self, icon):
+    self._label.set_icon(icon)
 
   def set_button_style(self, button_style: ButtonStyle):
     self._button_style = button_style
