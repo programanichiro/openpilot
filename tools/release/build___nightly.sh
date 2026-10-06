@@ -41,14 +41,6 @@ git reset --hard origin/__nightly
 git clean -xdff
 git lfs uninstall
 
-# ----------------------------------------
-# backup chunked model files
-# ----------------------------------------
-
-#MODEL_BACKUP=$(mktemp -d)
-
-#cp openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk* $MODEL_BACKUP/
-
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
 find . -maxdepth 1 -not -path './.git' -not -name '.' -not -name '..' -exec rm -rf '{}' \;
@@ -61,35 +53,16 @@ git clean -xdff
 echo "[-] copying files T=$SECONDS"
 
 cd $SOURCE_DIR
-#cp -pR --parents $(./tools/release/release_files.py) $TARGET_DIR/
-#rsync -l -R --exclude='big_driving_*.onnx' $(./tools/release/release_files.py) $TARGET_DIR/
+# big_* は INCLUDE_BIG_MODEL が無いと release_files.py が列挙しないので、
+# rsync 側で除外する必要はない。
 ./tools/release/release_files.py |
   rsync -l -R \
     --from0 --files-from=- \
-    --exclude='big_driving_*.onnx' \
     ./ "$TARGET_DIR/"
 
 # in the directory
 cd $TARGET_DIR
 rm -f panda/board/obj/panda.bin.signed
-
-# ----------------------------------------
-# restore chunked model files
-# ----------------------------------------
-
-mkdir -p openpilot/selfdrive/modeld/models
-
-#cp $MODEL_BACKUP/* openpilot/selfdrive/modeld/models/
-
-#rm -f openpilot/selfdrive/modeld/models/big_driving_*.onnx
-
-# remove accidental git index entry
-#git rm --cached openpilot/selfdrive/modeld/models/big_driving_*.onnx || true
-
-# ensure chunks are tracked
-#git add openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk*
-
-#rm -rf $MODEL_BACKUP
 
 # include source commit hash and build date in commit
 GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)
