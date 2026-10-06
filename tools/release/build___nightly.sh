@@ -17,7 +17,10 @@ source $DIR/identity.sh
 
 git lfs update --force
 git lfs install
-git lfs pull
+# LFS はアイコン・フォント・効果音・小モデルも管理しているので pull は必須。
+# big_* だけは release_files.py が配布物から外すので引くだけ無駄。
+# LFS 全体 922MB のうち big_* が 802MB を占めるので、除外すると 120MB で済む。
+git lfs pull -X "openpilot/selfdrive/modeld/models/big_*"
 
 echo "[-] Setting up target repo T=$SECONDS"
 
