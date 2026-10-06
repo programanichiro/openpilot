@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -ex
 
+# LFS の endpoint が Hugging Face に移った後も access=basic が残っていると、匿名で
+# 引けずに Username を聞かれる。設定が無いときは exit 5 を返すので || true で流す。
+git config --unset-all lfs.https://huggingface.co/commaai/openpilot-lfs.git/info/lfs.access || true
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 SOURCE_DIR="$(git -C $DIR rev-parse --show-toplevel)"
@@ -33,13 +37,16 @@ git reset --hard __nightly
 
 git config --local lfs.locksverify false
 
+# LFS の upload 先(Hugging Face)は認証必須で、pre-push フックが走ると Username を
+# 聞かれて止まる。push の前にフックを外しておく。
+git lfs uninstall
+
 git push --set-upstream origin __nightly
 
 git fetch --depth 1 origin __nightly
 
 git reset --hard origin/__nightly
 git clean -xdff
-git lfs uninstall
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
