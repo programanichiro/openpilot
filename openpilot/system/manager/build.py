@@ -16,6 +16,13 @@ def build() -> None:
   if AGNOS:
     os.sched_setaffinity(0, range(8))  # ensure we can use the isolcpus cores
 
+  # リリースブランチではビッグモデルが LFS ポインタのまま入っている。実体が無いと modeld が
+  # 読み込みに失敗して小モデルに落ちるので、ここで取得する。取得済みなら即座に返る。
+  # launch_chffrplus.sh ではなくここで走らせるのは、800MB の取得をスピナーの内側に入れるため。
+  spinner.update("downloading model...")
+  subprocess.run(["git", "lfs", "pull"], cwd=BASEDIR, check=False)
+  spinner.update_progress(0, 100)
+
   # building with all cores can result in using too much memory, so retry serially
   compile_output: list[bytes] = []
   for parallelism in ([], ["-j4"], ["-j1"]):
