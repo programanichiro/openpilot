@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 import math
+import datetime
 from numbers import Number
 
 from openpilot.cereal import log
@@ -62,6 +63,9 @@ class Controls:
     elif self.CP.lateralTuning.which() == 'torque':
       self.LaC = LatControlTorque(self.CP, self.CI, DT_CTRL)
 
+    self.old_longActive = False
+    self.old_brakePressed = False
+
   def update(self):
     self.sm.update(15)
     if self.sm.updated["extrinsicsCalibration"]:
@@ -97,9 +101,50 @@ class Controls:
 
     # Check which actuators can be enabled
     standstill = abs(CS.vEgo) <= max(self.CP.minSteerSpeed, 0.3) or CS.standstill
-    CC.latActive = self.sm['selfdriveState'].active and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
+    steer_always = 0
+    cruise_available = 0
+    try:
+      with open('/dev/shm/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+      with open('/dev/shm/cruise_available.txt','r') as fp:
+        cruise_available_str = fp.read()
+        if cruise_available_str:
+          if int(cruise_available_str) >= 1:
+            cruise_available = 1 #ACCボタンがOFFならlatActiveをTrueにしない。
+    except Exception as e:
+      pass
+    CC.latActive = (self.sm['selfdriveState'].active or (steer_always != 0 and cruise_available != 0)) and not CS.steerFaultTemporary and not CS.steerFaultPermanent and \
                    (not standstill or self.CP.steerAtStandstill)
     CC.longActive = CC.enabled and not any(e.overrideLongitudinal for e in self.sm['onroadEvents']) and self.CP.openpilotLongitudinalControl
+    # with open('/tmp/long_brake.txt','w') as fp:
+    #   fp.write("long:%d brake:%d" % (int(CC.longActive), int(CS.brakePressed)))
+    if CC.longActive and CS.brakePressed and self.old_longActive and not self.old_brakePressed: #longActiveがON継続の状態でブレーキが踏まれた瞬間を検知
+      print(f"longActive: {CC.longActive} brakePressed: {CS.brakePressed}")
+      with open('/data/long_brake_error.txt','w') as fp:
+        fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+      with open('/tmp/long_brake_error_tmp.txt','w') as fp:
+        fp.write("1")
+    elif (not CC.longActive or not CS.brakePressed) and self.old_longActive and self.old_brakePressed: #両方ON状態が解除された瞬間も検知
+      long_brake_error_tmp = False
+      try:
+        with open('/tmp/long_brake_error_tmp.txt','r') as fp:
+          long_brake_error_tmp_str = fp.read()
+          if long_brake_error_tmp_str:
+            if int(long_brake_error_tmp_str) >= 1:
+              long_brake_error_tmp = True
+      except Exception as e:
+        pass
+      if long_brake_error_tmp:
+        print(f"longActive2: {CC.longActive} brakePressed2: {CS.brakePressed}")
+        with open('/data/long_brake_error2.txt','w') as fp:
+          fp.write("error time: %s\n" % datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S"))
+        with open('/tmp/long_brake_error_tmp.txt','w') as fp:
+          fp.write("0")
+    self.old_longActive = CC.longActive
+    self.old_brakePressed = CS.brakePressed
 
     actuators = CC.actuators
     actuators.longControlState = self.LoC.long_control_state
