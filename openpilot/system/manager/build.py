@@ -19,9 +19,8 @@ def build() -> None:
   # リリースブランチではビッグモデルが LFS ポインタのまま入っている。実体が無いと modeld が
   # 読み込みに失敗して小モデルに落ちるので、ここで取得する。取得済みなら即座に返る。
   # launch_chffrplus.sh ではなくここで走らせるのは、800MB の取得をスピナーの内側に入れるため。
-  spinner.update("downloading model...")
+  # mici ではスピナーのテキストが表示されないので、進捗バーのまま回す。
   subprocess.run(["git", "lfs", "pull"], cwd=BASEDIR, check=False)
-  spinner.update_progress(0, 100)
 
   # building with all cores can result in using too much memory, so retry serially
   compile_output: list[bytes] = []
