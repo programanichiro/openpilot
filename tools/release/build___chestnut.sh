@@ -25,6 +25,12 @@ git lfs install --local
 MODELS=openpilot/selfdrive/modeld/models
 git lfs pull -X "$MODELS/big_driving_tinygrad.pkl,$MODELS/big_driving_warp_1344x760_tinygrad.pkl,$MODELS/big_driving_warp_1928x1208_tinygrad.pkl"
 
+# -X は未取得にするだけで、以前のビルドで実体化されたファイルはポインタに戻らない。
+# 残っていると rsync が実体をコピーしてしまうので、HEAD のポインタで上書きする。
+for f in "$MODELS"/big_*_tinygrad.pkl; do
+  git show "HEAD:$f" > "$f"
+done
+
 echo "[-] Setting up target repo T=$SECONDS"
 
 rm -rf $TARGET_DIR
