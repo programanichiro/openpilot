@@ -23,6 +23,10 @@ class LongIndicator(Widget):
     self._personality: int | None = None
     self._personality_changed_time = -HIGHLIGHT_TIME
     self._should_draw = False
+    # 60px のサイドパネルに収めるため縮小して描けるようにする。緑アイコンは最大 76px ある。
+    self._scale = 1.0
+    # サイドパネルに置くと警告や上部アイコンと重ならないので、常時表示できるようにする。
+    self._always_visible = False
 
   @staticmethod
   def _texture(name: str, width: int, height: int) -> rl.Texture:
@@ -31,16 +35,23 @@ class LongIndicator(Widget):
   def set_should_draw(self, should_draw: bool):
     self._should_draw = should_draw
 
+  def set_scale(self, scale: float):
+    self._scale = scale
+
+  def set_always_visible(self, always_visible: bool):
+    self._always_visible = always_visible
+
   def _render(self, rect: rl.Rectangle) -> None:
     sm = ui_state.sm
-    if sm.recv_frame['selfdriveState'] < ui_state.started_frame or not sm['selfdriveState'].enabled or not ui_state.has_longitudinal_control:
+    hide = not sm['selfdriveState'].enabled or not ui_state.has_longitudinal_control
+    if sm.recv_frame['selfdriveState'] < ui_state.started_frame or (hide and not self._always_visible):
       self._personality = None
       self._personality_changed_time = -HIGHLIGHT_TIME
       self._alpha_filter.x = 0.0
       return
 
     # hidden under alerts and set speed
-    visible = self._should_draw and sm['selfdriveState'].alertSize == log.SelfdriveState.AlertSize.none
+    visible = self._always_visible or (self._should_draw and sm['selfdriveState'].alertSize == log.SelfdriveState.AlertSize.none)
     alpha = self._alpha_filter.update(visible)
     self._draw_lead_car(rect, alpha)
     self._draw_distance_bars(rect, alpha, visible)
@@ -83,7 +94,7 @@ class LongIndicator(Widget):
       self._draw_centered(white, rect, y, (0.35 * (1 - active) + 0.9 * (active - green_alpha) * blink) * alpha)
       self._draw_centered(green, rect, y, green_alpha * blink * alpha)
 
-  @staticmethod
-  def _draw_centered(texture: rl.Texture, rect: rl.Rectangle, y: float, alpha: float) -> None:
-    pos = rl.Vector2(rect.x + 46 - texture.width / 2, rect.y + y - texture.height / 2)
-    rl.draw_texture_ex(texture, pos, 0.0, 1.0, rl.Color(255, 255, 255, round(255 * alpha)))
+  def _draw_centered(self, texture: rl.Texture, rect: rl.Rectangle, y: float, alpha: float) -> None:
+    sc = self._scale
+    pos = rl.Vector2(rect.x + (46 - texture.width / 2) * sc, rect.y + (y - texture.height / 2) * sc)
+    rl.draw_texture_ex(texture, pos, 0.0, sc, rl.Color(255, 255, 255, round(255 * alpha)))

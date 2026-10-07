@@ -1,6 +1,7 @@
 import math
 import pyray as rl
 from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH
+from openpilot.selfdrive.ui.mici.onroad.long_indicator import LongIndicator
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
@@ -23,16 +24,25 @@ def draw_circle_gradient(center_x: float, center_y: float, radius: int,
                20, rl.BLACK)
 
 
+# LongIndicator は渡した矩形の x+46 を中心に、y=100(リード車) と y=122/136/152(車間バー)へ描く。
+# 緑アイコンは最大 76px あり 60px のサイドパネルに入らないので、倍率をかけて縮める。
+# 76 * 0.75 = 57px でちょうど収まる。
+LONG_INDICATOR_SCALE = 0.75
+LONG_INDICATOR_CENTER_X = 46
+LONG_INDICATOR_BOTTOM = 172  # 152 + 39/2 (3本目の緑バーの下端)
+
+
 class ConfidenceBall(Widget):
   def __init__(self, demo: bool = False):
     super().__init__()
     self._demo = demo
     self._confidence_filter = FirstOrderFilter(-0.5, 0.5, 1 / gui_app.target_fps)
-    self._LongitudinalPersonality = 0
-    self._LongitudinalPersonality_ct = 0
-    self._lp1 = gui_app.texture("icons_mici/onroad/acc_dist1_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191)) #幅をSIDE_PANEL_WIDTH程度に
-    self._lp2 = gui_app.texture("icons_mici/onroad/acc_dist2_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
-    self._lp3 = gui_app.texture("icons_mici/onroad/acc_dist3_w2.png",width=SIDE_PANEL_WIDTH-5,height=int(256*(SIDE_PANEL_WIDTH-5)/191))
+    # 公式の LongIndicator をここで描く。タコメーターと場所が被るため AugmentedRoadView から移した。
+    # 車間距離の表示を含むので、自前の acc_dist アイコン(_lp1〜3)は廃止した。
+    self._long_indicator = LongIndicator()
+    self._long_indicator.set_scale(LONG_INDICATOR_SCALE)
+    # 旧 acc_dist アイコンは常時表示だったので、それに揃える。エンゲージ前や警告中でも消えない。
+    self._long_indicator.set_always_visible(True)
     self.brake_light_alpha = 0
     self.vc_accel = 0
 
@@ -96,17 +106,15 @@ class ConfidenceBall(Widget):
                          dot_height, status_dot_radius,
                          top_dot_color, bottom_dot_color)
 
-    #ここにACC距離アイコン、描けそう
-    if self._LongitudinalPersonality_ct % 5 == 0:
-      self._LongitudinalPersonality = int(Params().get("LongitudinalPersonality"))
-
+    # LongIndicator をサイドパネルの下端に寄せて描く。赤いブレーキ表示より下のレイヤーに置くため、
+    # 加算ブレンドを始める前に描画する。
     y_ofs = 10
-    if self._LongitudinalPersonality == 0:
-      rl.draw_texture(self._lp1,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp1.width)/2),int(content_rect.y + content_rect.height -self._lp1.height-y_ofs), rl.Color(240,240,240,230))
-    elif self._LongitudinalPersonality == 1:
-      rl.draw_texture(self._lp2,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp2.width)/2),int(content_rect.y + content_rect.height -self._lp2.height-y_ofs), rl.Color(240,240,240,230))
-    else: #if self._LongitudinalPersonality == 2:
-      rl.draw_texture(self._lp3,int(content_rect.x+(SIDE_PANEL_WIDTH-self._lp3.width)/2),int(content_rect.y + content_rect.height -self._lp3.height-y_ofs), rl.Color(240,240,240,230))
+    self._long_indicator.render(rl.Rectangle(
+      content_rect.x + content_rect.width / 2 - LONG_INDICATOR_CENTER_X * LONG_INDICATOR_SCALE,
+      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM * LONG_INDICATOR_SCALE - y_ofs,
+      content_rect.width,
+      content_rect.height,
+    ))
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     brake_flag = False
@@ -158,8 +166,6 @@ class ConfidenceBall(Widget):
       rl.draw_triangle_fan(meter,len(meter),va_color)
 
     rl.end_blend_mode() #元のブレンドに戻す
-
-    self._LongitudinalPersonality_ct += 1
 
     btn_h = content_rect.width * 1.5 #だいたいこのくらいの高さ
     self._LongitudinalPersonality_button.render(rl.Rectangle(content_rect.x, content_rect.y + content_rect.height - btn_h, content_rect.width, btn_h))
