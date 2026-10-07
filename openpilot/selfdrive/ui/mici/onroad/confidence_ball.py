@@ -25,9 +25,8 @@ def draw_circle_gradient(center_x: float, center_y: float, radius: int,
 
 
 # LongIndicator は渡した矩形の x+46 を中心に、y=100(リード車) と y=122/136/152(車間バー)へ描く。
-# 等倍だと緑アイコンが最大 76px でサイドパネル(60px)から左右に 8px ずつはみ出すが、
-# 縮めるとタコメーターや信頼度ドットに対して小さすぎて見た目のバランスが悪いので等倍にする。
-LONG_INDICATOR_SCALE = 1.0
+# 緑アイコンのテクスチャは最大 76px あるが、大半がグロー(光彩)で実体のバーは白と同じ幅。
+# 見えている部分はサイドパネル(60px)に収まるので、縮小は不要。
 LONG_INDICATOR_CENTER_X = 46
 LONG_INDICATOR_BOTTOM = 172  # 152 + 39/2 (3本目の緑バーの下端)
 LONG_INDICATOR_Y_OFS = -5     # 0でサイドパネルの下端ぴったりに置く->もう少し下げる。
@@ -41,7 +40,6 @@ class ConfidenceBall(Widget):
     # 公式の LongIndicator をここで描く。タコメーターと場所が被るため AugmentedRoadView から移した。
     # 車間距離の表示を含むので、自前の acc_dist アイコン(_lp1〜3)は廃止した。
     self._long_indicator = LongIndicator()
-    self._long_indicator.set_scale(LONG_INDICATOR_SCALE)
     # 旧 acc_dist アイコンは常時表示だったので、それに揃える。エンゲージ前や警告中でも消えない。
     self._long_indicator.set_always_visible(True)
     self.brake_light_alpha = 0
@@ -110,8 +108,8 @@ class ConfidenceBall(Widget):
     # LongIndicator をサイドパネルの下端に寄せて描く。赤いブレーキ表示より下のレイヤーに置くため、
     # 加算ブレンドを始める前に描画する。
     self._long_indicator.render(rl.Rectangle(
-      content_rect.x + content_rect.width / 2 - LONG_INDICATOR_CENTER_X * LONG_INDICATOR_SCALE,
-      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM * LONG_INDICATOR_SCALE - LONG_INDICATOR_Y_OFS,
+      content_rect.x + content_rect.width / 2 - LONG_INDICATOR_CENTER_X,
+      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM - LONG_INDICATOR_Y_OFS,
       content_rect.width,
       content_rect.height,
     ))
