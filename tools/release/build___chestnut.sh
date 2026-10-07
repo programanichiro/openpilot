@@ -15,7 +15,9 @@ fi
 source $DIR/identity.sh
 
 git lfs update --force
-git lfs install
+# install も --local にする。既定はグローバル(~/.gitconfig)なので、uninstall --local と
+# 揃えないとグローバル側の smudge が残り、TARGET_DIR の checkout で 800MB を引いてしまう。
+git lfs install --local
 # ビッグモデルは LFS のまま配る。実体は不要なのでポインタのまま残す。
 # warp 2本も除外する。実体化すると rsync が 864KB の実ファイルをコピーし、
 # git lfs uninstall 済みの TARGET_DIR で生バイナリとしてコミットされてしまう。
@@ -44,7 +46,8 @@ git config --local lfs.locksverify false
 
 # LFS の upload 先(Hugging Face)は認証必須で、pre-push フックが走ると Username を聞かれて止まる。
 # このブランチでは LFS を使わず、ビッグモデルはポインタのままコミットするので先に外しておく。
-git lfs uninstall
+# --local を付けないとグローバル設定まで消え、SOURCE_DIR 側の smudge も効かなくなる。
+git lfs uninstall --local
 
 git push --set-upstream origin __nightly-chestnut
 

@@ -16,7 +16,9 @@ fi
 source $DIR/identity.sh
 
 git lfs update --force
-git lfs install
+# install も --local にする。既定はグローバル(~/.gitconfig)なので、uninstall --local と
+# 揃えないとグローバル側の smudge が残り、TARGET_DIR の checkout で 800MB を引いてしまう。
+git lfs install --local
 # LFS はアイコン・フォント・効果音・小モデルも管理しているので pull は必須。
 # big_* だけは release_files.py が配布物から外すので引くだけ無駄。
 # LFS 全体 922MB のうち big_* が 802MB を占めるので、除外すると 120MB で済む。
@@ -42,7 +44,8 @@ git config --local lfs.locksverify false
 
 # LFS の upload 先(Hugging Face)は認証必須で、pre-push フックが走ると Username を
 # 聞かれて止まる。push の前にフックを外しておく。
-git lfs uninstall
+# --local を付けないとグローバル設定まで消え、SOURCE_DIR 側の smudge も効かなくなる。
+git lfs uninstall --local
 
 git push --set-upstream origin __nightly
 
