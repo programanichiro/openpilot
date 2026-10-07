@@ -16,8 +16,12 @@ source $DIR/identity.sh
 
 git lfs update --force
 git lfs install
-# ビッグモデルは 737MB あり LFS のまま配る。実体は不要なのでポインタのまま残す。
-git lfs pull -X "openpilot/selfdrive/modeld/models/big_driving_tinygrad.pkl"
+# ビッグモデルは LFS のまま配る。実体は不要なのでポインタのまま残す。
+# warp 2本も除外する。実体化すると rsync が 864KB の実ファイルをコピーし、
+# git lfs uninstall 済みの TARGET_DIR で生バイナリとしてコミットされてしまう。
+# 起点の remotes/__nightly-chestnut はポインタなので、毎回 1.7MB の差分が出ていた。
+MODELS=openpilot/selfdrive/modeld/models
+git lfs pull -X "$MODELS/big_driving_tinygrad.pkl,$MODELS/big_driving_warp_1344x760_tinygrad.pkl,$MODELS/big_driving_warp_1928x1208_tinygrad.pkl"
 
 echo "[-] Setting up target repo T=$SECONDS"
 
