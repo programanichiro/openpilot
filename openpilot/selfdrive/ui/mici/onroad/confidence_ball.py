@@ -25,11 +25,12 @@ def draw_circle_gradient(center_x: float, center_y: float, radius: int,
 
 
 # LongIndicator は渡した矩形の x+46 を中心に、y=100(リード車) と y=122/136/152(車間バー)へ描く。
-# 緑アイコンは最大 76px あり 60px のサイドパネルに入らないので、倍率をかけて縮める。
-# 76 * 0.75 = 57px でちょうど収まる。
-LONG_INDICATOR_SCALE = 0.75
+# 等倍だと緑アイコンが最大 76px でサイドパネル(60px)から左右に 8px ずつはみ出すが、
+# 縮めるとタコメーターや信頼度ドットに対して小さすぎて見た目のバランスが悪いので等倍にする。
+LONG_INDICATOR_SCALE = 1.0
 LONG_INDICATOR_CENTER_X = 46
 LONG_INDICATOR_BOTTOM = 172  # 152 + 39/2 (3本目の緑バーの下端)
+LONG_INDICATOR_Y_OFS = 0     # サイドパネルの下端ぴったりに置く
 
 
 class ConfidenceBall(Widget):
@@ -108,10 +109,9 @@ class ConfidenceBall(Widget):
 
     # LongIndicator をサイドパネルの下端に寄せて描く。赤いブレーキ表示より下のレイヤーに置くため、
     # 加算ブレンドを始める前に描画する。
-    y_ofs = 10
     self._long_indicator.render(rl.Rectangle(
       content_rect.x + content_rect.width / 2 - LONG_INDICATOR_CENTER_X * LONG_INDICATOR_SCALE,
-      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM * LONG_INDICATOR_SCALE - y_ofs,
+      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM * LONG_INDICATOR_SCALE - LONG_INDICATOR_Y_OFS,
       content_rect.width,
       content_rect.height,
     ))
