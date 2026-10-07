@@ -30,7 +30,7 @@ def draw_circle_gradient(center_x: float, center_y: float, radius: int,
 LONG_INDICATOR_SCALE = 1.0
 LONG_INDICATOR_CENTER_X = 46
 LONG_INDICATOR_BOTTOM = 172  # 152 + 39/2 (3本目の緑バーの下端)
-LONG_INDICATOR_Y_OFS = 0     # サイドパネルの下端ぴったりに置く
+LONG_INDICATOR_Y_OFS = -5     # 0でサイドパネルの下端ぴったりに置く->もう少し下げる。
 
 
 class ConfidenceBall(Widget):
