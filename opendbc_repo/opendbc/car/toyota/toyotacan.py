@@ -56,6 +56,22 @@ def create_accel_command(packer, accel, pcm_cancel, permit_braking, standstill_r
   return packer.make_can_msg("ACC_CONTROL", 0, values)
 
 
+def create_accel_command_cydia(packer, accel, accel_raw, aego, enabled, pcm_cancel, permit_braking, standstill_req, lead, acc_type, fcw_alert, distance):
+  # TODO: find the exact canceling bit that does not create a chime
+  values = {
+    "ACCEL_CMD": accel if enabled and not pcm_cancel else 0.,  # compensated accel command
+    "ACC_TYPE": acc_type,
+    "DISTANCE": distance,
+    "MINI_CAR": lead,
+    "PERMIT_BRAKING": permit_braking, #ブレーキを許可するってだけの意味？、もしかしてずっと1でも問題ないのかも。
+    "RELEASE_STANDSTILL": not standstill_req,
+    "CANCEL_REQ": pcm_cancel,
+    "ALLOW_LONG_PRESS": 1,
+    "ACC_CUT_IN": fcw_alert,  # only shown when ACC enabled
+    "ACCEL_CMD_ALT":  accel_raw if enabled else aego,  # raw accel command, pcm uses this to calculate a compensatory force
+  }
+  return packer.make_can_msg("ACC_CONTROL", 0, values)
+
 def create_accel_command_2(packer, accel):
   values = {
     "ACCEL_CMD": accel,
@@ -111,17 +127,33 @@ def create_fcw_command(packer, fcw):
 
 
 def create_ui_command(packer, steer, chime, left_line, right_line, left_lane_depart, right_lane_depart, enabled, stock_lkas_hud):
+  steer_always = 0
+  cruise_available = 0
+  try:
+    with open('/dev/shm/steer_always.txt','r') as fp:
+      steer_always_str = fp.read()
+      if steer_always_str:
+        if int(steer_always_str) >= 1:
+          steer_always = 2
+    with open('/dev/shm/cruise_available.txt','r') as fp:
+      cruise_available_str = fp.read()
+      if cruise_available_str:
+        if int(cruise_available_str) >= 1:
+          cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
+  except Exception as e:
+    pass
+
   values = {
     "TWO_BEEPS": chime,
     "LDA_ALERT": steer,
     "RIGHT_LINE": 3 if right_lane_depart else 1 if right_line else 2,
     "LEFT_LINE": 3 if left_lane_depart else 1 if left_line else 2,
-    "BARRIERS": 1 if enabled else 0,
+    "BARRIERS": 1 if enabled or (steer_always != 0 and cruise_available != 0) else 0,
+    "LKAS_STATUS": steer_always, #1,
 
     # static signals
     "SET_ME_X02": 2,
     "SET_ME_X01": 1,
-    "LKAS_STATUS": 1,
     "REPEATED_BEEPS": 0,
     "LANE_SWAY_FLD": 7,
     "LANE_SWAY_BUZZER": 0,
@@ -154,7 +186,6 @@ def create_ui_command(packer, steer, chime, left_line, right_line, left_lane_dep
 
   return packer.make_can_msg("LKAS_HUD", 0, values)
 
-
 def toyota_checksum(address: int, sig, d: bytearray) -> int:
   s = len(d)
   addr = address
@@ -164,3 +195,10 @@ def toyota_checksum(address: int, sig, d: bytearray) -> int:
   for i in range(len(d) - 1):
     s += d[i]
   return s & 0xFF
+
+# def create_acc_set_command(packer):
+#   values = {
+#     "CRUISE_ACTIVE": 1, #これでSETが点く？
+#     "CRUISE_STATE": 7, #standstill
+#   }
+#   return packer.make_can_msg("PCM_CRUISE", 0, values)
