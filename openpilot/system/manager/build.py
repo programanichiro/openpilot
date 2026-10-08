@@ -11,43 +11,33 @@ from openpilot.common.text_window import TextWindow
 from openpilot.common.hardware import HARDWARE, AGNOS
 from openpilot.common.time_helpers import system_time_valid
 
-# NTP 同期の待ち時間。実測では起動から約28秒で同期する。
+# NTP 同期を待つ上限。実測では起動から約28秒で同期する。Wi-Fi の接続自体に約12秒かかるので、
+# 「ルートが無いから諦める」という早期判定は入れない。オフラインでもこの秒数で頭打ちになる。
 TIME_SYNC_TIMEOUT = 60
-# ネットワークに一度も繋がらないまま諦めるまでの秒数
-NO_NETWORK_TIMEOUT = 10
-
-
-def has_default_route() -> bool:
-  try:
-    with open("/proc/net/route") as f:
-      return any(len(cols) > 1 and cols[1] == "00000000" for cols in (l.split() for l in f.readlines()[1:]))
-  except OSError:
-    return False
 
 
 def pull_big_models() -> None:
   # ビッグモデルは LFS 配布。実体が無いとポインタ(131〜134バイト)のまま存在し、modeld が
   # 読み込みに失敗して小モデルに落ちる。実体は最小の warp でも 863KB あるので桁で判別できる。
   models = Path(BASEDIR) / "openpilot/selfdrive/modeld/models"
-  if not any(f.stat().st_size < 1024 for f in models.glob("big_*_tinygrad.pkl")):
+  pointers = sorted(f.name for f in models.glob("big_*_tinygrad.pkl") if f.stat().st_size < 1024)
+  if not pointers:
     return
+  print(f"big model: {len(pointers)} pointer(s) found, pulling from LFS")
 
   # RTC のバックアップが無いので、起動直後の時刻は systemd のビルド時刻(約2ヶ月前)になる。
   # そのままだと TLS 証明書が「まだ有効でない」と判定され、LFS の取得が必ず失敗する。
-  offline_since = None
-  for _ in range(TIME_SYNC_TIMEOUT):
+  for i in range(TIME_SYNC_TIMEOUT):
     if system_time_valid():
+      if i:
+        print(f"big model: system time valid after {i}s")
       break
-    if has_default_route():
-      offline_since = None
-    else:
-      # 起動直後は Wi-Fi 接続前でルートが無い。繋がる見込みが無いときだけ諦める。
-      offline_since = offline_since or time.monotonic()
-      if time.monotonic() - offline_since > NO_NETWORK_TIMEOUT:
-        return
     time.sleep(1)
+  else:
+    print("big model: system time still invalid, pulling anyway")
 
-  subprocess.run(["git", "lfs", "pull"], cwd=BASEDIR, check=False)
+  r = subprocess.run(["git", "lfs", "pull"], cwd=BASEDIR, check=False)
+  print(f"big model: git lfs pull returned {r.returncode}")
 
 
 def build() -> None:
