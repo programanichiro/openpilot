@@ -1,6 +1,10 @@
 #!/usr/bin/env bash
 set -ex
 
+# LFS の endpoint が Hugging Face に移った後も access=basic が残っていると、匿名で
+# 引けずに Username を聞かれる。設定が無いときは exit 5 を返すので || true で流す。
+git config --unset-all lfs.https://huggingface.co/commaai/openpilot-lfs.git/info/lfs.access || true
+
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
 
 SOURCE_DIR="$(git -C $DIR rev-parse --show-toplevel)"
@@ -11,8 +15,12 @@ fi
 # set git identity
 source $DIR/identity.sh
 
-git lfs install
-git lfs pull
+# install も --local にする。既定はグローバル(~/.gitconfig)なので、uninstall --local と
+# 揃えないとグローバル側の smudge が残り、TARGET_DIR の checkout で 800MB を引いてしまう。
+git lfs install --local
+# LFS はアイコン・フォント・効果音・小モデルも管理しているので pull は必須。
+# big_* だけは release_files.py が配布物から外すので引くだけ無駄。
+git lfs pull -X "openpilot/selfdrive/modeld/models/big_*"
 
 echo "[-] Setting up target repo T=$SECONDS"
 
@@ -32,21 +40,17 @@ git reset --hard devel-staging
 
 git config --local lfs.locksverify false
 
+# LFS の upload 先(Hugging Face)は認証必須で、pre-push フックが走ると Username を
+# 聞かれて止まる。push の前にフックを外しておく。
+# --local を付けないとグローバル設定まで消え、SOURCE_DIR 側の smudge も効かなくなる。
+git lfs uninstall --local
+
 git push --set-upstream origin devel-staging
 
 git fetch --depth 1 origin devel-staging
 
 git reset --hard origin/devel-staging
 git clean -xdff
-git lfs uninstall
-
-# ----------------------------------------
-# backup chunked model files
-# ----------------------------------------
-
-#MODEL_BACKUP=$(mktemp -d)
-
-#cp openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk* $MODEL_BACKUP/
 
 # remove everything except .git
 echo "[-] erasing old openpilot T=$SECONDS"
@@ -60,35 +64,16 @@ git clean -xdff
 echo "[-] copying files T=$SECONDS"
 
 cd $SOURCE_DIR
-#cp -pR --parents $(./tools/release/release_files.py) $TARGET_DIR/
-#rsync -l -R --exclude='big_driving_*.onnx' $(./tools/release/release_files.py) $TARGET_DIR/
+# big_* は INCLUDE_BIG_MODEL が無いと release_files.py が列挙しないので、
+# rsync 側で除外する必要はない。
 ./tools/release/release_files.py |
   rsync -l -R \
     --from0 --files-from=- \
-    --exclude='big_driving_*.onnx' \
     ./ "$TARGET_DIR/"
 
 # in the directory
 cd $TARGET_DIR
 rm -f panda/board/obj/panda.bin.signed
-
-# ----------------------------------------
-# restore chunked model files
-# ----------------------------------------
-
-mkdir -p openpilot/selfdrive/modeld/models
-
-#cp $MODEL_BACKUP/* openpilot/selfdrive/modeld/models/
-
-#rm -f openpilot/selfdrive/modeld/models/big_driving_*.onnx
-
-# remove accidental git index entry
-#git rm --cached openpilot/selfdrive/modeld/models/big_driving_*.onnx || true
-
-# ensure chunks are tracked
-#git add openpilot/selfdrive/modeld/models/big_driving_*.onnx.chunk*
-
-#rm -rf $MODEL_BACKUP
 
 # include source commit hash and build date in commit
 GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)
