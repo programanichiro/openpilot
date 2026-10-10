@@ -5,6 +5,14 @@ from opendbc.car.common.conversions import Conversions as CV
 from opendbc.car.interfaces import CarStateBase
 from opendbc.car.tesla.values import DBC, CANBUS, GEAR_MAP, STEER_THRESHOLD, TeslaFlags
 
+# HW4 gen2 の SeatBeltStatus (0x40A) bit 3 を運転席として読んでいるが、これは左前席の
+# ビットらしく、右ハンドル車では助手席を留めないと解除されない。ベルト未装着なら車体側が
+# 警報を出すので、調査中は openpilot 側の判定を切り離して常に装着扱いにする。
+#   True  : 判定しない（右ハンドル車でもエンゲージできる）
+#   False : 0x40A bit 3 をそのまま読む（upstream と同じ挙動）
+# 正しいビットが判明したら DBC に信号を足して False に戻す。
+HW4_GEN2_IGNORE_SEATBELT = True
+
 class CarState(CarStateBase):
   def __init__(self, CP):
     super().__init__(CP)
@@ -17,6 +25,9 @@ class CarState(CarStateBase):
 
     self.hands_on_level = 0
     self.das_control = None
+
+    self.prev_hazard = -1
+    self.brake_state = False
 
   def update_autopark_state(self, autopark_state: str, cruise_enabled: bool):
     autopark_now = autopark_state in ("ACTIVE", "COMPLETE", "SELFPARK_STARTED")
@@ -41,6 +52,12 @@ class CarState(CarStateBase):
 
     # Brake pedal
     ret.brakePressed = cp_party.vl["ESP_status"]["ESP_driverBrakeApply"] == 2
+
+    new_brake_state = bool(cp_party.vl["ESP_status"]["ESP_brakeLamp"]) or ret.brakePressed
+    if self.brake_state != new_brake_state:
+      self.brake_state = new_brake_state
+      with open('/dev/shm/brake_light_state.txt','w') as fp:
+        fp.write('%d' % (new_brake_state))
 
     # Steering wheel
     epas_status = cp_party.vl["EPAS3S_sysStatus"]
@@ -83,19 +100,45 @@ class CarState(CarStateBase):
     # Gear
     ret.gearShifter = GEAR_MAP[self.can_define.dv["DI_systemStatus"]["DI_gear"].get(int(cp_party.vl["DI_systemStatus"]["DI_gear"]), "DI_GEAR_INVALID")]
 
-    # Doors
-    ret.doorOpen = cp_party.vl["UI_warning"]["anyDoorOpen"] == 1
+    with open('/dev/shm/cruise_available.txt','w') as fp:
+      fp.write('%d' % (ret.cruiseState.available and ret.gearShifter != structs.CarState.GearShifter.reverse)) #念の為バック時にはfalse
 
-    # Blinkers
-    ret.leftBlinker = cp_party.vl["UI_warning"]["leftBlinkerBlinking"] in (1, 2)
-    ret.rightBlinker = cp_party.vl["UI_warning"]["rightBlinkerBlinking"] in (1, 2)
+    # HW4 gen2 doesn't send UI_warning, and moved DAS_status from 0x39b to 0x399
+    if self.CP.flags & TeslaFlags.HW4_GEN2:
+      # Doors
+      ret.doorOpen = cp_party.vl["VehicleStatus"]["allDoorsClosed"] == 0
 
-    # Seatbelt
-    ret.seatbeltUnlatched = cp_party.vl["UI_warning"]["buckleStatus"] != 1
+      # Blindspot
+      ret.leftBlindspot = cp_ap_party.vl["DAS_statusGen2"]["DAS_blindSpotRearLeft"] != 0
+      ret.rightBlindspot = cp_ap_party.vl["DAS_statusGen2"]["DAS_blindSpotRearRight"] != 0
 
-    # Blindspot
-    ret.leftBlindspot = cp_ap_party.vl["DAS_status"]["DAS_blindSpotRearLeft"] != 0
-    ret.rightBlindspot = cp_ap_party.vl["DAS_status"]["DAS_blindSpotRearRight"] != 0
+      # Blinkers and seatbelt, only available with the VEHICLE bus tapped
+      if self.CP.flags & TeslaFlags.HW4_GEN2_VEHICLE_BUS:
+        cp_vehicle = can_parsers[Bus.adas]
+        ret.leftBlinker = cp_vehicle.vl["VCFRONT_lighting"]["VCFRONT_indicatorLeftRequest"] != 0
+        ret.rightBlinker = cp_vehicle.vl["VCFRONT_lighting"]["VCFRONT_indicatorRightRequest"] != 0
+        if not HW4_GEN2_IGNORE_SEATBELT:
+          ret.seatbeltUnlatched = cp_vehicle.vl["SeatBeltStatus"]["driverBuckleStatus"] != 1
+
+        hazard = cp_vehicle.vl["VCFRONT_lighting"]["VCFRONT_hazardLightRequest"] != 0
+        if self.prev_hazard != hazard:
+          self.prev_hazard = hazard
+          with open('/tmp/hazard_light.txt','w') as fp:
+            fp.write("%d" % (hazard))
+    else:
+      # Doors
+      ret.doorOpen = cp_party.vl["UI_warning"]["anyDoorOpen"] == 1
+
+      # Blinkers
+      ret.leftBlinker = cp_party.vl["UI_warning"]["leftBlinkerBlinking"] in (1, 2)
+      ret.rightBlinker = cp_party.vl["UI_warning"]["rightBlinkerBlinking"] in (1, 2)
+
+      # Seatbelt
+      ret.seatbeltUnlatched = cp_party.vl["UI_warning"]["buckleStatus"] != 1
+
+      # Blindspot
+      ret.leftBlindspot = cp_ap_party.vl["DAS_status"]["DAS_blindSpotRearLeft"] != 0
+      ret.rightBlindspot = cp_ap_party.vl["DAS_status"]["DAS_blindSpotRearRight"] != 0
 
     # AEB
     ret.stockAeb = cp_ap_party.vl["DAS_control"]["DAS_aebEvent"] == 1
@@ -106,7 +149,9 @@ class CarState(CarStateBase):
     # Stock Autosteer should be off (includes FSD)
     # TODO: find for TESLA_MODEL_X and HW2.5 vehicles
     if not (self.CP.flags & TeslaFlags.MISSING_DAS_SETTINGS):
-      ret.invalidLkasSetting = cp_ap_party.vl["DAS_settings"]["DAS_autosteerEnabled"] != 0
+      # HW4 gen2 sends DAS_settings on the party bus instead of the autopilot party bus
+      cp_das_settings = cp_party if self.CP.flags & TeslaFlags.HW4_GEN2 else cp_ap_party
+      ret.invalidLkasSetting = cp_das_settings.vl["DAS_settings"]["DAS_autosteerEnabled"] != 0
 
     # Buttons # ToDo: add Gap adjust button
 
@@ -117,7 +162,12 @@ class CarState(CarStateBase):
 
   @staticmethod
   def get_can_parsers(CP):
-    return {
+    parsers = {
       Bus.party: CANParser(DBC[CP.carFingerprint][Bus.party], [], CANBUS.party),
       Bus.ap_party: CANParser(DBC[CP.carFingerprint][Bus.party], [], CANBUS.autopilot_party)
     }
+
+    if CP.flags & TeslaFlags.HW4_GEN2_VEHICLE_BUS:
+      parsers[Bus.adas] = CANParser(DBC[CP.carFingerprint][Bus.adas], [], CANBUS.vehicle)
+
+    return parsers
