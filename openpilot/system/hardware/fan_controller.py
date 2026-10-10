@@ -32,6 +32,11 @@ try:
 except Exception:
   pass
 
+try:
+  os.remove('/dev/shm/limitspeed_data.txt')
+except OSError:
+  pass
+
 # raise fan setpoint on tici/tizi to reduce noise
 # after raising LMH threshold in AGNOS 18.1 to prevent CPU throttling
 OFFSET = 0 if HARDWARE.get_device_type() == "mici" else 5
