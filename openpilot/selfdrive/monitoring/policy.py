@@ -14,6 +14,16 @@ from openpilot.common.transformations.camera import DEVICE_CAMERAS
 AlertLevel = log.DriverMonitoringState.AlertLevel
 MonitoringPolicy = log.DriverMonitoringState.MonitoringPolicy
 
+device_y_offset = 0
+try:
+  with open('/data/device_offset.txt','r') as fp:
+    device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はキャリブレーションリセットが必要みたい。
+    if device_offset_str:
+      device_y_offset = float(device_offset_str)
+      device_y_offset /= 100.0 #cmからmへ変換
+except Exception as e:
+  pass
+
 def to_percent(v):
   return int(min(max(v * 100., 0.), 100.))
 
@@ -51,6 +61,7 @@ class DRIVER_MONITOR_SETTINGS:
     self._SG_THRESHOLD = 0.9
     self._BLINK_THRESHOLD = 0.865
     self._PHONE_THRESH = 0.5
+    self._SLEEP_THRESH = 0.75
     self._POSE_PITCH_THRESHOLD = 0.3133
     self._POSE_PITCH_THRESHOLD_SLACK = 0.3237
     self._POSE_PITCH_THRESHOLD_STRICT = self._POSE_PITCH_THRESHOLD
@@ -82,6 +93,7 @@ class DRIVER_MONITOR_SETTINGS:
     self._POSE_OFFSET_MAX_COUNT = int(360 / DT_DMON)  # stop deweighting new data after 6 min, aka "short term memory"
     self._WHEELPOS_CALIB_MIN_SPEED = 11
     self._WHEELPOS_THRESHOLD = 0.5
+
     self._WHEELPOS_FILTER_MIN_COUNT = int(15 / DT_DMON) # allow 15 seconds to converge wheel side
     self._WHEELPOS_DATA_AVG = 0.03
     self._WHEELPOS_DATA_VAR = 3*5.5e-5
@@ -138,6 +150,7 @@ class DriverMonitoring:
     self.pose = DriverPose(settings=self.settings)
     self.blink = DriverBlink()
     self.phone_prob = 0.
+    self.sleep_prob = 0.
 
     self.alert_level = AlertLevel.none
     self.always_on = always_on
@@ -240,9 +253,11 @@ class DriverMonitoring:
     self.distracted_types['pose'] = bool((pitch_error > pitch_threshold) or (yaw_error > yaw_threshold))
     self.distracted_types['eye'] = bool((self.blink.left + self.blink.right)*0.5 > self.settings._BLINK_THRESHOLD)
     self.distracted_types['phone'] = bool(self.phone_prob > self.settings._PHONE_THRESH)
+    self.distracted_types['sleep'] = bool(self.sleep_prob > self.settings._SLEEP_THRESH)
 
   def _update_states(self, driver_state, cal_rpy, car_speed, op_engaged, lowspeed, demo_mode=False, steering_angle_deg=0.):
     rhd_pred = driver_state.wheelOnRightProb
+    #print(f"rhd_pred: {rhd_pred} n:{self.wheelpos_offsetter.filtered_stat.n} min_count:{self.settings._WHEELPOS_FILTER_MIN_COUNT}")
     # calibrates only when there's movement and either face detected
     if car_speed > self.settings._WHEELPOS_CALIB_MIN_SPEED and (driver_state.leftDriverData.faceProb > self.settings._FACE_THRESHOLD or
                                           driver_state.rightDriverData.faceProb > self.settings._FACE_THRESHOLD):
@@ -252,11 +267,14 @@ class DriverMonitoring:
 
     if wheelpos_calibrated or demo_mode:
       self.wheel_on_right = self.wheelpos_offsetter.filtered_stat.M > self.settings._WHEELPOS_THRESHOLD
+      #print(f"wheelpos_offsetter.M: {self.wheelpos_offsetter.filtered_stat.M}")
     else:
       self.wheel_on_right = self.wheel_on_right_default # use default/saved if calibration is unfinished
+    #print(f"self.wheel_on_right: {self.wheel_on_right}")
     # make sure no switching when engaged
     if op_engaged and self.wheel_on_right_last is not None and self.wheel_on_right_last != self.wheel_on_right and not demo_mode:
       self.wheel_on_right = self.wheel_on_right_last
+    #self.wheel_on_right = True #ここで強制ONにすれば常に右ハンドルになる。
     driver_data = driver_state.rightDriverData if self.wheel_on_right else driver_state.leftDriverData
     if not all(len(x) > 0 for x in (driver_data.faceOrientation, driver_data.facePosition,
                                     driver_data.faceOrientationStd, driver_data.facePositionStd)):
@@ -264,6 +282,7 @@ class DriverMonitoring:
 
     self.face_detected = driver_data.faceProb > self.settings._FACE_THRESHOLD
     self.pose.pitch, self.pose.yaw = face_orientation_from_model(driver_data.faceOrientation, driver_data.facePosition, cal_rpy)
+    self.pose.yaw += device_y_offset*0.2/0.12 #rad,device_offset分少し回す,12cmで0.2radくらい
     steer_d = max(abs(steering_angle_deg) - self.settings._POSE_YAW_MIN_STEER_DEG, 0.)
     self.pose.steer_yaw_offset = radians(steer_d) * -np.sign(steering_angle_deg) * self.settings._POSE_YAW_STEER_FACTOR
     if self.wheel_on_right:
@@ -277,6 +296,7 @@ class DriverMonitoring:
     self.blink.right = driver_data.rightBlinkProb * (driver_data.rightEyeProb > self.settings._EYE_THRESHOLD) \
                       * (driver_data.sunglassesProb < self.settings._SG_THRESHOLD)
     self.phone_prob = driver_data.phoneProb
+    self.sleep_prob = driver_data.sleepProb
 
     self._get_distracted_types()
     self.driver_distracted = any(self.distracted_types.values()) and driver_data.faceProb > self.settings._FACE_THRESHOLD and self.pose.low_std
@@ -406,6 +426,7 @@ class DriverMonitoring:
     dm.visionPolicyState.distractedTypes.pose = self.distracted_types['pose']
     dm.visionPolicyState.distractedTypes.eye = self.distracted_types['eye']
     dm.visionPolicyState.distractedTypes.phone = self.distracted_types['phone']
+    dm.visionPolicyState.distractedTypes.sleep = self.distracted_types['sleep']
     dm.visionPolicyState.faceDetected = self.face_detected
     dm.visionPolicyState.pose.pitch = self.pose.pitch
     dm.visionPolicyState.pose.yaw = self.pose.yaw
@@ -448,12 +469,29 @@ class DriverMonitoring:
       car_speed=car_speed,
     )
 
+    steer_always = 0
+    cruise_available = 0
+    try:
+      with open('/dev/shm/steer_always.txt','r') as fp:
+        steer_always_str = fp.read()
+        if steer_always_str:
+          if int(steer_always_str) >= 1:
+            steer_always = 2
+      with open('/dev/shm/cruise_available.txt','r') as fp:
+        cruise_available_str = fp.read()
+        if cruise_available_str:
+          if int(cruise_available_str) >= 1:
+            cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
+    except Exception as e:
+      pass
+
     # Parse data from dmonitoringmodeld
     self._update_states(
       driver_state=sm['driverStateV2'],
       cal_rpy=rpyCalib,
       car_speed=car_speed,
-      op_engaged=enabled,
+      #op_engaged=enabled
+      op_engaged=enabled or (steer_always != 0 and cruise_available != 0 and sm['carState'].vEgo > 2),
       lowspeed=lowspeed,
       demo_mode=demo,
       steering_angle_deg=steering_angle_deg,
@@ -462,7 +500,8 @@ class DriverMonitoring:
     # Update distraction events
     self._update_events(
       driver_engaged=driver_engaged,
-      op_engaged=enabled,
+      #op_engaged=enabled,
+      op_engaged=enabled or (steer_always != 0 and cruise_available != 0 and sm['carState'].vEgo > 2),
       lowspeed=lowspeed,
       wrong_gear=wrong_gear,
     )
