@@ -34,7 +34,7 @@ except Exception:
 
 try:
   os.remove('/dev/shm/limitspeed_data.txt')
-except OSError:
+except Exception as e:
   pass
 
 # raise fan setpoint on tici/tizi to reduce noise
