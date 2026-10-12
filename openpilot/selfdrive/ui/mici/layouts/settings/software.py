@@ -1,3 +1,4 @@
+import os
 import subprocess
 import threading
 import pyray as rl
@@ -90,6 +91,10 @@ class CheckUpdateButton(BigButton):
     self.set_icon(self._txt_update_icon)
 
     def run():
+      if sig == "SIGHUP":
+        os.system("echo 13 > /data/force_prebuild")
+      else:
+        os.system("echo 15 > /data/force_prebuild")
       subprocess.run(f"pkill -{sig} -f {self.UPDATER_PROC}", shell=True)
 
     threading.Thread(target=run, daemon=True).start()
@@ -200,6 +205,11 @@ class BranchSelectPage(NavScroller):
     branches_str = params.get("UpdaterAvailableBranches") or ""
     branches = [b for b in branches_str.split(",") if b]
 
+    branches = [
+      b for b in branches
+        if ("r3-debug-011" in b) or ("release3X4" in b) or ("release-pi" in b) or ("__nightly" in b)
+    ]
+
     for b in [current_git_branch, "devel-staging", "devel", "nightly", "nightly-dev", "master"]:
       if b in branches:
         branches.remove(b)
@@ -218,7 +228,8 @@ class BranchSelectPage(NavScroller):
 
 class TargetBranchButton(BigButton):
   def __init__(self, check_update_btn: CheckUpdateButton):
-    super().__init__("target branch", ui_state.params.get("UpdaterTargetBranch") or "")
+    super().__init__("target branch", ui_state.params.get("UpdaterTargetBranch") or "",
+                     description="Select the software branch to download on the next update check.")
     self._check_update_btn = check_update_btn
     self.set_click_callback(self._on_click)
     self.set_visible(not ui_state.params.get_bool("IsTestedBranch"))
@@ -252,7 +263,9 @@ class SoftwareLayoutMici(NavScroller):
 
     uninstall_openpilot_btn = EngagedConfirmationButton("uninstall openpilot", "uninstall",
                                                         gui_app.texture("icons_mici/settings/device/uninstall.png", 64, 64),
-                                                        uninstall_openpilot_callback, exit_on_confirm=False)
+                                                        uninstall_openpilot_callback, exit_on_confirm=False,
+                                                        description="Remove openpilot from this device.",
+                                                        description_icon=gui_app.texture("icons_mici/setup/factory_reset.png", 64, 64))
 
     check_update_btn = CheckUpdateButton()
     self._scroller.add_widgets([

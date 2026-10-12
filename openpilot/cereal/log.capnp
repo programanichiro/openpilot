@@ -133,6 +133,9 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     bigModelLoading @100;
     bigModelFailed @102;
 
+    hazardWarningLights @105;
+    longActiveBrakeError @106;
+
     lowBatteryDEPRECATED @40;
     soundsUnavailableDEPRECATED @47;
     deviceFallingDEPRECATED @71;
@@ -2238,6 +2241,7 @@ struct DriverMonitoringState {
       pose @0: Bool;
       eye @1: Bool;
       phone @2: Bool;
+      sleep @3: Bool;
     }
 
     struct Pose {

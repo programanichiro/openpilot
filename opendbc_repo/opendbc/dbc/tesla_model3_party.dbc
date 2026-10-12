@@ -206,6 +206,11 @@ BO_ 545 VCFRONT_LVPowerState: 8 CH
  SG_ VCFRONT_vehiclePowerState : 5|2@1+ (1,0) [0|3] ""  park
  SG_ VCFRONT_LVPowerStateIndex M : 0|5@1+ (1,0) [0|1] ""  epas3s
 
+BO_ 485 VehicleStatus: 8 XXX
+ SG_ VehicleStatusChecksum : 56|8@1+ (1,0) [0|255] ""  X
+ SG_ VehicleStatusCounter : 53|2@1+ (1,0) [0|3] ""  X
+ SG_ allDoorsClosed : 18|1@1+ (1,0) [0|1] ""  X
+
 BO_ 599 DI_speed: 8 PARTY
  SG_ DI_uiSpeedUnits : 32|1@1+ (1,0) [0|1] ""  das
  SG_ DI_uiSpeed : 24|8@1+ (1,0) [0|254] ""  das
@@ -320,6 +325,13 @@ BO_ 923 DAS_status: 8 PARTY
  SG_ DAS_blindSpotRearLeft : 4|2@1+ (1,0) [0|3] ""  aps
  SG_ DAS_autopilotState : 0|4@1+ (1,0) [0|15] ""  aps
 
+BO_ 921 DAS_statusGen2: 8 PARTY
+ SG_ DAS_statusChecksum : 56|8@1+ (1,0) [0|255] ""  aps
+ SG_ DAS_statusCounter : 52|4@1+ (1,0) [0|15] ""  aps
+ SG_ DAS_autoLaneChangeState : 46|5@1+ (1,0) [0|31] ""  aps
+ SG_ DAS_blindSpotRearRight : 6|2@1+ (1,0) [0|3] ""  aps
+ SG_ DAS_blindSpotRearLeft : 4|2@1+ (1,0) [0|3] ""  aps
+
 BO_ 325 ESP_status: 8 PARTY
  SG_ ESP_absBrakeEvent2 : 22|2@1+ (1,0) [0|0] ""  X
  SG_ ESP_absFaultLamp : 17|1@1+ (1,0) [0|0] ""  X
@@ -347,6 +359,8 @@ BO_ 325 ESP_status: 8 PARTY
  SG_ ESP_yawRateQF : 26|1@1+ (1,0) [0|0] ""  X
 
 CM_ BO_ 605 "Bytes change when toggling between FSD and AP, as well as Traffic Light and Stop Sign Control in TACC";
+CM_ BO_ 485 "2026+ Model Y (Juniper) only";
+CM_ BO_ 921 "2026+ Model Y (Juniper) only, replaces DAS_status (0x39b)";
 
 CM_ BO_ 84 "Appears with the 3-bit DAS_steeringControlType firmware on all Autopilot hardware, including HW2.5";
 CM_ SG_ 659 DAS_autosteerEnabled "1 if Autosteer or FSD is enabled, 0 otherwise";
@@ -497,6 +511,9 @@ VAL_ 923 DAS_fusedSpeedLimit 31 "NONE" 0 "UNKNOWN_SNA" ;
 VAL_ 923 DAS_blindSpotRearRight 3 "SNA" 0 "NO_WARNING" 1 "WARNING_LEVEL_1" 2 "WARNING_LEVEL_2" ;
 VAL_ 923 DAS_blindSpotRearLeft 3 "SNA" 0 "NO_WARNING" 1 "WARNING_LEVEL_1" 2 "WARNING_LEVEL_2" ;
 VAL_ 923 DAS_autopilotState 15 "SNA" 8 "ABORTING" 3 "ACTIVE_NOMINAL" 0 "DISABLED" 4 "ACTIVE_RESTRICTED" 5 "ACTIVE_NAV" 6 "ACTIVE_FSD" 14 "FAULT" 1 "UNAVAILABLE" 9 "ABORTED" 2 "AVAILABLE" ;
+VAL_ 921 DAS_autoLaneChangeState 5 "ALC_UNAVAILABLE_VEHICLE_SPEED" 17 "ALC_ABORT_POOR_VIEW_RANGE" 23 "ALC_BLOCKED_VEH_TTC_AND_USS_L" 0 "ALC_UNAVAILABLE_DISABLED" 26 "ALC_BLOCKED_LANE_TYPE_L" 29 "ALC_ABORT_TIMEOUT" 9 "ALC_IN_PROGRESS_L" 4 "ALC_UNAVAILABLE_EXITING_HIGHWAY" 22 "ALC_BLOCKED_VEH_TTC_L" 12 "ALC_WAITING_FOR_SIDE_OBST_TO_PASS_R" 18 "ALC_ABORT_LC_HEALTH_BAD" 28 "ALC_WAITING_HANDS_ON" 8 "ALC_AVAILABLE_BOTH" 11 "ALC_WAITING_FOR_SIDE_OBST_TO_PASS_L" 3 "ALC_UNAVAILABLE_TP_FOLLOW" 2 "ALC_UNAVAILABLE_SONICS_INVALID" 21 "ALC_UNAVAILABLE_SOLID_LANE_LINE" 24 "ALC_BLOCKED_VEH_TTC_R" 1 "ALC_UNAVAILABLE_NO_LANES" 25 "ALC_BLOCKED_VEH_TTC_AND_USS_R" 30 "ALC_ABORT_MISSION_PLAN_INVALID" 27 "ALC_BLOCKED_LANE_TYPE_R" 19 "ALC_ABORT_BLINKER_TURNED_OFF" 31 "ALC_SNA" 13 "ALC_WAITING_FOR_FWD_OBST_TO_PASS_L" 16 "ALC_ABORT_SIDE_OBSTACLE_PRESENT_R" 6 "ALC_AVAILABLE_ONLY_L" 20 "ALC_ABORT_OTHER_REASON" 15 "ALC_ABORT_SIDE_OBSTACLE_PRESENT_L" 7 "ALC_AVAILABLE_ONLY_R" 14 "ALC_WAITING_FOR_FWD_OBST_TO_PASS_R" 10 "ALC_IN_PROGRESS_R" ;
+VAL_ 921 DAS_blindSpotRearRight 3 "SNA" 0 "NO_WARNING" 1 "WARNING_LEVEL_1" 2 "WARNING_LEVEL_2" ;
+VAL_ 921 DAS_blindSpotRearLeft 3 "SNA" 0 "NO_WARNING" 1 "WARNING_LEVEL_1" 2 "WARNING_LEVEL_2" ;
 VAL_ 325 ESP_absBrakeEvent2 0 "NOT_ACTIVE" 1 "ACTIVE_FRONT_REAR" 2 "ACTIVE_FRONT" 3 "ACTIVE_REAR";
 VAL_ 325 ESP_absFaultLamp 0 "OFF" 1 "ON";
 VAL_ 325 ESP_brakeApply 0 "INACTIVE" 1 "ACTIVE";
