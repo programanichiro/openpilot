@@ -96,6 +96,8 @@ inline static std::unordered_map<std::string, ParamKeyAttributes> keys = {
     {"DisableMaxSpeedModify", {PERSISTENT, BOOL, "0"}},
     {"ForceHybridVehicle", {PERSISTENT, BOOL, "0"}},
     {"IgnoreRerouteHarness", {PERSISTENT, BOOL, "0"}},
+    {"NavigationEnabled", {PERSISTENT, BOOL, "0"}},
+    {"NavDestination", {CLEAR_ON_MANAGER_START | CLEAR_ON_OFFROAD_TRANSITION, JSON}},
     {"NetworkMetered", {PERSISTENT, BOOL}},
     {"ObdMultiplexingChanged", {CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION, BOOL}},
     {"ObdMultiplexingEnabled", {CLEAR_ON_MANAGER_START | CLEAR_ON_ONROAD_TRANSITION, BOOL}},
