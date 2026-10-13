@@ -198,18 +198,19 @@ class TogglesLayout(Widget):
           pass
         self._toggles["AutoDoorLock"] = self._auto_door_lock_btn
 
-        self._vehicle_mass_action = ButtonAction(text="EDIT")
-        self._vehicle_mass_action.set_enabled(True)
-        self._vehicle_mass_btn = ListItem(title="Vehicle weight", icon="../offroad/icon_car_weight.png", action_item=self._vehicle_mass_action, callback=self._edit_vehicle_mass)
-        self._vehicle_mass_btn.action_item.set_value("")
-        try:
-          with open('/data/vehicle_mass.txt','r') as fp:
-            vehicle_mass_str = fp.read() #車重をテキストで1530みたいにkgで書いておく。ファイルが無いか0でデフォの設定値。
-            if vehicle_mass_str:
-              self._vehicle_mass_btn.action_item.set_value(vehicle_mass_str+" [kg]")
-        except Exception as e:
-          pass
-        self._toggles["VehicleMass"] = self._vehicle_mass_btn
+        # 車重が無くなった。
+        # self._vehicle_mass_action = ButtonAction(text="EDIT")
+        # self._vehicle_mass_action.set_enabled(True)
+        # self._vehicle_mass_btn = ListItem(title="Vehicle weight", icon="../offroad/icon_car_weight.png", action_item=self._vehicle_mass_action, callback=self._edit_vehicle_mass)
+        # self._vehicle_mass_btn.action_item.set_value("")
+        # try:
+        #   with open('/data/vehicle_mass.txt','r') as fp:
+        #     vehicle_mass_str = fp.read() #車重をテキストで1530みたいにkgで書いておく。ファイルが無いか0でデフォの設定値。
+        #     if vehicle_mass_str:
+        #       self._vehicle_mass_btn.action_item.set_value(vehicle_mass_str+" [kg]")
+        # except Exception as e:
+        #   pass
+        # self._toggles["VehicleMass"] = self._vehicle_mass_btn
 
         self._device_offset_action = ButtonAction(text="EDIT")
         self._device_offset_action.set_enabled(True)
@@ -336,30 +337,30 @@ class TogglesLayout(Widget):
     self._keyboard.set_callback(update_door_lock)
     gui_app.push_widget(self._keyboard)
 
-  def _edit_vehicle_mass(self):
-    def update_mass(result):
-      if result != 1:
-        return
+  # def _edit_vehicle_mass(self):
+  #   def update_mass(result):
+  #     if result != 1:
+  #       return
 
-      try:
-        with open('/data/vehicle_mass.txt','w') as fp:
-          fp.write("%s" % (self._keyboard.text))
-      except Exception as e:
-        self._vehicle_mass_btn.action_item.set_value("")
-        return
+  #     try:
+  #       with open('/data/vehicle_mass.txt','w') as fp:
+  #         fp.write("%s" % (self._keyboard.text))
+  #     except Exception as e:
+  #       self._vehicle_mass_btn.action_item.set_value("")
+  #       return
 
-      if self._keyboard.text == "0" or not self._keyboard.text:
-        self._vehicle_mass_btn.action_item.set_value("")
-      else:
-        self._vehicle_mass_btn.action_item.set_value(self._keyboard.text+" [kg]")
+  #     if self._keyboard.text == "0" or not self._keyboard.text:
+  #       self._vehicle_mass_btn.action_item.set_value("")
+  #     else:
+  #       self._vehicle_mass_btn.action_item.set_value(self._keyboard.text+" [kg]")
 
-    self._keyboard.reset(min_text_size=0)
-    self._keyboard.set_title("Vehicle weight", "")
-    s = self._vehicle_mass_btn.action_item.value
-    s = s.removesuffix(" [kg]")
-    self._keyboard.set_text(s)
-    self._keyboard.set_callback(update_mass)
-    gui_app.push_widget(self._keyboard)
+  #   self._keyboard.reset(min_text_size=0)
+  #   self._keyboard.set_title("Vehicle weight", "")
+  #   s = self._vehicle_mass_btn.action_item.value
+  #   s = s.removesuffix(" [kg]")
+  #   self._keyboard.set_text(s)
+  #   self._keyboard.set_callback(update_mass)
+  #   gui_app.push_widget(self._keyboard)
 
   def _edit_device_offset(self):
     def update_offset(result):

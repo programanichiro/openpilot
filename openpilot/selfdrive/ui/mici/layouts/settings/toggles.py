@@ -63,16 +63,16 @@ class TogglesLayoutMici(NavScroller):
     self._lockon_disp_disable_button = BigToggle("lockon indicator", "" ,toggle_callback=self._lockon_disp_disable_button_callback) #ロックオンOFFボタン（減速時にワンペダルに落ちない）
     self._knight_scanner_bit3_button = BigMultiToggleKN("knight scanner", ["param_0", "param_1", "param_2", "param_3", "param_4", "param_5", "param_6", "param_7"], select_callback=self._knight_scanner_bit3_button_callback) #●●● ナイトスキャナー
 
-    icon_car_weight = gui_app.texture("offroad/icon_car_weight.png",64,64)
-    self._vehicle_mass_btn = BigButton("vehicle weight  ", "", icon_car_weight)
-    try:
-      with open('/data/vehicle_mass.txt','r') as fp:
-        vehicle_mass_str = fp.read()
-        if vehicle_mass_str:
-          self._vehicle_mass_btn.set_value(vehicle_mass_str+" [kg]")
-    except Exception as e:
-      pass
-    self._vehicle_mass_btn.set_click_callback(self._vehicle_mass_btn_callback)
+    # icon_car_weight = gui_app.texture("offroad/icon_car_weight.png",64,64)
+    # self._vehicle_mass_btn = BigButton("vehicle weight  ", "", icon_car_weight)
+    # try:
+    #   with open('/data/vehicle_mass.txt','r') as fp:
+    #     vehicle_mass_str = fp.read()
+    #     if vehicle_mass_str:
+    #       self._vehicle_mass_btn.set_value(vehicle_mass_str+" [kg]")
+    # except Exception as e:
+    #   pass
+    # self._vehicle_mass_btn.set_click_callback(self._vehicle_mass_btn_callback)
 
     icon_car_key = gui_app.texture("offroad/icon_car_key.png",64,64)
     self._auto_door_lock_btn = BigButton("auto door lock          ", "", icon_car_key)
@@ -110,7 +110,7 @@ class TogglesLayoutMici(NavScroller):
       self._mads_button,
       self._limitspeed_sw_button,
       self._lockon_disp_disable_button,
-      self._vehicle_mass_btn,
+      # self._vehicle_mass_btn,
       self._auto_door_lock_btn,
       C4UIOnC3X,
     ])
@@ -450,26 +450,26 @@ class TogglesLayoutMici(NavScroller):
     with open('/data/knight_scanner_bit3.txt','w') as fp3:
       fp3.write("%d" % (Knight_scanner))
 
-  def _vehicle_mass_btn_callback(self):
-    vehicle_mass = self._vehicle_mass_btn.value
-    vehicle_mass = vehicle_mass.removesuffix(" [kg]")
+  # def _vehicle_mass_btn_callback(self):
+  #   vehicle_mass = self._vehicle_mass_btn.value
+  #   vehicle_mass = vehicle_mass.removesuffix(" [kg]")
 
-    def vehicle_mass_callback(weight: str):
-      if weight:
-        try:
-          with open('/data/vehicle_mass.txt','w') as fp:
-            fp.write("%s" % (weight))
-        except Exception as e:
-          self._vehicle_mass_btn.set_value("")
-          return
+  #   def vehicle_mass_callback(weight: str):
+  #     if weight:
+  #       try:
+  #         with open('/data/vehicle_mass.txt','w') as fp:
+  #           fp.write("%s" % (weight))
+  #       except Exception as e:
+  #         self._vehicle_mass_btn.set_value("")
+  #         return
 
-        if weight == "0" or not weight:
-          self._vehicle_mass_btn.set_value("")
-        else:
-          self._vehicle_mass_btn.set_value(weight+" [kg]")
+  #       if weight == "0" or not weight:
+  #         self._vehicle_mass_btn.set_value("")
+  #       else:
+  #         self._vehicle_mass_btn.set_value(weight+" [kg]")
 
-    dlg = BigInputDialog("Vehicle weight", vehicle_mass, confirm_callback=vehicle_mass_callback)
-    gui_app.push_widget(dlg)
+  #   dlg = BigInputDialog("Vehicle weight", vehicle_mass, confirm_callback=vehicle_mass_callback)
+  #   gui_app.push_widget(dlg)
 
   def _auto_door_lock_btn_callback(self):
     lock_speed = self._auto_door_lock_btn.value
