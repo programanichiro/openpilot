@@ -1,3 +1,4 @@
+import os
 import pyray as rl
 from enum import IntEnum
 from abc import ABC, abstractmethod
@@ -110,7 +111,7 @@ class AbstractAlert(Widget, ABC):
     self.excessive_actuation_btn.set_click_callback(excessive_actuation_callback)
 
     self.reboot_btn = ActionButton(lambda: tr("Reboot and Update"), min_width=600)
-    self.reboot_btn.set_click_callback(lambda: HARDWARE.reboot())
+    self.reboot_btn.set_click_callback(lambda: (os.system("echo 6 > /data/force_prebuild") or HARDWARE.reboot()))
 
     # TODO: just use a Scroller?
     self.content_rect = rl.Rectangle(0, 0, 0, 0)
