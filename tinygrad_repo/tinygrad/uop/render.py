@@ -63,7 +63,7 @@ def _render_arg(x:UOp) -> str:
 def _inline(u:UOp) -> bool: return u.op is Ops.CONST or (u.op is Ops.STACK and all(s.op is Ops.CONST for s in u.src))
 
 def render_uir(root:UOp|list[UOp]) -> str:
-  nodes = [u for u in (list(root.toposort()) if isinstance(root, UOp) else list(root)) if not _inline(u)]
+  nodes = [u for u in (list(root.toposort(enter_calls=True)) if isinstance(root, UOp) else list(root)) if not _inline(u)]
   table = {u:i for i,u in enumerate(nodes)}
   def src_str(u:UOp) -> str:
     if not _inline(u): return f"%{table[u]}"
@@ -92,7 +92,6 @@ def marg_str(ctx, a:sint) -> str: return str(a) if not isinstance(a, UOp) else c
 
 def render_marg(ctx,x:UOp):
   if x.op is Ops.PERMUTE: return str(x.marg)
-  if x.op is Ops.FLIP: return str(tuple([i for i,x in enumerate(x.marg) if x]))
   pieces = []
   if x.op in {Ops.RESHAPE, Ops.EXPAND}: pieces = [marg_str(ctx, a) for a in x.marg]
   if x.op in {Ops.PAD, Ops.SHRINK}: pieces = [f"({marg_str(ctx, a[0])}, {marg_str(ctx, a[1])})" for a in x.marg]
@@ -148,7 +147,6 @@ def _render_with_splits(lst:list[UOp], pm:PatternMatcher, to_render:set[UOp], sp
     depth[u] = 0 if u in to_render else op_depth
     ren = pm.rewrite(u, ctx=r)
     assert isinstance(ren, str)
-    if u.tag is not None: ren += f".rtag({repr(u.tag)})"
     if u not in to_render: r[u] = ren
     else:
       r[u] = f"c{i}" if u is not lst[-1] else "ast"
