@@ -5,6 +5,7 @@ from openpilot.cereal import log
 from dataclasses import dataclass
 from openpilot.common.constants import CV
 from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
+from openpilot.selfdrive.ui.onroad.ichiro_exp_button import IchiroExpButton, BUTTON_SIZE, BORDER_SIZE
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.multilang import tr
@@ -84,6 +85,7 @@ class HudRenderer(Widget):
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self._font_medium: rl.Font = gui_app.font(FontWeight.MEDIUM)
 
+    self._exp_button: IchiroExpButton = IchiroExpButton()
     self._ip_button_init()
 
   def _update_state(self) -> None:
@@ -160,10 +162,15 @@ class HudRenderer(Widget):
 
     self._draw_current_speed(rect)
 
+    button_x = rect.x + rect.width - BORDER_SIZE - BUTTON_SIZE
+    button_y = rect.y + BORDER_SIZE + y_ofs
+    self._exp_button.render(rl.Rectangle(button_x, button_y, BUTTON_SIZE, BUTTON_SIZE))
+
     self._ip_draw(rect)
 
   def user_interacting(self) -> bool:
-    return (self._accel_engaged_button.is_pressed
+    return (self._exp_button.is_pressed
+      or self._accel_engaged_button.is_pressed
       or self._long_speeddown_disable_button.is_pressed
       or self._lta_enable_sw_button.is_pressed
       or self._start_accel_power_up_disp_enable_button.is_pressed
