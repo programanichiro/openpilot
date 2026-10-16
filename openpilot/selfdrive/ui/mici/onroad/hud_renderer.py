@@ -518,6 +518,11 @@ class HudRenderer(Widget):
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
 
+    # ロックオン表示の切り替えボタン（dX ボタンの跡地に置く。tici の ■/□ ボタンと同じ動作）
+    self.lockon_disp_disable = 0
+    self._lockon_disp_disable_button = Button("■",click_callback=self._press_lockon_disp_disable,font_size=60,font_weight="JP", border_radius=45)
+    self._press_lockon_disp_disable()
+
     lane_icon = gui_app.texture("icons_mici/onroad/lane_keep_w.png",width=72,height=int(147*72/256))
     self._lta_enable_sw_button = Button("",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=lane_icon)
     self._press_lta_enable_sw()
@@ -565,6 +570,7 @@ class HudRenderer(Widget):
     self._disp_button_ct = 0
     self._accel_ctrl_disable_changed_ct = 0
     self._long_speeddown_disable_changed_ct = 0
+    self._lockon_disp_disable_changed_ct = 0
     self.red_signal_chk_timing = 3 if not gui_app.big_ui() else 9 #c4は60fpsなので、三倍。
 
   def user_interacting(self) -> bool:
@@ -578,6 +584,7 @@ class HudRenderer(Widget):
             or self._start_accel_power_up_disp_enable_button.is_pressed
             or self._accel_engaged_button.is_pressed
             or self._long_speeddown_disable_button.is_pressed
+            or self._lockon_disp_disable_button.is_pressed
             )
 
   def _ip_update_state(self,sm):
@@ -766,6 +773,11 @@ class HudRenderer(Widget):
         self.kmh = road_info_data[1]
         self.road_name = road_info_data[2]
         self.road_bear = road_info_data[3]
+
+    if(self.ip_update_state_ct % 10 == 2):
+      self.button_style_only = True
+      self._press_lockon_disp_disable()
+      self.button_style_only = False
 
     if(self.ip_update_state_ct % 10 == 5):
       self.button_style_only = True
@@ -982,6 +994,11 @@ class HudRenderer(Widget):
       )
       self._lta_enable_sw_button.render(lane_rect)
 
+      lockon_rect = rl.Rectangle(
+        int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+      )
+      self._lockon_disp_disable_button.render(lockon_rect)
+
       accel_ctrl_disable_rect = rl.Rectangle(
         int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
       )
@@ -1013,6 +1030,7 @@ class HudRenderer(Widget):
       # 全ボタン表示されたら個別カウンタはクリアしておく
       self._accel_ctrl_disable_changed_ct = 0
       self._long_speeddown_disable_changed_ct = 0
+      self._lockon_disp_disable_changed_ct = 0
 
 
     if all_btn_appeared == False:
@@ -1023,6 +1041,13 @@ class HudRenderer(Widget):
           int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
         )
         self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
+
+      if self._lockon_disp_disable_changed_ct > 0:
+        self._lockon_disp_disable_changed_ct -= 1
+        lockon_rect = rl.Rectangle(
+          int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+        )
+        self._lockon_disp_disable_button.render(lockon_rect)
 
       if self._long_speeddown_disable_changed_ct > 0:
         self._long_speeddown_disable_changed_ct -= 1
@@ -1316,6 +1341,42 @@ class HudRenderer(Widget):
       fp2.write("%d" % (long_speeddown_disable))
     with open('/data/long_speeddown_disable.txt','w') as fp3:
       fp3.write("%d" % (long_speeddown_disable))
+
+  def _press_lockon_disp_disable(self):
+    if self.ui_freeze_flag:
+      return
+    lockon_disp_disable = 0
+    try:
+      with open('/dev/shm/lockon_disp_disable.txt','r') as fp:
+        lockon_disp_disable_str = fp.read()
+        if lockon_disp_disable_str:
+          lockon_disp_disable = int(lockon_disp_disable_str)
+    except Exception as e:
+      pass
+
+    if self.lockon_disp_disable != lockon_disp_disable:
+      self._lockon_disp_disable_changed_ct = 20 * 1.5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
+
+    if self.button_style_only == False:
+      lockon_disp_disable = (lockon_disp_disable + 1) % 2
+    if lockon_disp_disable == 0:
+      self._lockon_disp_disable_button.set_text("■") #ロックオン表示あり
+      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudBOn)
+    else:
+      self._lockon_disp_disable_button.set_text("□") #ロックオン表示なし
+      self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudBOff)
+
+    self.lockon_disp_disable = lockon_disp_disable
+
+    if self.button_style_only:
+      return
+
+    self._button_push_sound(1-lockon_disp_disable)
+    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
+      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
+
+    with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
+      fp2.write("%d" % (lockon_disp_disable))
 
   def _press_set_speed_MAX(self):
     if self.ui_freeze_flag:

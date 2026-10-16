@@ -200,6 +200,7 @@ class AugmentedRoadView(CameraView):
       self._offroad_label.set_text("start the car to\nuse openpilot")
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
+    return # ロックオン表示の切り替えは HUD 左下のボタンに移したので、画面タップでは何もしない
     # Don't trigger click callback if bookmark was triggered
     if (not self._bookmark_icon.interacting()) and (not self._hud_renderer.user_interacting()):
       self._model_renderer.toggle_lead_indicator() #リードインジケーターのON/OFFをタップで切り替える

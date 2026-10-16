@@ -86,6 +86,7 @@ class ModelRenderer(Widget):
     self._lead_vehicles = [LeadVehicle(), LeadVehicle()]
     self._path_offset_z = HEIGHT_INIT[0]
     self._enable_lead_indicator = False
+    self._lead_indicator_read_ct = 0
 
     # Initialize ModelPoints objects
     self._path = ModelPoints()
@@ -140,6 +141,18 @@ class ModelRenderer(Widget):
 
     self._enable_lead_indicator = (lockon_disp_disable == 0)
 
+  def read_lead_indicator(self):
+    # HUD のロックオンボタンや設定画面が書いた lockon_disp_disable.txt を、トグルせずに読んで反映する
+    lockon_disp_disable = 0
+    try:
+      with open('/dev/shm/lockon_disp_disable.txt','r') as fp: # /dev/shmのまま
+        lockon_disp_disable_str = fp.read()
+        if lockon_disp_disable_str:
+          lockon_disp_disable = int(lockon_disp_disable_str)
+    except Exception as e:
+      pass
+    self._enable_lead_indicator = (lockon_disp_disable == 0)
+
   def set_transform(self, transform: np.ndarray):
     self._car_space_transform = transform.astype(np.float32)
     self._transform_dirty = True
@@ -148,6 +161,10 @@ class ModelRenderer(Widget):
     sm = ui_state.sm
 
     self._torque_filter.update(-ui_state.sm['carOutput'].actuatorsOutput.torque)
+
+    self._lead_indicator_read_ct += 1
+    if self._lead_indicator_read_ct % 10 == 0: # ファイルアクセスは10フレームに1回
+      self.read_lead_indicator()
 
     # Check if data is up-to-date
     if (sm.recv_frame["extrinsicsCalibration"] < ui_state.started_frame or
