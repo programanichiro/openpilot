@@ -520,7 +520,7 @@ class HudRenderer(Widget):
 
     # ロックオン表示の切り替えボタン（dX ボタンの跡地に置く。tici の ■/□ ボタンと同じ動作）
     self.lockon_disp_disable = 0
-    self._lockon_disp_disable_button = Button("■",click_callback=self._press_lockon_disp_disable,font_size=60,font_weight="JP", border_radius=45)
+    self._lockon_disp_disable_button = Button("□",click_callback=self._press_lockon_disp_disable,font_size=60,font_weight="JP", border_radius=45)
     self._press_lockon_disp_disable()
 
     lane_icon = gui_app.texture("icons_mici/onroad/lane_keep_w.png",width=72,height=int(147*72/256))
@@ -1360,10 +1360,10 @@ class HudRenderer(Widget):
     if self.button_style_only == False:
       lockon_disp_disable = (lockon_disp_disable + 1) % 2
     if lockon_disp_disable == 0:
-      self._lockon_disp_disable_button.set_text("■") #ロックオン表示あり
+      # self._lockon_disp_disable_button.set_text("■") #ロックオン表示あり
       self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudBOn)
     else:
-      self._lockon_disp_disable_button.set_text("□") #ロックオン表示なし
+      # self._lockon_disp_disable_button.set_text("□") #ロックオン表示なし
       self._lockon_disp_disable_button.set_button_style(ButtonStyle.HudBOff)
 
     self.lockon_disp_disable = lockon_disp_disable
