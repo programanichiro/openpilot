@@ -33,7 +33,6 @@ class TogglesLayoutMici(NavScroller):
   def __init__(self):
     super().__init__()
 
-    self.now_exp = ui_state.params.get_bool("ExperimentalMode")
     self.state_update_ct = 0
 
     self._personality_toggle = BigMultiParamToggle("driving personality", "LongitudinalPersonality", ["aggressive", "standard", "relaxed"],
@@ -41,13 +40,6 @@ class TogglesLayoutMici(NavScroller):
                                                                "Aggressive follows closer, with firmer gas and braking.\n" +
                                                                "Relaxed leaves more space.\n" +
                                                                "Use the steering wheel distance button on supported cars.")
-    self._experimental_btn = BigParamControl("experimental mode", "ExperimentalMode",
-                                       description_icon=gui_app.texture("icons_mici/experimental_mode.png", 64, 64),
-                                       description="Let the driving model control gas and brakes.\n" +
-                                                   "Includes stopping for red lights and stop signs.\n" +
-                                                   "Set speed is a maximum, not a target.\n" +
-                                                   "These are alpha features. Expect mistakes.\n" +
-                                                   "The path colors show acceleration and braking.")
     self._initial_cruise_speed = InitialCruiseSpeedButton()
     self._initial_cruise_speed.set_visible(lambda: ui_state.CP is not None and ui_state.has_longitudinal_control and not ui_state.CP.pcmCruise)
     is_metric_toggle = BigParamControl("use metric units", "IsMetric", toggle_callback=self._initial_cruise_speed.refresh)
@@ -73,7 +65,6 @@ class TogglesLayoutMici(NavScroller):
     ForceHybridVehicle = BigParamControl("force hybrid vehicle", "ForceHybridVehicle", toggle_callback=restart_needed_callback)
     IgnoreRerouteHarness = BigParamControl("ignore TSSP bypass harness", "IgnoreRerouteHarness", toggle_callback=restart_needed_callback)
     self._lta_enable_sw_button = BigToggle("return from edge of lane", "" ,toggle_callback=self._lta_enable_sw_button_callback) #ハボタン
-    self._dexp_sw_mode_button = BigToggle("dynamic experimental mode", "" ,toggle_callback=self._dexp_sw_mode_button_callback) #dXボタン（できればOnroadHudにも）
     self._start_accel_power_up_disp_enable_button = BigToggle("turbo boost", "" ,toggle_callback=self._start_accel_power_up_disp_enable_button_callback) #ターボブースト
     self._accel_engaged_button = BigMultiToggleAA("pedal mode    ", ["disengage", "A", "AA", "iP", "eP"], select_callback=self._accel_engaged_button_callback) #PedalMethod(N,A,AA,iP,eP)
     self._accel_ctrl_disable_button = BigToggle("follow lead car", "" ,toggle_callback=self._accel_ctrl_disable_button_callback) #前走車追従（できればOnroadHudにも）
@@ -109,7 +100,6 @@ class TogglesLayoutMici(NavScroller):
     self._scroller.add_widgets([
       self._knight_scanner_bit3_button,
       self._personality_toggle,
-      self._experimental_btn,
       self._initial_cruise_speed,
       is_metric_toggle,
       ldw_toggle,
@@ -123,7 +113,6 @@ class TogglesLayoutMici(NavScroller):
       ForceHybridVehicle,
       IgnoreRerouteHarness,
       self._lta_enable_sw_button,
-      self._dexp_sw_mode_button,
       self._start_accel_power_up_disp_enable_button,
       self._accel_engaged_button,
       self._accel_ctrl_disable_button,
@@ -139,7 +128,6 @@ class TogglesLayoutMici(NavScroller):
 
     # Toggle lists
     self._refresh_toggles = (
-      ("ExperimentalMode", self._experimental_btn),
       ("IsMetric", is_metric_toggle),
       ("IsLdwEnabled", ldw_toggle),
       ("AlwaysOnDM", always_on_dm_toggle),
@@ -184,17 +172,8 @@ class TogglesLayoutMici(NavScroller):
     ui_state.update_params()
     self._initial_cruise_speed.refresh()
 
-    # CP gating for experimental mode
     if ui_state.CP is not None:
-      if ui_state.has_longitudinal_control:
-        self._experimental_btn.set_visible(True)
-        self._personality_toggle.set_visible(True)
-      else:
-        # no long for now
-        self._experimental_btn.set_visible(False)
-        self._experimental_btn.set_checked(False)
-        self._personality_toggle.set_visible(False)
-        ui_state.params.remove("ExperimentalMode")
+      self._personality_toggle.set_visible(ui_state.has_longitudinal_control)
 
     # Refresh toggles from params to mirror external changes
     for key, item in self._refresh_toggles:
@@ -328,21 +307,6 @@ class TogglesLayoutMici(NavScroller):
       pass
     self._start_accel_power_up_disp_enable_button.set_checked(start_accel_power_up_disp_enable != 0)
 
-    if self.now_exp != ui_state.params.get_bool("ExperimentalMode"):
-      #self._dexp_sw_mode_button_callback(False) #ExperimentalModeを操作したらdX解除する
-      #ここで解除するとボタン操作でない場合でも解除されてしまう。
-      self.now_exp = ui_state.params.get_bool("ExperimentalMode")
-
-    dexp_sw_mode = 0
-    try:
-      with open('/data/dexp_sw_mode.txt','r') as fp: # /data/から取る
-        dexp_sw_mode_str = fp.read()
-        if dexp_sw_mode_str:
-          dexp_sw_mode = int(dexp_sw_mode_str)
-    except Exception as e:
-      pass
-    self._dexp_sw_mode_button.set_checked(dexp_sw_mode != 0)
-
     lta_enable_sw = 0
     try:
       with open('/data/lta_enable_sw.txt','r') as fp: # /data/から取る
@@ -372,13 +336,6 @@ class TogglesLayoutMici(NavScroller):
       fp2.write("%d" % (lta_enable_sw))
     with open('/data/lta_enable_sw.txt','w') as fp3:
       fp3.write("%d" % (lta_enable_sw))
-
-  def _dexp_sw_mode_button_callback(self,onoff):
-    dexp_sw_mode = int(onoff)
-    with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
-      fp2.write("%d" % (dexp_sw_mode))
-    with open('/data/dexp_sw_mode.txt','w') as fp3:
-      fp3.write("%d" % (dexp_sw_mode))
 
   def _start_accel_power_up_disp_enable_button_callback(self,onoff):
     start_accel_power_up_disp_enable = int(onoff)

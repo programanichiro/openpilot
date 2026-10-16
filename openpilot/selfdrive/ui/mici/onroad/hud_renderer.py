@@ -455,7 +455,6 @@ class HudRenderer(Widget):
       except Exception as e:
         pass
     copy_data2devshm('accel_engaged.txt')
-    copy_data2devshm('dexp_sw_mode.txt')
     copy_data2devshm('long_speeddown_disable.txt')
     copy_data2devshm('lta_enable_sw.txt')
     copy_data2devshm('start_accel_power_up_disp_enable.txt')
@@ -519,14 +518,6 @@ class HudRenderer(Widget):
     self._mads_button.set_button_style(ButtonStyle.HudUnder) #バック透明
     self._press_mads()
 
-    self.dexp_sw_mode = 0
-    self.dexp_sw_exp_mode = ui_state.params.get_bool("ExperimentalMode")
-    #dx_icon = gui_app.texture("icons_mici/onroad/dX_icon_128.png",width=60,height=60)
-    self.dx_icon_chill = gui_app.texture("icons/chffr_wheel.png",width=60,height=60)
-    self.dx_icon_exp = gui_app.texture("icons_mici/experimental_mode.png",width=60,height=60)
-    self._dexp_sw_mode_button = Button("",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=self.dx_icon_chill)
-    self._press_dexp_sw_mode()
-
     lane_icon = gui_app.texture("icons_mici/onroad/lane_keep_w.png",width=72,height=int(147*72/256))
     self._lta_enable_sw_button = Button("",click_callback=self._press_lta_enable_sw,font_size=font_sz,font_weight=FontWeight.BOLD, border_radius=45, icon=lane_icon)
     self._press_lta_enable_sw()
@@ -573,7 +564,6 @@ class HudRenderer(Widget):
 
     self._disp_button_ct = 0
     self._accel_ctrl_disable_changed_ct = 0
-    self._dexp_sw_mode_button_changed_ct = 0
     self._long_speeddown_disable_changed_ct = 0
     self.red_signal_chk_timing = 3 if not gui_app.big_ui() else 9 #c4は60fpsなので、三倍。
 
@@ -582,7 +572,6 @@ class HudRenderer(Widget):
       return True
     return (self._set_speed_MAX_button.is_pressed
             or self._mads_button.is_pressed
-            or self._dexp_sw_mode_button.is_pressed
             or self._lta_enable_sw_button.is_pressed
             or self._accel_ctrl_disable_button.is_pressed
             or self._decel_ctrl_disable_button.is_pressed
@@ -788,11 +777,6 @@ class HudRenderer(Widget):
       self._press_long_speeddown_disable()
       self.button_style_only = False
 
-    if(self.ip_update_state_ct % 10 == 2):
-      self.button_style_only = True
-      self._press_dexp_sw_mode()
-      self.button_style_only = False
-
     cur_draw_t = time.monotonic_ns() / 1_000_000  # ナノ秒→ミリ秒 #millis_since_boot();
     self.dt = cur_draw_t - self.prev_draw_t #フレームタイム
     self.distance_traveled += abs(car_state.vEgo) * self.dt / 1000
@@ -993,12 +977,6 @@ class HudRenderer(Widget):
       self._disp_button_ct -= 1
       all_btn_appeared = True
 
-      dX_rect = rl.Rectangle(
-        # 70, 20, 90, 90,
-        int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
-      )
-      self._dexp_sw_mode_button.render(dX_rect)
-
       lane_rect = rl.Rectangle(
         int(rect.x+70), int(rect.y+20), 90, 90, #左上のいい感じの位置
       )
@@ -1034,7 +1012,6 @@ class HudRenderer(Widget):
 
       # 全ボタン表示されたら個別カウンタはクリアしておく
       self._accel_ctrl_disable_changed_ct = 0
-      self._dexp_sw_mode_button_changed_ct = 0
       self._long_speeddown_disable_changed_ct = 0
 
 
@@ -1046,14 +1023,6 @@ class HudRenderer(Widget):
           int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
         )
         self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
-
-      if self._dexp_sw_mode_button_changed_ct > 0:
-        self._dexp_sw_mode_button_changed_ct -= 1
-        dX_rect = rl.Rectangle(
-          # 70, 20, 90, 90,
-          int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
-        )
-        self._dexp_sw_mode_button.render(dX_rect)
 
       if self._long_speeddown_disable_changed_ct > 0:
         self._long_speeddown_disable_changed_ct -= 1
@@ -1426,57 +1395,6 @@ class HudRenderer(Widget):
     with open('/data/steer_always.txt','w') as fp3:
       fp3.write('%d' % (1 if self.steer_always else 0))
     return
-
-  def _press_dexp_sw_mode(self):
-    if self.ui_freeze_flag:
-      return
-    dexp_sw_mode = 0
-    try:
-      with open('/dev/shm/dexp_sw_mode.txt','r') as fp:
-        dexp_sw_mode_str = fp.read()
-        if dexp_sw_mode_str:
-          dexp_sw_mode = int(dexp_sw_mode_str)
-    except Exception as e:
-      pass
-
-    if self.dexp_sw_mode != dexp_sw_mode:
-      self._dexp_sw_mode_button_changed_ct = 20 * 1.5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
-
-    now_exp_mode = ui_state.params.get_bool("ExperimentalMode")
-    if self.dexp_sw_exp_mode != now_exp_mode:
-      self._dexp_sw_mode_button_changed_ct = 20 * 1.5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
-
-    if self.button_style_only == False:
-      #dX(OFF){chill->exp}->dX(ON)というフローにする
-      if dexp_sw_mode != 0:
-        dexp_sw_mode = (dexp_sw_mode + 1) % 2
-        ui_state.params.put_bool("ExperimentalMode",False)
-      else:
-        if now_exp_mode:
-          dexp_sw_mode = (dexp_sw_mode + 1) % 2
-        else:
-          ui_state.params.put_bool("ExperimentalMode",True)
-    if dexp_sw_mode == 0:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOff)
-    else:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudBOn)
-
-    self.dexp_sw_exp_mode = ui_state.params.get_bool("ExperimentalMode")
-    self._dexp_sw_mode_button.set_icon(self.dx_icon_exp if self.dexp_sw_exp_mode else self.dx_icon_chill)
-
-    self.dexp_sw_mode = dexp_sw_mode
-
-    if self.button_style_only:
-      return
-
-    self._button_push_sound(dexp_sw_mode)
-    if self._disp_button_ct < 20 * 3 * 50 / self.dt:
-      self._disp_button_ct = 20 * 3 * 50 / self.dt #ボタン操作したら3秒延長
-
-    with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
-      fp2.write("%d" % (dexp_sw_mode))
-    with open('/data/dexp_sw_mode.txt','w') as fp3:
-      fp3.write("%d" % (dexp_sw_mode))
 
   def _press_lta_enable_sw(self):
     if self.ui_freeze_flag:

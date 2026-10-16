@@ -5,7 +5,6 @@ from openpilot.cereal import log
 from dataclasses import dataclass
 from openpilot.common.constants import CV
 from openpilot.common.params import Params, ParamKeyFlag, UnknownKeyName
-from openpilot.selfdrive.ui.onroad.exp_button import ExpButton
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.multilang import tr
@@ -32,12 +31,9 @@ g_lockon_disp_disable = False
 @dataclass(frozen=True)
 class UIConfig:
   header_height: int = 300
-  border_size: int = 30
-  button_size: int = 192
   set_speed_width_metric: int = 200
   set_speed_width_imperial: int = 172
   set_speed_height: int = 204
-  wheel_icon_size: int = 144
 
 
 @dataclass(frozen=True)
@@ -88,7 +84,6 @@ class HudRenderer(Widget):
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self._font_medium: rl.Font = gui_app.font(FontWeight.MEDIUM)
 
-    self._exp_button: ExpButton = ExpButton(UI_CONFIG.button_size, UI_CONFIG.wheel_icon_size)
     self._ip_button_init()
 
   def _update_state(self) -> None:
@@ -165,16 +160,10 @@ class HudRenderer(Widget):
 
     self._draw_current_speed(rect)
 
-    button_x = rect.x + rect.width - UI_CONFIG.border_size - UI_CONFIG.button_size
-    button_y = rect.y + UI_CONFIG.border_size + y_ofs
-    self._exp_button.render(rl.Rectangle(button_x, button_y, UI_CONFIG.button_size, UI_CONFIG.button_size))
-
     self._ip_draw(rect)
 
   def user_interacting(self) -> bool:
-    return (self._exp_button.is_pressed
-      or self._accel_engaged_button.is_pressed
-      or self._dexp_sw_mode_button.is_pressed
+    return (self._accel_engaged_button.is_pressed
       or self._long_speeddown_disable_button.is_pressed
       or self._lta_enable_sw_button.is_pressed
       or self._start_accel_power_up_disp_enable_button.is_pressed
@@ -379,7 +368,6 @@ class HudRenderer(Widget):
       except Exception as e:
         pass
     copy_data2devshm('accel_engaged.txt')
-    copy_data2devshm('dexp_sw_mode.txt')
     copy_data2devshm('long_speeddown_disable.txt')
     copy_data2devshm('lta_enable_sw.txt')
     copy_data2devshm('start_accel_power_up_disp_enable.txt')
@@ -454,8 +442,6 @@ class HudRenderer(Widget):
     self.car_bearing = 0
     self.yellow_flag = False
     self.yellow_flash_ct = 0
-    self.exp_mode = Params().get("ExperimentalMode")
-    self.dexp_sw_mode = False
     self.limit_speed_num = 0
     self.limit_speed_auto_detect = 0
     self.limit_speed_override = False
@@ -471,9 +457,6 @@ class HudRenderer(Widget):
     font_wt = "JP" # FontWeight.BOLD #EXTRA_BOLD
     self._accel_engaged_button = Button("A",click_callback=self._press_accel_engaged,font_size=font_sz,font_weight=font_wt, border_radius=20)
     self._press_accel_engaged()
-
-    self._dexp_sw_mode_button = Button("dX",click_callback=self._press_dexp_sw_mode,font_size=font_sz,font_weight=font_wt, border_radius=20)
-    self._press_dexp_sw_mode()
 
     self._long_speeddown_disable_button = Button("iL",click_callback=self._press_long_speeddown_disable,font_size=font_sz,font_weight=font_wt, border_radius=20) #イチロウロング独立ボタン
     self._press_long_speeddown_disable()
@@ -541,7 +524,6 @@ class HudRenderer(Widget):
     self._long_speeddown_disable_button.render(rl.Rectangle(rect.x + rect.width - btn_w0*1, rect.y + rect.height - btn_h0*1.6, btn_w, btn_h))
 
     self._lta_enable_sw_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*3.3, btn_w, btn_h))
-    self._dexp_sw_mode_button.render(rl.Rectangle(rect.x +(btn_w0-btn_w)+ btn_w0*0, rect.y + rect.height - btn_h0*2.3, btn_w, btn_h))
 
     #速度標識
     if not self.limit_speed_num or self.limit_speed_num == 0:
@@ -889,12 +871,6 @@ class HudRenderer(Widget):
       self._press_accel_ctrl_disable()
       self.button_style_only = False
 
-    if(self.ip_update_state_ct % 10 == 0):
-      if self.dexp_sw_mode == 1:
-        self.button_style_only = True
-        self._press_dexp_sw_mode() #ExperimentalModeを操作したらdX解除する
-        self.button_style_only = False
-
     gps_ok = False
     gps_idx_i = 0
     try:
@@ -1149,35 +1125,6 @@ class HudRenderer(Widget):
     with open('/data/accel_engaged.txt','w') as fp3:
       fp3.write("%d" % (accel_engaged))
 
-
-  def _press_dexp_sw_mode(self):
-    dexp_sw_mode = 0
-    try:
-      with open('/dev/shm/dexp_sw_mode.txt','r') as fp:
-        dexp_sw_mode_str = fp.read()
-        if dexp_sw_mode_str:
-          dexp_sw_mode = int(dexp_sw_mode_str)
-    except Exception as e:
-      pass
-
-    if self.button_style_only == False:
-      dexp_sw_mode = (dexp_sw_mode + 1) % 2
-    if dexp_sw_mode == 0:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOff)
-    else:
-      self._dexp_sw_mode_button.set_button_style(ButtonStyle.HudSOn)
-
-    self.dexp_sw_mode = dexp_sw_mode
-
-    if self.button_style_only:
-      return
-
-    self._button_push_sound(dexp_sw_mode)
-
-    with open('/dev/shm/dexp_sw_mode.txt','w') as fp2:
-      fp2.write("%d" % (dexp_sw_mode))
-    with open('/data/dexp_sw_mode.txt','w') as fp3:
-      fp3.write("%d" % (dexp_sw_mode))
 
   def _press_long_speeddown_disable(self):
     long_speeddown_disable = 0
