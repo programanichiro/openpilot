@@ -78,39 +78,15 @@ one_pedal_chenge_restrict_time = 0
 START_DASH_CUT    = [0, 27/3.6, 35/3.6, 43/3.6, 51/3.6, 60/3.6, 69/3.6, 78/3.6, 86/3.6,  95/3.6]
 START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 100/3.6, 110/3.6]
 
-A_CRUISE_MAX_VALS = [1.6, 1.2, 0.8, 0.6]
-A_CRUISE_MAX_BP = [0., 10.0, 25., 40.]
 J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
+J_CRUISE_BP = [0., 10.0, 25., 40.]
 A_CRUISE_MIN = -0.5
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
-ALLOW_THROTTLE_THRESHOLD = 0.4
-MIN_ALLOW_THROTTLE_SPEED = 2.5
 
-# Lookup table for turns
-_A_TOTAL_MAX_V = [1.7, 3.2]
-_A_TOTAL_MAX_BP = [20., 40.]
 
 phv_2019 = params.get_bool("DisableMaxSpeedModify")
 
-def get_max_accel(v_ego):
-  return np.interp(v_ego, A_CRUISE_MAX_BP, A_CRUISE_MAX_VALS)
-
-def get_coast_accel(pitch):
-  return np.sin(pitch) * -5.65 - 0.3  # fitted from data using xx/projects/allow_throttle/compute_coast_accel.py
-
-def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, accel_coast, allow_throttle, Max_1, turbo_boost):
-  max_accel = ACCEL_MAX if e2e else get_max_accel(v_ego)
-
-  if not e2e:
-    a_total_max = np.interp(v_ego, _A_TOTAL_MAX_BP, _A_TOTAL_MAX_V)
-    a_y = v_ego ** 2 * angle_steers * CV.DEG_TO_RAD / (CP.steerRatio * CP.wheelbase)
-    a_x_allowed = math.sqrt(max(a_total_max ** 2 - a_y ** 2, 0.))
-    max_accel = min(max_accel, a_x_allowed)
-    if not allow_throttle:
-      clipped_accel_coast = max(accel_coast, ACCEL_MIN)
-      coast_limit = np.interp(v_ego, [MIN_ALLOW_THROTTLE_SPEED, MIN_ALLOW_THROTTLE_SPEED*2], [max_accel, clipped_accel_coast])
-      max_accel = min(max_accel, coast_limit)
-
+def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, CP, dt, Max_1, turbo_boost):
   c_gain = 0.5
   c_scale = 0.5
   if turbo_boost or (CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value): #公式縦制御
@@ -122,8 +98,8 @@ def get_cruise_accel(e2e, v_cruise, v_ego, a_cruise_prev, angle_steers, CP, dt, 
 
   v_err = v_cruise - v_ego
   v_err *= c_gain
-  target_accel = np.clip(v_err, A_CRUISE_MIN, max_accel)
-  j_cruise = np.interp(v_ego, A_CRUISE_MAX_BP, J_CRUISE_VALS)
+  target_accel = np.clip(v_err, A_CRUISE_MIN, ACCEL_MAX)
+  j_cruise = np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS)
   target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * c_scale * dt, a_cruise_prev + j_cruise * c_scale * dt))
 
   return target_accel
@@ -135,7 +111,6 @@ class LongitudinalPlanner:
     self.mpc = LongitudinalMpc(dt=dt)
     self.fcw = False
     self.dt = dt
-    self.allow_throttle = True
     self.accel_boost = AccelBoost()
 
     self.v_desired_filter = FirstOrderFilter(init_v, 2.0, self.dt)
@@ -170,11 +145,6 @@ class LongitudinalPlanner:
       LIMIT_VC_A ,LIMIT_VC_B ,LIMIT_VC_C  = calc_limit_vc(8.7,13.6,57.0 , 92-4      ,65.5-4      ,31.0      ) #ハンドル60度で時速30km/h程度まで下げる設定。
 
   def update(self, sm):
-    if len(sm['carControl'].orientationNED) == 3:
-      accel_coast = get_coast_accel(sm['carControl'].orientationNED[1])
-    else:
-      accel_coast = ACCEL_MAX
-
     v_ego = sm['carState'].vEgo
     # v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
     vk_ego = v_ego # sm['carState'].vEgo
@@ -461,7 +431,8 @@ class LongitudinalPlanner:
         except Exception as e:
           pass
       red_stop_immediately = False
-      if long_speeddown_flag == False and not sm['selfdriveState'].experimentalMode: #公式ロングではelseへ強制遷移する追加条件
+      experimental_mode = True # chill 廃止で常に exp。selfdriveState.experimentalMode は deprecated になった
+      if long_speeddown_flag == False and not experimental_mode: #公式ロングではelseへ強制遷移する追加条件
         if self.night_time >= 90: #昼,90以下だと夕方で信号がかなり見やすくなる。
           stop_threshold = np.interp(vk_ego*3.6 , [0,10,20,30,40,50,55,60] , [15,25,35,43,59,77,92,103]) #昼の方が認識があまくなるようだ。
         else: #夜
@@ -908,12 +879,6 @@ class LongitudinalPlanner:
     v_cruise_initialized = sm['carState'].vCruise != V_CRUISE_UNSET
     reset_state = reset_state or not v_cruise_initialized
 
-    throttle_probs = sm['modelV2'].meta.disengagePredictions.gasPressProbs
-    throttle_prob = throttle_probs[1] if len(throttle_probs) > 1 else 1.0
-    self.allow_throttle = throttle_prob > ALLOW_THROTTLE_THRESHOLD or v_ego <= MIN_ALLOW_THROTTLE_SPEED
-
-    steer_angle_without_offset = sm['carState'].steeringAngleDeg - sm['vehicleParameters'].angleOffsetDeg
-
     if reset_state:
       self.v_desired_filter.x = v_ego
       self.output_a_target = np.clip(sm['carState'].aEgo, ACCEL_MIN, ACCEL_MAX)
@@ -1005,7 +970,10 @@ class LongitudinalPlanner:
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
     self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
-    self.mpc.set_cur_state(self.v_desired_filter.x, self.output_a_target)
+    if self.CP.openpilotLongitudinalControl:
+      self.mpc.set_cur_state(self.v_desired_filter.x, self.output_a_target)
+    else:
+      self.mpc.set_cur_state(v_ego, sm['carState'].aEgo)
     stop_d = 0
     if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
       #赤信号停止時の減速を強める
@@ -1041,17 +1009,15 @@ class LongitudinalPlanner:
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    self.a_cruise = get_cruise_accel(sm['selfdriveState'].experimentalMode, v_cruise, v_ego,
-                                     self.a_cruise, steer_angle_without_offset, self.CP, self.dt,
-                                     accel_coast, self.allow_throttle,OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2 , turbo_boost)
+    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.CP, self.dt,
+                                     OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2 , turbo_boost)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
     output_a_target_e2e = self.accel_boost.update(sm, output_a_target_e2e, output_a_target_mpc, self.a_cruise)
 
     candidates = [(output_a_target_mpc, self.mpc.source, output_should_stop_mpc),
-                  (self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop)]
-    if sm['selfdriveState'].experimentalMode:
-      candidates.append((output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e))
+                  (self.a_cruise, LongitudinalPlanSource.cruise, cruise_should_stop),
+                  (output_a_target_e2e, LongitudinalPlanSource.e2e, output_should_stop_e2e)]
 
     output_a_target, self.mpc.source, _ = min(candidates, key=lambda c: c[0])
     self.output_should_stop = any(should_stop for _, _, should_stop in candidates)
@@ -1081,6 +1047,5 @@ class LongitudinalPlanner:
     longitudinalPlan.accelBoost = float(self.accel_boost.total_boost)
     longitudinalPlan.shouldStop = bool(self.output_should_stop)
     longitudinalPlan.allowBrake = True
-    longitudinalPlan.allowThrottle = bool(self.allow_throttle)
 
     pm.send('longitudinalPlan', plan_send)

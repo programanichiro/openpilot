@@ -21,7 +21,7 @@ DESCRIPTIONS = {
   "DisengageOnAccelerator": tr_noop("When enabled, pressing the accelerator pedal will disengage openpilot."),
   "LongitudinalPersonality": tr_noop(
     "Standard is recommended. In aggressive mode, openpilot will follow lead cars closer and be more aggressive with the gas and brake. " +
-    "In relaxed mode openpilot will stay further away from lead cars. On supported cars, you can cycle through these personalities with " +
+    "In relaxed mode openpilot will stay further away from lead cars. On supported cars, you can cycle through these settings with " +
     "your steering wheel distance button."
   ),
   "IsLdwEnabled": tr_noop(
@@ -126,7 +126,7 @@ class TogglesLayout(Widget):
     self._keyboard = Keyboard()
 
     self._long_personality_setting = multiple_button_item(
-      lambda: tr("Driving Personality"),
+      lambda: tr("Following Distance"),
       lambda: tr(DESCRIPTIONS["LongitudinalPersonality"]),
       buttons=[lambda: tr("Aggressive"), lambda: tr("Standard"), lambda: tr("Relaxed")],
       button_width=255,
@@ -269,7 +269,7 @@ class TogglesLayout(Widget):
   def _toggle_callback(self, state: bool, param: str):
     self._params.put_bool(param, state, block=True)
     if param == "IsMetric":
-      self._initial_cruise_speed.action_item.refresh()
+      self._update_toggles()
 
     if self._toggle_defs[param][3]:
       self._params.put_bool("OnroadCycleRequested", True, block=True)
