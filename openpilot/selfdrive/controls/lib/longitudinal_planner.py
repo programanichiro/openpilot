@@ -86,7 +86,7 @@ CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
 phv_2019 = params.get_bool("DisableMaxSpeedModify")
 
-def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, CP, dt, Max_1, turbo_boost):
+def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt, CP, Max_1, turbo_boost):
   c_gain = 0.5
   c_scale = 0.5
   if turbo_boost or (CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value): #公式縦制御
@@ -100,7 +100,7 @@ def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, CP, dt, Max_1, turbo_boost)
   v_err *= c_gain
   target_accel = np.clip(v_err, A_CRUISE_MIN, ACCEL_MAX)
   j_cruise = np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS)
-  target_accel = float(np.clip(target_accel, a_cruise_prev - j_cruise * c_scale * dt, a_cruise_prev + j_cruise * c_scale * dt))
+  target_accel = float(np.clip(target_accel, min(a_cruise_prev, a_target_prev) - j_cruise * c_scale * dt, a_cruise_prev + j_cruise * c_scale * dt))
 
   return target_accel
 
@@ -1009,8 +1009,8 @@ class LongitudinalPlanner:
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.CP, self.dt,
-                                     OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2 , turbo_boost)
+    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt,
+                                     self.CP, OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2 , turbo_boost)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
     output_a_target_e2e = self.accel_boost.update(sm, output_a_target_e2e, output_a_target_mpc, self.a_cruise)
