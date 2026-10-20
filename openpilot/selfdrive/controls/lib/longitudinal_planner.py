@@ -15,6 +15,7 @@ from openpilot.selfdrive.controls.lib.accel_boost import AccelBoost
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, LongitudinalPlanSource
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
+from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import COMFORT_BRAKE, MAX_T
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan, should_stop
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
@@ -975,11 +976,18 @@ class LongitudinalPlanner:
     else:
       self.mpc.set_cur_state(v_ego, sm['carState'].aEgo)
     stop_d = 0
+    mpc_red_signal_flag = g_red_signal_scan_flag
     if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
       #赤信号停止時の減速を強める
       if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
         stop_d = md.position.x[-1] # [m]パス終端までの残距離を使う
-    self.mpc.update(sm['radarState'], personality=sm['selfdriveState'].personality, red_signal_flag=g_red_signal_scan_flag, stop_distance=stop_d)
+    elif v_cruise <= 0.0 and v_ego > 1.0:
+      #1(ワンペダル停止)やforceDecel時は、現在速度からCOMFORT_BRAKEで止まれる位置に信号停止と同じ疑似停止線を置く。
+      #停止線がMPCの到達範囲(現在速度×ホライズン)を超えると無視されるため、上限でクランプする。
+      mpc_red_signal_flag = 3
+      v_stop = self.mpc.x0[1]
+      stop_d = min(v_stop * v_stop / (2.0 * COMFORT_BRAKE), v_stop * MAX_T)
+    self.mpc.update(sm['radarState'], personality=sm['selfdriveState'].personality, red_signal_flag=mpc_red_signal_flag, stop_distance=stop_d)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
