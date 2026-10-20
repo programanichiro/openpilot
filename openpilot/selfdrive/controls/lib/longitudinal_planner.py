@@ -83,7 +83,6 @@ J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
 J_CRUISE_BP = [0., 10.0, 25., 40.]
 A_CRUISE_MIN = -0.5
 STOP_LINE_DECEL = 0.75  # [m/s^2] ワンペダル停止時の疑似停止線の減速目安（調整用）
-STOP_LINE_MIN_DIST = 0.5  # [m] 公式FCW条件(CRASH_DISTANCE=0.25m)に掛からないための最小停止距離
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
 
@@ -984,12 +983,11 @@ class LongitudinalPlanner:
       if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
         stop_d = md.position.x[-1] # [m]パス終端までの残距離を使う
     elif v_cruise <= 0.0 and v_ego > 1.0:
-      #1(ワンペダル停止)やforceDecel時は、現在速度からSTOP_LINE_DECELで止まれる位置に信号停止と同じ疑似停止線を置く。
+      #1(ワンペダル停止)やforceDecel時は、現在速度からCOMFORT_BRAKEで止まれる位置に信号停止と同じ疑似停止線を置く。
       #停止線がMPCの到達範囲(現在速度×ホライズン)を超えると無視されるため、上限でクランプする。
-      #また、停止線が近すぎると公式FCW条件に抵触するため、最小距離でクランプする。
       mpc_red_signal_flag = 3
-      v_stop = max(self.mpc.x0[1], v_ego)
-      stop_d = max(min(v_stop * v_stop / (2.0 * STOP_LINE_DECEL), v_stop * MAX_T), STOP_LINE_MIN_DIST)
+      v_stop = self.mpc.x0[1]
+      stop_d = min(v_stop * v_stop / (2.0 * STOP_LINE_DECEL), v_stop * MAX_T)
     self.mpc.update(sm['radarState'], personality=sm['selfdriveState'].personality, red_signal_flag=mpc_red_signal_flag, stop_distance=stop_d)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
