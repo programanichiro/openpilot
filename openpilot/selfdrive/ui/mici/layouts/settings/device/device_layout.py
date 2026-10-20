@@ -20,7 +20,7 @@ from openpilot.selfdrive.ui.ui_state import device, ui_state
 from openpilot.system.ui.widgets.html_render import HtmlRenderer
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
-from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
+from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs
 
 class ReviewTermsPage(TermsPage, NavScroller):
   """TermsPage with NavWidget swipe-to-dismiss for reviewing in device settings."""

@@ -20,8 +20,6 @@ from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 from openpilot.selfdrive.ui.ui_state import ui_state
 
-#from opendbc.car.fingerprints import MIGRATION, getCarBrandStrs, isCarMatch
-
 key_raw = None
 try:
   with open("/data/gpslog_pass.txt", "r") as f:
@@ -175,38 +173,6 @@ class FanController:
       self.osm_local_mode = True
     #self.debug_ct_osm = 0
     self.osm_front_back_long_mode = 0 #0→1→2の順で検索。2が最終的に最も広い範囲を取る。
-
-    if False:
-      car_ary = getCarBrandStrs(MIGRATION,0)
-      car_ary.insert(0, "auto") #選択の自動項目をセット
-      print(f"makers:{car_ary}")
-
-      car_num = 0
-      for maker in car_ary:
-        car_names = getCarBrandStrs(MIGRATION,1,maker)
-        #print(f"{maker}:{car_names}")
-
-        #mockのようにcar_namesが無い車種はループが回らないから無視される。あとauto用の例外処理も。
-        if len(car_names) == 0:
-          print(f"{maker}:OK")
-
-        for car_name in car_names:
-          car_years = getCarBrandStrs(MIGRATION,2,maker,car_name)
-          if len(car_years) > 0:
-            #print(f"{maker}:\n  {car_name}:\n    {car_years}")
-            print(f"{maker}:\n  {car_name}:")
-            for car_year in car_years:
-              car_num += 1
-              if isCarMatch(MIGRATION, maker+" "+car_name+" "+car_year):
-                print(f"    {car_year}:OK,{car_num}")
-              else:
-                print(f"    {car_year}:NG,{car_num}")
-          else:
-            car_num += 1
-            if isCarMatch(MIGRATION, maker+" "+car_name):
-              print(f"{maker}:\n  {car_name}:OK,{car_num}")
-            else:
-              print(f"{maker}:\n  {car_name}:NG,{car_num}")
 
   def query_roads_in_bbox(self,lat_min, lon_min, lat_max, lon_max):
 
