@@ -983,8 +983,7 @@ class LongitudinalPlanner:
       if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
         stop_d = md.position.x[-1] # [m]パス終端までの残距離を使う
     elif v_cruise <= 0.0 and v_ego > 1.0 and hasLead == False:
-      #1(ワンペダル停止)やforceDecel時は、現在速度からCOMFORT_BRAKEで止まれる位置に信号停止と同じ疑似停止線を置く。
-      #停止線がMPCの到達範囲(現在速度×ホライズン)を超えると無視されるため、上限でクランプする。
+      #全走車がいない時、1(ワンペダル停止)やforceDecel時は、現在速度からSTOP_LINE_DECELで止まれる位置に信号停止と同じ疑似停止線を置く。
       mpc_red_signal_flag = 3
       v_stop = self.mpc.x0[1]
       stop_d = min(v_stop * v_stop / (2.0 * STOP_LINE_DECEL), v_stop * MAX_T)
