@@ -18,7 +18,6 @@ from openpilot.common.pid import PIDController
 from openpilot.common.hardware import HARDWARE
 from openpilot.common.params import Params
 from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
-from openpilot.selfdrive.ui.ui_state import ui_state
 
 key_raw = None
 try:
