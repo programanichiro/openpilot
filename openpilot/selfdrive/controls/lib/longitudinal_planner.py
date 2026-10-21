@@ -15,7 +15,7 @@ from openpilot.selfdrive.controls.lib.accel_boost import AccelBoost
 from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, LongitudinalPlanSource
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
-from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import MAX_T
+from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import MAX_T, STOP_DISTANCE
 from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan, should_stop
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
@@ -82,7 +82,7 @@ START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 
 J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
 J_CRUISE_BP = [0., 10.0, 25., 40.]
 A_CRUISE_MIN = -0.5
-STOP_LINE_DECEL = 0.5  # [m/s^2] ワンペダル停止時の疑似停止線の減速目安（調整用）
+STOP_LINE_DECEL = 0.8  # [m/s^2] ワンペダル停止時の疑似停止線の減速目安（調整用）
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
 
@@ -986,7 +986,8 @@ class LongitudinalPlanner:
       #全走車がいない時、1(ワンペダル停止)やforceDecel時は、現在速度からSTOP_LINE_DECELで止まれる位置に信号停止と同じ疑似停止線を置く。
       mpc_red_signal_flag = 3
       v_stop = self.mpc.x0[1]
-      stop_d = min(v_stop * v_stop / (2.0 * STOP_LINE_DECEL), v_stop * MAX_T)
+      # MPC は停止線の STOP_DISTANCE + 1m(long_mpc の手前補正)手前で止まるので、その分だけ先に置く
+      stop_d = min(v_stop * v_stop / (2.0 * STOP_LINE_DECEL), v_stop * MAX_T) + STOP_DISTANCE + 1.0
     self.mpc.update(sm['radarState'], personality=sm['selfdriveState'].personality, red_signal_flag=mpc_red_signal_flag, stop_distance=stop_d)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
