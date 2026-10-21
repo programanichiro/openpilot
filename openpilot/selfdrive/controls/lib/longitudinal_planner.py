@@ -88,21 +88,13 @@ CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
 phv_2019 = params.get_bool("DisableMaxSpeedModify")
 
-def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt, CP, Max_1, turbo_boost):
-  c_gain = 0.5
-  c_scale = 0.5
-  if turbo_boost or (CP.flags & ToyotaFlags.RAISED_ACCEL_LIMIT.value): #公式縦制御
-    c_gain = 1.0
-    c_scale = 1.0
-  elif Max_1: #ワンペダルモード,少し強める。
-    c_gain = np.interp(v_ego, [10/3.6, 25/3.6], [0.7, 1])
-    c_scale = np.interp(v_ego, [10/3.6, 25/3.6], [0.7, 1])
-
-  v_err = v_cruise - v_ego
-  v_err *= c_gain
-  target_accel = np.clip(v_err, A_CRUISE_MIN, ACCEL_MAX)
+def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt):
+  if v_cruise <= 0.0: # ワンペダル停止・forceDecel
+    target_accel = -STOP_LINE_DECEL # 前走車の有無に関係なく、歩行者並みの速度まで弱めずに減速し、最後は should_stop で停止させる
+  else:
+    target_accel = np.clip(v_cruise - v_ego, A_CRUISE_MIN, ACCEL_MAX)
   j_cruise = np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS)
-  target_accel = float(np.clip(target_accel, min(a_cruise_prev, a_target_prev) - j_cruise * c_scale * dt, a_cruise_prev + j_cruise * c_scale * dt))
+  target_accel = float(np.clip(target_accel, min(a_cruise_prev, a_target_prev) - j_cruise * dt, a_cruise_prev + j_cruise * dt))
 
   return target_accel
 
@@ -982,7 +974,7 @@ class LongitudinalPlanner:
       #赤信号停止時の減速を強める
       if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
         stop_d = md.position.x[-1] # [m]パス終端までの残距離を使う
-    elif v_cruise <= 0.0 and v_ego > 1.0 and hasLead == False:
+    elif False and v_cruise <= 0.0 and v_ego > 1.0 and hasLead == False: # ワンペダルの減速は get_cruise_accel 側に移したので止めている
       #全走車がいない時、1(ワンペダル停止)やforceDecel時は、現在速度からSTOP_LINE_DECELで止まれる位置に信号停止と同じ疑似停止線を置く。
       mpc_red_signal_flag = 3
       v_stop = self.mpc.x0[1]
@@ -1018,8 +1010,7 @@ class LongitudinalPlanner:
     output_a_target_e2e = sm['modelV2'].action.desiredAcceleration
     output_should_stop_e2e = sm['modelV2'].action.shouldStop
 
-    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt,
-                                     self.CP, OP_ENABLE_v_cruise_kph != 0 and v_cruise_kph <= 1.2 , turbo_boost)
+    self.a_cruise = get_cruise_accel(v_cruise, v_ego, self.a_cruise, self.output_a_target, self.dt)
     cruise_should_stop = should_stop(v_ego, self.a_cruise)
 
     output_a_target_e2e = self.accel_boost.update(sm, output_a_target_e2e, output_a_target_mpc, self.a_cruise)
