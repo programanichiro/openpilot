@@ -82,7 +82,7 @@ START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 
 J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
 J_CRUISE_BP = [0., 10.0, 25., 40.]
 A_CRUISE_MIN = -0.5
-STOP_LINE_DECEL = 0.8  # [m/s^2] ワンペダル停止時の疑似停止線の減速目安（調整用）
+STOP_LINE_DECEL = 0.9  # [m/s^2] ワンペダル停止時の疑似停止線の減速目安（調整用）
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
 
