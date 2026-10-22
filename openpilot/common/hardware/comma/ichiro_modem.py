@@ -30,6 +30,8 @@ logging.basicConfig(
 AT_PORT = "/dev/modem_at0"
 PPP_PORT = "/dev/modem_at1"
 STATE_PATH = "/dev/shm/modem"
+# AGNOS 20 以降は AGNOS が modem.service で認証なしの modem.py を動かすので、こちらが動いている間だけ止める
+AGNOS_MODEM_SERVICE = "modem"
 AT_LOCK = "/dev/shm/modem.lock"  # shared with LPA
 AT_INIT = [
   "ATE0",       # disable command echo
@@ -303,6 +305,10 @@ class Modem:
   @staticmethod
   def _has_modem_manager() -> bool:
     return os.path.isfile("/lib/systemd/system/ModemManager.service")
+
+  @staticmethod
+  def _has_agnos_modem() -> bool:
+    return any(os.path.isfile(f"{d}/{AGNOS_MODEM_SERVICE}.service") for d in ("/usr/lib/systemd/system", "/lib/systemd/system"))
 
   def _is_roaming_allowed(self) -> bool:
     if self.S["iccid"].startswith(WEBBING_ICCID_PREFIX):
@@ -786,6 +792,11 @@ class Modem:
 
   def run(self):
     logging.info("starting")
+    # --runtime のマスクは /run に置かれ再起動で消えるので、AGNOS のイメージには手を入れない。
+    # stop で AGNOS 側の pppd も止まり、ExecStopPost で /dev/shm/modem が消えるので、状態の書き出しより先に行う
+    if self._has_agnos_modem():
+      subprocess.run(["sudo", "systemctl", "mask", "--runtime", AGNOS_MODEM_SERVICE], capture_output=True)
+      subprocess.run(["sudo", "systemctl", "stop", AGNOS_MODEM_SERVICE], capture_output=True)
     _cleanup_pppd_auth()
     self._publish_state(state=State.INITIALIZING.value)
     if self._has_modem_manager():
@@ -827,6 +838,10 @@ class Modem:
     if self._has_modem_manager():
       subprocess.run(["sudo", "systemctl", "unmask", "--runtime", "ModemManager"], capture_output=True)
       subprocess.run(["sudo", "systemctl", "start", "ModemManager"], capture_output=True)
+    # openpilot が止まってもモバイル回線が無くならないよう、AGNOS の modem.service に戻す
+    if self._has_agnos_modem():
+      subprocess.run(["sudo", "systemctl", "unmask", "--runtime", AGNOS_MODEM_SERVICE], capture_output=True)
+      subprocess.run(["sudo", "systemctl", "start", AGNOS_MODEM_SERVICE], capture_output=True)
 
 
 def main():
