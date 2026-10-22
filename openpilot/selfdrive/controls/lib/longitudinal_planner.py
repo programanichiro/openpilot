@@ -974,7 +974,7 @@ class LongitudinalPlanner:
       #赤信号停止時の減速を強める
       if len(md.position.x) == ModelConstants.IDX_N and len(md.position.x) > 1:
         stop_d = md.position.x[-1] # [m]パス終端までの残距離を使う
-    elif False and v_cruise <= 0.0 and v_ego > 1.0 and hasLead == False: # ワンペダルの減速は get_cruise_accel 側に移したので止めている
+    elif True and v_cruise <= 0.0 and v_ego > 1.0 and hasLead == False: # ワンペダルの減速は get_cruise_accel 側に移したので止めている->こっちも生かしてみる。
       #全走車がいない時、1(ワンペダル停止)やforceDecel時は、現在速度からSTOP_LINE_DECELで止まれる位置に信号停止と同じ疑似停止線を置く。
       mpc_red_signal_flag = 3
       v_stop = self.mpc.x0[1]
