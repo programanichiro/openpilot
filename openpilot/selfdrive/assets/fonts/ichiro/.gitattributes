@@ -1,0 +1,2 @@
+# イチロウパイロット同梱の日本語フォントは LFS を使わず通常のファイルとして入れる（HF の LFS を通さないため）
+*.otf -filter -diff -merge binary

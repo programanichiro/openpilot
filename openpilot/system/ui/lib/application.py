@@ -94,6 +94,8 @@ FONT_SCALE = 1.242 if BIG_UI else 1.16
 
 ASSETS_DIR = files("openpilot.selfdrive").joinpath("assets")
 FONT_DIR = ASSETS_DIR.joinpath("fonts")
+# AGNOS 20 で /usr/share/fonts が woff2 になり raylib で読めなくなったので、日本語フォントはフォークに同梱したものを使う
+JP_FONT_PATH = str(FONT_DIR.joinpath("ichiro").joinpath("NotoSansJP-Regular.otf"))
 EXTRA_FONT_CHARS = "–‑✓×°§•X⚙✕◀▶✔⌫⇧␣○●↳çêüñ–‑✓×°§•€£¥"
 NOTO_FONTS = {
   "ja": "NotoSansCJKjp-Regular.otf",
@@ -134,7 +136,7 @@ def font_fallback(font: rl.Font, text: str) -> rl.Font:
   if multilang.requires_font_fallback() and font != gui_app.font(FontWeight.UNIFONT) and font != gui_app.font("JP") and font != gui_app.font("JP2") and not text.isascii(): #UNIFONTなどを要求していないこと、全てAsciiの場合も除外。
     #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
     if multilang._language == "ja":
-      jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+      jp_font_path = JP_FONT_PATH
       exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JPH"), text, jp_font_path, 100) #["JPH"]だと初回に例外吐く。
       gui_app._fonts["JPH"] = exchg_font
       # with open('/tmp/dynamic_font_count.txt','w') as fp:
@@ -824,7 +826,7 @@ class GuiApplication:
     # ===========================================================
     # 日本語フォントをbase_charsだけグリフ読み込み
     # ===========================================================
-    jp_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+    jp_font_path = JP_FONT_PATH
 
     # BMP全体のコードポイント（0x0000～0xFFFF）
     jp_codepoint_count = rl.ffi.new("int *", 1)
@@ -842,7 +844,7 @@ class GuiApplication:
     # ===========================================================
     # 日本語フォント（ASCII + 第一次水準漢字用）
     # ===========================================================
-    jp2_font_path = "/usr/share/fonts/NotoSansJP-Regular.otf"
+    jp2_font_path = JP_FONT_PATH
     jp2_codepoint_count = rl.ffi.new("int *", 1)
 
     ascii_kanji_chars  = ''.join(chr(cp) for cp in range(0x20, 0x7F))        # ASCII
