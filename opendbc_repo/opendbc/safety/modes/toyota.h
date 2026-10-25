@@ -39,6 +39,7 @@
 #define TOYOTA_COMMON_RX_CHECKS(lta)                                                                                                       \
   {.msg = {{ 0xaa, 0, 8, 83U, .ignore_checksum = true, .ignore_counter = true}, { 0 }, { 0 }}},      \
   {.msg = {{0x260, 0, 8, 50U, .ignore_counter = true, .ignore_quality_flag=!(lta)}, { 0 }, { 0 }}},  \
+  {.msg = {{0x1D3, 0, 8, 33U, .ignore_counter = true, .ignore_quality_flag = true}, { 0 }, { 0 }}}, /* MADS Cruise Main */    \
 
 #define TOYOTA_RX_CHECKS(lta)                                                                                                               \
   TOYOTA_COMMON_RX_CHECKS(lta)                                                                                                              \
@@ -152,6 +153,11 @@ static void toyota_rx_hook(const CANPacket_t *msg) {
       brake_pressed = GET_BIT(msg, 5U);  // BRAKE_MODULE.BRAKE_PRESSED (toyota_new_mc_pt_generated.dbc)
     }
   }
+
+  // wrap lateral controls on main
+  //lateral_controls_allowed = (msg->addr != 0x1D3) ? lateral_controls_allowed : GET_BIT(msg, 15U); // Signal: PCM_CRUISE_2/MAIN_ON at 15th bit
+  acc_main_on = (msg->addr != 0x1D3U) ? acc_main_on : GET_BIT(msg, 15U);
+  lateral_controls_allowed = (msg->addr != 0x1D3U) ? lateral_controls_allowed : acc_main_on;
 
   // sample speed
   if (msg_matches(msg, 0xaaU, 0U)) {
@@ -339,7 +345,9 @@ static bool toyota_tx_hook(const CANPacket_t *msg) {
   if (msg->addr == 0x750U) {
     // this address is sub-addressed. only allow tester present to radar (0xF)
     bool invalid_uds_msg = GET_BYTES_64_LE(msg, 0, 8) != 0x00000000003E020FULL;
-    if (invalid_uds_msg) {
+    bool invalid_door_lock_msg = (GET_BYTES_LE(msg, 0, 4) != 0x11300540U) || (GET_BYTES_LE(msg, 4, 4) != 0x00004000U);
+    bool invalid_door_unlock_msg = (GET_BYTES_LE(msg, 0, 4) != 0x11300540U) || (GET_BYTES_LE(msg, 4, 4) != 0x00008000U);
+    if (invalid_uds_msg && invalid_door_lock_msg && invalid_door_unlock_msg) {
       tx = false;
     }
   }
