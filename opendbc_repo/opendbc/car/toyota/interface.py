@@ -59,11 +59,11 @@ class CarInterface(CarInterfaceBase):
 
     # Detect smartDSU, which intercepts ACC_CMD from the DSU (or radar) allowing openpilot to send it
     # 0x2AA is sent by a similar device which intercepts the radar instead of DSU on NO_DSU_CARs
-    if (0x2FF in fingerprint[0]) or (0x2AA in fingerprint[0]):
+    if (0x2FF in fingerprint[0]) or (0x2AA in fingerprint[0] and ret.flags & ToyotaFlags.NO_DSU):
       ret.flags |= ToyotaFlags.SMART_DSU.value
 
     # Detect 0x343 on bus 2, if detected on bus 2 and is not TSS 2, it means DSU is bypassed
-    if not (ret.flags & ToyotaFlags.SMART_DSU) and 0x343 in fingerprint[2] and ret.flags & ToyotaFlags.TSS2:
+    if not (ret.flags & ToyotaFlags.SMART_DSU) and 0x343 in fingerprint[2] and not (ret.flags & ToyotaFlags.TSS2):
       #SMART_DSUと共存できない。
       if Params().get_bool("IgnoreRerouteHarness") == False: #リルートハーネス装着の区別ができないので、機能にスイッチをつけた。
         ret.flags |= ToyotaFlags.DSU_BYPASS.value
