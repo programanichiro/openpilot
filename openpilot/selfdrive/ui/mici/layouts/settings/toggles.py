@@ -362,8 +362,8 @@ class TogglesLayoutMici(NavScroller):
     lockon_disp_disable = int(not onoff)
     with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
       fp2.write("%d" % (lockon_disp_disable))
-    # with open('/data/lockon_disp_disable.txt','w') as fp3:
-    #   fp3.write("%d" % (lockon_disp_disable))
+    with open('/data/lockon_disp_disable.txt','w') as fp3:
+      fp3.write("%d" % (lockon_disp_disable))
 
   def _limitspeed_sw_button_callback(self,str):
     if str == "manual":

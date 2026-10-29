@@ -463,6 +463,7 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
     copy_data2devshm('steer_always.txt')
+    copy_data2devshm('lockon_disp_disable.txt')
 
     self.dt = 50 #フレームタイム
     self.distance_traveled = 0
@@ -1377,6 +1378,8 @@ class HudRenderer(Widget):
 
     with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
       fp2.write("%d" % (lockon_disp_disable))
+    with open('/data/lockon_disp_disable.txt','w') as fp3:
+      fp3.write("%d" % (lockon_disp_disable))
 
   def _press_set_speed_MAX(self):
     if self.ui_freeze_flag:

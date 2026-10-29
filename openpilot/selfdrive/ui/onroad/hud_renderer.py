@@ -383,6 +383,7 @@ class HudRenderer(Widget):
     copy_data2devshm('knight_scanner_bit3.txt')
     copy_data2devshm('limitspeed_sw.txt')
     copy_data2devshm('steer_always.txt')
+    copy_data2devshm('lockon_disp_disable.txt')
 
     self.global_engageable = False
     self.ktsc_ct_n = 1
@@ -1410,8 +1411,8 @@ class HudRenderer(Widget):
 
     with open('/dev/shm/lockon_disp_disable.txt','w') as fp2:
       fp2.write("%d" % (lockon_disp_disable))
-    # with open('/data/lockon_disp_disable.txt','w') as fp3:
-    #   fp3.write("%d" % (lockon_disp_disable))
+    with open('/data/lockon_disp_disable.txt','w') as fp3:
+      fp3.write("%d" % (lockon_disp_disable))
 
 
 
