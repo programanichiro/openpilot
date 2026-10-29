@@ -69,7 +69,6 @@ separate IRQs for RX and TX.
 
 #if !defined(BOOTSTUB)
   #include "board/drivers/debug.h"
-  #include "board/stm32h7/llmpu.h"
 #endif
 
 #ifdef PANDA_BODY

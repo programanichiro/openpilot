@@ -209,7 +209,6 @@ void cloneFinished(int exitCode) {
   std::map<std::string, std::string> params = {
     {"SshEnabled", "1"},
     {"RecordFrontLock", "1"},
-    {"AlwaysOnDMLock", "1"},
     {"GithubSshKeys", ssh_keys},
   };
   for (const auto& [key, value] : params) {

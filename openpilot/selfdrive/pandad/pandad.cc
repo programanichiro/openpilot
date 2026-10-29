@@ -219,13 +219,12 @@ std::optional<bool> send_panda_states(PubMaster *pm, Panda *panda, bool is_onroa
   }
 
   // Convert faults bitset to capnp list
-  // bits above the last fault type would leave unset entries, which read as relayMalfunction
-  std::bitset<sizeof(health.faults_pkt) * 8> fault_bits(health.faults_pkt & ((2U << size_t(cereal::PandaState::FaultType::TIMER)) - 1U));
+  std::bitset<sizeof(health.faults_pkt) * 8> fault_bits(health.faults_pkt);
   auto faults = ps.initFaults(fault_bits.count());
 
   size_t j = 0;
   for (size_t f = size_t(cereal::PandaState::FaultType::RELAY_MALFUNCTION);
-       f <= size_t(cereal::PandaState::FaultType::TIMER); f++) {
+       f <= size_t(cereal::PandaState::FaultType::HEARTBEAT_LOOP_WATCHDOG); f++) {
     if (fault_bits.test(f)) {
       faults.set(j, cereal::PandaState::FaultType(f));
       j++;
@@ -386,7 +385,27 @@ void pandad_run(Panda *panda) {
     // Process panda state at 10 Hz
     if (rk.frame() % 10 == 0) {
       sm.update(0);
-      engaged = sm.allAliveAndValid({"selfdriveState"}) && sm["selfdriveState"].getSelfdriveState().getEnabled();
+#if 1
+      bool steer_always = false;
+      bool cruise_available = false;
+      std::string steer_always_txt = util::read_file("/dev/shm/steer_always.txt");
+      if(steer_always_txt.empty() == false){
+        if(std::stoi(steer_always_txt) >= 1){
+          steer_always = true;
+        } else {
+          steer_always = false;
+        }
+      }
+      std::string cruise_available_txt = util::read_file("/dev/shm/cruise_available.txt");
+      if(cruise_available_txt.empty() == false){
+        if(std::stoi(cruise_available_txt) >= 1){
+          cruise_available = true;
+        } else {
+          cruise_available = false;
+        }
+      }
+#endif
+      engaged = sm.allAliveAndValid({"selfdriveState"}) && (sm["selfdriveState"].getSelfdriveState().getEnabled() || (steer_always && cruise_available));
       if (sm.updated("deviceState")) {
         is_onroad = sm["deviceState"].getDeviceState().getStarted();
       }
