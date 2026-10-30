@@ -796,3 +796,47 @@ msgstr ""
 msgid "camera starting"
 msgstr ""
 
+msgid "Enter APN user name"
+msgstr ""
+
+msgid "Enter APN password"
+msgstr ""
+
+msgid "APN User Name"
+msgstr ""
+
+msgid "APN Password"
+msgstr ""
+
+msgid "APN Authentication"
+msgstr ""
+
+msgid "Off"
+msgstr ""
+
+msgid "PAP"
+msgstr ""
+
+msgid "CHAP"
+msgstr ""
+
+msgid "Also delete the saved APN user name and password?"
+msgstr ""
+
+msgid "Yes"
+msgstr ""
+
+msgid "No"
+msgstr ""
+
+msgid "Use 1-64 ASCII letters, digits or symbols, without spaces, double quotes, backslashes or commas."
+msgstr ""
+
+msgid "Delete APN Credentials"
+msgstr ""
+
+msgid "DELETE"
+msgstr ""
+
+msgid "Delete the saved APN user name and password?"
+msgstr ""

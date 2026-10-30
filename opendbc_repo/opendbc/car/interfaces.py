@@ -143,6 +143,15 @@ class CarInterfaceBase(ABC):
 
     ret = cls._get_params(ret, candidate, fingerprint, car_fw, alpha_long, is_release, docs)
 
+    #ret.massがなくなる準備。
+    # try:
+    #   with open('/data/vehicle_mass.txt','r') as fp:
+    #     vehicle_mass_str = fp.read() #車重を変更する
+    #     if vehicle_mass_str and float(vehicle_mass_str) > 0:
+    #       ret.mass = float(vehicle_mass_str)
+    # except Exception as e:
+    #   pass
+
     # Set params dependent on values set by the car interface
     ret.rotationalInertiaPerMass = scale_rot_inertia_per_mass(ret.wheelbase)
     ret.tireStiffnessFrontPerMass, ret.tireStiffnessRearPerMass = scale_tire_stiffness_per_mass(ret.wheelbase, ret.centerToFront,
@@ -279,6 +288,9 @@ class CarStateBase(ABC):
     x0=[[0.0], [0.0]]
     K = get_kalman_gain(DT_CTRL, np.array(A), np.array(C), np.array(Q), R)
     self.v_ego_kf = KF1D(x0=x0, A=A, C=C[0], K=K)
+
+    self.knight_scanner_bit3 = 7 # carstate.updateで knight_scanner_bit3.txt が反映される,デフォは7
+    self.steeringAngleDegOrg = 0 #回転先予想する前のオリジナル値
 
   @abstractmethod
   def update(self, can_parsers) -> structs.CarState:

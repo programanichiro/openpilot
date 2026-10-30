@@ -12,7 +12,7 @@ CAR_BATTERY_CAPACITY_uWh = 30e6
 CAR_CHARGING_RATE_W = 45
 
 VBATT_PAUSE_CHARGING = 11.8           # Lower limit on the LPF car battery voltage
-MAX_TIME_OFFROAD_S = 30*3600
+MAX_TIME_OFFROAD_S = 3*3600 #<-30 , サブバッテリー上がり対策
 MIN_ON_TIME_S = 3600
 DELAY_SHUTDOWN_TIME_S = 300 # Wait at least DELAY_SHUTDOWN_TIME_S seconds after offroad_time to shutdown.
 VOLTAGE_SHUTDOWN_MIN_OFFROAD_TIME_S = 60
@@ -49,6 +49,9 @@ class PowerMonitoring:
       # Low-pass battery voltage
       self.car_voltage_instant_mV = voltage
       self.car_voltage_mV = ((voltage * CAR_VOLTAGE_LOW_PASS_K) + (self.car_voltage_mV * (1 - CAR_VOLTAGE_LOW_PASS_K)))
+      g_car_voltage_mV = self.car_voltage_mV
+      with open('/tmp/car_voltage.txt','w') as fp:
+        fp.write("%d" % (g_car_voltage_mV))
 
       # Cap the car battery power and save it in a param every 10-ish seconds
       self.car_battery_capacity_uWh = max(self.car_battery_capacity_uWh, 0)

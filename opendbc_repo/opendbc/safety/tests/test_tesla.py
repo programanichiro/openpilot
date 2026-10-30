@@ -431,6 +431,15 @@ class TestTeslaLongitudinalSafety(TestTeslaSafetyBase):
     self.assertFalse(self._tx(self._long_control_msg(set_speed=0, accel_limits=(-0.1, -0.1))))
 
 
+# 2026+ Model Y (Juniper, HW4 第二世代)。UI_warning (0x311) を送らないので、受信チェックから外した設定で初期化する
+class TestTeslaHW4Gen2StockSafety(TestTeslaStockSafety):
+  SAFETY_PARAM = TeslaSafetyFlags.HW4_GEN2
+
+
+class TestTeslaHW4Gen2LongitudinalSafety(TestTeslaLongitudinalSafety):
+  SAFETY_PARAM = TeslaSafetyFlags.HW4_GEN2 | TeslaSafetyFlags.LONG_CONTROL
+
+
 class TestTeslaIgnition(common.SafetyTestBase):
   DBC = "tesla_model3_party"
   SAFETY_MODEL = None

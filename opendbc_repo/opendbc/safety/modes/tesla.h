@@ -9,6 +9,8 @@ static bool tesla_stock_aeb = false;
 // TODO: Only LKAS (non-emergency) is currently supported since we've only seen it
 static bool tesla_stock_lkas = false;
 static bool tesla_stock_lkas_prev = false;
+// openpilot が ANGLE_CONTROL を送っているか。MADS 中は controls_allowed が false なので、これで操舵中を判別する
+static bool tesla_op_steering = false;
 
 // Only Summon is currently supported due to Autopark not setting Autopark state properly
 static bool tesla_autopark = false;
@@ -158,6 +160,11 @@ static void tesla_rx_hook(const CANPacket_t *msg) {
                           (cruise_state == 7);    // PRE_CANCEL
     cruise_engaged = cruise_engaged && !tesla_autopark;
 
+    // MADS: Tesla に ACC メインスイッチは無いので、STANDBY かエンゲージ中を「使える状態」とする
+    //acc_main_on = (cruise_state == 1) || cruise_engaged;   // 1 = STANDBY
+    //lateral_controls_allowed = acc_main_on;
+    //MADSの挙動が危ないので、上記しばらく封印
+    
     pcm_cruise_check(cruise_engaged);
   }
 
@@ -177,7 +184,7 @@ static void tesla_rx_hook(const CANPacket_t *msg) {
     bool tesla_stock_lkas_now = steering_control_type == 2;  // "LANE_KEEP_ASSIST"
 
     // Only consider rising edges while controls are not allowed
-    if (tesla_stock_lkas_now && !tesla_stock_lkas_prev && !controls_allowed) {
+    if (tesla_stock_lkas_now && !tesla_stock_lkas_prev && !controls_allowed && !tesla_op_steering) {
       tesla_stock_lkas = true;
     }
     if (!tesla_stock_lkas_now) {
@@ -237,6 +244,8 @@ static bool tesla_tx_hook(const CANPacket_t *msg) {
       // Don't allow any steering commands when stock LKAS is active
       violation = true;
     }
+
+    tesla_op_steering = steer_control_enabled && !violation;
   }
 
   // DAS_control: longitudinal control message
@@ -323,7 +332,9 @@ static safety_config tesla_init(uint16_t param) {
     {0x27D, 0, 3, .check_relay = true, .disable_static_blocking = true},  // APS_eacMonitor
   };
 
-  SAFETY_UNUSED(param);
+  const uint16_t TESLA_FLAG_HW4_GEN2 = 4;
+  const bool tesla_hw4_gen2 = GET_FLAG(param, TESLA_FLAG_HW4_GEN2);
+
 #ifdef ALLOW_DEBUG
   const uint16_t TESLA_FLAG_LONGITUDINAL_CONTROL = 1;
   tesla_longitudinal = GET_FLAG(param, TESLA_FLAG_LONGITUDINAL_CONTROL);
@@ -332,6 +343,7 @@ static safety_config tesla_init(uint16_t param) {
   tesla_stock_aeb = false;
   tesla_stock_lkas = false;
   tesla_stock_lkas_prev = false;
+  tesla_op_steering = false;
   // we need to assume Autopark/Summon on startup since DI_state is a low freq msg.
   // this is so that we don't fault if starting while these systems are active
   tesla_autopark = true;
@@ -349,11 +361,31 @@ static safety_config tesla_init(uint16_t param) {
     {.msg = {{0x311, 0, 7, 10U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // UI_warning (blinkers, buckle switch & doors)
   };
 
+  // HW4 gen2 does not send UI_warning
+  static const RxCheck tesla_hw4_gen2_rx_checks[] = {
+    {.msg = {{0x2b9, 2, 8, 25U, .max_counter = 7U, .ignore_quality_flag = true}, { 0 }, { 0 }}},    // DAS_control
+    {.msg = {{0x488, 2, 4, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // DAS_steeringControl
+    {.msg = {{0x257, 0, 8, 50U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // DI_speed (speed in kph)
+    {.msg = {{0x155, 0, 8, 50U, .max_counter = 15U}, { 0 }, { 0 }}},                                // ESP_B (2nd speed in kph)
+    {.msg = {{0x370, 0, 8, 100U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // EPAS3S_sysStatus (steering angle)
+    {.msg = {{0x118, 0, 8, 100U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},  // DI_systemStatus (gas pedal)
+    {.msg = {{0x145, 0, 8, 50U, .max_counter = 15U}, { 0 }, { 0 }}},                                // ESP_status (brakes)
+    {.msg = {{0x286, 0, 8, 10U, .max_counter = 15U, .ignore_quality_flag = true}, { 0 }, { 0 }}},   // DI_state (acc state)
+  };
+
   safety_config ret;
-  if (tesla_longitudinal) {
-    ret = BUILD_SAFETY_CFG(tesla_model3_y_rx_checks, TESLA_M3_Y_LONG_TX_MSGS);
+  if (tesla_hw4_gen2) {
+    if (tesla_longitudinal) {
+      ret = BUILD_SAFETY_CFG(tesla_hw4_gen2_rx_checks, TESLA_M3_Y_LONG_TX_MSGS);
+    } else {
+      ret = BUILD_SAFETY_CFG(tesla_hw4_gen2_rx_checks, TESLA_M3_Y_TX_MSGS);
+    }
   } else {
-    ret = BUILD_SAFETY_CFG(tesla_model3_y_rx_checks, TESLA_M3_Y_TX_MSGS);
+    if (tesla_longitudinal) {
+      ret = BUILD_SAFETY_CFG(tesla_model3_y_rx_checks, TESLA_M3_Y_LONG_TX_MSGS);
+    } else {
+      ret = BUILD_SAFETY_CFG(tesla_model3_y_rx_checks, TESLA_M3_Y_TX_MSGS);
+    }
   }
   return ret;
 }

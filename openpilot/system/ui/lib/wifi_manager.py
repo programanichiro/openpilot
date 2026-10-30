@@ -35,12 +35,19 @@ else:
     Params = None
 
 TETHERING_IP_ADDRESS = "192.168.43.1"
+TETHERING_SUBNET = "192.168.43.0/24"
+TETHERING_NAT_RULE = ["POSTROUTING", "-s", TETHERING_SUBNET, "!", "-d", TETHERING_SUBNET, "-j", "MASQUERADE",
+                      "-m", "comment", "--comment", "openpilot-tethering"]
 DEFAULT_TETHERING_PASSWORD = "swagswagcomma"
 SIGNAL_QUEUE_SIZE = 10
 SCAN_PERIOD_SECONDS = 5
 
 DEBUG = False
 _dbus_call_idx = 0
+
+
+def _sudo(*cmd: str, check: bool = True) -> subprocess.CompletedProcess:
+  return subprocess.run(["sudo", *cmd], check=check, capture_output=True, text=True)
 
 
 def normalize_ssid(ssid: str) -> str:
@@ -805,12 +812,23 @@ class WifiManager:
       if active:
         self.activate_connection(self._tethering_ssid, block=True)
 
+        # NM's shared-mode NAT fails on AGNOS: its iptables is the nft variant and the kernel has no nf_tables.
+        try:
+          if _sudo("iptables-legacy", "-t", "nat", "-C", *TETHERING_NAT_RULE, check=False).returncode != 0:
+            _sudo("iptables-legacy", "-t", "nat", "-A", *TETHERING_NAT_RULE)
+        except (FileNotFoundError, subprocess.CalledProcessError, OSError):
+          cloudlog.exception("Failed to add tethering NAT rule")
+
         if not self._ipv4_forward:
           time.sleep(5)
           cloudlog.warning("net.ipv4.ip_forward = 0")
           subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False)
       else:
         self._deactivate_connection(self._tethering_ssid)
+        try:
+          _sudo("iptables-legacy", "-t", "nat", "-D", *TETHERING_NAT_RULE, check=False)
+        except (FileNotFoundError, OSError):
+          cloudlog.exception("Failed to remove tethering NAT rule")
 
     threading.Thread(target=worker, daemon=True).start()
 
