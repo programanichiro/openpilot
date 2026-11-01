@@ -6,6 +6,7 @@ from enum import IntEnum
 from collections.abc import Callable
 
 from openpilot.common.time_helpers import system_time_valid
+from openpilot.selfdrive.modeld.model_swap.selector import STOCK_LABEL, ModelSwapSelector
 from openpilot.selfdrive.ui.mici.layouts.settings.device.device_layout import EngagedConfirmationButton
 from openpilot.selfdrive.ui.mici.widgets.info import InfoLayoutMici
 from openpilot.selfdrive.ui.mici.widgets.button import BigButton
@@ -226,6 +227,65 @@ class BranchSelectPage(NavScroller):
     self._scroller.add_widgets(buttons)
 
 
+class ModelSelectPage(NavScroller):
+  def __init__(self, selector: ModelSwapSelector, on_select: Callable[[object], None]):
+    super().__init__()
+    self._selector = selector
+    self._on_select = on_select
+    self._populated = False
+    self._check_icon = gui_app.texture("icons_mici/settings/device/up_to_date.png", 64, 64)
+    self._loading_btn = BigButton("loading models...", "")
+    self._scroller.add_widget(self._loading_btn)
+
+  def show_event(self):
+    super().show_event()
+    self._selector.reload()
+
+  def _update_state(self):
+    super()._update_state()
+    if self._populated:
+      return
+
+    if self._selector.bundles is None:
+      if self._selector.error:
+        self._loading_btn.set_text("failed to load models")
+      return
+
+    self._populated = True
+    self._loading_btn.set_visible(False)
+    current = self._selector.current_bundle()
+    stock_btn = BigButton(STOCK_LABEL, "", self._check_icon if current is None else None, scroll=True)
+    stock_btn.set_click_callback(lambda: self._select(None))
+    self._scroller.add_widget(stock_btn)
+
+    for bundle in self._selector.bundles:
+      btn = BigButton(bundle.short_name, bundle.display_name, self._check_icon if bundle == current else None, scroll=True)
+      btn.set_click_callback(lambda b=bundle: self._select(b))
+      self._scroller.add_widget(btn)
+
+  def _select(self, bundle):
+    self.dismiss(lambda: self._on_select(bundle))
+
+
+class ModelSelectButton(BigButton):
+  def __init__(self, selector: ModelSwapSelector):
+    super().__init__("select model", selector.current_label())
+    self._selector = selector
+    self.set_click_callback(lambda: gui_app.push_widget(ModelSelectPage(self._selector, self._selector.select)))
+    self.set_enabled(lambda: ui_state.is_offroad() and not self._selector.busy)
+
+  def _update_state(self):
+    super()._update_state()
+    if self._selector.busy:
+      value = "downloading..."
+    elif self._selector.error:
+      value = "failed"
+    else:
+      value = self._selector.current_label()
+    if self.get_value() != value:
+      self.set_value(value)
+
+
 class TargetBranchButton(BigButton):
   def __init__(self, check_update_btn: CheckUpdateButton):
     super().__init__("target branch", ui_state.params.get("UpdaterTargetBranch") or "",
@@ -273,5 +333,6 @@ class SoftwareLayoutMici(NavScroller):
       check_update_btn,
       InstallUpdateButton(),
       TargetBranchButton(check_update_btn),
+      ModelSelectButton(ModelSwapSelector()),
       uninstall_openpilot_btn,
     ])
