@@ -50,6 +50,13 @@ MIN_LAT_CONTROL_SPEED = 0.3
 BIG_MODEL_TIMEOUT = 60
 
 
+def _param_path(params: Params, key: str) -> str | None:
+  value = params.get(key)
+  if isinstance(value, bytes):
+    value = value.decode()
+  return value or None
+
+
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
                           lat_action_t: float, long_action_t: float, v_ego: float) -> log.ModelDataV2.Action:
   if 'action' not in model_output:
@@ -277,8 +284,23 @@ def main(demo=False):
 
   st = time.monotonic()
   cloudlog.warning("loading model")
+  swap_small = _param_path(params, "ModelSwapPkl")
+  swap_big = _param_path(params, "ModelSwapBigPkl")
   model = None
-  if CHESTNUT:
+  if swap_big if CHESTNUT else swap_small:
+    try:
+      from openpilot.selfdrive.modeld.model_swap.runtime import ModelSwapState
+      selected = swap_big if CHESTNUT else swap_small
+      cloudlog.warning(f"loading selected artifact: {selected}")
+      model = ModelSwapState(vipc_client_main.width, vipc_client_main.height, selected, chestnut=CHESTNUT)
+      model.warmup()
+      if CHESTNUT:
+        params.put_bool("ChestnutActive", True)
+    except Exception:
+      cloudlog.exception("selected model load failed")
+      model = None
+
+  if model is None and CHESTNUT:
     big_model = None
     def load_big():
       nonlocal big_model
@@ -301,7 +323,8 @@ def main(demo=False):
     else:
       params.put_bool("ChestnutActive", model is not None)
 
-  small_model = ModelState(vipc_client_main.width, vipc_client_main.height, False) if model is None or CHESTNUT else None
+  stock_small = model is None or CHESTNUT
+  small_model = ModelState(vipc_client_main.width, vipc_client_main.height, False) if stock_small else None
   if model is None:
     model = small_model
   params.put_bool("ChestnutLoading", False)
