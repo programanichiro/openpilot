@@ -258,7 +258,7 @@ class ModelSelectPage(NavScroller):
     stock_btn.set_click_callback(lambda: self._select(None))
     self._scroller.add_widget(stock_btn)
 
-    for bundle in self._selector.bundles:
+    for bundle in reversed(self._selector.bundles):
       btn = BigButton(bundle.short_name, bundle.display_name, self._check_icon if bundle == current else None, scroll=True)
       btn.set_click_callback(lambda b=bundle: self._select(b))
       self._scroller.add_widget(btn)
