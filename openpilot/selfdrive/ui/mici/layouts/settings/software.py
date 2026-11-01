@@ -273,6 +273,8 @@ class ModelSelectButton(BigButton):
     self._selector = selector
     self.set_click_callback(lambda: gui_app.push_widget(ModelSelectPage(self._selector, self._selector.select)))
     self.set_enabled(lambda: ui_state.is_offroad() and not self._selector.busy)
+    if self._selector.has_selection():
+      self._selector.reload()
 
   def _update_state(self):
     super()._update_state()
