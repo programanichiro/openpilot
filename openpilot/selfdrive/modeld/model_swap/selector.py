@@ -164,7 +164,7 @@ class ModelSwapSelector:
           self._params.remove(key)
           self._params.remove(other_key)
           self._clear_meta()
-          cleanup_models(None)
+          # stock に戻したときは消さない。すぐ同じモデルに戻せるように残しておく（次に別のモデルを選んだときに消える）
         else:
           paths = download_bundle(bundle)
           path = str(paths[0])
