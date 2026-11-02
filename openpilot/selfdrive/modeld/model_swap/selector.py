@@ -26,7 +26,8 @@ class ModelSwapSelector:
     self._bundles: list[Bundle] | None = None
     self._loading = False
     self._busy = False
-    self._error: str | None = None
+    self._error: str | None = None  # モデルの選択（ダウンロード）の失敗
+    self._list_error: str | None = None  # モデル一覧の取得の失敗。起動直後の通信不可などで起き、選択には影響しない
     self._meta = self._read_meta()
 
   @property
@@ -48,6 +49,10 @@ class ModelSwapSelector:
   @property
   def error(self) -> str | None:
     return self._error
+
+  @property
+  def list_error(self) -> str | None:
+    return self._list_error
 
   def _read_meta(self) -> dict:
     try:
@@ -87,6 +92,10 @@ class ModelSwapSelector:
     name = Path(path).name
     return next((bundle for bundle in self._bundles or [] if bundle.artifact.file_name == name), None)
 
+  def has_saved_label(self) -> bool:
+    path = self._param_path()
+    return bool(path) and self._meta.get("path") == path and bool(self._meta.get("label"))
+
   def current_label(self) -> str:
     path = self._param_path()
     if not path:
@@ -101,7 +110,7 @@ class ModelSwapSelector:
     if self._loading or self._bundles is not None:
       return
     self._loading = True
-    self._error = None
+    self._list_error = None
 
     def run() -> None:
       try:
@@ -110,7 +119,7 @@ class ModelSwapSelector:
         if bundle := self.current_bundle():
           self._write_meta(self._param_path() or "", bundle.short_name)
       except Exception as error:
-        self._error = str(error)
+        self._list_error = str(error)
       finally:
         self._loading = False
 
