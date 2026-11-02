@@ -9,6 +9,8 @@ from .catalog import Bundle, bundles_from_manifest, download_bundle, fetch_manif
 
 STOCK_LABEL = "stock"
 META_NAME = ".selected.json"
+# 今の stock と同じ世代だけを選べるようにする。古い世代は入力や出力の形が違い、LegacyModelAdapter では動かない
+SUPPORTED_GENERATION = 12
 
 
 def model_source() -> str:
@@ -17,6 +19,28 @@ def model_source() -> str:
 
 def param_key(source: str) -> str:
   return "ModelSwapBigPkl" if source == "chestnut" else "ModelSwapPkl"
+
+
+def _is_model_file(path: Path) -> bool:
+  # ダウンロードしたモデル、初回読み込みで作るキャッシュ、途中で止まったダウンロードの残り
+  name = path.name
+  return name.endswith((".pkl", ".pkl.cache", ".part", ".tmp")) and ".pkl" in name
+
+
+def cleanup_models(keep: Path | None) -> None:
+  """選んでいるモデル（とそのキャッシュ）以外のモデルファイルを消す"""
+  root = model_root()
+  keep_names = {keep.name, f"{keep.name}.cache"} if keep is not None else set()
+  try:
+    files = list(root.iterdir())
+  except FileNotFoundError:
+    return
+  for path in files:
+    if path.is_file() and _is_model_file(path) and path.name not in keep_names:
+      try:
+        path.unlink()
+      except OSError:
+        pass
 
 
 class ModelSwapSelector:
@@ -115,7 +139,8 @@ class ModelSwapSelector:
     def run() -> None:
       try:
         bundles = bundles_from_manifest(fetch_manifest(self._source))
-        self._bundles = [bundle for bundle in bundles if bundle.is_big == (self._source == "chestnut")]
+        self._bundles = [bundle for bundle in bundles
+                         if bundle.is_big == (self._source == "chestnut") and bundle.generation == SUPPORTED_GENERATION]
         if bundle := self.current_bundle():
           self._write_meta(self._param_path() or "", bundle.short_name)
       except Exception as error:
@@ -139,12 +164,15 @@ class ModelSwapSelector:
           self._params.remove(key)
           self._params.remove(other_key)
           self._clear_meta()
+          cleanup_models(None)
         else:
           paths = download_bundle(bundle)
           path = str(paths[0])
           self._params.put(key, path, block=True)
           self._params.remove(other_key)
           self._write_meta(path, bundle.short_name)
+          # 切り替えが済んでから、前に使っていたモデルを消す。ダウンロードに失敗したときは前のモデルが残る
+          cleanup_models(paths[0])
       except Exception as error:
         self._error = str(error)
       finally:
