@@ -1,3 +1,6 @@
+# a UP's DUT starts each job with an empty /data: these come back from master's last good job, as it left them
+cache = ["/data/scons_cache"]
+
 [env]
 PYTHONPATH = "/data/ci/tree/openpilot"  # the tree
 TERM = "xterm-256color"
@@ -88,7 +91,7 @@ name = "Pandad SPI"
 run = "./openpilot/selfdrive/pandad/tests/test_pandad_spi.py"
 
 [jobs.camerad]
-runs-on = ["up-mici", "up-tres"]
+runs-on = "up-mici"  # TODO: re-enable up-tres
 timeout-minutes = 35
 
 [[jobs.camerad.steps]]

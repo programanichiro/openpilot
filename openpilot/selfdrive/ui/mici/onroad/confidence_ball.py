@@ -33,9 +33,8 @@ LONG_INDICATOR_Y_OFS = -5     # 0でサイドパネルの下端ぴったりに�
 
 
 class ConfidenceBall(Widget):
-  def __init__(self, demo: bool = False):
+  def __init__(self):
     super().__init__()
-    self._demo = demo
     self._confidence_filter = FirstOrderFilter(-0.5, 0.5, 1 / gui_app.target_fps)
     # 公式の LongIndicator をここで描く。タコメーターと場所が被るため AugmentedRoadView から移した。
     # 車間距離の表示を含むので、自前の acc_dist アイコン(_lp1〜3)は廃止した。
@@ -55,13 +54,7 @@ class ConfidenceBall(Widget):
     self.button_style_only = False
 
 
-  def update_filter(self, value: float):
-    self._confidence_filter.update(value)
-
   def _update_state(self):
-    if self._demo:
-      return
-
     # animate status dot in from bottom
     if ui_state.status == UIStatus.DISENGAGED:
       self._confidence_filter.update(-0.5)
@@ -82,7 +75,7 @@ class ConfidenceBall(Widget):
     dot_height = self._rect.y + dot_height
 
     # confidence zones
-    if ui_state.status == UIStatus.ENGAGED or self._demo:
+    if ui_state.status == UIStatus.ENGAGED:
       if self._confidence_filter.x > 0.5:
         top_dot_color = rl.Color(0, 255, 204, 255)
         bottom_dot_color = rl.Color(0, 255, 38, 255)
