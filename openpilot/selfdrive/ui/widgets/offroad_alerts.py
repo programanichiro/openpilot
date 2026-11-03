@@ -1,5 +1,5 @@
 import os
-import pyray as rl
+import raylib_nb as rl
 from enum import IntEnum
 from abc import ABC, abstractmethod
 from collections.abc import Callable

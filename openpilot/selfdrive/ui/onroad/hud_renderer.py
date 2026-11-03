@@ -1,5 +1,5 @@
 import os
-import pyray as rl
+import raylib_nb as rl
 import time
 from openpilot.cereal import log
 from dataclasses import dataclass

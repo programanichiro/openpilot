@@ -1,5 +1,5 @@
 import math
-import pyray as rl
+import raylib_nb as rl
 import time
 from dataclasses import dataclass
 from openpilot.common.constants import CV
@@ -62,7 +62,7 @@ class TurnIntent(Widget):
       dest_rect = rl.Rectangle(self._rect.x + self._rect.width / 2, self._rect.y + self._rect.height / 2,
                                turn_intent_texture.width, turn_intent_texture.height)
 
-      origin = (turn_intent_texture.width / 2, self._rect.height / 2)
+      origin = rl.Vector2(turn_intent_texture.width / 2, self._rect.height / 2)
       color = rl.Color(255, 255, 255, int(255 * self._turn_intent_alpha_filter.x))
       rl.draw_texture_pro(turn_intent_texture, src_rect, dest_rect, origin, self._turn_intent_rotation_filter.x, color)
 
@@ -284,7 +284,7 @@ class HudRenderer(Widget):
 
     src_rect = rl.Rectangle(0, 0, wheel_txt.width, wheel_txt.height)
     dest_rect = rl.Rectangle(pos_x, pos_y, wheel_txt.width, wheel_txt.height)
-    origin = (wheel_txt.width / 2, wheel_txt.height / 2)
+    origin = rl.Vector2(wheel_txt.width / 2, wheel_txt.height / 2)
 
     if self.steer_always:
       if self.cruise_available:

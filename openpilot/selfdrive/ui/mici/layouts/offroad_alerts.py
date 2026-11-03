@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os
 
-import pyray as rl
+import raylib_nb as rl
 import re
 import threading
 import time

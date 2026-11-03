@@ -1,13 +1,11 @@
 import atexit
-import cffi
 import math
 import os
 import queue
 import time
 import signal
 import sys
-import pyray as rl
-import array
+import raylib_nb as rl
 import threading
 import platform
 import subprocess
@@ -706,7 +704,7 @@ class GuiApplication:
         if RECORD:
           image = rl.load_image_from_texture(self._render_texture.texture)
           data_size = image.width * image.height * 4
-          data = bytes(rl.ffi.buffer(image.data, data_size))
+          data = image.to_bytes(data_size)
           self._ffmpeg_queue.put(data)  # Async write via background thread
           rl.unload_image(image)
 
@@ -753,13 +751,13 @@ class GuiApplication:
         all_codepoints.add(ord(c))
       font_size = init_size
 
-    codepoints_buf = rl.ffi.new("int[]", list(all_codepoints)) #文字列に戻さないでcodepointsを生成。
+    codepoints = sorted(all_codepoints)
 
     new_font = rl.load_font_ex(
       font_path,
       int(font_size),
-      rl.ffi.cast("int *", codepoints_buf),
-      len(all_codepoints)
+      codepoints,
+      len(codepoints)
     )
 
     return new_font
@@ -777,10 +775,9 @@ class GuiApplication:
       chars = set(map(chr, range(32, 127))) | set(EXTRA_FONT_CHARS)
       chars.update(TRANSLATIONS_DIR.joinpath(f"app_{language}.po").read_text(encoding="utf-8"))
       codepoints = sorted(map(ord, chars))
-      codepoint_buffer = rl.ffi.new("int[]", codepoints)
       with as_file(FONT_DIR) as fspath:
         font = rl.load_font_ex((fspath / NOTO_FONTS[language]).as_posix(), 48,
-                               rl.ffi.cast("int *", codepoint_buffer), len(codepoints))
+                               codepoints, len(codepoints))
       rl.gen_texture_mipmaps(font.texture)
       rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_TRILINEAR)
       self._fallback_fonts[language] = font
@@ -806,9 +803,8 @@ class GuiApplication:
       with as_file(FONT_DIR) as fspath:
         unifont = font_weight_file == FontWeight.UNIFONT
         codepoints = sorted(map(ord, unifont_chars if unifont else base_chars))
-        codepoint_buffer = rl.ffi.new("int[]", codepoints)
         font = rl.load_font_ex((fspath / font_weight_file).as_posix(), 16 if unifont else 200,
-                               rl.ffi.cast("int *", codepoint_buffer), len(codepoints))
+                               codepoints, len(codepoints))
         if font_weight_file != FontWeight.UNIFONT:
           rl.gen_texture_mipmaps(font.texture)
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_TRILINEAR)
@@ -829,23 +825,19 @@ class GuiApplication:
     jp_font_path = JP_FONT_PATH
 
     # BMP全体のコードポイント（0x0000～0xFFFF）
-    jp_codepoint_count = rl.ffi.new("int *", 1)
-
     # BMP 全体（U+0000～U+FFFF）からサロゲート領域を除く
     base_chars += "⇧↑↓★☆●○°C⚪︎⚫︎⬇︎□■⬆︎" #とりあえずUIで必要な固定記号をロード。
-    jp_codepoints = rl.load_codepoints(base_chars, jp_codepoint_count)
+    jp_codepoints = sorted({ord(c) for c in base_chars})
 
-    jp_font = rl.load_font_ex(jp_font_path, 128, jp_codepoints, jp_codepoint_count[0])
+    jp_font = rl.load_font_ex(jp_font_path, 128, jp_codepoints, len(jp_codepoints))
     rl.set_texture_filter(jp_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP"] = jp_font
     self._font_path["JP"] = jp_font_path
-    rl.unload_codepoints(jp_codepoints)
 
     # ===========================================================
     # 日本語フォント（ASCII + 第一次水準漢字用）
     # ===========================================================
     jp2_font_path = JP_FONT_PATH
-    jp2_codepoint_count = rl.ffi.new("int *", 1)
 
     ascii_kanji_chars  = ''.join(chr(cp) for cp in range(0x20, 0x7F))        # ASCII
     ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x3040, 0x309F))    # ひらがな
@@ -853,13 +845,12 @@ class GuiApplication:
     #ascii_kanji_chars += ''.join(chr(cp) for cp in range(0x4E00, 0x9FB0))    # 漢字
     #ascii_kanji_chars += self.load_jis1_jis2_chars()    # 漢字 , 動的ロード
 
-    jp2_codepoints = rl.load_codepoints(ascii_kanji_chars, jp2_codepoint_count)
+    jp2_codepoints = sorted({ord(c) for c in ascii_kanji_chars})
 
-    jp2_font = rl.load_font_ex(jp2_font_path, int(44*self._scale), jp2_codepoints, jp2_codepoint_count[0])
+    jp2_font = rl.load_font_ex(jp2_font_path, int(44*self._scale), jp2_codepoints, len(jp2_codepoints))
     rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP2"] = jp2_font
     self._font_path["JP2"] = jp2_font_path
-    rl.unload_codepoints(jp2_codepoints)
 
     if multilang.requires_font_fallback():
       self.fallback_font()
@@ -879,7 +870,7 @@ class GuiApplication:
     return "".join(sorted(chars))
 
   def _patch_text_functions(self):
-    # Wrap pyray text APIs to apply a global text size scale so our px sizes match Qt
+    # Wrap raylib text APIs to apply a global text size scale so our px sizes match Qt
     if not hasattr(rl, "_orig_draw_text_ex"):
       rl._orig_draw_text_ex = rl.draw_text_ex
 
@@ -904,30 +895,7 @@ class GuiApplication:
     rl.begin_scissor_mode = _begin_scissor_mode_scaled
 
   def _set_log_callback(self):
-    ffi_libc = cffi.FFI()
-    ffi_libc.cdef("""
-      int vasprintf(char **strp, const char *fmt, void *ap);
-      void free(void *ptr);
-    """)
-    libc = ffi_libc.dlopen(None)
-
-    @rl.ffi.callback("void(int, char *, void *)")
-    def trace_log_callback(log_level, text, args):
-      try:
-        text_addr = int(rl.ffi.cast("uintptr_t", text))
-        args_addr = int(rl.ffi.cast("uintptr_t", args))
-        text_libc = ffi_libc.cast("char *", text_addr)
-        args_libc = ffi_libc.cast("void *", args_addr)
-
-        out = ffi_libc.new("char **")
-        if libc.vasprintf(out, text_libc, args_libc) >= 0 and out[0] != ffi_libc.NULL:
-          text_str = ffi_libc.string(out[0]).decode("utf-8", "replace")
-          libc.free(out[0])
-        else:
-          text_str = rl.ffi.string(text).decode("utf-8", "replace")
-      except Exception as e:
-        text_str = f"[Log decode error: {e}]"
-
+    def trace_log_callback(log_level, text_str):
       if log_level == rl.TraceLogLevel.LOG_ERROR:
         cloudlog.error(f"raylib: {text_str}")
       elif log_level == rl.TraceLogLevel.LOG_WARNING:
