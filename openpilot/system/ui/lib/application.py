@@ -360,6 +360,7 @@ class GuiApplication:
       self._load_fonts()
       self._patch_text_functions()
       self._patch_scissor_mode()
+      self._patch_blend_mode()
       if BURN_IN_MODE and self._burn_in_shader is None:
         self._burn_in_shader = rl.load_shader_from_memory(BURN_IN_VERTEX_SHADER, BURN_IN_FRAGMENT_SHADER)
 
@@ -893,6 +894,25 @@ class GuiApplication:
         int(math.ceil(width * self._scale)), int(math.ceil(height * self._scale)))
 
     rl.begin_scissor_mode = _begin_scissor_mode_scaled
+
+  def _patch_blend_mode(self):
+    if hasattr(rl, "begin_blend_mode"):
+      return
+
+    import ctypes
+    from raylib_nb._backend import native
+    lib = ctypes.CDLL(native.__file__)
+    begin_blend_mode = lib.BeginBlendMode
+    begin_blend_mode.argtypes = [ctypes.c_int]
+    begin_blend_mode.restype = None
+    end_blend_mode = lib.EndBlendMode
+    end_blend_mode.argtypes = []
+    end_blend_mode.restype = None
+
+    rl.begin_blend_mode = begin_blend_mode
+    rl.end_blend_mode = end_blend_mode
+    rl.BLEND_ADDITIVE = 1
+    rl._blend_mode_lib = lib
 
   def _set_log_callback(self):
     def trace_log_callback(log_level, text_str):

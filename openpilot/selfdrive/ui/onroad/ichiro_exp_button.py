@@ -1,7 +1,7 @@
 # upstream で削除された onroad/exp_button.py の後継。exp/chill の切り替えを外し、
 # MADS の長押し切り替え、操舵角に合わせたハンドルの回転、イチロウロングのリング表示を残している。
 import time
-import pyray as rl
+import raylib_nb as rl
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import Widget
