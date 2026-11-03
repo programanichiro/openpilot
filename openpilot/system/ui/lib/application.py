@@ -135,7 +135,7 @@ def font_fallback(font: rl.Font, text: str) -> rl.Font:
     #multilang._language == "ja"で日本語かどうか判定できる。多言語フォントをダイナミックロードで差し替えれば綺麗になる？
     if multilang._language == "ja":
       jp_font_path = JP_FONT_PATH
-      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JPH"), text, jp_font_path, 100) #["JPH"]だと初回に例外吐く。
+      exchg_font = gui_app.ensure_chars_in_font(gui_app._fonts.get("JPH"), text, jp_font_path, 100, font_key="JPH") #["JPH"]だと初回に例外吐く。
       gui_app._fonts["JPH"] = exchg_font
       # with open('/tmp/dynamic_font_count.txt','w') as fp:
       #  fp.write('font_count:%d' % int(exchg_font.glyphCount)) #全UIラベルで300程度。この程度なら増え過ぎ対策必須ではない。
@@ -229,6 +229,7 @@ class GuiApplication:
 
     self._fonts: dict[FontWeight, rl.Font] = {}
     self._font_path: dict[rl.Font, str] = {}
+    self._font_codepoints: dict[str, set[int]] = {}
     self._fallback_fonts: dict[str, rl.Font] = {}
     self._width = width if width is not None else GuiApplication._default_width()
     self._height = height if height is not None else GuiApplication._default_height()
@@ -593,6 +594,7 @@ class GuiApplication:
     for font in self._fonts.values():
       rl.unload_font(font)
     self._fonts = {}
+    self._font_codepoints = {}
     for font in self._fallback_fonts.values():
       rl.unload_font(font)
     self._fallback_fonts = {}
@@ -717,42 +719,20 @@ class GuiApplication:
     except KeyboardInterrupt:
       pass
 
-  def ensure_chars_in_font(self,old_font, chars: str, font_path: str, init_size = 128):
-    if old_font != None:
-      # ① 既存フォントからロード済み codepoints を取得
-      if False and old_font.glyphCount > 1000: #増え過ぎたら間引く。日本語なら実質300文字ちょっとなので働かない。
-        #このやり方はまずい。画面内に表示されている物を消してしまうと画面が乱れる。使われていない物を判断するのは難しい。
-        loaded_codepoints = {
-            old_font.glyphs[i].value for i in range(1, old_font.glyphCount, 2) #偶数番目を飛ばす。
-        }
-      else:
-        loaded_codepoints = {
-          old_font.glyphs[i].value for i in range(old_font.glyphCount)
-        }
+  def ensure_chars_in_font(self, old_font, chars: str, font_path: str, init_size = 128, font_key: str | None = None):
+    key = font_key if font_key is not None else font_path
+    loaded_codepoints = self._font_codepoints.get(key, set())
+    missing_codepoints = set(map(ord, chars)) - loaded_codepoints
 
-      # ② chars から不足している codepoints を抽出
-      missing_codepoints = set()
-      for c in chars:
-          if ord(c) not in loaded_codepoints:
-              missing_codepoints.add(ord(c))
+    if old_font is not None and not missing_codepoints:
+      return old_font
 
-      # ③ 追加が不要ならそのまま返す
-      if not missing_codepoints:
-        return old_font
-
-      font_size = old_font.baseSize
-      rl.unload_font(old_font)
-
-      # ④ 再ロード用の全 codepoints を構築
-      all_codepoints = loaded_codepoints | missing_codepoints
-    else:
-      #元のfontが無ければ作成する。
-      all_codepoints = set()
-      for c in chars:
-        all_codepoints.add(ord(c))
-      font_size = init_size
-
+    font_size = old_font.baseSize if old_font is not None else init_size
+    all_codepoints = loaded_codepoints | set(map(ord, chars))
     codepoints = sorted(all_codepoints)
+
+    if old_font is not None:
+      rl.unload_font(old_font)
 
     new_font = rl.load_font_ex(
       font_path,
@@ -760,6 +740,7 @@ class GuiApplication:
       codepoints,
       len(codepoints)
     )
+    self._font_codepoints[key] = set(codepoints)
 
     return new_font
 
@@ -767,7 +748,7 @@ class GuiApplication:
     if new_str:
       #新しい文字があればfont作り直し
       if self._font_path.get(font_weight): #[]では無い場合に例外吐く。
-        self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight])
+        self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight], font_key=font_weight)
     return self._fonts[font_weight]
 
   def fallback_font(self) -> rl.Font:
@@ -811,6 +792,7 @@ class GuiApplication:
           rl.set_texture_filter(font.texture, rl.TextureFilter.TEXTURE_FILTER_TRILINEAR)
         self._fonts[font_weight_file] = font
         self._font_path[font_weight_file] = (fspath / font_weight_file).as_posix()
+        self._font_codepoints[font_weight_file] = set(codepoints)
 
     from openpilot.system.ui.widgets.keyboard import KEYBOARD_LAYOUTS
 
@@ -834,6 +816,7 @@ class GuiApplication:
     rl.set_texture_filter(jp_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP"] = jp_font
     self._font_path["JP"] = jp_font_path
+    self._font_codepoints["JP"] = set(jp_codepoints)
 
     # ===========================================================
     # 日本語フォント（ASCII + 第一次水準漢字用）
@@ -852,6 +835,7 @@ class GuiApplication:
     rl.set_texture_filter(jp2_font.texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
     self._fonts["JP2"] = jp2_font
     self._font_path["JP2"] = jp2_font_path
+    self._font_codepoints["JP2"] = set(jp2_codepoints)
 
     if multilang.requires_font_fallback():
       self.fallback_font()
