@@ -116,6 +116,7 @@ procs = [
   PythonProcess("lateral_maneuversd", "openpilot.tools.lateral_maneuvers.lateral_maneuversd", lat_maneuver),
   PythonProcess("radard", "openpilot.selfdrive.controls.radard", only_onroad),
   PythonProcess("hardwared", "openpilot.system.hardware.hardwared", always_run),
+  PythonProcess("ichiro_procmon", "openpilot.system.ichiro_procmon", only_onroad, enabled=COMMA_HARDWARE), # modeld の資源の漏れの調査用。走行中だけ記録する
   PythonProcess("ichiro_modem", "openpilot.common.hardware.comma.ichiro_modem", always_run, enabled=COMMA_HARDWARE), # 認証付きの modem。動作中は AGNOS の modem.service を止める
   PythonProcess("tombstoned", "openpilot.system.tombstoned", always_run, enabled=not PC),
   PythonProcess("updated", "openpilot.system.updated.updated", only_offroad, enabled=not PC),

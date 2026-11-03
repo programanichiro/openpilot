@@ -1,7 +1,7 @@
 from __future__ import annotations
 import os
 
-import pyray as rl
+import raylib_nb as rl
 import re
 import threading
 import time
@@ -230,9 +230,6 @@ class MiciOffroadAlerts(Scroller):
     item = max((item for item in self.alert_items if item.alert_data.visible),
                key=lambda item: (item.alert_data.severity, bool(item.alert_data.icon)), default=None)
     return item.icon if item is not None else None
-
-  def scrolling(self):
-    return self._scroller.scroll_panel.is_touch_valid()
 
   def set_pairing_callback(self, callback: Callable[[], None]):
     for alert_item in self.alert_items:

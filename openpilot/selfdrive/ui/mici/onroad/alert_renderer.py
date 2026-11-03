@@ -1,7 +1,7 @@
 import time
 from enum import StrEnum
 from typing import NamedTuple
-import pyray as rl
+import raylib_nb as rl
 import random
 import string
 from dataclasses import dataclass
@@ -10,7 +10,7 @@ from opendbc.car.structs import car
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.common.filter_simple import BounceFilter, FirstOrderFilter
 from openpilot.common.hardware import COMMA_HARDWARE
-from openpilot.system.ui.lib.application import gui_app, FontWeight, TextAlignment
+from openpilot.system.ui.lib.application import gui_app, FontWeight, TextAlignment, TextAlignmentVertical
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.label import UnifiedLabel
 
@@ -90,7 +90,8 @@ ALERT_CRITICAL_REBOOT = Alert(
 class AlertRenderer(Widget):
   def __init__(self):
     super().__init__()
-    v_align = rl.GuiTextAlignmentVertical.TEXT_ALIGN_MIDDLE if gui_app.big_ui() else rl.GuiTextAlignmentVertical.TEXT_ALIGN_TOP
+    # AGNOS 20.2 の pyray には raygui の GuiTextAlignmentVertical が無いので、upstream と同じ自前の enum を使う
+    v_align = TextAlignmentVertical.MIDDLE if gui_app.big_ui() else TextAlignmentVertical.TOP
     self._alert_text1_label = UnifiedLabel(text="", font_size=ALERT_FONT_BIG, font_weight=FontWeight.DISPLAY, line_height=0.86,
                                            letter_spacing=-0.02, alignment_vertical=v_align)
     self._alert_text2_label = UnifiedLabel(text="", font_size=ALERT_FONT_SMALL, font_weight=FontWeight.ROMAN, line_height=0.86,

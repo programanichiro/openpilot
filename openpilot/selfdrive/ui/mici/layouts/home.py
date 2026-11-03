@@ -5,7 +5,7 @@ import math
 from openpilot.common.hardware import HARDWARE
 
 from openpilot.cereal import log
-import pyray as rl
+import raylib_nb as rl
 from collections.abc import Callable
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.layouts import HBoxLayout
