@@ -144,6 +144,7 @@ class CarHarness(EnumBase):
   rivian_b = BaseCarHarness("Rivian B connector", parts=[Accessory.harness_box, Accessory.comma_power, Cable.long_obdc_cable])
   tesla_a = BaseCarHarness("Tesla A connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
   tesla_b = BaseCarHarness("Tesla B connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
+  tesla_c = BaseCarHarness("Tesla C connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
   psa_a = BaseCarHarness("PSA A connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
 
 

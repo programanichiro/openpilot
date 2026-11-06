@@ -16,9 +16,12 @@ function agnos_init {
   # udev does this, but sometimes we startup faster
   sudo chgrp gpu /dev/adsprpc-smd /dev/ion /dev/kgsl-3d0
   sudo chmod 660 /dev/adsprpc-smd /dev/ion /dev/kgsl-3d0
+  sudo chgrp audio /dev/snd/*C*
+  sudo chmod 660 /dev/snd/*C*
 
   # Check if AGNOS update is required
   if [ "$(< /VERSION)" != "$AGNOS_VERSION" ]; then
+    echo 1 > $DIR/../agnos_update
     AGNOS_PY="$DIR/openpilot/common/hardware/comma/agnos.py"
     MANIFEST="$DIR/openpilot/system/hardware/comma/agnos.json"
     if "$AGNOS_PY" --verify "$MANIFEST"; then
@@ -42,6 +45,10 @@ function launch {
   #    switching branches/forks, which should not be overwritten.
   # 2. The FINALIZED consistent file has to exist, indicating there's an update
   #    that completed successfully and synced to disk.
+
+  if [ ! -f $DIR/../force_prebuild ]; then
+    rm ${DIR}/.overlay_init
+  fi
 
   if [ -f "${DIR}/.overlay_init" ]; then
     find "${DIR}/.git" -newer "${DIR}/.overlay_init" | grep -q '.' 2> /dev/null
@@ -90,9 +97,30 @@ function launch {
   # write tmux scrollback to a file
   tmux capture-pane -pq -S-1000 > /tmp/launch_log
 
+  if [ ! -f $DIR/openpilot/common/libparams_c.so ] || \
+     ! ls $DIR/msgq_repo/msgq/_ipc*.so > /dev/null 2>&1 || \
+     ! ls $DIR/msgq_repo/msgq/visionipc/_visionipc*.so > /dev/null 2>&1; then
+    echo 1 > $DIR/../force_prebuild
+  fi
+
+  # big_*_tinygrad.pkl は LFS 配布。実体が引かれていないとポインタ(131〜134バイト)のまま存在し、
+  # modeld が読み込みに失敗して小モデルに落ちる。ビルドブロックまで進めて git lfs pull を走らせる。
+  # 実体は最小の warp でも 863KB あるので、桁で判別できる。
+  if [ ! -f $DIR/../force_prebuild ]; then
+    for f in "$DIR"/openpilot/selfdrive/modeld/models/big_*_tinygrad.pkl; do
+      if [ -f "$f" ] && [ "$(stat -c%s "$f")" -lt 1024 ]; then
+        echo 101 > $DIR/../force_prebuild
+        break
+      fi
+    done
+  fi
+
   # start manager
   cd openpilot/system/manager
-  if [ ! -f "$DIR/prebuilt" ]; then
+  if [ -f "$DIR/../agnos_update" ] || [ ! -f "$DIR/prebuilt" ] && [ -f "$DIR/../force_prebuild" ]; then
+    cd ../../../
+    git submodule update --init --recursive
+    cd openpilot/system/manager
     ./build.py
   fi
   ./manager.py
