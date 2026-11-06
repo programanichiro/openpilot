@@ -15,12 +15,12 @@ fi
 # set git identity
 source $DIR/identity.sh
 
-# install も --local にする。既定はグローバル(~/.gitconfig)なので、uninstall --local と
-# 揃えないとグローバル側の smudge が残り、TARGET_DIR の checkout で 800MB を引いてしまう。
-git lfs install --local
+# upstream は Git LFS をやめ、Hugging Face の bucket から取る自前の lfs.py に移った（#39206）。
+# git-lfs のコマンドは使わない。install は git-lfs のフックを外し、lfs.py のフィルタとフックを入れる。
+(cd "$SOURCE_DIR" && ./lfs.py install)
 # LFS はアイコン・フォント・効果音・小モデルも管理しているので pull は必須。
 # big_* だけは release_files.py が配布物から外すので引くだけ無駄。
-git lfs pull -X "openpilot/selfdrive/modeld/models/big_*"
+(cd "$SOURCE_DIR" && ./lfs.py pull --exclude="openpilot/selfdrive/modeld/models/big_*")
 
 echo "[-] Setting up target repo T=$SECONDS"
 
@@ -40,10 +40,10 @@ git reset --hard devel-staging
 
 git config --local lfs.locksverify false
 
-# LFS の upload 先(Hugging Face)は認証必須で、pre-push フックが走ると Username を
-# 聞かれて止まる。push の前にフックを外しておく。
-# --local を付けないとグローバル設定まで消え、SOURCE_DIR 側の smudge も効かなくなる。
-git lfs uninstall --local
+# 配布用のリポジトリでは LFS を使わず、素のファイル（big モデルはポインタのまま）でコミットする。
+# lfs.py の pre-push は認証が要る場合があるので、push の前にフィルタとフックを外しておく。
+git config --local --remove-section filter.lfs 2>/dev/null || true
+rm -f .git/hooks/pre-push
 
 git push --set-upstream origin devel-staging
 

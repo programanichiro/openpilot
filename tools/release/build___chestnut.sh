@@ -14,16 +14,15 @@ fi
 # set git identity
 source $DIR/identity.sh
 
-git lfs update --force
-# install も --local にする。既定はグローバル(~/.gitconfig)なので、uninstall --local と
-# 揃えないとグローバル側の smudge が残り、TARGET_DIR の checkout で 800MB を引いてしまう。
-git lfs install --local
+# upstream は Git LFS をやめ、Hugging Face の bucket から取る自前の lfs.py に移った（#39206）。
+# git-lfs のコマンドは使わない。install は git-lfs のフックを外し、lfs.py のフィルタとフックを入れる。
+(cd "$SOURCE_DIR" && ./lfs.py install)
 # ビッグモデルは LFS のまま配る。実体は不要なのでポインタのまま残す。
 # warp 2本も除外する。実体化すると rsync が 864KB の実ファイルをコピーし、
-# git lfs uninstall 済みの TARGET_DIR で生バイナリとしてコミットされてしまう。
+# LFS を外した TARGET_DIR で生バイナリとしてコミットされてしまう。
 # 起点の remotes/__nightly-chestnut はポインタなので、毎回 1.7MB の差分が出ていた。
 MODELS=openpilot/selfdrive/modeld/models
-git lfs pull -X "$MODELS/big_driving_tinygrad.pkl,$MODELS/big_driving_warp_1344x760_tinygrad.pkl,$MODELS/big_driving_warp_1928x1208_tinygrad.pkl"
+(cd "$SOURCE_DIR" && ./lfs.py pull --exclude="$MODELS/big_driving_tinygrad.pkl,$MODELS/big_driving_warp_1344x760_tinygrad.pkl,$MODELS/big_driving_warp_1928x1208_tinygrad.pkl")
 
 # -X は未取得にするだけで、以前のビルドで実体化されたファイルはポインタに戻らない。
 # 残っていると rsync が実体をコピーしてしまうので、HEAD のポインタで上書きする。
@@ -50,10 +49,10 @@ git checkout -B __nightly-chestnut remotes/__nightly-chestnut
 
 git config --local lfs.locksverify false
 
-# LFS の upload 先(Hugging Face)は認証必須で、pre-push フックが走ると Username を聞かれて止まる。
-# このブランチでは LFS を使わず、ビッグモデルはポインタのままコミットするので先に外しておく。
-# --local を付けないとグローバル設定まで消え、SOURCE_DIR 側の smudge も効かなくなる。
-git lfs uninstall --local
+# 配布用のリポジトリでは LFS を使わず、素のファイル（big モデルはポインタのまま）でコミットする。
+# lfs.py の pre-push は認証が要る場合があるので、push の前にフィルタとフックを外しておく。
+git config --local --remove-section filter.lfs 2>/dev/null || true
+rm -f .git/hooks/pre-push
 
 git push --set-upstream origin __nightly-chestnut
 
