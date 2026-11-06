@@ -131,8 +131,9 @@ struct OnroadEvent @0xc4fa6047f024e718 {
     bigModelLoading @100;
     bigModelFailed @102;
 
-    hazardWarningLights @105;
-    longActiveBrakeError @106;
+    # イチロウパイロット独自。upstream が番号を足したらぶつかるので、その次の番号へずらす
+    hazardWarningLights @106;
+    longActiveBrakeError @107;
 
     lowBatteryDEPRECATED @40;
     soundsUnavailableDEPRECATED @47;
