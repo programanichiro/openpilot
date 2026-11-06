@@ -36,8 +36,12 @@ def pull_big_models() -> None:
   else:
     print("big model: system time still invalid, pulling anyway")
 
-  r = subprocess.run(["git", "lfs", "pull"], cwd=BASEDIR, check=False)
-  print(f"big model: git lfs pull returned {r.returncode}")
+  # upstream は Git LFS をやめ、Hugging Face の bucket から取る自前のクライアント（tools/lfs.sh → lfs.py）に移った。
+  # 古いチェックアウトに戻したときのために、lfs.sh が無ければ従来の git lfs を使う。
+  lfs = Path(BASEDIR) / "tools/lfs.sh"
+  cmd, name = ([str(lfs), "pull"], "tools/lfs.sh pull") if lfs.is_file() else (["git", "lfs", "pull"], "git lfs pull")
+  r = subprocess.run(cmd, cwd=BASEDIR, check=False)
+  print(f"big model: {name} returned {r.returncode}")
 
 
 def build() -> None:
