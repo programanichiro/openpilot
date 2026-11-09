@@ -173,8 +173,9 @@ class LongitudinalPlanner:
         with open('/data/tss_type_info.txt','w') as fp:
           fp.write('%d' % (2))
     #g_tss_type = tss_type
-    if v_cruise_kph < min_acc_speed:
-      v_cruise_kph = min_acc_speed #念のため
+    #低速エンゲージの判定を <= にしたので、最低値への引き上げは不要。引き上げるとそれより下のレバー操作が見えなくなる
+    # if v_cruise_kph < min_acc_speed:
+    #   v_cruise_kph = min_acc_speed #念のため
 
     accel_engaged_str = None
     try:
