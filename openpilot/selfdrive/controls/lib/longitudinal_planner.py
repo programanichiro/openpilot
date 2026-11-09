@@ -232,7 +232,7 @@ class LongitudinalPlanner:
       # if sm['carState'].gasPressed and sm['selfdriveState'].enabled: #アクセル踏んでエンゲージ中なら
       if sm['selfdriveState'].enabled: #アクセル踏む条件を無視してみる。
         sm_longControlState = LongCtrlState.pid #0.8.14からアクセルONでLongCtrlState.offとなるため、従来動作をシミュレート
-    if OP_ENABLE_PREV == False and sm_longControlState != LongCtrlState.off and (((one_pedal or vk_ego > 3/3.6) and vk_ego < min_acc_speed/3.6 and int(v_cruise_kph) == min_acc_speed) or sm['carState'].gasPressed):
+    if OP_ENABLE_PREV == False and sm_longControlState != LongCtrlState.off and (((one_pedal or vk_ego > 3/3.6) and vk_ego < min_acc_speed/3.6 and int(v_cruise_kph) <= min_acc_speed) or sm['carState'].gasPressed): #レバー最低の内部値は車種や日によってぶれるので == ではなく <= で見る
        #速度が時速３km以上かつ31km未満かつsm['carState'].vCruiseが最低速度なら、アクセル踏んでなくても無条件にエクストラエンゲージする
     #if tss2_flag == False and OP_ENABLE_PREV == False and sm['controlsState'].longControlState != LongCtrlState.off and sm['carState'].gasPressed:
       #アクセル踏みながらのOP有効化の瞬間
