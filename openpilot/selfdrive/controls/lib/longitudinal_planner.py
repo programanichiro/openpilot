@@ -16,7 +16,7 @@ from openpilot.selfdrive.controls.lib.longcontrol import LongCtrlState
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import LongitudinalMpc, LongitudinalPlanSource
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import T_IDXS as T_IDXS_MPC
 from openpilot.selfdrive.controls.lib.longitudinal_mpc_lib.long_mpc import MAX_T, STOP_DISTANCE
-from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan, should_stop
+from openpilot.selfdrive.controls.lib.drive_helpers import CONTROL_N, get_accel_from_plan, should_stop, smooth_value
 from openpilot.selfdrive.car.cruise import V_CRUISE_MAX, V_CRUISE_UNSET
 from openpilot.common.swaglog import cloudlog
 
@@ -92,7 +92,8 @@ def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt):
   if v_cruise <= 0.0: # ワンペダル停止・forceDecel
     target_accel = -STOP_LINE_DECEL # 前走車の有無に関係なく、歩行者並みの速度まで弱めずに減速し、最後は should_stop で停止させる
   else:
-    target_accel = np.clip(v_cruise - v_ego, A_CRUISE_MIN, ACCEL_MAX)
+    target_accel = smooth_value(v_cruise - v_ego, a_cruise_prev, tau=1.0, dt=dt)
+    target_accel = np.clip(target_accel, A_CRUISE_MIN, ACCEL_MAX)
   j_cruise = np.interp(v_ego, J_CRUISE_BP, J_CRUISE_VALS)
   target_accel = float(np.clip(target_accel, min(a_cruise_prev, a_target_prev) - j_cruise * dt, a_cruise_prev + j_cruise * dt))
 
@@ -173,8 +174,9 @@ class LongitudinalPlanner:
         with open('/data/tss_type_info.txt','w') as fp:
           fp.write('%d' % (2))
     #g_tss_type = tss_type
-    if v_cruise_kph < min_acc_speed:
-      v_cruise_kph = min_acc_speed #念のため
+    #低速エンゲージの判定を <= にしたので、最低値への引き上げは不要。引き上げるとそれより下のレバー操作が見えなくなる
+    # if v_cruise_kph < min_acc_speed:
+    #   v_cruise_kph = min_acc_speed #念のため
 
     accel_engaged_str = None
     try:
