@@ -103,6 +103,12 @@ def get_cruise_accel(v_cruise, v_ego, a_cruise_prev, a_target_prev, dt):
 class LongitudinalPlanner:
   def __init__(self, CP, init_v=0.0, init_a=0.0, dt=DT_MDL):
     self.CP = CP
+    self.user_min_acc_speed = 0 #ACC 最低速度の設定。運転中に読まないよう起動時に一度だけ読む。0 か未設定ならトヨタの既定
+    try:
+      with open('/data/acc_min_speed.txt','r') as fp:
+        self.user_min_acc_speed = int(fp.read())
+    except Exception:
+      pass
     self.mpc = LongitudinalMpc(dt=dt)
     self.fcw = False
     self.dt = dt
@@ -151,8 +157,9 @@ class LongitudinalPlanner:
     v_cruise_kph = sm['carState'].vCruise
     if not (self.CP.flags & ToyotaFlags.TSS2):
       tss_type = 1
-      v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
-      if phv_2019 == False:
+      if self.user_min_acc_speed <= 0: #ACC 最低速度が設定されていたら、TSSP の下段・上段の処理をしない
+        v_cruise_kph = (55 - (55 - (v_cruise_kph+4)) * 2 - 4) if v_cruise_kph < (55 - 4) else v_cruise_kph
+      if self.user_min_acc_speed <= 0 and phv_2019 == False:
       # v_cruise_kph = (110 + ((v_cruise_kph+6) - 110) * 3 - 6) if v_cruise_kph > (110 - 6) else v_cruise_kph #最大119
       # v_cruise_kph = (107 + ((v_cruise_kph+6) - 107) * 2 - 6) if v_cruise_kph > (107 - 6) else v_cruise_kph #最大119 -> 114 -> 117に。
       # v_cruise_kph = (106 + ((v_cruise_kph+6) - 106) * 2 - 6) if v_cruise_kph > (106 - 6) else v_cruise_kph #最大118に。
@@ -174,6 +181,8 @@ class LongitudinalPlanner:
         with open('/data/tss_type_info.txt','w') as fp:
           fp.write('%d' % (2))
     #g_tss_type = tss_type
+    if self.user_min_acc_speed > 0:
+      min_acc_speed = self.user_min_acc_speed
     #低速エンゲージの判定を <= にしたので、最低値への引き上げは不要。引き上げるとそれより下のレバー操作が見えなくなる
     # if v_cruise_kph < min_acc_speed:
     #   v_cruise_kph = min_acc_speed #念のため
@@ -890,7 +899,7 @@ class LongitudinalPlanner:
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
       self.v_desired_filter.x = v_cruise_kph_org / 3.6 #理想速度が増速分より速くならないようにする
-    if tss_type < 2 and phv_2019 == False and self.v_desired_filter.x > v_117 / 3.6:
+    if tss_type < 2 and phv_2019 == False and self.user_min_acc_speed <= 0 and self.v_desired_filter.x > v_117 / 3.6:
       self.v_desired_filter.x = v_117 / 3.6
 
     self.a_desired_mul = 1.0
@@ -960,7 +969,7 @@ class LongitudinalPlanner:
       v_cruise = int(v_cruise * 3.6 / 5) * 5 / 3.6
     # v_cruise2 = v_cruise
 
-    v_cruise = v_cruise if (v_cruise < v_117/3.6 or phv_2019 or tss_type >= 2) else v_117/3.6 #TSSPではACC118を超えないようにする。
+    v_cruise = v_cruise if (v_cruise < v_117/3.6 or phv_2019 or tss_type >= 2 or self.user_min_acc_speed > 0) else v_117/3.6 #TSSPではACC118を超えないようにする。
     v_cruise_car_limit = sm['carState'].vCruise/3.6 #車のACCレバー速度
     v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
@@ -997,7 +1006,7 @@ class LongitudinalPlanner:
     a_prev = self.output_a_target
 
     #self.v_desired_trajectoryに119とa_desired_mulの制限をかませる。
-    if tss_type < 2 and phv_2019 == False:
+    if tss_type < 2 and phv_2019 == False and self.user_min_acc_speed <= 0:
       v_desired_trajectory_min = np.minimum(v_cruise_car_limit, v_117/3.6) #全要素を119km/h以下にする->118 and v_cruise_car_limit以下
     else:
       v_desired_trajectory_min = v_cruise_car_limit #TSS2でもv_cruise_car_limit以下
