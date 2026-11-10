@@ -209,8 +209,8 @@ class TogglesLayout(Widget):
         try:
           with open('/data/acc_min_speed.txt','r') as fp:
             acc_min_speed_str = fp.read() #ACC 最低速度をテキストで28みたいにkm/hで書いておく。ファイルが無いか0でトヨタの既定。変えたら再起動が必要
-            if acc_min_speed_str and acc_min_speed_str != "0":
-              self._acc_min_speed_btn.action_item.set_value(acc_min_speed_str+" [km/h]")
+            if int(acc_min_speed_str) > 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+              self._acc_min_speed_btn.action_item.set_value(str(int(acc_min_speed_str))+" [km/h]")
         except Exception as e:
           pass
         self._toggles["AccMinSpeed"] = self._acc_min_speed_btn
@@ -330,10 +330,14 @@ class TogglesLayout(Widget):
         self._acc_min_speed_btn.action_item.set_value("toyota default") #書けなかったらファイルは無いか空なので、走行はトヨタの既定になる
         return
 
-      if self._keyboard.text == "0" or not self._keyboard.text:
+      try:
+        speed_kph = int(self._keyboard.text)
+      except Exception as e:
+        speed_kph = 0
+      if speed_kph <= 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
         self._acc_min_speed_btn.action_item.set_value("toyota default")
       else:
-        self._acc_min_speed_btn.action_item.set_value(self._keyboard.text+" [km/h]")
+        self._acc_min_speed_btn.action_item.set_value(str(speed_kph)+" [km/h]")
 
     self._keyboard.reset(min_text_size=0)
     self._keyboard.set_title("ACC min speed", "")

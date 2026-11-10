@@ -83,8 +83,8 @@ class TogglesLayoutMici(NavScroller):
     try:
       with open('/data/acc_min_speed.txt','r') as fp:
         acc_min_speed_str = fp.read() #ACC 最低速度をテキストで28みたいに書いておく。ファイルが無いか0でトヨタの既定。変えたら再起動が必要
-        if acc_min_speed_str and acc_min_speed_str != "0":
-          self._acc_min_speed_btn.set_value(acc_min_speed_str+" [km/h]")
+        if int(acc_min_speed_str) > 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+          self._acc_min_speed_btn.set_value(str(int(acc_min_speed_str))+" [km/h]")
     except Exception as e:
       pass
     self._acc_min_speed_btn.set_click_callback(self._acc_min_speed_btn_callback)
@@ -485,10 +485,14 @@ class TogglesLayoutMici(NavScroller):
           self._acc_min_speed_btn.set_value("toyota default") #書けなかったらファイルは無いか空なので、走行はトヨタの既定になる
           return
 
-        if speed == "0" or not speed:
+        try:
+          speed_kph = int(speed)
+        except Exception as e:
+          speed_kph = 0
+        if speed_kph <= 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
           self._acc_min_speed_btn.set_value("toyota default")
         else:
-          self._acc_min_speed_btn.set_value(speed+" [km/h]")
+          self._acc_min_speed_btn.set_value(str(speed_kph)+" [km/h]")
 
     dlg = BigInputDialog("ACC min speed", acc_min_speed, confirm_callback=acc_min_speed_callback)
     gui_app.push_widget(dlg)
