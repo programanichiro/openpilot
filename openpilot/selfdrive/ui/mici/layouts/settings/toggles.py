@@ -79,6 +79,16 @@ class TogglesLayoutMici(NavScroller):
       pass
     self._auto_door_lock_btn.set_click_callback(self._auto_door_lock_btn_callback)
 
+    self._acc_min_speed_btn = BigButton("acc min speed           ", "toyota default", icon_car_key) #ファイルが無いか0ならトヨタの既定
+    try:
+      with open('/data/acc_min_speed.txt','r') as fp:
+        acc_min_speed_str = fp.read() #ACC 最低速度をテキストで28みたいに書いておく。ファイルが無いか0でトヨタの既定。変えたら再起動が必要
+        if int(acc_min_speed_str) > 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+          self._acc_min_speed_btn.set_value(str(int(acc_min_speed_str))+" [km/h]")
+    except Exception as e:
+      pass
+    self._acc_min_speed_btn.set_click_callback(self._acc_min_speed_btn_callback)
+
     self._scroller.add_widgets([
       self._knight_scanner_bit3_button,
       self._personality_toggle,
@@ -105,6 +115,7 @@ class TogglesLayoutMici(NavScroller):
       self._lockon_disp_disable_button,
       # self._vehicle_mass_btn,
       self._auto_door_lock_btn,
+      self._acc_min_speed_btn,
       C4UIOnC3X,
     ])
 
@@ -457,4 +468,31 @@ class TogglesLayoutMici(NavScroller):
           self._auto_door_lock_btn.set_value(lock+" [km/h]")
 
     dlg = BigInputDialog("Auto door lock", lock_speed, confirm_callback=lock_speed_callback)
+    gui_app.push_widget(dlg)
+
+  def _acc_min_speed_btn_callback(self):
+    acc_min_speed = self._acc_min_speed_btn.value
+    acc_min_speed = acc_min_speed.removesuffix(" [km/h]")
+    if acc_min_speed == "toyota default":
+      acc_min_speed = ""
+
+    def acc_min_speed_callback(speed: str):
+      if speed:
+        try:
+          with open('/data/acc_min_speed.txt','w') as fp:
+            fp.write("%s" % (speed))
+        except Exception as e:
+          self._acc_min_speed_btn.set_value("toyota default") #書けなかったらファイルは無いか空なので、走行はトヨタの既定になる
+          return
+
+        try:
+          speed_kph = int(speed)
+        except Exception as e:
+          speed_kph = 0
+        if speed_kph <= 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+          self._acc_min_speed_btn.set_value("toyota default")
+        else:
+          self._acc_min_speed_btn.set_value(str(speed_kph)+" [km/h]")
+
+    dlg = BigInputDialog("ACC min speed", acc_min_speed, confirm_callback=acc_min_speed_callback)
     gui_app.push_widget(dlg)

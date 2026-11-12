@@ -202,6 +202,19 @@ class TogglesLayout(Widget):
           pass
         self._toggles["AutoDoorLock"] = self._auto_door_lock_btn
 
+        self._acc_min_speed_action = ButtonAction(text="EDIT")
+        self._acc_min_speed_action.set_enabled(True)
+        self._acc_min_speed_btn = ListItem(title="ACC min speed", icon="../offroad/icon_car_key.png", action_item=self._acc_min_speed_action, callback=self._edit_acc_min_speed)
+        self._acc_min_speed_btn.action_item.set_value("toyota default") #ファイルが無いか0ならトヨタの既定
+        try:
+          with open('/data/acc_min_speed.txt','r') as fp:
+            acc_min_speed_str = fp.read() #ACC 最低速度をテキストで28みたいにkm/hで書いておく。ファイルが無いか0でトヨタの既定。変えたら再起動が必要
+            if int(acc_min_speed_str) > 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+              self._acc_min_speed_btn.action_item.set_value(str(int(acc_min_speed_str))+" [km/h]")
+        except Exception as e:
+          pass
+        self._toggles["AccMinSpeed"] = self._acc_min_speed_btn
+
         # 車重が無くなった。
         # self._vehicle_mass_action = ButtonAction(text="EDIT")
         # self._vehicle_mass_action.set_enabled(True)
@@ -303,6 +316,37 @@ class TogglesLayout(Widget):
     s = s.removesuffix(" [km/h]")
     self._keyboard.set_text(s)
     self._keyboard.set_callback(update_door_lock)
+    gui_app.push_widget(self._keyboard)
+
+  def _edit_acc_min_speed(self):
+    def update_acc_min_speed(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/acc_min_speed.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._acc_min_speed_btn.action_item.set_value("toyota default") #書けなかったらファイルは無いか空なので、走行はトヨタの既定になる
+        return
+
+      try:
+        speed_kph = int(self._keyboard.text)
+      except Exception as e:
+        speed_kph = 0
+      if speed_kph <= 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+        self._acc_min_speed_btn.action_item.set_value("toyota default")
+      else:
+        self._acc_min_speed_btn.action_item.set_value(str(speed_kph)+" [km/h]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("ACC min speed", "")
+    s = self._acc_min_speed_btn.action_item.value
+    s = s.removesuffix(" [km/h]")
+    if s == "toyota default":
+      s = ""
+    self._keyboard.set_text(s)
+    self._keyboard.set_callback(update_acc_min_speed)
     gui_app.push_widget(self._keyboard)
 
   # def _edit_vehicle_mass(self):
