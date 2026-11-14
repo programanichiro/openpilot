@@ -286,8 +286,8 @@ class SoftwareLayoutMici(NavScroller):
       check_update_btn,
       InstallUpdateButton(),
       TargetBranchButton(check_update_btn),
-      self._c4_ui_on_c3x,
       self._official_layout_button,
+      self._c4_ui_on_c3x,
       uninstall_openpilot_btn,
     ])
 
