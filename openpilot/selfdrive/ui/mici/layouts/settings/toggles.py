@@ -40,7 +40,6 @@ class TogglesLayoutMici(NavScroller):
                                        description="Enable to use openpilot driver assistance.\n" +
                                                    "Disable to use your car's stock driver assistance.")
 
-    C4UIOnC3X = BigParamControl("use c4 ui in c3x", "C4UIOnC3X", toggle_callback=restart_needed_callback)
     self._accel_method_setting = BigMultiToggle("accel method", ["recommend", "official"], select_callback=self._accel_method_setting_callback, toggle_callback=restart_needed_callback)
     GpsAlwaysSwitch = BigParamControl("always receive GPS signals", "GpsAlwaysSwitch", toggle_callback=restart_needed_callback)
     DisableMaxSpeedModify = BigParamControl("use TSSP acc over 115", "DisableMaxSpeedModify", toggle_callback=restart_needed_callback)
@@ -116,7 +115,6 @@ class TogglesLayoutMici(NavScroller):
       # self._vehicle_mass_btn,
       self._auto_door_lock_btn,
       self._acc_min_speed_btn,
-      C4UIOnC3X,
     ])
 
     # Toggle lists
@@ -131,7 +129,6 @@ class TogglesLayoutMici(NavScroller):
       ("DisableMaxSpeedModify", DisableMaxSpeedModify),
       ("ForceHybridVehicle", ForceHybridVehicle),
       ("IgnoreRerouteHarness", IgnoreRerouteHarness),
-      ("C4UIOnC3X", C4UIOnC3X),
     )
 
     enable_openpilot.set_enabled(lambda: not ui_state.engaged)

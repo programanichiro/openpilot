@@ -1,19 +1,20 @@
 import math
+import numpy as np
 import raylib_nb as rl
 import time
 from dataclasses import dataclass
 from openpilot.common.constants import CV
+from openpilot.selfdrive.ui.mici.onroad import DIMMED_ICON_ALPHA, OFFICIAL_LAYOUT
 from openpilot.selfdrive.ui.mici.onroad.torque_bar import TorqueBar
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus, ChestnutState
-from openpilot.system.ui.lib.application import gui_app, FontWeight
+from openpilot.system.ui.lib.application import gui_app, FontWeight, ASSETS_DIR
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.widgets.button import Button, ButtonStyle
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.cereal import log
+from openpilot.cereal import log  # upstream は TurnIntent と一緒に消したが、フォークのドライバー監視の判定で使う
 
-EventName = log.OnroadEvent.EventName
 
 # Constants
 SET_SPEED_NA = 255
@@ -21,6 +22,49 @@ KM_TO_MILE = 0.621371
 CRUISE_DISABLED_CHAR = '–'
 
 SET_SPEED_PERSISTENCE = 2.5  # seconds
+# 公式の配置で、ボタンと ACC 速度の表示を左へ寄せる量。映像の右端の信頼度ボール(直径 32px)の 0.7 倍。
+# 左のハンドルと DMoji がパネルへ移って空いた分を詰め、右の信頼度ボールとの重なりを減らす
+OFFICIAL_SHIFT_X = 22 if OFFICIAL_LAYOUT else 0
+WHEEL_SIZE = 52
+WHEEL_WHITE = (255, 255, 255)
+WHEEL_GREEN = (0, 255, 64)
+WHEEL_ORANGE = (255, 115, 0)
+
+
+def _texture(rgba: np.ndarray, px: float) -> rl.Texture:
+  texture = rl.load_texture_from_image(rl.Image(None, rgba.shape[1], rgba.shape[0], 1, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8))
+  rl.update_texture(texture, np.ascontiguousarray(rgba))
+  rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
+  texture.width, texture.height = round(rgba.shape[1] / px), round(rgba.shape[0] / px)
+  return texture
+
+
+def _wheel_effect_textures(asset: str, size: int) -> tuple[rl.Texture, rl.Texture]:
+  """White glow and center highlight for the wheel, matching the design's render. Tint the glow when drawing."""
+  image = gui_app._load_image_from_path((ASSETS_DIR / asset).as_posix(), size, size)
+  w, h, px = image.width, image.height, image.width / size
+  alpha = np.frombuffer(image.to_bytes(w * h * 4), dtype=np.uint8).reshape(h, w, 4)[..., 3] / 255.0
+  rl.unload_image(image)
+
+  # glow: Figma's drop shadow (blur 24 at 128px) renders as a gaussian with sigma 10, its spread is ignored on vectors
+  sigma = 10 * size / 128 * px
+  pad = math.ceil(3 * sigma)
+  glow = np.pad(alpha, pad)
+  x = np.arange(-pad, pad + 1)
+  kernel = np.exp(-x ** 2 / (2 * sigma ** 2))
+  kernel /= kernel.sum()
+  for axis in (0, 1):
+    glow = np.apply_along_axis(np.convolve, axis, glow, kernel, mode='same')
+  glow_rgba = np.full((*glow.shape, 4), 255, dtype=np.uint8)
+  glow_rgba[..., 3] = np.clip(glow * 255, 0, 255)
+
+  # highlight: the fill is a radial gradient from 35% lighter at the center to the base color at the rim
+  yy, xx = np.mgrid[:h, :w]
+  r = np.hypot(xx + 0.5 - w / 2, yy + 0.5 - h / 2) / (w / 2)
+  highlight_rgba = np.full((h, w, 4), 255, dtype=np.uint8)
+  highlight_rgba[..., 3] = np.clip(alpha * 89 * (1 - r), 0, 255)
+
+  return _texture(glow_rgba, px), _texture(highlight_rgba, px)
 
 
 @dataclass(frozen=True)
@@ -39,63 +83,6 @@ class Colors:
 
 FONT_SIZES = FontSizes()
 COLORS = Colors()
-
-
-class TurnIntent(Widget):
-  FADE_IN_ANGLE = 30  # degrees
-
-  def __init__(self):
-    super().__init__()
-    self._pre = False
-    self._turn_intent_direction: int = 0
-
-    self._turn_intent_alpha_filter = FirstOrderFilter(0, 0.05, 1 / gui_app.target_fps)
-    self._turn_intent_rotation_filter = FirstOrderFilter(0, 0.1, 1 / gui_app.target_fps)
-
-    self._txt_turn_intent_left: rl.Texture = gui_app.texture('icons_mici/turn_intent_left.png', 50, 20)
-    self._txt_turn_intent_right: rl.Texture = gui_app.texture('icons_mici/turn_intent_left.png', 50, 20, flip_x=True)
-
-  def _render(self, _):
-    if self._turn_intent_alpha_filter.x > 1e-2:
-      turn_intent_texture = self._txt_turn_intent_right if self._turn_intent_direction == 1 else self._txt_turn_intent_left
-      src_rect = rl.Rectangle(0, 0, turn_intent_texture.width, turn_intent_texture.height)
-      dest_rect = rl.Rectangle(self._rect.x + self._rect.width / 2, self._rect.y + self._rect.height / 2,
-                               turn_intent_texture.width, turn_intent_texture.height)
-
-      origin = rl.Vector2(turn_intent_texture.width / 2, self._rect.height / 2)
-      color = rl.Color(255, 255, 255, int(255 * self._turn_intent_alpha_filter.x))
-      rl.draw_texture_pro(turn_intent_texture, src_rect, dest_rect, origin, self._turn_intent_rotation_filter.x, color)
-
-  def _update_state(self) -> None:
-    sm = ui_state.sm
-
-    left = any(e.name == EventName.preLaneChangeLeft for e in sm['onroadEvents'])
-    right = any(e.name == EventName.preLaneChangeRight for e in sm['onroadEvents'])
-    if left or right:
-      # pre lane change
-      if not self._pre:
-        self._turn_intent_rotation_filter.x = self.FADE_IN_ANGLE if left else -self.FADE_IN_ANGLE
-
-      self._pre = True
-      self._turn_intent_direction = -1 if left else 1
-      self._turn_intent_alpha_filter.update(1)
-      self._turn_intent_rotation_filter.update(0)
-    elif any(e.name == EventName.laneChange for e in sm['onroadEvents']):
-      # fade out and rotate away
-      self._pre = False
-      self._turn_intent_alpha_filter.update(0)
-
-      if self._turn_intent_direction == 0:
-        # unknown. missed pre frame?
-        self._turn_intent_rotation_filter.update(0)
-      else:
-        self._turn_intent_rotation_filter.update(self._turn_intent_direction * self.FADE_IN_ANGLE)
-    else:
-      # didn't complete lane change, just hide
-      self._pre = False
-      self._turn_intent_direction = 0
-      self._turn_intent_alpha_filter.update(0)
-      self._turn_intent_rotation_filter.update(0)
 
 
 class HudRenderer(Widget):
@@ -121,18 +108,17 @@ class HudRenderer(Widget):
     # self._font_uni: rl.Font = gui_app.font("JP2") #動的ロード
     self._font_JP: rl.Font = gui_app.font("JP")
 
-    self._turn_intent = TurnIntent()
     self._torque_bar = TorqueBar()
 
-    self._txt_wheel: rl.Texture = gui_app.texture('icons_mici/wheel.png', 50, 50)
-    self._txt_wheel_critical: rl.Texture = gui_app.texture('icons_mici/wheel_critical.png', 50, 50)
-    self._txt_exclamation_point: rl.Texture = gui_app.texture('icons_mici/exclamation_point.png', 9, 44)
-    self._txt_chestnut: rl.Texture = gui_app.texture('icons_mici/chestnut.png', 60, 44)
-    self._txt_chestnut_green: rl.Texture = gui_app.texture('icons_mici/chestnut_green.png', 60, 44)
-    self._txt_chestnut_orange: rl.Texture = gui_app.texture('icons_mici/chestnut_orange.png', 75, 44)
+    self._txt_wheel: rl.Texture = gui_app.texture('icons_mici/wheel.png', WHEEL_SIZE, WHEEL_SIZE)
+    self._txt_wheel_glow, self._txt_wheel_highlight = _wheel_effect_textures('icons_mici/wheel.png', WHEEL_SIZE)
+    self._txt_chestnut: rl.Texture = gui_app.texture('icons_mici/chestnut.png', 48, 36)
+    self._txt_chestnut_green: rl.Texture = gui_app.texture('icons_mici/chestnut_green.png', 48, 36)
+    self._txt_chestnut_orange: rl.Texture = gui_app.texture('icons_mici/chestnut_orange.png', 61, 36)
     self._chestnut_icon: rl.Texture | None = None
     self._wheel_alpha_filter = FirstOrderFilter(0, 0.05, 1 / gui_app.target_fps)
-    self._wheel_y_filter = FirstOrderFilter(0, 0.1, 1 / gui_app.target_fps)
+    self._wheel_color_filters = [FirstOrderFilter(c, 0.05, 1 / gui_app.target_fps) for c in WHEEL_WHITE]
+    self._wheel_glow_filter = FirstOrderFilter(0, 0.05, 1 / gui_app.target_fps)
 
     self._set_speed_alpha_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
     self._chestnut_alpha_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
@@ -141,6 +127,9 @@ class HudRenderer(Widget):
   def set_wheel_critical_icon(self, critical: bool):
     """Set the wheel icon to critical or normal state."""
     self._show_wheel_critical = critical
+
+  def set_torque_bar_hidden(self, hidden: bool):
+    self._torque_bar.set_hidden(hidden)
 
   def set_can_draw_top_icons(self, can_draw_top_icons: bool):
     """Set whether to draw the top part of the HUD."""
@@ -226,8 +215,14 @@ class HudRenderer(Widget):
 
     self._draw_model_source(rect)
 
-    self._draw_steering_wheel(rect)
+    if not OFFICIAL_LAYOUT:
+      self._draw_steering_wheel(rect)
     self._ip_draw(rect)
+
+  def render_steering_wheel(self, rect: rl.Rectangle) -> None:
+    """Draw the steering wheel centered at the bottom of rect, after render() has updated state."""
+    # 公式の配置のときだけ、AugmentedRoadView が左パネルを渡して呼ぶ（MADS ボタンもハンドルと一緒に移る）
+    self._draw_steering_wheel(rect)
 
   def _draw_model_source(self, rect: rl.Rectangle) -> None:
     loading = ui_state.chestnut_state == ChestnutState.LOADING
@@ -251,60 +246,61 @@ class HudRenderer(Widget):
     if alpha < 1e-2:
       return
 
-    pos = rl.Vector2(rect.x + rect.width - 10 - icon.width,
-                     rect.y + rect.height - 14 - (self._txt_wheel.height + icon.height) / 2)
+    if OFFICIAL_LAYOUT:
+      pos = rl.Vector2(rect.x + 14, rect.y + rect.height - 10 - icon.height)
+    else:
+      # 左下はフォークのハンドルと MADS ボタンがあるので、右下のまま
+      pos = rl.Vector2(rect.x + rect.width - 10 - icon.width,
+                       rect.y + rect.height - 14 - (self._txt_wheel.height + icon.height) / 2)
     rl.draw_texture_ex(icon, pos, 0.0, 1.0, rl.Color(255, 255, 255, int(255 * opacity * alpha)))
 
   def _draw_steering_wheel(self, rect: rl.Rectangle) -> None:
-    wheel_txt = self._txt_wheel_critical if self._show_wheel_critical else self._txt_wheel
-
-    if self._show_wheel_critical:
-      self._wheel_alpha_filter.update(255)
-      self._wheel_y_filter.update(0)
+    # The wheel is the source of truth for engagement: green if and only if openpilot is engaged.
+    # When disengaged it's grayed out, except for steerRequired alerts which show it orange.
+    engaged = ui_state.status == UIStatus.ENGAGED
+    if engaged:
+      target_color = WHEEL_GREEN
+    elif self._show_wheel_critical:
+      target_color = WHEEL_ORANGE
     else:
-      if ui_state.status == UIStatus.DISENGAGED:
-        self._wheel_alpha_filter.update(0)
-        self._wheel_y_filter.update(wheel_txt.height / 2)
-      else:
-        self._wheel_alpha_filter.update(255 * 0.9)
-        self._wheel_y_filter.update(0)
+      target_color = WHEEL_WHITE
+    wheel_txt = self._txt_wheel
+
+    if self._show_wheel_critical or ui_state.status != UIStatus.DISENGAGED:
+      self._wheel_alpha_filter.update(255)
+    else:
+      self._wheel_alpha_filter.update(255 * DIMMED_ICON_ALPHA)
+    wheel_color = [int(f.update(c)) for f, c in zip(self._wheel_color_filters, target_color, strict=True)]
+    glow = self._wheel_glow_filter.update(target_color != WHEEL_WHITE)
 
     # pos
-    pos_x = int(rect.x + 21 + wheel_txt.width / 2)
-    pos_y = int(rect.y + rect.height - 14 - wheel_txt.height / 2 + self._wheel_y_filter.x)
+    if OFFICIAL_LAYOUT:
+      # 左パネルの下の中央
+      pos_x = int(rect.x + rect.width / 2)
+      pos_y = int(rect.y + rect.height - 10 - wheel_txt.height / 2)
+    else:
+      # フォークはサイドパネルを右に置いたままなので、ハンドルは映像の左下
+      pos_x = int(rect.x + 21 + wheel_txt.width / 2)
+      pos_y = int(rect.y + rect.height - 14 - wheel_txt.height / 2)
     rotation = -ui_state.sm['carState'].steeringAngleDeg
-
-    turn_intent_margin = 25
-    self._turn_intent.render(rl.Rectangle(
-      pos_x - wheel_txt.width / 2 - turn_intent_margin,
-      pos_y - wheel_txt.height / 2 - turn_intent_margin,
-      wheel_txt.width + turn_intent_margin * 2,
-      wheel_txt.height + turn_intent_margin * 2,
-    ))
-
-    src_rect = rl.Rectangle(0, 0, wheel_txt.width, wheel_txt.height)
-    dest_rect = rl.Rectangle(pos_x, pos_y, wheel_txt.width, wheel_txt.height)
-    origin = rl.Vector2(wheel_txt.width / 2, wheel_txt.height / 2)
 
     if self.steer_always:
       if self.cruise_available:
-        center = rl.Vector2( #dest_rectの左上がセンター（draw_texture_proのoriginの影響を考慮）
-            dest_rect.x,
-            dest_rect.y
-        )
-        radius = dest_rect.width / 2 + 5  # 正円なら width/2 でOK
+        center = rl.Vector2(pos_x, pos_y) # ハンドルの中心
+        radius = wheel_txt.width / 2 + 5  # 正円なら width/2 でOK
         rl.draw_circle_v(center, radius, rl.Color(0x17, 0x86, 0x44, 224))
 
-    # color and draw
-    color = rl.Color(255, 255, 255, int(self._wheel_alpha_filter.x))
-    rl.draw_texture_pro(wheel_txt, src_rect, dest_rect, origin, rotation, color)
-
-    if self._show_wheel_critical:
-      # Draw exclamation point icon
-      EXCLAMATION_POINT_SPACING = 10
-      exclamation_pos_x = pos_x - self._txt_exclamation_point.width / 2 + wheel_txt.width / 2 + EXCLAMATION_POINT_SPACING
-      exclamation_pos_y = pos_y - self._txt_exclamation_point.height / 2
-      rl.draw_texture_ex(self._txt_exclamation_point, rl.Vector2(exclamation_pos_x, exclamation_pos_y), 0.0, 1.0, rl.WHITE)
+    alpha = self._wheel_alpha_filter.x
+    origin = rl.Vector2(self._txt_wheel_glow.width / 2, self._txt_wheel_glow.height / 2)
+    rl.draw_texture_pro(self._txt_wheel_glow, rl.Rectangle(0, 0, self._txt_wheel_glow.width, self._txt_wheel_glow.height),
+                        rl.Rectangle(pos_x, pos_y, self._txt_wheel_glow.width, self._txt_wheel_glow.height), origin, rotation,
+                        rl.Color(*wheel_color, int(alpha * glow)))
+    rl.draw_texture_pro(wheel_txt, rl.Rectangle(0, 0, wheel_txt.width, wheel_txt.height),
+                        rl.Rectangle(pos_x, pos_y, wheel_txt.width, wheel_txt.height),
+                        rl.Vector2(wheel_txt.width / 2, wheel_txt.height / 2), rotation, rl.Color(*wheel_color, int(alpha)))
+    rl.draw_texture_pro(self._txt_wheel_highlight, rl.Rectangle(0, 0, wheel_txt.width, wheel_txt.height),
+                        rl.Rectangle(pos_x, pos_y, wheel_txt.width, wheel_txt.height),
+                        rl.Vector2(wheel_txt.width / 2, wheel_txt.height / 2), rotation, rl.Color(255, 255, 255, int(alpha * glow)))
 
     mads_margin = 10
     mads_rect = rl.Rectangle(
@@ -326,7 +322,7 @@ class HudRenderer(Widget):
     if alpha < 1e-2:
       return
 
-    x = rect.x
+    x = rect.x - OFFICIAL_SHIFT_X
     y = rect.y
 
     # draw drop shadow
@@ -841,7 +837,7 @@ class HudRenderer(Widget):
   def _ip_draw(self, rect: rl.Rectangle):
 
     if gui_app.big_ui():
-      right_margin = 120
+      right_margin = 120 + OFFICIAL_SHIFT_X # C3X は道路名が下段で ACC 速度の表示の左隣なので、公式の配置では一緒に左へ寄せる
       font_size = 44
       font_size_km = 33
       y_pos = rect.y+rect.height
@@ -981,23 +977,24 @@ class HudRenderer(Widget):
     if not self._is_active or not self._face_detected:
       self._disp_button_ct = 20 * 5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
+    bx = rect.x - OFFICIAL_SHIFT_X # ボタンの基準の x。公式の配置では左へ寄せる
     all_btn_appeared = False
     if self._disp_button_ct > 0:
       self._disp_button_ct -= 1
       all_btn_appeared = True
 
       lane_rect = rl.Rectangle(
-        int(rect.x+70), int(rect.y+20), 90, 90, #左上のいい感じの位置
+        int(bx+70), int(rect.y+20), 90, 90, #左上のいい感じの位置
       )
       self._lta_enable_sw_button.render(lane_rect)
 
       lockon_rect = rl.Rectangle(
-        int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+        int(bx+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
       )
       self._lockon_disp_disable_button.render(lockon_rect)
 
       accel_ctrl_disable_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
+        int(bx+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
       )
       self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
 
@@ -1005,22 +1002,22 @@ class HudRenderer(Widget):
 
       decel_ctrl_disable_rect = rl.Rectangle(
         #int(rect.x+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
-        int(rect.x+90+70), int(rect.y+rect.height-90-20), 90, 90, #左下中央寄りのいい感じの位置
+        int(bx+90+70), int(rect.y+rect.height-90-20), 90, 90, #左下中央寄りのいい感じの位置
       )
       self._decel_ctrl_disable_button.render(decel_ctrl_disable_rect)
 
       start_accel_power_up_disp_enable_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-90-20), int(rect.y+20), 90, 90, #右上中央寄りのいい感じの位置
+        int(bx+rect.width-90-90-20), int(rect.y+20), 90, 90, #右上中央寄りのいい感じの位置
       )
       self._start_accel_power_up_disp_enable_button.render(start_accel_power_up_disp_enable_rect)
 
       accel_engaged_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
+        int(bx+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
       )
       self._accel_engaged_button.render(accel_engaged_rect)
 
       long_speeddown_disable_rect = rl.Rectangle(
-        int(rect.x+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
+        int(bx+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
       )
       self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
 
@@ -1035,21 +1032,21 @@ class HudRenderer(Widget):
       if self._accel_ctrl_disable_changed_ct > 0:
         self._accel_ctrl_disable_changed_ct -= 1
         accel_ctrl_disable_rect = rl.Rectangle(
-          int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
+          int(bx+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
         )
         self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
 
       if self._lockon_disp_disable_changed_ct > 0:
         self._lockon_disp_disable_changed_ct -= 1
         lockon_rect = rl.Rectangle(
-          int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+          int(bx+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
         )
         self._lockon_disp_disable_button.render(lockon_rect)
 
       if self._long_speeddown_disable_changed_ct > 0:
         self._long_speeddown_disable_changed_ct -= 1
         long_speeddown_disable_rect = rl.Rectangle(
-          int(rect.x+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
+          int(bx+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
         )
         self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
 

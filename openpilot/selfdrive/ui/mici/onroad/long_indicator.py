@@ -38,15 +38,14 @@ class LongIndicator(Widget):
 
   def _render(self, rect: rl.Rectangle) -> None:
     sm = ui_state.sm
-    hide = not sm['selfdriveState'].enabled or not ui_state.has_longitudinal_control
-    if sm.recv_frame['selfdriveState'] < ui_state.started_frame or (hide and not self._always_visible):
+    if sm.recv_frame['selfdriveState'] < ui_state.started_frame or (not ui_state.has_longitudinal_control and not self._always_visible):
       self._personality = None
       self._personality_changed_time = -HIGHLIGHT_TIME
       self._alpha_filter.x = 0.0
       return
 
-    # hidden under alerts and set speed
-    visible = self._always_visible or (self._should_draw and sm['selfdriveState'].alertSize == log.SelfdriveState.AlertSize.none)
+    # upstream はエンゲージ前に薄く(灰色に)するが、見にくいのでフォークは薄くしない
+    visible = self._always_visible or self._should_draw
     alpha = self._alpha_filter.update(visible)
     self._draw_lead_car(rect, alpha)
     self._draw_distance_bars(rect, alpha, visible)
@@ -91,5 +90,5 @@ class LongIndicator(Widget):
 
   @staticmethod
   def _draw_centered(texture: rl.Texture, rect: rl.Rectangle, y: float, alpha: float) -> None:
-    pos = rl.Vector2(rect.x + 46 - texture.width / 2, rect.y + y - texture.height / 2)
+    pos = rl.Vector2(rect.x + (rect.width - texture.width) / 2, rect.y + y - texture.height / 2)
     rl.draw_texture_ex(texture, pos, 0.0, 1.0, rl.Color(255, 255, 255, round(255 * alpha)))
