@@ -1,7 +1,6 @@
 import raylib_nb as rl
 from openpilot.cereal import log
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.selfdrive.ui.mici.onroad import DIMMED_ICON_ALPHA
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import Widget
@@ -17,7 +16,6 @@ class LongIndicator(Widget):
                           (self._texture('distance_2', 40, 9), self._texture('distance_2_green', 68, 37)),
                           (self._texture('distance_3', 48, 11), self._texture('distance_3_green', 76, 39))]
     self._alpha_filter = FirstOrderFilter(0.0, 0.05, 1 / gui_app.target_fps)
-    self._dim_filter = FirstOrderFilter(1.0, 0.05, 1 / gui_app.target_fps)
     # crossfade between states, a white and a green filter per icon
     self._lead_car_filters = (FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps), FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps))
     self._distance_filters = [(FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps), FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps))
@@ -46,10 +44,9 @@ class LongIndicator(Widget):
       self._alpha_filter.x = 0.0
       return
 
-    # grayed out while disengaged, with the lit bars at the dimmed icon alpha
+    # upstream はエンゲージ前に薄く(灰色に)するが、見にくいのでフォークは薄くしない
     visible = self._always_visible or self._should_draw
-    dim = self._dim_filter.update(1.0 if sm['selfdriveState'].enabled else DIMMED_ICON_ALPHA / 0.9)
-    alpha = self._alpha_filter.update(visible) * dim
+    alpha = self._alpha_filter.update(visible)
     self._draw_lead_car(rect, alpha)
     self._draw_distance_bars(rect, alpha, visible)
 
