@@ -8,7 +8,8 @@ from collections.abc import Callable
 from openpilot.common.time_helpers import system_time_valid
 from openpilot.selfdrive.ui.mici.layouts.settings.device.device_layout import EngagedConfirmationButton
 from openpilot.selfdrive.ui.mici.widgets.info import InfoLayoutMici
-from openpilot.selfdrive.ui.mici.widgets.button import BigButton
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigParamControl, BigToggle
+from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app, MousePos
@@ -267,11 +268,34 @@ class SoftwareLayoutMici(NavScroller):
                                                         description="Remove openpilot from this device.",
                                                         description_icon=gui_app.texture("icons_mici/setup/factory_reset.png", 64, 64))
 
+    # toggles から移した画面配置の切り替え
+    self._c4_ui_on_c3x = BigParamControl("use c4 ui in c3x", "C4UIOnC3X", toggle_callback=restart_needed_callback)
+    # 走行画面を公式(upstream)の配置にする。UI の起動時に一度だけ読むので、変えたら端末の再起動が必要
+    official_layout = False
+    try:
+      with open('/data/official_onroad_layout.txt','r') as fp:
+        official_layout = int(fp.read()) == 1
+    except Exception:
+      pass
+    self._official_layout_button = BigToggle("official onroad layout", "", initial_state=official_layout,
+                                             toggle_callback=self._official_layout_button_callback, description="reboot to apply.")
+
     check_update_btn = CheckUpdateButton()
     self._scroller.add_widgets([
       SoftwareInfoLayoutMici(),
       check_update_btn,
       InstallUpdateButton(),
       TargetBranchButton(check_update_btn),
+      self._c4_ui_on_c3x,
+      self._official_layout_button,
       uninstall_openpilot_btn,
     ])
+
+  def show_event(self):
+    super().show_event()
+    # toggles にいた時と同じく、表示のたびに param の値を反映する
+    self._c4_ui_on_c3x.refresh()
+
+  def _official_layout_button_callback(self, onoff):
+    with open('/data/official_onroad_layout.txt','w') as fp:
+      fp.write("%d" % (int(onoff)))
