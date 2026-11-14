@@ -4,7 +4,7 @@ import raylib_nb as rl
 import time
 from dataclasses import dataclass
 from openpilot.common.constants import CV
-from openpilot.selfdrive.ui.mici.onroad import DIMMED_ICON_ALPHA
+from openpilot.selfdrive.ui.mici.onroad import DIMMED_ICON_ALPHA, OFFICIAL_LAYOUT
 from openpilot.selfdrive.ui.mici.onroad.torque_bar import TorqueBar
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus, ChestnutState
 from openpilot.system.ui.lib.application import gui_app, FontWeight, ASSETS_DIR
@@ -212,8 +212,14 @@ class HudRenderer(Widget):
 
     self._draw_model_source(rect)
 
-    self._draw_steering_wheel(rect)
+    if not OFFICIAL_LAYOUT:
+      self._draw_steering_wheel(rect)
     self._ip_draw(rect)
+
+  def render_steering_wheel(self, rect: rl.Rectangle) -> None:
+    """Draw the steering wheel centered at the bottom of rect, after render() has updated state."""
+    # 公式の配置のときだけ、AugmentedRoadView が左パネルを渡して呼ぶ（MADS ボタンもハンドルと一緒に移る）
+    self._draw_steering_wheel(rect)
 
   def _draw_model_source(self, rect: rl.Rectangle) -> None:
     loading = ui_state.chestnut_state == ChestnutState.LOADING
@@ -237,9 +243,12 @@ class HudRenderer(Widget):
     if alpha < 1e-2:
       return
 
-    # 左下はフォークのハンドルと MADS ボタンがあるので、右下のまま
-    pos = rl.Vector2(rect.x + rect.width - 10 - icon.width,
-                     rect.y + rect.height - 14 - (self._txt_wheel.height + icon.height) / 2)
+    if OFFICIAL_LAYOUT:
+      pos = rl.Vector2(rect.x + 14, rect.y + rect.height - 10 - icon.height)
+    else:
+      # 左下はフォークのハンドルと MADS ボタンがあるので、右下のまま
+      pos = rl.Vector2(rect.x + rect.width - 10 - icon.width,
+                       rect.y + rect.height - 14 - (self._txt_wheel.height + icon.height) / 2)
     rl.draw_texture_ex(icon, pos, 0.0, 1.0, rl.Color(255, 255, 255, int(255 * opacity * alpha)))
 
   def _draw_steering_wheel(self, rect: rl.Rectangle) -> None:
@@ -261,9 +270,15 @@ class HudRenderer(Widget):
     wheel_color = [int(f.update(c)) for f, c in zip(self._wheel_color_filters, target_color, strict=True)]
     glow = self._wheel_glow_filter.update(target_color != WHEEL_WHITE)
 
-    # pos（フォークはサイドパネルを右に置いたままなので、ハンドルは映像の左下）
-    pos_x = int(rect.x + 21 + wheel_txt.width / 2)
-    pos_y = int(rect.y + rect.height - 14 - wheel_txt.height / 2)
+    # pos
+    if OFFICIAL_LAYOUT:
+      # 左パネルの下の中央
+      pos_x = int(rect.x + rect.width / 2)
+      pos_y = int(rect.y + rect.height - 10 - wheel_txt.height / 2)
+    else:
+      # フォークはサイドパネルを右に置いたままなので、ハンドルは映像の左下
+      pos_x = int(rect.x + 21 + wheel_txt.width / 2)
+      pos_y = int(rect.y + rect.height - 14 - wheel_txt.height / 2)
     rotation = -ui_state.sm['carState'].steeringAngleDeg
 
     if self.steer_always:

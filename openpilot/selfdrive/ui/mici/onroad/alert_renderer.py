@@ -7,6 +7,7 @@ import string
 from openpilot.cereal import log
 from openpilot.selfdrive.ui.onroad.alert_renderer import Alert, get_alert
 from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.mici.onroad import OFFICIAL_LAYOUT
 from openpilot.common.filter_simple import BounceFilter, FirstOrderFilter
 from openpilot.system.ui.lib.application import gui_app, FontWeight, TextAlignment, TextAlignmentVertical
 from openpilot.system.ui.lib.text_measure import measure_text_cached
@@ -177,9 +178,9 @@ class AlertRenderer(Widget):
     alert_layout = self._icon_helper(alert)
     self._draw_text(alert, alert_layout)
     self._draw_icons(alert_layout)
-    # 赤い警告マークは映像の左下に出るが、フォークはそこにハンドルと MADS ボタンがあるので出さない（upstream はハンドルを左パネルへ移したので空いていた）
-    # if alert.status == AlertStatus.critical:
-    #   self._draw_red_warning()
+    # 赤い警告マークは映像の左下に出る。フォークの配置ではそこにハンドルと MADS ボタンがあるので、公式の配置のときだけ出す
+    if OFFICIAL_LAYOUT and alert.status == AlertStatus.critical:
+      self._draw_red_warning()
 
     return True
 

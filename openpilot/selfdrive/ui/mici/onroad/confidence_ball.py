@@ -1,6 +1,6 @@
 import numpy as np
 import raylib_nb as rl
-from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH
+from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH, OFFICIAL_LAYOUT
 from openpilot.selfdrive.ui.mici.onroad.long_indicator import LongIndicator
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.widgets import Widget
@@ -37,12 +37,17 @@ def draw_circle_gradient(center_x: float, center_y: float, radius: float,
 # 見えている部分はサイドパネル(60px)に収まるので、縮小は不要。
 LONG_INDICATOR_BOTTOM = 172  # 152 + 39/2 (3本目の緑バーの下端)
 LONG_INDICATOR_Y_OFS = -5     # 0でサイドパネルの下端ぴったりに置く->もう少し下げる。
+# 公式の配置で、左パネルの LongIndicator(y=86〜158 あたり)にかぶせる車間ボタンの範囲。上の DMoji と下のハンドル・MADS ボタン(y=168〜)を避ける
+OFFICIAL_GAP_BUTTON_Y = 76
+OFFICIAL_GAP_BUTTON_H = 90
 
 
 class ConfidenceBall(Widget):
   def __init__(self):
     super().__init__()
-    self._confidence_filter = FirstOrderFilter(-0.5, 0.5, 1 / gui_app.target_fps)
+    self._confidence_filter = FirstOrderFilter(0.0 if OFFICIAL_LAYOUT else -0.5, 0.5, 1 / gui_app.target_fps)
+    self._alpha_filter = FirstOrderFilter(1.0, 0.05, 1 / gui_app.target_fps)
+    self._hidden = False
     # 公式の LongIndicator をここで描く。タコメーターと場所が被るため AugmentedRoadView から移した。
     # 車間距離の表示を含むので、自前の acc_dist アイコン(_lp1〜3)は廃止した。
     self._long_indicator = LongIndicator()
@@ -60,17 +65,33 @@ class ConfidenceBall(Widget):
     self._press_LongitudinalPersonality()
     self.button_style_only = False
 
+  def set_hidden(self, hidden: bool):
+    self._hidden = hidden
 
   def _update_state(self):
     # animate status dot in from bottom
-    # フォークは右パネルの下端に LongIndicator と車間ボタンを置いているので、エンゲージしていない時は公式の「下端で待機」にせず、従来どおり下に隠す
+    # フォークの配置は右パネルの下端に LongIndicator と車間ボタンを置いているので、エンゲージしていない時は公式の「下端で待機」にせず、従来どおり下に隠す
     if ui_state.status == UIStatus.DISENGAGED:
-      self._confidence_filter.update(-0.5)
+      self._confidence_filter.update(0.0 if OFFICIAL_LAYOUT else -0.5)
     else:
       self._confidence_filter.update((1 - max(ui_state.sm['modelV2'].meta.disengagePredictions.brakeDisengageProbs or [1])) *
                                                         (1 - max(ui_state.sm['modelV2'].meta.disengagePredictions.steerOverrideProbs or [1])))
 
   def _render(self, _):
+    if OFFICIAL_LAYOUT:
+      # 公式の配置: 映像の右端に描く。渡される矩形は映像の範囲
+      alpha = self._alpha_filter.update(0.0 if self._hidden else 1.0)
+      if alpha < 1e-2:
+        return
+      status_dot_radius = 16
+      margin = 10
+      dot_x = self._rect.x + self._rect.width - margin - status_dot_radius
+      dot_height = (1 - self._confidence_filter.x) * (self._rect.height - 2 * (status_dot_radius + margin)) + status_dot_radius + margin
+      dot_height = self._rect.y + dot_height
+      top_dot_color, bottom_dot_color = self._dot_colors()
+      draw_circle_gradient(dot_x, dot_height, status_dot_radius, top_dot_color, bottom_dot_color, alpha)
+      return
+
     content_rect = rl.Rectangle(
       self.rect.x + self.rect.width - SIDE_PANEL_WIDTH,
       self.rect.y,
@@ -82,6 +103,45 @@ class ConfidenceBall(Widget):
     dot_height = (1 - self._confidence_filter.x) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
     dot_height = self._rect.y + dot_height
 
+    top_dot_color, bottom_dot_color = self._dot_colors()
+    draw_circle_gradient(content_rect.x + content_rect.width - status_dot_radius-5,
+                         dot_height, status_dot_radius,
+                         top_dot_color, bottom_dot_color)
+
+    # LongIndicator をサイドパネルの下端に寄せて描く。赤いブレーキ表示より下のレイヤーに置くため、
+    # 加算ブレンドを始める前に描画する。
+    self._long_indicator.render(rl.Rectangle(
+      content_rect.x,  # サイドパネルの中央に描かれる
+      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM - LONG_INDICATOR_Y_OFS,
+      content_rect.width,
+      content_rect.height,
+    ))
+
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+    self._draw_brake_light(content_rect)
+    self._draw_accel_meter(content_rect)
+    rl.end_blend_mode() #元のブレンドに戻す
+
+    btn_h = content_rect.width * 1.5 #だいたいこのくらいの高さ
+    self._LongitudinalPersonality_button.render(rl.Rectangle(content_rect.x, content_rect.y + content_rect.height - btn_h, content_rect.width, btn_h))
+
+  def render_official_long_indicator(self, panel_rect: rl.Rectangle, should_draw: bool) -> None:
+    # 公式の配置: LongIndicator を左パネルに描く（upstream と同じ位置）
+    self._long_indicator.set_should_draw(should_draw)
+    self._long_indicator.render(panel_rect)
+
+  def render_official_overlays(self, panel_rect: rl.Rectangle, camera_rect: rl.Rectangle) -> None:
+    # 公式の配置: パネルのアイコンを描いた後に呼ぶ。ブレーキの赤は左パネル全体に上から加算で重ね、加減速メーターは映像の右端に描く
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+    self._draw_brake_light(panel_rect)
+    self._draw_accel_meter(camera_rect)
+    rl.end_blend_mode() #元のブレンドに戻す
+
+    # 車間ボタンは左パネルの LongIndicator にかぶせる
+    self._LongitudinalPersonality_button.render(rl.Rectangle(panel_rect.x, panel_rect.y + OFFICIAL_GAP_BUTTON_Y,
+                                                             panel_rect.width, OFFICIAL_GAP_BUTTON_H))
+
+  def _dot_colors(self) -> tuple[rl.Color, rl.Color]:
     # confidence zones
     if ui_state.status == UIStatus.ENGAGED:
       if self._confidence_filter.x > 0.5:
@@ -102,20 +162,9 @@ class ConfidenceBall(Widget):
       top_dot_color = rl.Color(102, 102, 102, 255)
       bottom_dot_color = rl.Color(26, 26, 26, 255)
 
-    draw_circle_gradient(content_rect.x + content_rect.width - status_dot_radius-5,
-                         dot_height, status_dot_radius,
-                         top_dot_color, bottom_dot_color)
+    return top_dot_color, bottom_dot_color
 
-    # LongIndicator をサイドパネルの下端に寄せて描く。赤いブレーキ表示より下のレイヤーに置くため、
-    # 加算ブレンドを始める前に描画する。
-    self._long_indicator.render(rl.Rectangle(
-      content_rect.x,  # サイドパネルの中央に描かれる
-      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM - LONG_INDICATOR_Y_OFS,
-      content_rect.width,
-      content_rect.height,
-    ))
-
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+  def _draw_brake_light(self, content_rect: rl.Rectangle) -> None:
     brake_flag = False
     try:
       with open('/dev/shm/brake_light_state.txt','r') as fp3:
@@ -137,6 +186,7 @@ class ConfidenceBall(Widget):
         self.brake_light_alpha = 0
     rl.draw_rectangle_rounded(content_rect,0.5,10,rl.Color(255, 0, 0, self.brake_light_alpha)) #角丸の赤いオーバーレイ
 
+  def _draw_accel_meter(self, content_rect: rl.Rectangle) -> None:
     #加速減速表示
     car_state = ui_state.sm['carState']
     self.vc_accel += (car_state.aEgo - self.vc_accel) / 5
@@ -163,11 +213,6 @@ class ConfidenceBall(Widget):
                (content_rect.x+content_rect.width , content_rect.y+content_rect.height/2),
                (content_rect.x+content_rect.width - wp + wp/2 , content_rect.y+content_rect.height/2)]
       rl.draw_triangle_fan(meter,len(meter),va_color)
-
-    rl.end_blend_mode() #元のブレンドに戻す
-
-    btn_h = content_rect.width * 1.5 #だいたいこのくらいの高さ
-    self._LongitudinalPersonality_button.render(rl.Rectangle(content_rect.x, content_rect.y + content_rect.height - btn_h, content_rect.width, btn_h))
 
   def ui_freeze(self, freeze):
     self.ui_freeze_flag = freeze

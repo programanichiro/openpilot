@@ -41,6 +41,15 @@ class TogglesLayoutMici(NavScroller):
                                                    "Disable to use your car's stock driver assistance.")
 
     C4UIOnC3X = BigParamControl("use c4 ui in c3x", "C4UIOnC3X", toggle_callback=restart_needed_callback)
+    # 走行画面を公式(upstream)の配置にする。UI の起動時に一度だけ読むので、変えたら端末の再起動が必要
+    official_layout = False
+    try:
+      with open('/data/official_onroad_layout.txt','r') as fp:
+        official_layout = int(fp.read()) == 1
+    except Exception:
+      pass
+    self._official_layout_button = BigToggle("official onroad layout", "", initial_state=official_layout,
+                                             toggle_callback=self._official_layout_button_callback, description="reboot to apply.")
     self._accel_method_setting = BigMultiToggle("accel method", ["recommend", "official"], select_callback=self._accel_method_setting_callback, toggle_callback=restart_needed_callback)
     GpsAlwaysSwitch = BigParamControl("always receive GPS signals", "GpsAlwaysSwitch", toggle_callback=restart_needed_callback)
     DisableMaxSpeedModify = BigParamControl("use TSSP acc over 115", "DisableMaxSpeedModify", toggle_callback=restart_needed_callback)
@@ -117,6 +126,7 @@ class TogglesLayoutMici(NavScroller):
       self._auto_door_lock_btn,
       self._acc_min_speed_btn,
       C4UIOnC3X,
+      self._official_layout_button,
     ])
 
     # Toggle lists
@@ -327,6 +337,10 @@ class TogglesLayoutMici(NavScroller):
       ui_state.params.put_bool("AccelMethodSwitch",False) #indexを設定
     else:
       ui_state.params.put_bool("AccelMethodSwitch",True) #indexを設定
+
+  def _official_layout_button_callback(self,onoff):
+    with open('/data/official_onroad_layout.txt','w') as fp:
+      fp.write("%d" % (int(onoff)))
 
   def _lta_enable_sw_button_callback(self,onoff):
     lta_enable_sw = int(onoff)

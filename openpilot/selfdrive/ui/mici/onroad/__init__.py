@@ -1,6 +1,21 @@
 import raylib_nb as rl
 
-SIDE_PANEL_WIDTH = 60  # upstream は 72 にしたが、フォークは右パネルの中身を 60px で配置しているので戻す
+
+def _read_official_layout() -> bool:
+  # 設定画面の「official onroad layout」が書く。UI の起動時に一度だけ読むので、切り替えたら端末の再起動が必要
+  try:
+    with open('/data/official_onroad_layout.txt', 'r') as fp:
+      return int(fp.read()) == 1
+  except Exception:
+    return False
+
+
+# True: upstream の配置（黒いサイドパネルは左。DMoji・LongIndicator・ハンドルをパネルに置く）
+# False: フォークの配置（サイドパネルは右。ブレーキの赤表示・加減速メーター・LongIndicator・車間ボタンをパネルに置く）
+OFFICIAL_LAYOUT = _read_official_layout()
+
+# upstream は 72。フォークの配置は右パネルの中身を 60px で配置しているので 60 のまま
+SIDE_PANEL_WIDTH = 72 if OFFICIAL_LAYOUT else 60
 DIMMED_ICON_ALPHA = 0.32  # side panel icons while disengaged
 
 
