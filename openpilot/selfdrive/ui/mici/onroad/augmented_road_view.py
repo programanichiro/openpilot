@@ -175,7 +175,7 @@ class AugmentedRoadView(CameraView):
     self._model_renderer = ModelRenderer()
     self._hud_renderer = HudRenderer()
     self._alert_renderer = AlertRenderer()
-    self._driver_state_renderer = DriverStateRenderer()
+    self._driver_state_renderer = DriverStateRenderer()  # フォークは DMoji を映像の上に置くので背景ありのまま
     self._confidence_ball = ConfidenceBall()
     self._offroad_label = UnifiedLabel("start the car to\nuse openpilot", 54, FontWeight.DISPLAY,
                                        text_color=rl.Color(255, 255, 255, int(255 * 0.9)),
@@ -224,6 +224,7 @@ class AugmentedRoadView(CameraView):
     show_navigation = ui_state.navigation_enabled and ui_state.nav_destination_set and alert_to_render is None
 
     # Create inner content area with border padding
+    # フォークはサイドパネルを右に置いたままにする（upstream は左へ移した）
     self._content_rect = rl.Rectangle(
       self.rect.x,
       self.rect.y,
