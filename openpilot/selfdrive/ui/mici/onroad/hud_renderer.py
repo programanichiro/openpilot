@@ -22,6 +22,9 @@ KM_TO_MILE = 0.621371
 CRUISE_DISABLED_CHAR = '–'
 
 SET_SPEED_PERSISTENCE = 2.5  # seconds
+# 公式の配置で、ボタンと ACC 速度の表示を左へ寄せる量。映像の右端の信頼度ボール(直径 32px)の 0.7 倍。
+# 左のハンドルと DMoji がパネルへ移って空いた分を詰め、右の信頼度ボールとの重なりを減らす
+OFFICIAL_SHIFT_X = 22 if OFFICIAL_LAYOUT else 0
 WHEEL_SIZE = 52
 WHEEL_WHITE = (255, 255, 255)
 WHEEL_GREEN = (0, 255, 64)
@@ -319,7 +322,7 @@ class HudRenderer(Widget):
     if alpha < 1e-2:
       return
 
-    x = rect.x
+    x = rect.x - OFFICIAL_SHIFT_X
     y = rect.y
 
     # draw drop shadow
@@ -834,7 +837,7 @@ class HudRenderer(Widget):
   def _ip_draw(self, rect: rl.Rectangle):
 
     if gui_app.big_ui():
-      right_margin = 120
+      right_margin = 120 + OFFICIAL_SHIFT_X # C3X は道路名が下段で ACC 速度の表示の左隣なので、公式の配置では一緒に左へ寄せる
       font_size = 44
       font_size_km = 33
       y_pos = rect.y+rect.height
@@ -974,23 +977,24 @@ class HudRenderer(Widget):
     if not self._is_active or not self._face_detected:
       self._disp_button_ct = 20 * 5 * 50 / self.dt #20fpsよりリfpsが速いc4対策。
 
+    bx = rect.x - OFFICIAL_SHIFT_X # ボタンの基準の x。公式の配置では左へ寄せる
     all_btn_appeared = False
     if self._disp_button_ct > 0:
       self._disp_button_ct -= 1
       all_btn_appeared = True
 
       lane_rect = rl.Rectangle(
-        int(rect.x+70), int(rect.y+20), 90, 90, #左上のいい感じの位置
+        int(bx+70), int(rect.y+20), 90, 90, #左上のいい感じの位置
       )
       self._lta_enable_sw_button.render(lane_rect)
 
       lockon_rect = rl.Rectangle(
-        int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+        int(bx+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
       )
       self._lockon_disp_disable_button.render(lockon_rect)
 
       accel_ctrl_disable_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
+        int(bx+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
       )
       self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
 
@@ -998,22 +1002,22 @@ class HudRenderer(Widget):
 
       decel_ctrl_disable_rect = rl.Rectangle(
         #int(rect.x+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
-        int(rect.x+90+70), int(rect.y+rect.height-90-20), 90, 90, #左下中央寄りのいい感じの位置
+        int(bx+90+70), int(rect.y+rect.height-90-20), 90, 90, #左下中央寄りのいい感じの位置
       )
       self._decel_ctrl_disable_button.render(decel_ctrl_disable_rect)
 
       start_accel_power_up_disp_enable_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-90-20), int(rect.y+20), 90, 90, #右上中央寄りのいい感じの位置
+        int(bx+rect.width-90-90-20), int(rect.y+20), 90, 90, #右上中央寄りのいい感じの位置
       )
       self._start_accel_power_up_disp_enable_button.render(start_accel_power_up_disp_enable_rect)
 
       accel_engaged_rect = rl.Rectangle(
-        int(rect.x+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
+        int(bx+rect.width-90-90-20), int(rect.y+rect.height-90-20), 90, 90, #右下中央寄りのいい感じの位置
       )
       self._accel_engaged_button.render(accel_engaged_rect)
 
       long_speeddown_disable_rect = rl.Rectangle(
-        int(rect.x+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
+        int(bx+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
       )
       self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
 
@@ -1028,21 +1032,21 @@ class HudRenderer(Widget):
       if self._accel_ctrl_disable_changed_ct > 0:
         self._accel_ctrl_disable_changed_ct -= 1
         accel_ctrl_disable_rect = rl.Rectangle(
-          int(rect.x+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
+          int(bx+rect.width-90-20), int(rect.y+20), 90, 90, #右上のいい感じの位置
         )
         self._accel_ctrl_disable_button.render(accel_ctrl_disable_rect)
 
       if self._lockon_disp_disable_changed_ct > 0:
         self._lockon_disp_disable_changed_ct -= 1
         lockon_rect = rl.Rectangle(
-          int(rect.x+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
+          int(bx+70), int(rect.y+rect.height-90-20), 90, 90, #左下の良い感じの位置
         )
         self._lockon_disp_disable_button.render(lockon_rect)
 
       if self._long_speeddown_disable_changed_ct > 0:
         self._long_speeddown_disable_changed_ct -= 1
         long_speeddown_disable_rect = rl.Rectangle(
-          int(rect.x+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
+          int(bx+90+70), int(rect.y+20), 90, 90, #左上中央寄りのいい感じの位置
         )
         self._long_speeddown_disable_button.render(long_speeddown_disable_rect)
 

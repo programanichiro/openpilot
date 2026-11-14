@@ -287,14 +287,15 @@ class ModelRenderer(Widget):
       if visible:
         lead.bar = self._get_lead_bar(lane, lead.d_filter.update(d_rel), lead.y_filter.update(y_rel))
         if i < LeadcarLockon_MAX:
-          lead_vertices[i].x, lead_vertices[i].y = lead.bar[[0, 3]].mean(axis=0)
+          # lead.bar は映像の範囲の左上が原点なので、画面座標にするため rect の位置を足す（公式の配置では映像が右にずれる）
+          lead_vertices[i].x, lead_vertices[i].y = lead.bar[[0, 3]].mean(axis=0) + (self._rect.x, self._rect.y)
       elif len(lane) > 0:
         # 重複排除で潰される前の値を使う。潰された [1] は leads 側が 0 になっているため
         d_rel, y_rel = lockon_leads[i][1], lockon_leads[i][2]
         if d_rel > 0:
           lead_bar = self._get_lead_bar(lane, lead.d_filter.update(d_rel), lead.y_filter.update(y_rel))
           if i < LeadcarLockon_MAX:
-            lead_vertices[i].x, lead_vertices[i].y = lead_bar[[0, 3]].mean(axis=0)
+            lead_vertices[i].x, lead_vertices[i].y = lead_bar[[0, 3]].mean(axis=0) + (self._rect.x, self._rect.y)
       i += 1
 
   def _get_lead_bar(self, lane, d_rel, y_rel):
@@ -528,7 +529,7 @@ class ModelRenderer(Widget):
       int(a * 255)
     )
 
-  def _drawLockon(self,lead_data,vd,num,rect): #vdにはrect.xとyが含まれている。
+  def _drawLockon(self,lead_data,vd,num,rect): #vdにはrect.xとyが含まれている。(_update_leads で足している)
     d_rel = lead_data.x[0]
     a_rel = lead_data.a[0]
     self.global_a_rel = a_rel
