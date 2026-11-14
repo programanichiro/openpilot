@@ -9,11 +9,12 @@ from openpilot.common.time_helpers import system_time_valid
 from openpilot.selfdrive.ui.mici.layouts.settings.device.prime import PrimeScroller
 from openpilot.system.ui.widgets.scroller import NavRawScrollPanel, NavScroller
 from openpilot.selfdrive.ui.mici.widgets.info import InfoLayoutMici
-from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigCircleButton, BigToggle, BigParamControl
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog, BigConfirmationDialog, BigInputDialog
 from openpilot.selfdrive.ui.mici.onroad.cabin_camera_dialog import CabinCameraDialog
 from openpilot.selfdrive.ui.mici.layouts.onboarding import TrainingGuide, TermsPage
 from openpilot.selfdrive.ui.mici.widgets.qr import QR
+from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
 from openpilot.system.ui.lib.application import gui_app, MousePos
 from openpilot.system.ui.lib.multilang import tr
 from openpilot.selfdrive.ui.ui_state import device, ui_state
@@ -35,6 +36,8 @@ class ReviewTermsPage(TermsPage, NavScroller):
 class ReviewTrainingGuide(TrainingGuide):
   def show_event(self):
     super().show_event()
+    # upstream(ef9a8d4a6c)のバグ回避: TrainingGuide には _update_toggles が無く、開くと AttributeError で落ちる。upstream が直したら消す
+    # self._update_toggles()
     device.set_override_interactive_timeout(300)
 
   def hide_event(self):
@@ -201,6 +204,18 @@ class DeviceLayoutMici(NavScroller):
                                                           power_off_callback, exit_on_confirm=False, red=True)
     self._power_off_btn.set_visible(lambda: not ui_state.ignition)
 
+    self._metric_toggle = BigToggle("use metric units", initial_state=ui_state.params.get_bool("IsMetric"), toggle_callback=self._on_metric_toggle)
+    record_front = BigParamControl("record & upload cabin camera", "RecordFront",
+                                   description_icon=gui_app.texture("icons_mici/settings/device/cameras.png", 64, 64),
+                                   toggle_callback=restart_needed_callback, description="Upload cabin camera data to help improve driver monitoring.")
+    record_front.set_enabled(False if ui_state.params.get_bool("RecordFrontLock") else (lambda: not ui_state.engaged))
+    record_mic = BigParamControl("record & upload mic audio", "RecordAudio", description_icon=gui_app.texture("icons_mici/microphone.png", 64, 64),
+                                 toggle_callback=restart_needed_callback,
+                                 description="Record microphone audio while driving.\n" +
+                                             "Audio is included in dashcam videos in comma connect.")
+    record_mic.set_enabled(lambda: not ui_state.engaged)
+    self._param_toggles = (("RecordFront", record_front), ("RecordAudio", record_mic))
+
     regulatory_btn = BigButton("regulatory info", "", gui_app.texture("icons_mici/settings/device/info.png", 64, 64))
     regulatory_btn.set_click_callback(self._on_regulatory)
 
@@ -241,6 +256,9 @@ class DeviceLayoutMici(NavScroller):
     self._scroller.add_widgets([
       DeviceInfoLayoutMici(),
       self._pairing_button,
+      self._metric_toggle,
+      record_front,
+      record_mic,
       review_training_guide_btn,
       cabin_cam_btn,
       terms_btn,
@@ -269,6 +287,18 @@ class DeviceLayoutMici(NavScroller):
     except Exception:
       pass
 
+    ui_state.add_engaged_transition_callback(self._update_toggles)
+
+  def _on_metric_toggle(self, state: bool):
+    ui_state.params.put_bool("IsMetric", state, block=True)
+    ui_state.update_params()
+
+  def _update_toggles(self):
+    # mirror external param changes
+    self._metric_toggle.set_checked(ui_state.params.get_bool("IsMetric"))
+    for key, item in self._param_toggles:
+      item.set_checked(ui_state.params.get_bool(key))
+
   def _update_state(self):
     super()._update_state()
     if self._pending_pairing_grow_animation:
@@ -280,6 +310,7 @@ class DeviceLayoutMici(NavScroller):
 
   def show_event(self):
     super().show_event()
+    self._update_toggles()
     if not ui_state.prime_state.is_paired():
       self.set_shown_callback(self._pairing_button.trigger_grow_animation)
 
