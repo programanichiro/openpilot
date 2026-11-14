@@ -286,6 +286,8 @@ typedef struct {
 typedef struct {
   // This can be set by the safety hooks
   bool controls_allowed;
+  // MADS: 縦が切れていても横制御だけ許可する（フォーク独自）
+  bool lateral_controls_allowed;
   bool relay_malfunction;
   bool gas_pressed;
   bool gas_pressed_prev;
@@ -341,6 +343,8 @@ typedef struct {
   // TODO: Only LKAS (non-emergency) is currently supported since we've only seen it
   bool tesla_stock_lkas;
   bool tesla_stock_lkas_prev;
+  // openpilot が ANGLE_CONTROL を送っているか。MADS 中は controls_allowed が false なので、これで操舵中を判別する
+  bool tesla_op_steering;
   // Only Summon is currently supported due to Autopark not setting Autopark state properly
   bool tesla_autopark;
   bool tesla_autopark_prev;

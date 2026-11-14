@@ -23,6 +23,8 @@ class LongIndicator(Widget):
     self._personality: int | None = None
     self._personality_changed_time = -HIGHLIGHT_TIME
     self._should_draw = False
+    # サイドパネルに置くと警告や上部アイコンと重ならないので、常時表示できるようにする。
+    self._always_visible = False
 
   @staticmethod
   def _texture(name: str, width: int, height: int) -> rl.Texture:
@@ -31,16 +33,19 @@ class LongIndicator(Widget):
   def set_should_draw(self, should_draw: bool):
     self._should_draw = should_draw
 
+  def set_always_visible(self, always_visible: bool):
+    self._always_visible = always_visible
+
   def _render(self, rect: rl.Rectangle) -> None:
     sm = ui_state.sm
-    if sm.recv_frame['selfdriveState'] < ui_state.started_frame or not sm['selfdriveState'].enabled or not ui_state.has_longitudinal_control:
+    if sm.recv_frame['selfdriveState'] < ui_state.started_frame or (not ui_state.has_longitudinal_control and not self._always_visible):
       self._personality = None
       self._personality_changed_time = -HIGHLIGHT_TIME
       self._alpha_filter.x = 0.0
       return
 
-    # hidden under alerts and set speed
-    visible = self._should_draw and sm['selfdriveState'].alertSize == log.SelfdriveState.AlertSize.none
+    # upstream はエンゲージ前に薄く(灰色に)するが、見にくいのでフォークは薄くしない
+    visible = self._always_visible or self._should_draw
     alpha = self._alpha_filter.update(visible)
     self._draw_lead_car(rect, alpha)
     self._draw_distance_bars(rect, alpha, visible)
@@ -66,7 +71,7 @@ class LongIndicator(Widget):
     if self._personality is not None and personality != self._personality:
       self._personality_changed_time = now
     self._personality = personality
-    # the personality alert covers the bars, hold the highlight until they show
+    # hold the highlight until the bars show
     if not visible and now - self._personality_changed_time < HIGHLIGHT_TIME:
       self._personality_changed_time = now
     highlight = now - self._personality_changed_time < HIGHLIGHT_TIME
@@ -85,5 +90,5 @@ class LongIndicator(Widget):
 
   @staticmethod
   def _draw_centered(texture: rl.Texture, rect: rl.Rectangle, y: float, alpha: float) -> None:
-    pos = rl.Vector2(rect.x + 46 - texture.width / 2, rect.y + y - texture.height / 2)
+    pos = rl.Vector2(rect.x + (rect.width - texture.width) / 2, rect.y + y - texture.height / 2)
     rl.draw_texture_ex(texture, pos, 0.0, 1.0, rl.Color(255, 255, 255, round(255 * alpha)))
