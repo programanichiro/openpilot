@@ -1106,6 +1106,7 @@ if HARDWARE.get_device_type() == 'mici':
         AlertStatus.critical, AlertSize.full,
         Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediate, .1),
     },
+    EventName.personalityChanged: {},
   })
 
 
