@@ -297,6 +297,9 @@ class AugmentedRoadView(CameraView):
       if show_navigation:
         left_rect = rl.Rectangle(self._content_rect.x, self._content_rect.y, LEFT_COLUMN_WIDTH, self._content_rect.height)
 
+      # ブレーキの赤は左パネルの一番下に敷く（DMoji・LongIndicator・ハンドルはその上に描く）
+      self._confidence_ball.render_official_brake_light(left_rect)
+
       # Grey out DMoji when disengaged unless AlwaysOnDM is enabled. In the side panel nothing overlaps it, otherwise it hides under the set speed
       self._driver_state_renderer.set_should_draw(not show_navigation or not self._hud_renderer.drawing_top_icons())
       self._driver_state_renderer.set_dimmed(ui_state.status == UIStatus.DISENGAGED and not ui_state.always_on_dm)
@@ -307,7 +310,7 @@ class AugmentedRoadView(CameraView):
       self._driver_state_renderer.render()
       self._confidence_ball.render_official_long_indicator(left_rect, not show_navigation or not self._hud_renderer.drawing_top_icons())
       self._hud_renderer.render_steering_wheel(left_rect)
-      # フォークの部品: ブレーキの赤(左パネルに上から加算)、加減速メーター(映像の右端)、車間ボタン(LongIndicator の上)
+      # フォークの部品: 加減速メーター(映像の右端)、車間ボタン(LongIndicator の上)
       self._confidence_ball.render_official_overlays(left_rect, self._content_rect)
 
     # Custom UI extension point - add custom overlays here

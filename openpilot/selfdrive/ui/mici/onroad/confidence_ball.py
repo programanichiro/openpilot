@@ -103,13 +103,17 @@ class ConfidenceBall(Widget):
     dot_height = (1 - self._confidence_filter.x) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
     dot_height = self._rect.y + dot_height
 
+    # ブレーキの赤は一番下に敷く（信頼度ボールと LongIndicator はその上に描く）
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
+    self._draw_brake_light(content_rect)
+    rl.end_blend_mode() #元のブレンドに戻す
+
     top_dot_color, bottom_dot_color = self._dot_colors()
     draw_circle_gradient(content_rect.x + content_rect.width - status_dot_radius-5,
                          dot_height, status_dot_radius,
                          top_dot_color, bottom_dot_color)
 
-    # LongIndicator をサイドパネルの下端に寄せて描く。赤いブレーキ表示より下のレイヤーに置くため、
-    # 加算ブレンドを始める前に描画する。
+    # LongIndicator をサイドパネルの下端に寄せて描く。
     self._long_indicator.render(rl.Rectangle(
       content_rect.x,  # サイドパネルの中央に描かれる
       content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM - LONG_INDICATOR_Y_OFS,
@@ -118,7 +122,6 @@ class ConfidenceBall(Widget):
     ))
 
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
-    self._draw_brake_light(content_rect)
     self._draw_accel_meter(content_rect)
     rl.end_blend_mode() #元のブレンドに戻す
 
@@ -130,10 +133,15 @@ class ConfidenceBall(Widget):
     self._long_indicator.set_should_draw(should_draw)
     self._long_indicator.render(panel_rect)
 
-  def render_official_overlays(self, panel_rect: rl.Rectangle, camera_rect: rl.Rectangle) -> None:
-    # 公式の配置: パネルのアイコンを描いた後に呼ぶ。ブレーキの赤は左パネル全体に上から加算で重ね、加減速メーターは映像の右端に描く
+  def render_official_brake_light(self, panel_rect: rl.Rectangle) -> None:
+    # 公式の配置: パネルのアイコンを描く前に呼ぶ。ブレーキの赤は左パネル全体の一番下に敷く
     rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     self._draw_brake_light(panel_rect)
+    rl.end_blend_mode() #元のブレンドに戻す
+
+  def render_official_overlays(self, panel_rect: rl.Rectangle, camera_rect: rl.Rectangle) -> None:
+    # 公式の配置: パネルのアイコンを描いた後に呼ぶ。加減速メーターは映像の右端に描く
+    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
     self._draw_accel_meter(camera_rect)
     rl.end_blend_mode() #元のブレンドに戻す
 
