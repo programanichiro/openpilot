@@ -4,11 +4,10 @@ from openpilot.cereal import log
 from opendbc.car.structs import car
 from openpilot.cereal.visionipc import VisionStreamType
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
-from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH
+from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH, OFFICIAL_LAYOUT
 from openpilot.selfdrive.ui.mici.onroad.alert_renderer import AlertRenderer
 from openpilot.selfdrive.ui.mici.onroad.driver_state import DriverStateRenderer
 from openpilot.selfdrive.ui.mici.onroad.hud_renderer import HudRenderer
-from openpilot.selfdrive.ui.mici.onroad.long_indicator import LongIndicator
 from openpilot.selfdrive.ui.mici.onroad.model_renderer import ModelRenderer
 from openpilot.selfdrive.ui.mici.onroad.navigation import NavigationPanel, PANEL_WIDTH
 from openpilot.selfdrive.ui.mici.onroad.confidence_ball import ConfidenceBall
@@ -19,6 +18,7 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.common.filter_simple import BounceFilter, FirstOrderFilter
 from openpilot.common.transformations.camera import DEVICE_CAMERAS, DeviceCameraConfig, view_frame_from_device_frame
 from openpilot.common.transformations.orientation import rot_from_euler
+from openpilot.common.params import Params
 from enum import IntEnum
 
 OpState = log.SelfdriveState.OpenpilotState
@@ -37,7 +37,9 @@ WIDE_CAM_MAX_SPEED = 5.0  # m/s (11 mph)
 ROAD_CAM_MIN_SPEED = 10.0  # m/s (22 mph)
 
 CAM_Y_OFFSET = 20
+LEFT_COLUMN_WIDTH = 92  # 公式の配置で、ナビ表示中に左パネルの代わりに映像の左端に置く列の幅
 
+g_wide_cam = False
 
 class BookmarkIcon(Widget):
   PEEK_THRESHOLD = 150 # If icon peeks out this much, snap it fully visible
@@ -119,7 +121,7 @@ class BookmarkIcon(Widget):
     elif mouse_event.left_down and self._is_swiping:
       self._swipe_current_x = mouse_event.pos.x
       swipe_offset = self._swipe_start_x - self._swipe_current_x
-      self._is_swiping_left = swipe_offset > 0
+      self._is_swiping_left = swipe_offset > (0 if self._interacting else 10)  # 動き出しは10px以上左に動いたらスワイプとみなす
       if self._is_swiping_left:
         self._interacting = True
         if self._state == BookmarkState.HIDDEN and not self._swipe_expired:
@@ -173,16 +175,16 @@ class AugmentedRoadView(CameraView):
     self._navigation = NavigationPanel()
     self._model_renderer = ModelRenderer()
     self._hud_renderer = HudRenderer()
-    self._long_indicator = LongIndicator()
     self._alert_renderer = AlertRenderer()
-    self._driver_state_renderer = DriverStateRenderer()
+    # 公式の配置は DMoji を黒い左パネルに置くので背景なし。フォークの配置は映像の上に置くので背景あり
+    self._driver_state_renderer = DriverStateRenderer(background=not OFFICIAL_LAYOUT)
     self._confidence_ball = ConfidenceBall()
     self._offroad_label = UnifiedLabel("start the car to\nuse openpilot", 54, FontWeight.DISPLAY,
                                        text_color=rl.Color(255, 255, 255, int(255 * 0.9)),
                                        alignment=TextAlignment.CENTER,
                                        alignment_vertical=TextAlignmentVertical.MIDDLE)
 
-    self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
+    #self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
 
   def is_swiping_left(self) -> bool:
     """Check if currently swiping left (for scroller to disable)."""
@@ -200,9 +202,13 @@ class AugmentedRoadView(CameraView):
       self._offroad_label.set_text("start the car to\nuse openpilot")
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
+    return # ロックオン表示の切り替えは HUD 左下のボタンに移したので、画面タップでは何もしない
     # Don't trigger click callback if bookmark was triggered
-    if not self._bookmark_icon.interacting():
-      super()._handle_mouse_release(mouse_pos)
+    if (not self._bookmark_icon.interacting()) and (not self._hud_renderer.user_interacting()):
+      self._model_renderer.toggle_lead_indicator() #リードインジケーターのON/OFFをタップで切り替える
+      #self._hud_renderer.appear_btn() #ボタンを出す
+      #pass #onroadタップでhomeに戻るのをやめる
+      #super()._handle_mouse_release(mouse_pos)
 
   def _render(self, rect: rl.Rectangle):
     # Draw text if not onroad
@@ -220,8 +226,10 @@ class AugmentedRoadView(CameraView):
     show_navigation = ui_state.navigation_enabled and ui_state.nav_destination_set and alert_to_render is None
 
     # Create inner content area with border padding
+    # 公式の配置はナビ表示中以外、黒いサイドパネルが左。フォークの配置はサイドパネルを右に置いたまま
+    side_panel = SIDE_PANEL_WIDTH if OFFICIAL_LAYOUT and not show_navigation else 0
     self._content_rect = rl.Rectangle(
-      self.rect.x,
+      self.rect.x + side_panel,
       self.rect.y,
       self.rect.width - (PANEL_WIDTH if show_navigation else SIDE_PANEL_WIDTH),
       self.rect.height,
@@ -243,34 +251,73 @@ class AugmentedRoadView(CameraView):
     self._model_renderer.render(self._content_rect)
 
     # Fade out bottom of overlays for looks
-    rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)
+    # if gui_app.big_ui() == False:　->model_rendererの方に移動
+    #   rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)
 
-    # Hide DMoji when disengaged unless AlwaysOnDM is enabled
-    should_draw_dmoji = (not self._hud_renderer.drawing_top_icons() and
-                         (ui_state.status != UIStatus.DISENGAGED or ui_state.always_on_dm))
-    self._driver_state_renderer.set_should_draw(should_draw_dmoji)
-    self._driver_state_renderer.set_position(self._rect.x + 16, self._rect.y + 10)
-    self._driver_state_renderer.render()
-    self._long_indicator.set_should_draw(not self._hud_renderer.drawing_top_icons())
-    self._long_indicator.render(self._content_rect)
+    if not OFFICIAL_LAYOUT:
+      # Hide DMoji when disengaged unless AlwaysOnDM is enabled
+      should_draw_dmoji = ((True or not self._hud_renderer.drawing_top_icons()) and
+                           (ui_state.status != UIStatus.DISENGAGED or ui_state.always_on_dm))
+      self._driver_state_renderer.set_should_draw(should_draw_dmoji)
+      self._driver_state_renderer.set_position(self._rect.x + 16, self._rect.y + 10)
+      self._driver_state_renderer.render()
+      # LongIndicator はタコメーターと場所が被るため ConfidenceBall 側へ移し、常時表示にした。
 
     self._hud_renderer.set_can_draw_top_icons(alert_to_render is None)
+    if OFFICIAL_LAYOUT:
+      # critical alerts show a warning icon where the torque bar is
+      self._hud_renderer.set_torque_bar_hidden(alert_to_render is not None and alert_to_render.status == log.SelfdriveState.AlertStatus.critical)
     self._hud_renderer.set_wheel_critical_icon(alert_to_render is not None and not not_animating_out and
                                                alert_to_render.visual_alert == car.CarControl.HUDControl.VisualAlert.steerRequired)
     self._alert_renderer.render(self._content_rect)
     self._hud_renderer.render(self._content_rect)
 
+    if OFFICIAL_LAYOUT and not show_navigation:
+      self._confidence_ball.set_hidden(alert_to_render is not None and not not_animating_out)
+      self._confidence_ball.render(self._content_rect)
+
+    if self._bookmark_icon._interacting:
+      self._hud_renderer.ui_freeze(True) #ブックマークスワイプ中はHUDのタップ反応を止める
+      self._confidence_ball.ui_freeze(True) #ブックマークスワイプ中はHUDのタップ反応を止める
+    else:
+      self._hud_renderer.ui_freeze(False)
+      self._confidence_ball.ui_freeze(False)
+
     # Draw fake rounded border
-    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02, 10, 50, rl.BLACK)
+    rr = 1.0*0.5 if Params().get_bool("C4UIOnC3X") == False else 0.2
+    rl.draw_rectangle_rounded_lines_ex(self._content_rect, 0.2 * 1.02 * rr, 10, 50, rl.BLACK)
 
     # End clipping region
     rl.end_scissor_mode()
+
+    if OFFICIAL_LAYOUT:
+      # DMoji, longitudinal indicator, and steering wheel are centered in the black side panel on the left,
+      # or in a column along the left edge of the camera when navigation takes the side panel
+      left_rect = rl.Rectangle(self._rect.x, self._rect.y, SIDE_PANEL_WIDTH, self._rect.height)
+      if show_navigation:
+        left_rect = rl.Rectangle(self._content_rect.x, self._content_rect.y, LEFT_COLUMN_WIDTH, self._content_rect.height)
+
+      # ブレーキの赤は左パネルの一番下に敷く（DMoji・LongIndicator・ハンドルはその上に描く）
+      self._confidence_ball.render_official_brake_light(left_rect)
+
+      # Grey out DMoji when disengaged unless AlwaysOnDM is enabled. In the side panel nothing overlaps it, otherwise it hides under the set speed
+      self._driver_state_renderer.set_should_draw(not show_navigation or not self._hud_renderer.drawing_top_icons())
+      self._driver_state_renderer.set_dimmed(ui_state.status == UIStatus.DISENGAGED and not ui_state.always_on_dm)
+      self._driver_state_renderer.set_show_under_alerts(not show_navigation)
+      # the 52px cone is centered 36px from the top left
+      dm_size = self._driver_state_renderer.rect.width
+      self._driver_state_renderer.set_position(left_rect.x + (left_rect.width - dm_size) / 2, left_rect.y + 36 - dm_size / 2)
+      self._driver_state_renderer.render()
+      self._confidence_ball.render_official_long_indicator(left_rect, not show_navigation or not self._hud_renderer.drawing_top_icons())
+      self._hud_renderer.render_steering_wheel(left_rect)
+      # フォークの部品: 加減速メーター(映像の右端)、車間ボタン(LongIndicator の上)
+      self._confidence_ball.render_official_overlays(left_rect, self._content_rect)
 
     # Custom UI extension point - add custom overlays here
     # Use self._content_rect for positioning within camera bounds
     if show_navigation:
       self._navigation.render(rl.Rectangle(self._content_rect.x + self._content_rect.width, self.rect.y, PANEL_WIDTH, self.rect.height))
-    else:
+    elif not OFFICIAL_LAYOUT:
       self._confidence_ball.render(self.rect)
 
     self._bookmark_icon.render(self.rect)
@@ -333,10 +380,14 @@ class AugmentedRoadView(CameraView):
     # Get camera configuration
     device_camera = self.device_camera or DEFAULT_DEVICE_CAMERA
     is_wide_camera = self.stream_type == WIDE_CAM
+    global g_wide_cam
+    g_wide_cam = is_wide_camera
     intrinsic = device_camera.wide_road.intrinsics if is_wide_camera else device_camera.narrow_road.intrinsics
     calibration = self.view_from_wide_calib if is_wide_camera else self.view_from_calib
     if is_wide_camera:
-      zoom = 0.7 * 1.5
+      zoom = 0.7 * 1.5 / (gui_app._scale ** 0.5) #_scale==1がたまたま変化しないことを利用しているので、危険コード。
+    elif gui_app.big_ui():
+      zoom = 0.7 * 1.5 / gui_app._scale *1.012 #*1.012:画面の端までカメラを伸ばす
     else:
       zoom = np.interp(ui_state.sm['carState'].vEgo, [10, 30], [0.8, 1.0])
 
