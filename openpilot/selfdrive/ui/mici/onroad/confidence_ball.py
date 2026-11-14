@@ -41,6 +41,9 @@ LONG_INDICATOR_Y_OFS = -5     # 0でサイドパネルの下端ぴったりに�
 # 公式の配置で、左パネルの LongIndicator(y=86〜158 あたり)にかぶせる車間ボタンの範囲。上の DMoji と下のハンドル・MADS ボタン(y=168〜)を避ける
 OFFICIAL_GAP_BUTTON_Y = 76
 OFFICIAL_GAP_BUTTON_H = 90
+# 公式の配置で、上の y は C4 の画面の高さ(240)のときの値。LongIndicator と車間ボタンはパネルの下端から測って置き、
+# C3X で C4 の画面を使うとき(パネルが高い)も下からの余白を C4 と同じにする
+OFFICIAL_PANEL_REF_H = 240
 
 
 class ConfidenceBall(Widget):
@@ -130,9 +133,14 @@ class ConfidenceBall(Widget):
     self._LongitudinalPersonality_button.render(rl.Rectangle(content_rect.x, content_rect.y + content_rect.height - btn_h, content_rect.width, btn_h))
 
   def render_official_long_indicator(self, panel_rect: rl.Rectangle, should_draw: bool) -> None:
-    # 公式の配置: LongIndicator を左パネルに描く（upstream と同じ位置）
+    # 公式の配置: LongIndicator を左パネルに描く（C4 では upstream と同じ位置。下端からの余白で置く）
     self._long_indicator.set_should_draw(should_draw)
-    self._long_indicator.render(panel_rect)
+    self._long_indicator.render(rl.Rectangle(panel_rect.x, self._official_bottom_based_y(panel_rect), panel_rect.width, panel_rect.height))
+
+  @staticmethod
+  def _official_bottom_based_y(panel_rect: rl.Rectangle) -> float:
+    # C4 の高さ(240)ならパネルの上端と同じ。パネルが高いほど下にずれる
+    return panel_rect.y + panel_rect.height - OFFICIAL_PANEL_REF_H
 
   def render_official_brake_light(self, panel_rect: rl.Rectangle) -> None:
     # 公式の配置: パネルのアイコンを描く前に呼ぶ。ブレーキの赤は左パネル全体の一番下に敷く
@@ -147,7 +155,7 @@ class ConfidenceBall(Widget):
     rl.end_blend_mode() #元のブレンドに戻す
 
     # 車間ボタンは左パネルの LongIndicator にかぶせる
-    self._LongitudinalPersonality_button.render(rl.Rectangle(panel_rect.x, panel_rect.y + OFFICIAL_GAP_BUTTON_Y,
+    self._LongitudinalPersonality_button.render(rl.Rectangle(panel_rect.x, self._official_bottom_based_y(panel_rect) + OFFICIAL_GAP_BUTTON_Y,
                                                              panel_rect.width, OFFICIAL_GAP_BUTTON_H))
 
   def _dot_colors(self) -> tuple[rl.Color, rl.Color]:
