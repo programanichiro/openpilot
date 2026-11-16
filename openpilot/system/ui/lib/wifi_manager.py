@@ -1,4 +1,5 @@
 import atexit
+import queue
 import threading
 import time
 import uuid
@@ -211,6 +212,10 @@ class WifiManager:
     self._scan_lock = threading.Lock()
     self._scan_thread = threading.Thread(target=self._network_scanner, daemon=True)
     self._state_thread = threading.Thread(target=self._monitor_state, daemon=True)
+
+    # one thread does the requests: starting one waits for it to run, which can take the UI a frame
+    self._requests: queue.Queue[Callable[[], None]] = queue.Queue()
+    threading.Thread(target=self._handle_requests, daemon=True).start()
     if not self._exit:
       self._initialize()
     atexit.register(self.stop)
@@ -233,6 +238,14 @@ class WifiManager:
       cloudlog.debug("WifiManager initialized")
 
     threading.Thread(target=worker, daemon=True).start()
+
+  def _handle_requests(self):
+    while True:
+      request = self._requests.get()
+      try:
+        request()
+      except Exception:
+        cloudlog.exception("WifiManager request failed")
 
   def _init_wifi_state(self, block: bool = True):
     def worker():
@@ -265,7 +278,7 @@ class WifiManager:
     if block:
       worker()
     else:
-      threading.Thread(target=worker, daemon=True).start()
+      self._requests.put(worker)
 
   def add_callbacks(self, need_auth: Callable[[str], None] | None = None,
                     activated: Callable[[], None] | None = None,
@@ -688,7 +701,7 @@ class WifiManager:
         # TODO: expose a failed connection state in the UI
         self._init_wifi_state()
 
-    threading.Thread(target=worker, daemon=True).start()
+    self._requests.put(worker)
 
   def forget_connection(self, ssid: str, block: bool = False):
     def worker():
@@ -704,7 +717,7 @@ class WifiManager:
     if block:
       worker()
     else:
-      threading.Thread(target=worker, daemon=True).start()
+      self._requests.put(worker)
 
   def activate_connection(self, ssid: str, block: bool = False):
     self._set_connecting(ssid)
@@ -728,7 +741,7 @@ class WifiManager:
     if block:
       worker()
     else:
-      threading.Thread(target=worker, daemon=True).start()
+      self._requests.put(worker)
 
   def _deactivate_connection(self, ssid: str):
     for active_conn in self._get_active_connections():
@@ -782,7 +795,7 @@ class WifiManager:
       if self.is_tethering_active():
         self.activate_connection(self._tethering_ssid, block=True)
 
-    threading.Thread(target=worker, daemon=True).start()
+    self._requests.put(worker)
 
   def _get_tethering_password(self) -> str:
     conn_path = self._connections.get(self._tethering_ssid, None)
@@ -821,9 +834,10 @@ class WifiManager:
           cloudlog.exception("Failed to add tethering NAT rule")
 
         if not self._ipv4_forward:
-          time.sleep(5)
-          cloudlog.warning("net.ipv4.ip_forward = 0")
-          subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False)
+          def disable_forward():
+            cloudlog.warning("net.ipv4.ip_forward = 0")
+            subprocess.run(["sudo", "sysctl", "net.ipv4.ip_forward=0"], check=False)
+          threading.Timer(5, disable_forward).start()
       else:
         self._deactivate_connection(self._tethering_ssid)
         try:
@@ -831,7 +845,7 @@ class WifiManager:
         except (FileNotFoundError, OSError):
           cloudlog.exception("Failed to remove tethering NAT rule")
 
-    threading.Thread(target=worker, daemon=True).start()
+    self._requests.put(worker)
 
   def set_current_network_metered(self, metered: MeteredType):
     def worker():
@@ -856,7 +870,7 @@ class WifiManager:
       if reply.header.message_type == MessageType.error:
         cloudlog.warning(f'Failed to update metered settings: {reply}')
 
-    threading.Thread(target=worker, daemon=True).start()
+    self._requests.put(worker)
 
   def _request_scan(self):
     if self._wifi_device is None:
@@ -919,7 +933,7 @@ class WifiManager:
     if block:
       worker()
     else:
-      threading.Thread(target=worker, daemon=True).start()
+      self._requests.put(worker)
 
   def _update_active_connection_info(self):
     ipv4_address = ""

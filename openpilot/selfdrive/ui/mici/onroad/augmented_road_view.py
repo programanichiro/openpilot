@@ -7,6 +7,7 @@ from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH, OFFICIAL_LAYOUT
 from openpilot.selfdrive.ui.mici.onroad.alert_renderer import AlertRenderer
 from openpilot.selfdrive.ui.mici.onroad.driver_state import DriverStateRenderer
+from openpilot.selfdrive.ui.mici.onroad.status import status_fade
 from openpilot.selfdrive.ui.mici.onroad.hud_renderer import HudRenderer
 from openpilot.selfdrive.ui.mici.onroad.model_renderer import ModelRenderer
 from openpilot.selfdrive.ui.mici.onroad.navigation import NavigationPanel, PANEL_WIDTH
@@ -183,6 +184,9 @@ class AugmentedRoadView(CameraView):
                                        text_color=rl.Color(255, 255, 255, int(255 * 0.9)),
                                        alignment=TextAlignment.CENTER,
                                        alignment_vertical=TextAlignmentVertical.MIDDLE)
+    self._offroad_sublabel = UnifiedLabel("", 40, FontWeight.ROMAN,
+                                          text_color=rl.Color(255, 255, 255, int(255 * 0.9 * 0.65)),
+                                          alignment=TextAlignment.CENTER)
 
     #self._fade_texture = gui_app.texture("icons_mici/onroad/onroad_fade.png")
 
@@ -196,10 +200,16 @@ class AugmentedRoadView(CameraView):
     # update offroad label
     if ui_state.panda_type == log.PandaState.PandaType.unknown:
       self._offroad_label.set_text("system booting")
+      self._offroad_label.set_font_size(54)
+      self._offroad_sublabel.set_text("")
     elif ui_state.ignition and not ui_state.started:
-      self._offroad_label.set_text("openpilot can't start\ncheck alerts")
+      self._offroad_label.set_text("openpilot can't start")
+      self._offroad_label.set_font_size(46)
+      self._offroad_sublabel.set_text("check alerts")
     else:
       self._offroad_label.set_text("start the car to\nuse openpilot")
+      self._offroad_label.set_font_size(54)
+      self._offroad_sublabel.set_text("")
 
   def _handle_mouse_release(self, mouse_pos: MousePos):
     return # ロックオン表示の切り替えは HUD 左下のボタンに移したので、画面タップでは何もしない
@@ -211,10 +221,16 @@ class AugmentedRoadView(CameraView):
       #super()._handle_mouse_release(mouse_pos)
 
   def _render(self, rect: rl.Rectangle):
-    # Draw text if not onroad
+    # Offroad shows the side panel in its disengaged state with text in the camera area
     if not ui_state.started:
       rl.draw_rectangle_rec(self.rect, rl.BLACK)
-      self._offroad_label.render(self._rect)
+      if OFFICIAL_LAYOUT:
+        self._render_offroad_text(rl.Rectangle(self.rect.x + SIDE_PANEL_WIDTH, self.rect.y, self.rect.width - SIDE_PANEL_WIDTH, self.rect.height))
+        self._hud_renderer.set_wheel_critical_icon(False)
+        self._render_left_panel(False)
+      else:
+        # フォークの配置はサイドパネルが右なので、オフロードは従来どおり文字だけ
+        self._render_offroad_text(self._rect)
       return
 
     self._switch_stream_if_needed(ui_state.sm)
@@ -291,27 +307,7 @@ class AugmentedRoadView(CameraView):
     rl.end_scissor_mode()
 
     if OFFICIAL_LAYOUT:
-      # DMoji, longitudinal indicator, and steering wheel are centered in the black side panel on the left,
-      # or in a column along the left edge of the camera when navigation takes the side panel
-      left_rect = rl.Rectangle(self._rect.x, self._rect.y, SIDE_PANEL_WIDTH, self._rect.height)
-      if show_navigation:
-        left_rect = rl.Rectangle(self._content_rect.x, self._content_rect.y, LEFT_COLUMN_WIDTH, self._content_rect.height)
-
-      # ブレーキの赤は左パネルの一番下に敷く（DMoji・LongIndicator・ハンドルはその上に描く）
-      self._confidence_ball.render_official_brake_light(left_rect)
-
-      # Grey out DMoji when disengaged unless AlwaysOnDM is enabled. In the side panel nothing overlaps it, otherwise it hides under the set speed
-      self._driver_state_renderer.set_should_draw(not show_navigation or not self._hud_renderer.drawing_top_icons())
-      self._driver_state_renderer.set_dimmed(ui_state.status == UIStatus.DISENGAGED and not ui_state.always_on_dm)
-      self._driver_state_renderer.set_show_under_alerts(not show_navigation)
-      # the 52px cone is centered 36px from the top left
-      dm_size = self._driver_state_renderer.rect.width
-      self._driver_state_renderer.set_position(left_rect.x + (left_rect.width - dm_size) / 2, left_rect.y + 36 - dm_size / 2)
-      self._driver_state_renderer.render()
-      self._confidence_ball.render_official_long_indicator(left_rect, not show_navigation or not self._hud_renderer.drawing_top_icons())
-      self._hud_renderer.render_steering_wheel(left_rect)
-      # フォークの部品: 加減速メーター(映像の右端)、車間ボタン(LongIndicator の上)
-      self._confidence_ball.render_official_overlays(left_rect, self._content_rect)
+      self._render_left_panel(show_navigation)
 
     # Custom UI extension point - add custom overlays here
     # Use self._content_rect for positioning within camera bounds
@@ -321,6 +317,44 @@ class AugmentedRoadView(CameraView):
       self._confidence_ball.render(self.rect)
 
     self._bookmark_icon.render(self.rect)
+
+  def _render_offroad_text(self, rect: rl.Rectangle):
+    # center the label and optional subline together
+    if not self._offroad_sublabel.text:
+      self._offroad_label.render(rect)
+      return
+    gap = 8
+    label_h = self._offroad_label.get_content_height(int(rect.width))
+    sub_h = self._offroad_sublabel.get_content_height(int(rect.width))
+    y = rect.y + (rect.height - label_h - gap - sub_h) / 2
+    self._offroad_label.render(rl.Rectangle(rect.x, y, rect.width, label_h))
+    self._offroad_sublabel.render(rl.Rectangle(rect.x, y + label_h + gap, rect.width, sub_h))
+
+  def _render_left_panel(self, show_navigation: bool):
+    # 公式の配置だけで使う
+    # DMoji, longitudinal indicator, and steering wheel are centered in the black side panel on the left,
+    # or in a column along the left edge of the camera when navigation takes the side panel
+    left_rect = rl.Rectangle(self._rect.x, self._rect.y, SIDE_PANEL_WIDTH, self._rect.height)
+    if show_navigation:
+      left_rect = rl.Rectangle(self._content_rect.x, self._content_rect.y, LEFT_COLUMN_WIDTH, self._content_rect.height)
+
+    # ブレーキの赤は左パネルの一番下に敷く（DMoji・LongIndicator・ハンドルはその上に描く）。オフロードでは出さない
+    if ui_state.started:
+      self._confidence_ball.render_official_brake_light(left_rect)
+
+    # Grey out DMoji when disengaged unless AlwaysOnDM is enabled. In the side panel nothing overlaps it, otherwise it hides under the set speed
+    self._driver_state_renderer.set_should_draw(not show_navigation or not self._hud_renderer.drawing_top_icons())
+    self._driver_state_renderer.set_dimmed(1.0 if not ui_state.started else 0.0 if ui_state.always_on_dm else status_fade.weight(UIStatus.DISENGAGED))
+    self._driver_state_renderer.set_show_under_alerts(not show_navigation)
+    # the 52px cone is centered 36px from the top left
+    dm_size = self._driver_state_renderer.rect.width
+    self._driver_state_renderer.set_position(left_rect.x + (left_rect.width - dm_size) / 2, left_rect.y + 36 - dm_size / 2)
+    self._driver_state_renderer.render()
+    self._confidence_ball.render_official_long_indicator(left_rect, not show_navigation or not self._hud_renderer.drawing_top_icons())
+    self._hud_renderer.render_steering_wheel(left_rect)
+    # フォークの部品: 加減速メーター(映像の右端)、車間ボタン(LongIndicator の上)。オフロードでは出さない
+    if ui_state.started:
+      self._confidence_ball.render_official_overlays(left_rect, self._content_rect)
 
   def close(self):
     self._navigation.close()

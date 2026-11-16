@@ -117,10 +117,10 @@ class HudRenderer(Widget):
     self._txt_chestnut_green: rl.Texture = gui_app.texture('icons_mici/chestnut_green.png', 48, 36)
     self._txt_chestnut_orange: rl.Texture = gui_app.texture('icons_mici/chestnut_orange.png', 61, 36)
     self._chestnut_icon: rl.Texture | None = None
-    self._wheel_alpha_filter = FirstOrderFilter(0, 0.05, 1 / gui_app.target_fps)
     self._wheel_critical_filter = FirstOrderFilter(0, STATUS_FADE_RC, 1 / gui_app.target_fps)
 
     self._set_speed_alpha_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
+    self._set_speed_alpha = 0.0
     self._chestnut_alpha_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
     self._ip_button_init()
 
@@ -137,12 +137,12 @@ class HudRenderer(Widget):
 
   def drawing_top_icons(self) -> bool:
     # whether we're drawing any top icons currently
-    return bool(self._set_speed_alpha_filter.x > 1e-2)
+    return bool(self._set_speed_alpha > 1e-2)
 
   def _update_state(self) -> None:
     """Update HUD state based on car state and controls state."""
     sm = ui_state.sm
-    if sm.recv_frame["carState"] < ui_state.started_frame:
+    if not ui_state.received_since_started("carState"):
       self.is_cruise_set = False
       self.set_speed = SET_SPEED_NA
       self.speed = 0.0
@@ -264,11 +264,6 @@ class HudRenderer(Widget):
     glow = engaged + (1 - engaged) * critical
     wheel_txt = self._txt_wheel
 
-    if self._show_wheel_critical or ui_state.status != UIStatus.DISENGAGED:
-      self._wheel_alpha_filter.update(255)
-    else:
-      self._wheel_alpha_filter.update(255 * DIMMED_ICON_ALPHA)
-
     # pos
     if OFFICIAL_LAYOUT:
       # 左パネルの下の中央
@@ -278,7 +273,7 @@ class HudRenderer(Widget):
       # フォークはサイドパネルを右に置いたままなので、ハンドルは映像の左下
       pos_x = int(rect.x + 21 + wheel_txt.width / 2)
       pos_y = int(rect.y + rect.height - 14 - wheel_txt.height / 2)
-    rotation = -ui_state.sm['carState'].steeringAngleDeg
+    rotation = -ui_state.sm['carState'].steeringAngleDeg if ui_state.started and ui_state.received_since_started('carState') else 0.0
 
     if self.steer_always:
       if self.cruise_available:
@@ -286,7 +281,7 @@ class HudRenderer(Widget):
         radius = wheel_txt.width / 2 + 5  # 正円なら width/2 でOK
         rl.draw_circle_v(center, radius, rl.Color(0x17, 0x86, 0x44, 224))
 
-    alpha = self._wheel_alpha_filter.x
+    alpha = 255 * (1 - (1 - DIMMED_ICON_ALPHA) * status_fade.weight(UIStatus.DISENGAGED) * (1 - critical))
     origin = rl.Vector2(self._txt_wheel_glow.width / 2, self._txt_wheel_glow.height / 2)
     rl.draw_texture_pro(self._txt_wheel_glow, rl.Rectangle(0, 0, self._txt_wheel_glow.width, self._txt_wheel_glow.height),
                         rl.Rectangle(pos_x, pos_y, self._txt_wheel_glow.width, self._txt_wheel_glow.height), origin, rotation,
@@ -315,6 +310,8 @@ class HudRenderer(Widget):
       alpha = 1.0
     else:
       alpha = 0.0
+    # drawing_top_icons() が見る値。フォークは standstill でも出すので、上の値をそのまま使う
+    self._set_speed_alpha = alpha
     if alpha < 1e-2:
       return
 

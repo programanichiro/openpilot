@@ -73,13 +73,8 @@ class ConfidenceBall(Widget):
     self._hidden = hidden
 
   def _update_state(self):
-    # animate status dot in from bottom
-    # フォークの配置は右パネルの下端に LongIndicator と車間ボタンを置いているので、エンゲージしていない時は公式の「下端で待機」にせず、従来どおり下に隠す
-    if ui_state.status == UIStatus.DISENGAGED:
-      self._confidence_filter.update(0.0 if OFFICIAL_LAYOUT else -0.5)
-    else:
-      self._confidence_filter.update((1 - max(ui_state.sm['modelV2'].meta.disengagePredictions.brakeDisengageProbs or [1])) *
-                                                        (1 - max(ui_state.sm['modelV2'].meta.disengagePredictions.steerOverrideProbs or [1])))
+    predictions = ui_state.sm['modelV2'].meta.disengagePredictions
+    self._confidence_filter.update((1 - max(predictions.brakeDisengageProbs or [1])) * (1 - max(predictions.steerOverrideProbs or [1])))
 
   def _render(self, _):
     if OFFICIAL_LAYOUT:
@@ -90,7 +85,9 @@ class ConfidenceBall(Widget):
       status_dot_radius = 16
       margin = 10
       dot_x = self._rect.x + self._rect.width - margin - status_dot_radius
-      dot_height = (1 - self._confidence_filter.x) * (self._rect.height - 2 * (status_dot_radius + margin)) + status_dot_radius + margin
+      # rests at the bottom while disengaged. the color still comes from the confidence, so it doesn't pass through the low zones
+      height = self._confidence_filter.x * (1 - status_fade.weight(UIStatus.DISENGAGED))
+      dot_height = (1 - height) * (self._rect.height - 2 * (status_dot_radius + margin)) + status_dot_radius + margin
       dot_height = self._rect.y + dot_height
       top_dot_color, bottom_dot_color = self._dot_colors()
       draw_circle_gradient(dot_x, dot_height, status_dot_radius, top_dot_color, bottom_dot_color, alpha)
@@ -104,7 +101,10 @@ class ConfidenceBall(Widget):
     )
 
     status_dot_radius = 24
-    dot_height = (1 - self._confidence_filter.x) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
+    # フォークの配置は右パネルの下端に LongIndicator と車間ボタンを置いているので、エンゲージしていない時は公式の「下端で待機」にせず、従来どおり下(-0.5)に隠す
+    disengaged = status_fade.weight(UIStatus.DISENGAGED)
+    height = self._confidence_filter.x * (1 - disengaged) - 0.5 * disengaged
+    dot_height = (1 - height) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
     dot_height = self._rect.y + dot_height
 
     # ブレーキの赤は一番下に敷く（信頼度ボールと LongIndicator はその上に描く）

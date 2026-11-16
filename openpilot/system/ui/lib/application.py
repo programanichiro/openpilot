@@ -209,6 +209,7 @@ class GuiApplication:
     self._font_path: dict[rl.Font, str] = {}
     self._font_codepoints: dict[str, set[int]] = {}
     self._fallback_fonts: dict[str, rl.Font] = {}
+    self._font_chars: set[str] = set()
     self._width = width if width is not None else GuiApplication._default_width()
     self._height = height if height is not None else GuiApplication._default_height()
 
@@ -631,8 +632,11 @@ class GuiApplication:
         for tick in self._nav_stack_ticks:
           tick()
 
-        # Only render top widgets
-        for widget in self._nav_stack[-self._nav_stack_widgets_to_render:]:
+        # Only render top widgets, and none under one covering the screen
+        widgets = self._nav_stack[-self._nav_stack_widgets_to_render:]
+        if widgets and widgets[-1].covers_screen:
+          widgets = widgets[-1:]
+        for widget in widgets:
           widget.render(rl.Rectangle(0, 0, self.width, self.height))
 
         frame_time = rl.get_frame_time()
@@ -703,6 +707,10 @@ class GuiApplication:
         self._fonts[font_weight] = self.ensure_chars_in_font(self._fonts[font_weight], new_str, self._font_path[font_weight], font_key=font_weight)
     return self._fonts[font_weight]
 
+  @property
+  def font_chars(self) -> set[str]:
+    return self._font_chars
+
   def fallback_font(self) -> rl.Font:
     language = multilang.language
     if language not in self._fallback_fonts:
@@ -732,6 +740,7 @@ class GuiApplication:
       if code not in FONT_FALLBACK_LANGUAGES:
         base_chars.update(TRANSLATIONS_DIR.joinpath(f"app_{code}.po").read_text(encoding="utf-8"))
 
+    self._font_chars = base_chars
     for font_weight_file in FontWeight:
       with as_file(FONT_DIR) as fspath:
         unifont = font_weight_file == FontWeight.UNIFONT

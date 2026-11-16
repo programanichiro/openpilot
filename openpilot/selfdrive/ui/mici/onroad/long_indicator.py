@@ -1,7 +1,8 @@
 import raylib_nb as rl
 from openpilot.cereal import log
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.mici.onroad.status import status_fade
+from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import Widget
 
@@ -37,8 +38,10 @@ class LongIndicator(Widget):
     self._always_visible = always_visible
 
   def _render(self, rect: rl.Rectangle) -> None:
-    sm = ui_state.sm
-    if sm.recv_frame['selfdriveState'] < ui_state.started_frame or (not ui_state.has_longitudinal_control and not self._always_visible):
+    # offroad shows the disengaged state
+    # フォーク: 縦制御が無い車でも常時表示にしていれば出す
+    if (not ui_state.has_longitudinal_control and not self._always_visible) or \
+       (ui_state.started and not ui_state.received_since_started('selfdriveState')):
       self._personality = None
       self._personality_changed_time = -HIGHLIGHT_TIME
       self._alpha_filter.x = 0.0
@@ -53,13 +56,14 @@ class LongIndicator(Widget):
   def _draw_lead_car(self, rect: rl.Rectangle, alpha: float) -> None:
     sm = ui_state.sm
     plan = sm['longitudinalPlan']
-    # static while disengaged
-    has_lead = sm['selfdriveState'].enabled and sm.alive['longitudinalPlan'] and plan.hasLead
-
+    has_lead = sm.alive['longitudinalPlan'] and plan.hasLead
     e2e = has_lead and plan.longitudinalPlanSource == log.LongitudinalPlan.LongitudinalPlanSource.e2e
     white_f, green_f = self._lead_car_filters
     white_alpha = white_f.update(0.0 if e2e else 0.9 if has_lead else 0.35)
     green_alpha = green_f.update(float(e2e))
+    # static and filled in while disengaged, like the lit distance bars
+    disengaged = status_fade.weight(UIStatus.DISENGAGED)
+    white_alpha, green_alpha = white_alpha + (0.9 - white_alpha) * disengaged, green_alpha * (1 - disengaged)
 
     white, green = self._txt_lead_car
     self._draw_centered(white, rect, 100, white_alpha * alpha)
@@ -68,7 +72,7 @@ class LongIndicator(Widget):
   def _draw_distance_bars(self, rect: rl.Rectangle, alpha: float, visible: bool) -> None:
     sm = ui_state.sm
     now = rl.get_time()
-    personality = sm['selfdriveState'].personality.raw
+    personality = sm['selfdriveState'].personality.raw if ui_state.started else ui_state.personality_param
     if self._personality is not None and personality != self._personality:
       self._personality_changed_time = now
     self._personality = personality
