@@ -36,7 +36,9 @@ cd $TARGET_DIR
 git branch -D __nightly || true
 git push origin --delete __nightly || true
 
-git checkout __nightly
+# origin と remotes(公式) の両方に同名の追跡 ref があると DWIM が曖昧になるので upstream を明示する。
+# origin 側の追跡 ref は push --delete が失敗したときに残骸として残ることがある。
+git checkout -B __nightly remotes/__nightly
 git reset --hard __nightly
 
 git config --local lfs.locksverify false
