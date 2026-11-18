@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_DRIVERS_DRIVERS_H
+#define BOARD_DRIVERS_DRIVERS_H
 
 #include "board/can.h"
 #include "board/health.h"
@@ -39,10 +40,6 @@ extern uint32_t tx_buffer_overflow;
 extern uint32_t rx_buffer_overflow;
 
 extern can_health_t can_health[PANDA_CAN_CNT];
-
-// Ignition detected from CAN messages
-extern bool ignition_can;
-extern uint32_t ignition_can_cnt;
 
 extern bool can_silent;
 extern bool can_loopback;
@@ -249,3 +246,5 @@ static inline void puth4(unsigned int i);
 void usb_init(void);
 void refresh_can_tx_slots_available(void);
 void can_tx_comms_resume_usb(void);
+
+#endif  // BOARD_DRIVERS_DRIVERS_H

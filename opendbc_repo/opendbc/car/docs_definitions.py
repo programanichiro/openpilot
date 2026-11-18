@@ -144,6 +144,7 @@ class CarHarness(EnumBase):
   rivian_b = BaseCarHarness("Rivian B connector", parts=[Accessory.harness_box, Accessory.comma_power, Cable.long_obdc_cable])
   tesla_a = BaseCarHarness("Tesla A connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
   tesla_b = BaseCarHarness("Tesla B connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
+  tesla_c = BaseCarHarness("Tesla C connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
   psa_a = BaseCarHarness("PSA A connector", parts=[Accessory.harness_box, Cable.long_obdc_cable])
 
 
@@ -253,7 +254,7 @@ class CarDocs:
     self.make, self.model, self.years = split_name(self.name)
     self.year_list = get_year_list(self.years)
 
-  def init(self, CP: CarParams, all_footnotes=None):
+  def init(self, CP: CarParams, all_footnotes: dict[Enum, int] | None = None):
     self.brand = CP.brand
     self.car_fingerprint = CP.carFingerprint
     self.longitudinal_control = CP.openpilotLongitudinalControl and not CP.alphaLongitudinalAvailable
@@ -331,7 +332,7 @@ class CarDocs:
     if CP.maxLateralAccel >= GOOD_TORQUE_THRESHOLD:
       self.row[Column.STEERING_TORQUE] = Star.FULL
 
-    self.all_footnotes = all_footnotes
+    self.all_footnotes = all_footnotes or {}
     self.detail_sentence = self.get_detail_sentence(CP)
 
     return self
@@ -341,6 +342,7 @@ class CarDocs:
 
   def get_detail_sentence(self, CP):
     if not CP.notCar:
+      assert self.min_steer_speed is not None and self.min_enable_speed is not None, "set by init()"
       sentence_builder = "openpilot upgrades your <strong>{car_model}</strong> with automated lane centering{alc} and adaptive cruise control{acc}."
 
       if self.min_steer_speed > self.min_enable_speed:

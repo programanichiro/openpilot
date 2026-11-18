@@ -240,6 +240,11 @@ class RadarD:
 
       self.radar_state.leadOne = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[0], model_v_ego, self.lead_prob_filters[0].x, low_speed_override=True)
       self.radar_state.leadTwo = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[1], model_v_ego, self.lead_prob_filters[1].x, low_speed_override=False)
+      # if len(leads_v3) > 2:lead_three.txtは使っていない。
+      #   leadThree              = get_lead(self.v_ego, self.ready, self.tracks, leads_v3[2], model_v_ego, low_speed_override=False)
+      #   if leadThree['status']:
+      #     with open('/dev/shm/lead_three.txt','w') as fp:
+      #       fp.write('%d,%f,%f' % (leadThree['status'] , leadThree['dRel'] , leadThree['yRel']))
 
   def publish(self, pm: messaging.PubMaster):
     assert self.radar_state is not None

@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_DRIVERS_DEBUG_H
+#define BOARD_DRIVERS_DEBUG_H
 
 #include "board/drivers/drivers.h"
 
@@ -13,7 +14,9 @@ bool debug_get_char(char *elem) {
 
   ENTER_CRITICAL();
   if (debug_write_ptr != debug_read_ptr) {
-    if (elem != NULL) *elem = debug_buffer[debug_read_ptr];
+    if (elem != NULL) {
+      *elem = debug_buffer[debug_read_ptr];
+    }
     debug_read_ptr = (debug_read_ptr + 1U) % DEBUG_BUFFER_SIZE;
     ret = true;
   }
@@ -36,7 +39,9 @@ static void putch(const char a) {
 
 void print(const char *a) {
   for (const char *in = a; *in; in++) {
-    if (*in == '\n') putch('\r');
+    if (*in == '\n') {
+      putch('\r');
+    }
     putch(*in);
   }
 }
@@ -55,7 +60,9 @@ void puth(unsigned int i) {
 static void hexdump(const void *a, int l) {
   if (a != NULL) {
     for (int i=0; i < l; i++) {
-      if ((i != 0) && ((i & 0xf) == 0)) print("\n");
+      if ((i != 0) && ((i & 0xf) == 0)) {
+        print("\n");
+      }
       puthx(((const unsigned char*)a)[i], 2U);
       print(" ");
     }
@@ -66,3 +73,5 @@ static void hexdump(const void *a, int l) {
 static inline void puth4(unsigned int i) {
   puthx(i, 4U);
 }
+
+#endif  // BOARD_DRIVERS_DEBUG_H

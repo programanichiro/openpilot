@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_BOARDS_CUATRO_H
+#define BOARD_BOARDS_CUATRO_H
 
 #include "board_declarations.h"
 
@@ -120,7 +121,7 @@ board board_cuatro = {
   .led_GPIO = {GPIOC, GPIOC, GPIOC},
   .led_pin = {6, 7, 9},
   .led_pwm_channels = {1, 2, 4},
-  .set_can_mode = tres_set_can_mode,
+  .set_can_mode = red_set_can_mode,
   .read_voltage_mV = cuatro_read_voltage_mV,
   .read_current_mA = cuatro_read_current_mA,
   .set_fan_enabled = cuatro_set_fan_enabled,
@@ -130,3 +131,5 @@ board board_cuatro = {
   .read_som_gpio = tres_read_som_gpio,
   .set_amp_enabled = cuatro_set_amp_enabled
 };
+
+#endif  // BOARD_BOARDS_CUATRO_H

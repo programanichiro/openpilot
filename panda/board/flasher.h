@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_FLASHER_H
+#define BOARD_FLASHER_H
 
 // from the linker script
 #define APP_START_ADDRESS 0x8020000U
@@ -81,9 +82,9 @@ int comms_control_handler(ControlPacket_t *req, uint8_t *resp) {
       break;
     // **** 0xd6: get version
     case 0xd6:
-      COMPILE_TIME_ASSERT(sizeof(gitversion) <= USBPACKET_MAX_SIZE);
-      memcpy(resp, gitversion, sizeof(gitversion));
-      resp_len = sizeof(gitversion) - 1U;
+      COMPILE_TIME_ASSERT(sizeof(GITVERSION) <= USBPACKET_MAX_SIZE);
+      memcpy(resp, GITVERSION, sizeof(GITVERSION));
+      resp_len = sizeof(GITVERSION) - 1U;
       break;
     // **** 0xd8: reset ST
     case 0xd8:
@@ -150,3 +151,5 @@ void soft_flasher_start(void) {
     delay(500000);
   }
 }
+
+#endif  // BOARD_FLASHER_H

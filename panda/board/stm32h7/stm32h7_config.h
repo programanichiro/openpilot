@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_STM32H7_STM32H7_CONFIG_H
+#define BOARD_STM32H7_STM32H7_CONFIG_H
 
 #include "stm32h7xx.h"
 #include "stm32h7xx_hal_gpio_ex.h"
@@ -39,8 +40,6 @@ separate IRQs for RX and TX.
 
 #define INTERRUPT_TIMER_IRQ TIM6_DAC_IRQn
 #define INTERRUPT_TIMER TIM6
-
-#define IND_WDG IWDG1
 
 #define PROVISION_CHUNK_ADDRESS 0x080FFFE0U
 #define DEVICE_SERIAL_NUMBER_ADDRESS 0x080FFFC0U
@@ -96,3 +95,5 @@ void early_gpio_float(void) {
   GPIOA->ODR = 0; GPIOB->ODR = 0; GPIOC->ODR = 0; GPIOD->ODR = 0; GPIOE->ODR = 0; GPIOF->ODR = 0; GPIOG->ODR = 0; GPIOH->ODR = 0;
   GPIOA->PUPDR = 0; GPIOB->PUPDR = 0; GPIOC->PUPDR = 0; GPIOD->PUPDR = 0; GPIOE->PUPDR = 0; GPIOF->PUPDR = 0; GPIOG->PUPDR = 0; GPIOH->PUPDR = 0;
 }
+
+#endif  // BOARD_STM32H7_STM32H7_CONFIG_H

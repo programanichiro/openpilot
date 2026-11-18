@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_STM32H7_CLOCK_H
+#define BOARD_STM32H7_CLOCK_H
 
 /*
 HSE: 25MHz
@@ -32,13 +33,13 @@ static PackageSMPSType get_package_smps_type(void) {
   RCC->APB4ENR |= RCC_APB4ENR_SYSCFGEN; // make sure SYSCFG clock is enabled. does seem to read fine without too though
 
   switch(SYSCFG->PKGR & 0xFU) {
-    case 0b0001U: // TFBGA100 Legacy
-    case 0b0011U: // TFBGA100
+    case 0x1U: // TFBGA100 Legacy
+    case 0x3U: // TFBGA100
       ret = PACKAGE_WITHOUT_SMPS;
       break;
-    case 0b0101U: // LQFP144 Legacy
-    case 0b0111U: // LQFP144 Industrial
-    case 0b1000U: // UFBGA169
+    case 0x5U: // LQFP144 Legacy
+    case 0x7U: // LQFP144 Industrial
+    case 0x8U: // UFBGA169
       ret = PACKAGE_WITH_SMPS;
       break;
     default:
@@ -65,22 +66,22 @@ void clock_init(void) {
   } else if (package_smps == PACKAGE_WITH_SMPS) {
     register_set(&(PWR->CR3), PWR_CR3_SMPSEN, 0xFU); // powered only by SMPS
   } else {
-    while(true); // unknown package, let's hang here
+    while(true) {} // unknown package, let's hang here
   }
 
   // Set VOS level (VOS3 to 170Mhz, VOS2 to 300Mhz, VOS1 to 400Mhz, VOS0 to 550Mhz)
   register_set(&(PWR->D3CR), PWR_D3CR_VOS_1 | PWR_D3CR_VOS_0, 0xC000U); //VOS1, needed for 80Mhz CAN FD
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U);
-  while ((PWR->CSR1 & PWR_CSR1_ACTVOS) != (PWR->D3CR & PWR_D3CR_VOS)); // check that VOS level was actually set
+  while ((PWR->CSR1 & PWR_CSR1_ACTVOSRDY) == 0U) {}
+  while ((PWR->CSR1 & PWR_CSR1_ACTVOS) != (PWR->D3CR & PWR_D3CR_VOS)) {} // check that VOS level was actually set
 
   // Configure Flash ACR register LATENCY and WRHIGHFREQ (VOS0 range!)
   register_set(&(FLASH->ACR), FLASH_ACR_LATENCY_2WS | 0x20U, 0x3FU); // VOS2, AXI 100MHz-150MHz
   // enable external oscillator HSE
   register_set_bits(&(RCC->CR), RCC_CR_HSEON);
-  while ((RCC->CR & RCC_CR_HSERDY) == 0U);
+  while ((RCC->CR & RCC_CR_HSERDY) == 0U) {}
   // enable internal HSI48 for USB FS kernel
   register_set_bits(&(RCC->CR), RCC_CR_HSI48ON);
-  while ((RCC->CR & RCC_CR_HSI48RDY) == 0U);
+  while ((RCC->CR & RCC_CR_HSI48RDY) == 0U) {}
   // Specify the frequency source for PLL1, divider for DIVM1, DIVM2, DIVM3 : HSE, 5, 5, 5
   // PLL2 is reserved for the cuatro microphone clock: sound.h configures it and retunes its fraction at runtime from DIVM2's 5 MHz reference
   register_set(&(RCC->PLLCKSELR), RCC_PLLCKSELR_PLLSRC_HSE | RCC_PLLCKSELR_DIVM1_0 | RCC_PLLCKSELR_DIVM1_2 | RCC_PLLCKSELR_DIVM2_0 | RCC_PLLCKSELR_DIVM2_2 | RCC_PLLCKSELR_DIVM3_0 | RCC_PLLCKSELR_DIVM3_2, 0x3F3F3F3U);
@@ -92,7 +93,7 @@ void clock_init(void) {
   register_set(&(RCC->PLLCFGR), RCC_PLLCFGR_PLL1RGE_2 | RCC_PLLCFGR_DIVP1EN | RCC_PLLCFGR_DIVQ1EN | RCC_PLLCFGR_DIVR1EN, 0x7000CU);
   // Enable PLL1
   register_set_bits(&(RCC->CR), RCC_CR_PLL1ON);
-  while((RCC->CR & RCC_CR_PLL1RDY) == 0U);
+  while((RCC->CR & RCC_CR_PLL1RDY) == 0U) {}
   // *** PLL1 end ***
 
   //////////////OTHER CLOCKS////////////////////
@@ -105,7 +106,7 @@ void clock_init(void) {
 
   // Set SysClock source to PLL
   register_set(&(RCC->CFGR), RCC_CFGR_SW_PLL1, 0x7U);
-  while((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL1);
+  while((RCC->CFGR & RCC_CFGR_SWS) != RCC_CFGR_SWS_PLL1) {}
   //////////////END OTHER CLOCKS////////////////////
 
   // Configure clock source for USB (HSI48)
@@ -157,3 +158,5 @@ void clock_check(void) {
     fault_occurred_value(FAULT_CLOCK, captured ? counts : 0U);
   }
 }
+
+#endif  // BOARD_STM32H7_CLOCK_H

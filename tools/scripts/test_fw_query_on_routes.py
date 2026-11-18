@@ -81,6 +81,10 @@ if __name__ == "__main__":
           if (len(exact_matches) == 1) and (list(exact_matches)[0] == live_fingerprint):
             good_exact += 1
             print(f"Correct! Live: {live_fingerprint} - Fuzzy: {fuzzy_matches}")
+            print("\nCar FW details:")
+            for fw in car_fw:
+              print(f"  {fw}")
+            print()
 
             # Check if fuzzy match was correct
             if len(fuzzy_matches) == 1:
@@ -100,6 +104,14 @@ if __name__ == "__main__":
             subaddr = None if version.subAddress == 0 else hex(version.subAddress)
             print(f"  Brand: {version.brand or UNKNOWN_BRAND:{padding}}, bus: {version.bus} - " +
                   f"(Ecu.{version.ecu}, {hex(version.address)}, {subaddr}): [{version.fwVersion}],")
+
+          # EPS のファームは車種特定の決め手になることがあるので単独でも出す。
+          # 例えば Tesla HW4 gen2 の EPS は 0xF195 に応答せず 0xF181 のバイナリ値だけが返る。
+          eps_fw = next((fw.fwVersion for fw in car_fw if fw.ecu == "eps"), None)
+          if eps_fw:
+            print(f"EPS Version: {eps_fw}")
+          else:
+            print("EPS Version: NOT FOUND")
 
           print("Mismatches")
           found = False

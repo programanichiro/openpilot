@@ -206,7 +206,7 @@ BO_ 1001 DAS_bodyControls: 8 VEH
  SG_ DAS_bodyControlsCounter : 52|4@1+ (1,0) [0|15] "" aps
  SG_ DAS_bodyControlsChecksum : 56|8@1+ (1,0) [0|255] "" aps
 
-BO_ 1013 ID3F5VCFRONT_lighting: 8 VEH
+BO_ 1013 VCFRONT_lighting: 8 VEH
  SG_ VCFRONT_lowBeamsCalibrated : 62|1@1+ (1,0) [0|1] ""  Receiver
  SG_ VCFRONT_lowBeamsOnForDRL : 61|1@1+ (1,0) [0|1] ""  Receiver
  SG_ VCFRONT_simLatchingStalk : 59|2@1+ (1,0) [0|3] ""  Receiver
@@ -235,6 +235,46 @@ BO_ 1013 ID3F5VCFRONT_lighting: 8 VEH
  SG_ VCFRONT_hazardLightRequest : 4|4@1+ (1,0) [0|8] ""  Receiver
  SG_ VCFRONT_indicatorRightRequest : 2|2@1+ (1,0) [0|2] ""  Receiver
  SG_ VCFRONT_indicatorLeftRequest : 0|2@1+ (1,0) [0|2] ""  Receiver
+
+BO_ 1034 VCLEFT_restraintStatus: 8 VEH
+ SG_ VCLEFT_frontOccupancyStatus : 0|3@1+ (1,0) [0|7] ""  Receiver
+ SG_ VCLEFT_frontBuckleStatus : 3|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCLEFT_restraintStatusCounter : 52|4@1+ (1,0) [0|15] ""  Receiver
+ SG_ VCLEFT_restraintStatusChecksum : 56|8@1+ (1,0) [0|255] ""  Receiver
+
+BO_ 794 VCRIGHT_restraintStatus: 8 VEH
+ SG_ VCRIGHT_frontOccupancyStatus : 0|3@1+ (1,0) [0|7] ""  Receiver
+ SG_ VCRIGHT_frontBuckleStatus : 3|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCRIGHT_restraintStatusCounter : 52|4@1+ (1,0) [0|15] ""  Receiver
+ SG_ VCRIGHT_restraintStatusChecksum : 56|8@1+ (1,0) [0|255] ""  Receiver
+
+BO_ 929 VCFRONT_vehicleStatus: 8 VEH
+ SG_ VCFRONT_vehicleStatusIndex M : 0|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCFRONT_driverIsLeaving m0 : 28|1@1+ (1,0) [0|1] ""  Receiver
+ SG_ VCFRONT_driverBuckleStatus m0 : 30|1@1+ (1,0) [0|1] ""  Receiver
+ SG_ VCFRONT_driverDoorStatus m0 : 31|1@1+ (1,0) [0|1] ""  Receiver
+ SG_ VCFRONT_driverUnbuckled m0 : 32|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCFRONT_passengerUnbuckled m0 : 34|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCFRONT_2RowLeftUnbuckled m0 : 36|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCFRONT_2RowCenterUnbuckled m0 : 38|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCFRONT_2RowRightUnbuckled m0 : 40|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCFRONT_vehicleStatusCounter : 52|4@1+ (1,0) [0|15] ""  Receiver
+ SG_ VCFRONT_vehicleStatusChecksum : 56|8@1+ (1,0) [0|255] ""  Receiver
+
+BO_ 963 VCRIGHT_switchStatus: 8 VEH
+ SG_ VCRIGHT_switchStatusIndex M : 0|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCRIGHT_frontBuckleSwitch m0 : 40|2@1+ (1,0) [0|3] ""  Receiver
+ SG_ VCRIGHT_frontOccupancySwitch m0 : 42|2@1+ (1,0) [0|3] ""  Receiver
+
+BO_ 2047 GTW_carConfig: 8 VEH
+ SG_ GTW_carConfigMultiplexer M : 0|8@1+ (1,0) [0|255] ""  Receiver
+ SG_ GTW_rightHandDrive m1 : 11|1@1+ (1,0) [0|1] ""  Receiver
+
+CM_ BO_ 1034 "Left front seat, not the driver. 2026+ Model Y (Juniper) vehicle bus, 0x30A on the party bus and older cars";
+CM_ BO_ 794 "Right front seat, the driver on right-hand drive cars";
+CM_ BO_ 929 "Multiplexed on 2026+ Model Y (Juniper), the restraint signals are on page 0";
+CM_ SG_ 929 VCFRONT_driverBuckleStatus "Follows the driver's side on both LHD and RHD cars";
+CM_ SG_ 963 VCRIGHT_frontBuckleSwitch "Raw switch, mirrors VCLEFT_frontBuckleSwitch";
 
 VAL_ 568 SpdCtrlLvr_Stat 32 "DN_1ST" 16 "UP_1ST" 8 "DN_2ND" 4 "UP_2ND" 2 "RWD" 1 "FWD" 0 "IDLE" ;
 VAL_ 568 DTR_Dist_Rq 255 "SNA" 200 "ACC_DIST_7" 166 "ACC_DIST_6" 133 "ACC_DIST_5" 100 "ACC_DIST_4" 66 "ACC_DIST_3" 33 "ACC_DIST_2" 0 "ACC_DIST_1" ;
@@ -280,6 +320,21 @@ VAL_ 1013 VCFRONT_simLatchingStalk 0 "SIMULATED_LATCHING_STALK_IDLE" 1 "SIMULATE
 VAL_ 1013 VCFRONT_switchLightingBrightness 255 "SNA" ;
 VAL_ 1013 VCFRONT_turnSignalLeftStatus 2 "LIGHT_FAULT" 0 "LIGHT_OFF" 1 "LIGHT_ON" 3 "LIGHT_SNA" ;
 VAL_ 1013 VCFRONT_turnSignalRightStatus 2 "LIGHT_FAULT" 0 "LIGHT_OFF" 1 "LIGHT_ON" 3 "LIGHT_SNA" ;
+VAL_ 1034 VCLEFT_frontBuckleStatus 0 "UNLATCHED" 1 "LATCHED" 2 "FAULTED" 3 "SNA" ;
+VAL_ 1034 VCLEFT_frontOccupancyStatus 0 "UNOCCUPIED" 1 "OCCUPIED" 2 "OCCUPANCY_FAULTED" 3 "NOT_CONFIGURED" 7 "OCCUPANCY_SNA" ;
+VAL_ 794 VCRIGHT_frontBuckleStatus 0 "UNLATCHED" 1 "LATCHED" 2 "FAULTED" 3 "SNA" ;
+VAL_ 794 VCRIGHT_frontOccupancyStatus 0 "UNOCCUPIED" 1 "OCCUPIED" 2 "OCCUPANCY_FAULTED" 3 "NOT_CONFIGURED" 7 "OCCUPANCY_SNA" ;
+VAL_ 929 VCFRONT_driverIsLeaving 0 "FALSE" 1 "TRUE" ;
+VAL_ 929 VCFRONT_driverBuckleStatus 0 "UNBUCKLED" 1 "BUCKLED" ;
+VAL_ 929 VCFRONT_driverDoorStatus 0 "OPEN" 1 "CLOSED" ;
+VAL_ 929 VCFRONT_driverUnbuckled 0 "NONE" 1 "OCCUPIED_AND_UNBUCKLED" 2 "SNA" ;
+VAL_ 929 VCFRONT_passengerUnbuckled 0 "NONE" 1 "OCCUPIED_AND_UNBUCKLED" 2 "SNA" ;
+VAL_ 929 VCFRONT_2RowLeftUnbuckled 0 "NONE" 1 "OCCUPIED_AND_UNBUCKLED" 2 "SNA" ;
+VAL_ 929 VCFRONT_2RowCenterUnbuckled 0 "NONE" 1 "OCCUPIED_AND_UNBUCKLED" 2 "SNA" ;
+VAL_ 929 VCFRONT_2RowRightUnbuckled 0 "NONE" 1 "OCCUPIED_AND_UNBUCKLED" 2 "SNA" ;
+VAL_ 963 VCRIGHT_frontBuckleSwitch 2 "SWITCH_ON" 0 "SWITCH_SNA" 3 "SWITCH_FAULT" 1 "SWITCH_OFF" ;
+VAL_ 963 VCRIGHT_frontOccupancySwitch 2 "SWITCH_ON" 0 "SWITCH_SNA" 3 "SWITCH_FAULT" 1 "SWITCH_OFF" ;
+VAL_ 2047 GTW_rightHandDrive 0 "LEFT" 1 "RIGHT" ;
 VAL_ 962 VCLEFT_frontBuckleSwitch 2 "SWITCH_ON" 0 "SWITCH_SNA" 3 "SWITCH_FAULT" 1 "SWITCH_OFF";
 VAL_ 962 VCLEFT_frontSeatTrackBack 2 "SWITCH_ON" 0 "SWITCH_SNA" 3 "SWITCH_FAULT" 1 "SWITCH_OFF";
 VAL_ 962 VCLEFT_rightMirrorTilt 4 "MIRROR_TILT_LEFT" 2 "MIRROR_TILT_UP" 3 "MIRROR_TILT_RIGHT" 0 "MIRROR_TILT_STOP" 1 "MIRROR_TILT_DOWN";

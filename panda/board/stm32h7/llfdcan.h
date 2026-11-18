@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_STM32H7_LLFDCAN_H
+#define BOARD_STM32H7_LLFDCAN_H
 
 #include "llfdcan_declarations.h"
 
@@ -10,7 +11,7 @@ static bool fdcan_request_init(FDCAN_GlobalTypeDef *FDCANx) {
   bool ret = true;
   // Exit from sleep mode
   FDCANx->CCCR &= ~(FDCAN_CCCR_CSR);
-  while ((FDCANx->CCCR & FDCAN_CCCR_CSA) == FDCAN_CCCR_CSA);
+  while ((FDCANx->CCCR & FDCAN_CCCR_CSA) == FDCAN_CCCR_CSA) {}
 
   // Request init
   uint32_t timeout_counter = 0U;
@@ -140,6 +141,7 @@ void llcan_irq_disable(const FDCAN_GlobalTypeDef *FDCANx) {
     nvic_disable(FDCAN3_IT0_IRQn);
     nvic_disable(FDCAN3_IT1_IRQn);
   } else {
+    // not an FDCAN instance
   }
 }
 
@@ -154,6 +156,7 @@ void llcan_irq_enable(const FDCAN_GlobalTypeDef *FDCANx) {
     nvic_enable(FDCAN3_IT0_IRQn);
     nvic_enable(FDCAN3_IT1_IRQn);
   } else {
+    // not an FDCAN instance
   }
 }
 
@@ -214,7 +217,7 @@ bool llcan_init(FDCAN_GlobalTypeDef *FDCANx) {
     FDCANx->IE |= FDCAN_IE_RF0NE; // Rx FIFO 0 new message
     FDCANx->IE |= FDCAN_IE_PEDE | FDCAN_IE_PEAE | FDCAN_IE_BOE | FDCAN_IE_EPE | FDCAN_IE_RF0LE;
 
-    // Messages for INT1 (Only TFE works??)
+    // Messages for INT1 (Only TFE works?)
     FDCANx->ILS |= FDCAN_ILS_TFEL;
     FDCANx->IE |= FDCAN_IE_TFEE; // Tx FIFO empty
 
@@ -239,3 +242,5 @@ void llcan_clear_send(FDCAN_GlobalTypeDef *FDCANx) {
   bool ret = llcan_init(FDCANx);
   UNUSED(ret);
 }
+
+#endif  // BOARD_STM32H7_LLFDCAN_H

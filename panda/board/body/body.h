@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_BODY_BODY_H
+#define BOARD_BODY_BODY_H
 
 #include <stdbool.h>
 #include <stdint.h>
@@ -36,5 +37,7 @@ void dotstar_run_rainbow(uint32_t now_us);
 void dotstar_apply_breathe(dotstar_rgb_t color, uint32_t now_us, uint32_t cycle_us);
 
 #ifndef BOOTSTUB
-extern int _app_start[0xc000];
+extern int app_start[0xc000];
 #endif
+
+#endif  // BOARD_BODY_BODY_H
