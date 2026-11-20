@@ -8,6 +8,7 @@ from openpilot.common.realtime import DT_MDL
 from openpilot.common.swaglog import cloudlog
 # WARNING: imports outside of constants will not trigger a rebuild
 from openpilot.selfdrive.modeld.constants import index_function, ModelConstants
+from openpilot.selfdrive.controls.radard import _LEAD_ACCEL_TAU
 
 LEAD_T_IDXS_MODEL = np.array(ModelConstants.LEAD_T_IDXS)  # [0, 2, 4, 6, 8, 10]s
 
@@ -283,8 +284,7 @@ class LongitudinalMpc:
     x_lead_traj = x_lead + np.cumsum(T_DIFFS * v_lead_traj)
     return x_lead_traj, v_lead_traj
 
-<<<<<<< HEAD
-  def process_lead(self, lead, red_signal_flag, stop_distance):
+  def process_lead(self, model_lead, radar_lead, red_signal_flag=0, stop_distance=0.0):
     v_ego = self.x0[1]
     # 赤信号停止モード時、パス終端を疑似前走車として挿入
     if red_signal_flag == 3:  # 赤信号停止モード時
@@ -292,21 +292,13 @@ class LongitudinalMpc:
       v_lead = 0.0
       a_lead = 0.0
       a_lead_tau = _LEAD_ACCEL_TAU
-    elif lead is not None and lead.present:
-      x_lead = lead.dRel
-      v_lead = lead.vLead
-      a_lead = lead.aLeadK
-      a_lead_tau = lead.aLeadTau
-=======
-  def process_lead(self, model_lead, radar_lead):
-    v_ego = self.x0[1]
-    if radar_lead.present:
+      use_model_traj = False
+    elif radar_lead is not None and radar_lead.present:
       x_lead = radar_lead.dRel
       v_lead = radar_lead.vLead
       a_lead = radar_lead.aLeadK
       a_lead_tau = radar_lead.aLeadTau
       use_model_traj = radar_lead.modelProb > 0.5
->>>>>>> 7fa414d659c407da114c288fe1acd89f89513e01
     else:
       # Fake a fast lead car, so mpc can keep running in the same mode
       x_lead = 50.0
@@ -320,9 +312,6 @@ class LongitudinalMpc:
     min_x_lead = MIN_X_LEAD_FACTOR * (v_ego + v_lead) * (v_ego - v_lead) / (-ACCEL_MIN * 2)
     x_start = np.clip(x_lead, min_x_lead, 1e8)
 
-<<<<<<< HEAD
-  def update(self, radarstate, personality=log.LongitudinalPersonality.standard, red_signal_flag=0, stop_distance=0.0):
-=======
     if use_model_traj:
       # Anchor the model's predicted deltas at the radar measurement.
       x_traj = x_lead + (np.asarray(model_lead.x, dtype=np.float64) - model_lead.x[0])
@@ -335,18 +324,12 @@ class LongitudinalMpc:
 
     return np.column_stack((np.maximum.accumulate(x_mpc), v_mpc))
 
-  def update(self, modelV2, radarstate, personality=log.LongitudinalPersonality.standard):
->>>>>>> 7fa414d659c407da114c288fe1acd89f89513e01
+  def update(self, modelV2, radarstate, personality=log.LongitudinalPersonality.standard, red_signal_flag=0, stop_distance=0.0):
     t_follow = get_T_FOLLOW(personality)
     model_leads = modelV2.leadsV3
 
-<<<<<<< HEAD
-    lead_xv_0 = self.process_lead(radarstate.leadOne, red_signal_flag, stop_distance)
-    lead_xv_1 = self.process_lead(radarstate.leadTwo, red_signal_flag, stop_distance)
-=======
-    lead_xv_0 = self.process_lead(model_leads[0], radarstate.leadOne)
-    lead_xv_1 = self.process_lead(model_leads[1], radarstate.leadTwo)
->>>>>>> 7fa414d659c407da114c288fe1acd89f89513e01
+    lead_xv_0 = self.process_lead(model_leads[0], radarstate.leadOne, red_signal_flag, stop_distance)
+    lead_xv_1 = self.process_lead(model_leads[1], radarstate.leadTwo, red_signal_flag, stop_distance)
 
     # To estimate a safe distance from a moving lead, we calculate how much stopping
     # distance that lead needs as a minimum. We can add that to the current distance
