@@ -7,7 +7,6 @@ from openpilot.cereal import log
 
 import openpilot.cereal.messaging as messaging
 from opendbc.car.interfaces import ACCEL_MIN, ACCEL_MAX
-from openpilot.cereal import log
 from openpilot.common.constants import CV
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.common.realtime import DT_MDL
@@ -83,11 +82,8 @@ START_DASH_SPEEDS = [0, 31/3.6, 41/3.6, 51/3.6, 61/3.6, 70/3.6, 80/3.6, 90/3.6, 
 J_CRUISE_VALS = [1.6, 1.2, 0.8, 0.6]
 J_CRUISE_BP = [0., 10.0, 25., 40.]
 A_CRUISE_MIN = -0.5
-<<<<<<< HEAD
 STOP_LINE_DECEL = 0.9  # [m/s^2] ワンペダル停止時の疑似停止線の減速目安（調整用）
-=======
 AGGRESSIVE_ACCEL_BOOST = 0.1  # m/s^2
->>>>>>> ff300ecf785152db7a518ffd959871dab6b6e6d1
 CONTROL_N_T_IDX = ModelConstants.T_IDXS[:CONTROL_N]
 
 
@@ -152,7 +148,7 @@ class LongitudinalPlanner:
 
   def update(self, sm):
     v_ego = sm['carState'].vEgo
-<<<<<<< HEAD
+    personality = sm['selfdriveState'].personality
     # v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
     vk_ego = v_ego # sm['carState'].vEgo
     a_ego = sm['carState'].aEgo
@@ -879,11 +875,6 @@ class LongitudinalPlanner:
       # if red_signal_scan_span > 0: これでブレーキングの強さが変わったら制御しづらいのでやめる。
       #   v_cruise *= np.interp(red_signal_scan_span , [0,25,100] , [1,1,1.5]) #2〜3のスパンが長いと、速度を落とすのに距離が伸びるように。
 
-=======
-    personality = sm['selfdriveState'].personality
-    v_cruise_kph = min(sm['carState'].vCruise, V_CRUISE_MAX)
-    v_cruise = v_cruise_kph * CV.KPH_TO_MS
->>>>>>> ff300ecf785152db7a518ffd959871dab6b6e6d1
     if sm['controlsState'].forceDecel:
       v_cruise = 0.0
 
@@ -907,7 +898,6 @@ class LongitudinalPlanner:
     # No change cost when user is controlling the speed, or when standstill
     prev_accel_constraint = not (reset_state or sm['carState'].standstill)
 
-<<<<<<< HEAD
     if limitspeed_set == True and self.ac_vc_time == 0 and cruise_info_power_up == False and self.v_desired_filter.x > self.limitspeed_point / 3.6: #増速した時を除く
       self.v_desired_filter.x = self.limitspeed_point / 3.6 #理想速度がACC自動セットより速くならないようにする
     if limitspeed_set == True and (add_v_by_lead == True or self.ac_vc_time > 0) and self.v_desired_filter.x > v_cruise_kph_org / 3.6:
@@ -987,15 +977,11 @@ class LongitudinalPlanner:
     v_cruise_car_limit += 9/3.6 if v_cruise_car_limit < 70/3.6 else 8/3.6 #これ以上増速すると車体が速度を引き戻してしまう。
     v_cruise = v_cruise if v_cruise < v_cruise_car_limit else v_cruise_car_limit
     self.v_desired_filter.x = self.v_desired_filter.x if self.v_desired_filter.x < v_cruise_car_limit else v_cruise_car_limit
-    self.mpc.set_weights(prev_accel_constraint, personality=sm['selfdriveState'].personality)
-=======
     self.mpc.set_weights(prev_accel_constraint, personality=personality)
->>>>>>> ff300ecf785152db7a518ffd959871dab6b6e6d1
     if self.CP.openpilotLongitudinalControl:
       self.mpc.set_cur_state(self.v_desired_filter.x, self.output_a_target)
     else:
       self.mpc.set_cur_state(v_ego, sm['carState'].aEgo)
-<<<<<<< HEAD
     stop_d = 0
     mpc_red_signal_flag = g_red_signal_scan_flag
     if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
@@ -1008,10 +994,7 @@ class LongitudinalPlanner:
       v_stop = self.mpc.x0[1]
       # MPC は停止線の STOP_DISTANCE + 1m(long_mpc の手前補正)手前で止まるので、その分だけ先に置く
       stop_d = min(v_stop * v_stop / (2.0 * STOP_LINE_DECEL), v_stop * MAX_T) + STOP_DISTANCE + 1.0
-    self.mpc.update(sm['modelV2'], sm['radarState'], personality=sm['selfdriveState'].personality, red_signal_flag=mpc_red_signal_flag, stop_distance=stop_d)
-=======
-    self.mpc.update(sm['modelV2'], sm['radarState'], personality=personality)
->>>>>>> ff300ecf785152db7a518ffd959871dab6b6e6d1
+    self.mpc.update(sm['modelV2'], sm['radarState'], personality=personality, red_signal_flag=mpc_red_signal_flag, stop_distance=stop_d)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)

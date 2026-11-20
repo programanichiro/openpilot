@@ -17,14 +17,10 @@ from openpilot.system.ui.widgets import Widget
 from openpilot.system.ui.lib.text_measure import measure_text_cached
 import sys
 
-<<<<<<< HEAD
 CLIP_MARGIN = 500
 MIN_DRAW_DISTANCE = 10.0
 MAX_DRAW_DISTANCE = 100.0
-LEAD_BAR_LENGTH = 12.0  # px
-=======
 LEAD_BAR_LENGTH = 10.0  # px
->>>>>>> ff300ecf785152db7a518ffd959871dab6b6e6d1
 LEAD_BAR_WIDTH = 1.8  # m
 LANE_EDGES = (-1.8, 1.8)  # m, a 3.6 m lane for a stop bar without lane lines
 LANE_LINE_PROB = 0.5

@@ -128,93 +128,7 @@ class BaseCabinCameraDialog(Widget):
   def _render_dm_alerts(self, rect: rl.Rectangle):
     """Render driver monitoring event names"""
     dm_state = ui_state.sm["driverMonitoringState"]
-<<<<<<< HEAD
-    driver_data = self.driver_state_renderer.get_driver_data()
-    if dm_state.visionPolicyState.faceDetected:
-      face_x, face_y = driver_data.facePosition
-      face_std = max(driver_data.faceOrientationStd[0], driver_data.faceOrientationStd[1])
-      self._face_alpha.update(1.0 if face_std <= 0.15 else max(1.0 - (face_std - 0.15) * 5.0, 0.0))
-
-      # use approx instead of distort_points
-      # TODO: replace with distort_points
-      tici_x = 1080.0 - 1714.0 * face_x
-      tici_y = -135.0 + (504.0 + abs(face_x) * 112.0) + (1205.0 - abs(face_x) * 724.0) * face_y
-
-      # Tici coords are relative to center, scale offset and map to rect (from 2160x1080)
-      self._face_x.update(rect.x + rect.width / 2 + (tici_x - 1080.0) * 1.25 * rect.width / 2160.0)
-      self._face_y.update(rect.y + rect.height / 2 + (tici_y - 540.0) * 1.25 * rect.height / 1080.0)
-    else:
-      self._face_alpha.update(0.0)
-
-    if not self._face_x.initialized or self._face_alpha.x < 0.01:
-      return None
-    return self._face_x.x, self._face_y.x, self._face_alpha.x
-
-  def _draw_face_detection(self, rect: rl.Rectangle):
-    face = self._face_position(rect)
-    if face is None:
-      return
-    x, y, alpha = face
-    box_size = 75 if not gui_app.big_ui() else 115
-    rl.draw_rectangle_rounded_lines_ex(rl.Rectangle(x - box_size / 2, y - box_size / 2, box_size, box_size),
-                                       35.0 / box_size / 2, 3, 3, with_alpha(rl.WHITE, alpha * 0.7))
-
-  @staticmethod
-  def _draw_face_brackets(x: float, y: float, alpha: float, size: float = 88, thickness: float = 3):
-    half, arm = size / 2, size * 0.22
-    color = with_alpha(rl.WHITE, alpha * 0.85)
-    for sx in (-1, 1):
-      for sy in (-1, 1):
-        corner = rl.Vector2(x + sx * half, y + sy * half)
-        for end in (rl.Vector2(corner.x - sx * arm, corner.y), rl.Vector2(corner.x, corner.y - sy * arm)):
-          rl.draw_line_ex(corner, end, thickness, color)
-          rl.draw_circle_v(end, thickness / 2, color)
-        rl.draw_circle_v(corner, thickness / 2, color)
-
-  def _draw_status_pill(self, rect: rl.Rectangle, title: str, color: rl.Color, filled: bool):
-    # on the driver's side, opposite the signals panel
-    height = 48
-    font = gui_app.font(FontWeight.BOLD)
-    font_size = 26
-    while font_size > 20 and measure_text_cached(font, title, font_size).x > rect.width - PANEL_WIDTH - 12 - MARGIN * 2 - 64:
-      font_size -= 1
-    width = measure_text_cached(font, title, font_size).x + 64
-    x = rect.x + rect.width - width - MARGIN if self.driver_state_renderer.is_rhd else rect.x + MARGIN
-    y = rect.y + MARGIN
-
-    rl.draw_rectangle_rounded(rl.Rectangle(x, y, width, height), 1.0, 16, with_alpha(color, 0.95) if filled else rl.Color(0, 0, 0, 170))
-    rl.draw_circle_v(rl.Vector2(x + 26, y + height / 2), 8, rl.WHITE if filled else color)
-    draw_text(title, x + 44, y + (height - font_size) / 2, font_size, FontWeight.BOLD, with_alpha(rl.WHITE, 0.95))
-
-  def _draw_signals(self, rect: rl.Rectangle, dm_state, driver_data, color: rl.Color):
-    # (label, value, whether high is good)
-    rows = [
-      ("face", self._signals["face"].update(float(dm_state.visionPolicyState.faceDetected)), True),
-      ("eyes open", self._signals["eyes"].update((driver_data.leftEyeProb + driver_data.rightEyeProb) / 2), True),
-      ("sunglasses", self._signals["sunglasses"].update(driver_data.sunglassesProb), False),
-      ("phone", self._signals["phone"].update(driver_data.phoneProb), False),
-    ]
-
-    height = 20 + ROW_HEIGHT * len(rows) + 52
-    x = rect.x + 12 if self.driver_state_renderer.is_rhd else rect.x + rect.width - PANEL_WIDTH - 12
-    y = rect.y + 12
-    rl.draw_rectangle_rounded(rl.Rectangle(x, y, PANEL_WIDTH, height), 0.18, 12, rl.Color(0, 0, 0, 165))
-
-    row_y = y + 12
-    meter_w = 56
-    meter_x = x + PANEL_WIDTH - 16 - meter_w
-    for label, value, high_good in rows:
-      active = value > 0.5
-      if high_good:
-        meter_color = GREEN if active else ORANGE
-      else:
-        meter_color = ORANGE if active else rl.WHITE
-      draw_text(label, x + 16, row_y + 4, 20, FontWeight.ROMAN, with_alpha(rl.WHITE, 0.85 if active or high_good else 0.5))
-      self._draw_meter(rl.Rectangle(meter_x, row_y + 10, meter_w, 6), value, with_alpha(meter_color, 0.9))
-      row_y += ROW_HEIGHT
-=======
     self._publish_alert_sound(dm_state)
->>>>>>> ff300ecf785152db7a518ffd959871dab6b6e6d1
 
     is_vision = dm_state.activePolicy == log.DriverMonitoringState.MonitoringPolicy.vision
     awareness_pct = dm_state.visionPolicyState.awarenessPercent if is_vision else dm_state.wheeltouchPolicyState.awarenessPercent
@@ -281,7 +195,7 @@ class BaseCabinCameraDialog(Widget):
     scale_y = rect.height / 1080.0
     fbox_x = rect.x + rect.width / 2 + offset_x * scale_x
     fbox_y = rect.y + rect.height / 2 + offset_y * scale_y
-    box_size = 75
+    box_size = 75 if not gui_app.big_ui() else 115
     line_thickness = 3
 
     line_color = rl.Color(255, 255, 255, int(alpha * 255))
