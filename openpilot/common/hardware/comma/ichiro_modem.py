@@ -100,8 +100,8 @@ def _cleanup_pppd_auth():
 
 
 @contextmanager
-def _serial_port(port: str, baudrate: int):
-  fd = os.open(port, os.O_RDWR | os.O_NOCTTY)
+def _serial_port(port: str, baudrate: int, flags: int = 0):
+  fd = os.open(port, os.O_RDWR | os.O_NOCTTY | flags)
   try:
     attrs = termios.tcgetattr(fd)
     attrs[0] = 0
@@ -130,6 +130,21 @@ def _read_line(fd: int, timeout: float) -> bytes:
     data.extend(byte)
     if byte == b"\n":
       return bytes(data)
+
+
+def _answers_at(port: str, timeout: float = 0.3) -> bool:
+  # AT を送って OK が返るポートだけを AT ポートとみなす（AGNOS の modem.py と同じ判定）
+  deadline = time.monotonic() + timeout
+  try:
+    with _serial_port(port, 9600, os.O_NONBLOCK) as fd:
+      termios.tcflush(fd, termios.TCIFLUSH)
+      os.write(fd, b"AT\r")
+      while (remaining := deadline - time.monotonic()) > 0:
+        if _read_line(fd, remaining).strip() == b"OK":
+          return True
+  except OSError:
+    pass
+  return False
 
 
 class State(Enum):
@@ -393,8 +408,44 @@ class Modem:
     for c in cmds:
       self._at(c)
 
+  def _sync_ports(self) -> bool:
+    # AGNOS 20.4 で udev のルール(78-modem.rules)が消え、/dev/modem_at0・1 は AGNOS の modem.py が張るようになった。
+    # こちらは起動時にその modem.service を止めるので、リンクを自分で張らないと永久に INITIALIZING のままになる。
+    # やり方は AGNOS の modem.py の _sync_ports と同じ。番号の大きい順に AT へ応答する 2 本を選ぶ（GPS・デバッグ用を避ける）。
+    ttys = sorted(glob.glob("/dev/ttyUSB*"), key=lambda p: int(p.removeprefix("/dev/ttyUSB")), reverse=True)
+    if not ttys:
+      return False
+    subprocess.run(["sudo", "chgrp", "dialout", *ttys], capture_output=True)
+    subprocess.run(["sudo", "chmod", "660", *ttys], capture_output=True)
+
+    fd = os.open(AT_LOCK, os.O_CREAT | os.O_RDWR, 0o666)
+    try:
+      fcntl.flock(fd, fcntl.LOCK_EX | fcntl.LOCK_NB)
+    except OSError:
+      os.close(fd)
+      return False
+    try:
+      ports = []
+      for tty in ttys:
+        if _answers_at(tty):
+          ports.append(tty)
+        if len(ports) == 2:
+          break
+    finally:
+      fcntl.flock(fd, fcntl.LOCK_UN)
+      os.close(fd)
+    if len(ports) != 2:
+      logging.warning(f"found AT ports {ports} in {ttys}, retrying")
+      return False
+
+    for link, tty in zip((AT_PORT, PPP_PORT), reversed(ports), strict=True):
+      subprocess.run(["sudo", "ln", "-sfn", os.path.basename(tty), link], capture_output=True)
+    logging.info(f"AT port {ports[1]}, PPP port {ports[0]}")
+    return True
+
   def _do_initializing(self):
-    if not os.path.exists(AT_PORT):
+    # udev がリンクを張る古い AGNOS ではそのまま使い、無いときだけ自分で張る
+    if not os.path.exists(AT_PORT) and not self._sync_ports():
       return State.INITIALIZING
     logging.info("port found, initializing")
     self._ppp.kill()
