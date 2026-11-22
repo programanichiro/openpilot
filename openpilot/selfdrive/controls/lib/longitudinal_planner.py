@@ -982,7 +982,6 @@ class LongitudinalPlanner:
       self.mpc.set_cur_state(self.v_desired_filter.x, self.output_a_target)
     else:
       self.mpc.set_cur_state(v_ego, sm['carState'].aEgo)
-<<<<<<< HEAD
     stop_d = 0
     mpc_red_signal_flag = g_red_signal_scan_flag
     if g_red_signal_scan_flag == 3: #3:赤信号停止動作中
@@ -995,10 +994,7 @@ class LongitudinalPlanner:
       v_stop = self.mpc.x0[1]
       # MPC は停止線の STOP_DISTANCE + 1m(long_mpc の手前補正)手前で止まるので、その分だけ先に置く
       stop_d = min(v_stop * v_stop / (2.0 * STOP_LINE_DECEL), v_stop * MAX_T) + STOP_DISTANCE + 1.0
-    self.mpc.update(sm['modelV2'], sm['radarState'], personality=personality, red_signal_flag=mpc_red_signal_flag, stop_distance=stop_d)
-=======
-    self.mpc.update(sm['radarState'], personality=personality)
->>>>>>> af90646a4a02a93ab48d34a3fc017a9414ac79b9
+    self.mpc.update(sm['radarState'], personality=personality, red_signal_flag=mpc_red_signal_flag, stop_distance=stop_d)
 
     self.v_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.v_solution)
     self.a_desired_trajectory = np.interp(CONTROL_N_T_IDX, T_IDXS_MPC, self.mpc.a_solution)
