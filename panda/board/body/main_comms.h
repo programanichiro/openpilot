@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_BODY_MAIN_COMMS_H
+#define BOARD_BODY_MAIN_COMMS_H
 
 #include "board/config.h"
 #include "board/body/body.h"
@@ -48,16 +49,16 @@ int comms_control_handler(ControlPacket_t *req, uint8_t *resp) {
     case 0xd4: {
       uint8_t offset = (req->request == 0xd3) ? 0U : 64U;
       resp_len = 64U;
-      char *code = (char *)_app_start;
-      int code_len = _app_start[0];
+      char *code = (char *)app_start;
+      int code_len = app_start[0];
       (void)memcpy(resp, &code[code_len + offset], resp_len);
       break;
     }
 
     // **** 0xd6: get version
     case 0xd6:
-      (void)memcpy(resp, gitversion, sizeof(gitversion));
-      resp_len = sizeof(gitversion) - 1U;
+      (void)memcpy(resp, GITVERSION, sizeof(GITVERSION));
+      resp_len = sizeof(GITVERSION) - 1U;
       break;
 
     // **** 0xd8: reset ST
@@ -94,3 +95,5 @@ int comms_control_handler(ControlPacket_t *req, uint8_t *resp) {
   }
   return resp_len;
 }
+
+#endif  // BOARD_BODY_MAIN_COMMS_H

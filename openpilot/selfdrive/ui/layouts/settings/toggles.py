@@ -1,13 +1,14 @@
 from openpilot.cereal import log
 from openpilot.common.params import Params, UnknownKeyName
 from openpilot.system.ui.widgets import Widget
-from openpilot.system.ui.widgets.list_view import multiple_button_item, toggle_item
+from openpilot.system.ui.widgets.list_view import ListItem, multiple_button_item, toggle_item
+from openpilot.system.ui.widgets.list_view import ButtonAction
 from openpilot.system.ui.widgets.scroller_tici import Scroller
-from openpilot.system.ui.widgets.confirm_dialog import ConfirmDialog
+from openpilot.system.ui.widgets.keyboard import Keyboard
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.lib.multilang import tr, tr_noop
-from openpilot.system.ui.widgets import DialogResult
 from openpilot.selfdrive.ui.ui_state import ui_state
+from openpilot.selfdrive.ui.layouts.settings.initial_cruise_speed import InitialCruiseSpeedControl
 
 PERSONALITY_TO_INT = log.LongitudinalPersonality.schema.enumerants
 
@@ -31,6 +32,12 @@ DESCRIPTIONS = {
   'RecordFront': tr_noop("Upload data from the cabin camera and help improve the driver monitoring algorithm."),
   "IsMetric": tr_noop("Display speed in km/h instead of mph."),
   "RecordAudio": tr_noop("Record and store microphone audio while driving. The audio will be included in the dashcam video in comma connect."),
+  "AccelMethodSwitch": tr_noop("Switch Accel Method to Official version or recommendation. A reboot is required."),
+  "GpsAlwaysSwitch": tr_noop("GPS reception starts even when the car is not moving. This speeds up satellite acquisition and prevents GPS reception from being interrupted during temporary Offroad situations. However, it may affect battery consumption when the car is stationary."),
+  "DisableMaxSpeedModify": tr_noop("ACC speeds exceeding 115 km/h will be obtained directly from the vehicle. TSSP 2019 PHV users should enable it."),
+  "ForceHybridVehicle": tr_noop("Turn this switch on if a hybrid vehicle is incorrectly recognized as a gas vehicle. Do not turn it on for gas vehicles, as this will cause a crash."),
+  "IgnoreRerouteHarness": tr_noop("Fix a CAN error on a vehicle that does not have a DSU bypass harness or smartDSU installed."),
+  "C4UIOnC3X": tr_noop("This is a test switch for using the Comma 4 UI on C3X."),
 }
 
 
@@ -38,7 +45,6 @@ class TogglesLayout(Widget):
   def __init__(self):
     super().__init__()
     self._params = Params()
-    self._is_release = self._params.get_bool("IsReleaseBranch")
 
     # param, title, desc, icon, needs_restart
     self._toggle_defs = {
@@ -47,12 +53,6 @@ class TogglesLayout(Widget):
         DESCRIPTIONS["OpenpilotEnabledToggle"],
         "chffr_wheel.png",
         True,
-      ),
-      "ExperimentalMode": (
-        lambda: tr("Experimental Mode"),
-        "",
-        "experimental_white.png",
-        False,
       ),
       "DisengageOnAccelerator": (
         lambda: tr("Disengage on Accelerator Pedal"),
@@ -90,7 +90,40 @@ class TogglesLayout(Widget):
         "metric.png",
         False,
       ),
+      "GpsAlwaysSwitch": (
+        lambda: tr("Always receive GPS signals"),
+        DESCRIPTIONS["GpsAlwaysSwitch"],
+        "../offroad/icon_gps_car.png",
+        False,
+      ),
+      "DisableMaxSpeedModify": (
+        lambda: tr("Use the vehicle ACC with TSSP over 115 km/h"),
+        DESCRIPTIONS["DisableMaxSpeedModify"],
+        "../icons/calibration.png",
+        False,
+      ),
+      "ForceHybridVehicle": (
+        lambda: tr("Force recognition as a hybrid vehicle"),
+        DESCRIPTIONS["ForceHybridVehicle"],
+        "disengage_on_accelerator.png",
+        False,
+      ),
+      "IgnoreRerouteHarness": (
+        lambda: tr("Ignore DSU bypass harness for TSSP"),
+        DESCRIPTIONS["IgnoreRerouteHarness"],
+        "../icons/calibration.png",
+        False,
+      ),
+      "C4UIOnC3X": (
+        lambda: tr("Use the C4 UI in C3X"),
+        DESCRIPTIONS["C4UIOnC3X"],
+        "../icons/chffr_wheel.png",
+        False,
+      ),
     }
+
+    # Edit tethering password
+    self._keyboard = Keyboard()
 
     self._long_personality_setting = multiple_button_item(
       lambda: tr("Driving Personality"),
@@ -102,7 +135,25 @@ class TogglesLayout(Widget):
       icon="speed_limit.png"
     )
 
+    self._accel_method_setting = multiple_button_item(
+      lambda: tr("Accel Method"),
+      DESCRIPTIONS["AccelMethodSwitch"],
+      buttons=[lambda: tr("Recommend"), lambda: tr("Official")],
+      button_width=270,
+      callback=self._set_accel_method,
+      selected_index=self._params.get("AccelMethodSwitch", return_default=True),
+      icon="calibration.png"
+    )
+
     self._toggles = {}
+    self._initial_cruise_speed = ListItem(
+      title=lambda: tr("Initial Max Speed"),
+      description=lambda: tr("Max speed when engaging openpilot. If you are already driving faster, your current speed is used. " +
+                             "Resume restores the previous max speed. Changes apply the next time you engage."),
+      action_item=InitialCruiseSpeedControl(),
+      icon="speed_limit.png",
+    )
+    self._initial_cruise_speed.set_visible(lambda: ui_state.CP is not None and ui_state.has_longitudinal_control and not ui_state.CP.pcmCruise)
     self._locked_toggles = set()
     for param, (title, desc, icon, needs_restart) in self._toggle_defs.items():
       toggle = toggle_item(
@@ -134,8 +185,63 @@ class TogglesLayout(Widget):
       # insert longitudinal personality after NDOG toggle
       if param == "DisengageOnAccelerator":
         self._toggles["LongitudinalPersonality"] = self._long_personality_setting
+        self._toggles["InitialCruiseSpeedKph"] = self._initial_cruise_speed
 
-    self._update_experimental_mode_icon()
+        self._toggles["AccelMethodSwitch"] = self._accel_method_setting
+
+        self._auto_door_lock_action = ButtonAction(text="EDIT")
+        self._auto_door_lock_action.set_enabled(True)
+        self._auto_door_lock_btn = ListItem(title="Auto door lock by speed", icon="../offroad/icon_car_key.png", action_item=self._auto_door_lock_action, callback=self._edit_auto_door_lock)
+        self._auto_door_lock_btn.action_item.set_value("")
+        try:
+          with open('/data/run_auto_lock.txt','r') as fp:
+            lock_speed_str = fp.read() #ロックするスピードをテキストで30みたいにkm/hで書いておく。ファイルが無いか0でオートロック無し。
+            if lock_speed_str:
+              self._auto_door_lock_btn.action_item.set_value(lock_speed_str+" [km/h]")
+        except Exception as e:
+          pass
+        self._toggles["AutoDoorLock"] = self._auto_door_lock_btn
+
+        self._acc_min_speed_action = ButtonAction(text="EDIT")
+        self._acc_min_speed_action.set_enabled(True)
+        self._acc_min_speed_btn = ListItem(title="ACC min speed", icon="../offroad/icon_car_key.png", action_item=self._acc_min_speed_action, callback=self._edit_acc_min_speed)
+        self._acc_min_speed_btn.action_item.set_value("toyota default") #ファイルが無いか0ならトヨタの既定
+        try:
+          with open('/data/acc_min_speed.txt','r') as fp:
+            acc_min_speed_str = fp.read() #ACC 最低速度をテキストで28みたいにkm/hで書いておく。ファイルが無いか0でトヨタの既定。変えたら再起動が必要
+            if int(acc_min_speed_str) > 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+              self._acc_min_speed_btn.action_item.set_value(str(int(acc_min_speed_str))+" [km/h]")
+        except Exception as e:
+          pass
+        self._toggles["AccMinSpeed"] = self._acc_min_speed_btn
+
+        # 車重が無くなった。
+        # self._vehicle_mass_action = ButtonAction(text="EDIT")
+        # self._vehicle_mass_action.set_enabled(True)
+        # self._vehicle_mass_btn = ListItem(title="Vehicle weight", icon="../offroad/icon_car_weight.png", action_item=self._vehicle_mass_action, callback=self._edit_vehicle_mass)
+        # self._vehicle_mass_btn.action_item.set_value("")
+        # try:
+        #   with open('/data/vehicle_mass.txt','r') as fp:
+        #     vehicle_mass_str = fp.read() #車重をテキストで1530みたいにkgで書いておく。ファイルが無いか0でデフォの設定値。
+        #     if vehicle_mass_str:
+        #       self._vehicle_mass_btn.action_item.set_value(vehicle_mass_str+" [kg]")
+        # except Exception as e:
+        #   pass
+        # self._toggles["VehicleMass"] = self._vehicle_mass_btn
+
+        self._device_offset_action = ButtonAction(text="EDIT")
+        self._device_offset_action.set_enabled(True)
+        self._device_offset_btn = ListItem(title="Device offset(R+L-)", icon="../icons_mici/settings/device_icon.png", action_item=self._device_offset_action, callback=self._edit_device_offset)
+        self._device_offset_btn.action_item.set_value("")
+        try:
+          with open('/data/device_offset.txt','r') as fp:
+            device_offset_str = fp.read() #中央から右にずらす距離をテキストで10みたいに書いておく。ファイルが無いか0でずらし無し。単位はcm。右がプラス。変更後はcomma再起動＆キャリブレーションリセットが必要。
+            if device_offset_str:
+              self._device_offset_btn.action_item.set_value(device_offset_str+" [cm]")
+        except Exception as e:
+          pass
+        self._toggles["DeviceOffset"] = self._device_offset_btn
+
     self._scroller = Scroller(list(self._toggles.values()), line_separator=True, spacing=0)
 
     ui_state.add_engaged_transition_callback(self._update_toggles)
@@ -154,47 +260,16 @@ class TogglesLayout(Widget):
 
   def _update_toggles(self):
     ui_state.update_params()
-
-    e2e_description = tr(
-      "openpilot defaults to driving in chill mode. Experimental mode enables alpha-level features that aren't ready for chill mode. " +
-      "Experimental features are listed below:<br>" +
-      "<h4>End-to-End Longitudinal Control</h4><br>" +
-      "Let the driving model control the gas and brakes. openpilot will drive as it thinks a human would, including stopping for red lights and stop signs. " +
-      "Since the driving model decides the speed to drive, the set speed will only act as an upper bound. This is an alpha quality feature; " +
-      "mistakes should be expected.<br>"
-    )
+    self._initial_cruise_speed.action_item.refresh()
 
     if ui_state.CP is not None:
-      if ui_state.has_longitudinal_control:
-        self._toggles["ExperimentalMode"].action_item.set_enabled(True)
-        self._toggles["ExperimentalMode"].set_description(e2e_description)
-        self._long_personality_setting.action_item.set_enabled(True)
-      else:
-        # no long for now
-        self._toggles["ExperimentalMode"].action_item.set_enabled(False)
-        self._toggles["ExperimentalMode"].action_item.set_state(False)
-        self._long_personality_setting.action_item.set_enabled(False)
-        self._params.remove("ExperimentalMode")
-
-        unavailable = tr("Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control.")
-
-        long_desc = unavailable + " " + tr("openpilot longitudinal control may come in a future update.")
-        if ui_state.CP.alphaLongitudinalAvailable:
-          if self._is_release:
-            long_desc = unavailable + " " + tr("An alpha version of openpilot longitudinal control can be tested, along with " +
-                                               "Experimental mode, on non-release branches.")
-          else:
-            long_desc = tr("Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode.")
-
-        self._toggles["ExperimentalMode"].set_description("<b>" + long_desc + "</b><br><br>" + e2e_description)
-    else:
-      self._toggles["ExperimentalMode"].set_description(e2e_description)
+      self._long_personality_setting.action_item.set_enabled(ui_state.has_longitudinal_control)
+      self._accel_method_setting.action_item.set_enabled(ui_state.has_longitudinal_control)
 
     # TODO: make a param control list item so we don't need to manage internal state as much here
     # refresh toggles from params to mirror external changes
     for param in self._toggle_defs:
       self._toggles[param].action_item.set_state(self._params.get_bool(param))
-    self._update_experimental_mode_icon()
 
     # these toggles need restart, block while engaged
     for toggle_def in self._toggle_defs:
@@ -204,38 +279,122 @@ class TogglesLayout(Widget):
   def _render(self, rect):
     self._scroller.render(rect)
 
-  def _update_experimental_mode_icon(self):
-    icon = "experimental.png" if self._toggles["ExperimentalMode"].action_item.get_state() else "experimental_white.png"
-    self._toggles["ExperimentalMode"].set_icon(icon)
-
-  def _handle_experimental_mode_toggle(self, state: bool):
-    confirmed = self._params.get_bool("ExperimentalModeConfirmed")
-    if state and not confirmed:
-      def confirm_callback(result: DialogResult):
-        if result == DialogResult.CONFIRM:
-          self._params.put_bool("ExperimentalMode", True, block=True)
-          self._params.put_bool("ExperimentalModeConfirmed", True, block=True)
-        else:
-          self._toggles["ExperimentalMode"].action_item.set_state(False)
-        self._update_experimental_mode_icon()
-
-      # show confirmation dialog
-      content = (f"<h1>{self._toggles['ExperimentalMode'].title}</h1><br>" +
-                 f"<p>{self._toggles['ExperimentalMode'].description}</p>")
-      dlg = ConfirmDialog(content, tr("Enable"), rich=True, callback=confirm_callback)
-      gui_app.push_widget(dlg)
-    else:
-      self._update_experimental_mode_icon()
-      self._params.put_bool("ExperimentalMode", state, block=True)
-
   def _toggle_callback(self, state: bool, param: str):
-    if param == "ExperimentalMode":
-      self._handle_experimental_mode_toggle(state)
-      return
-
     self._params.put_bool(param, state, block=True)
+    if param == "IsMetric":
+      self._update_toggles()
+
     if self._toggle_defs[param][3]:
       self._params.put_bool("OnroadCycleRequested", True, block=True)
 
   def _set_longitudinal_personality(self, button_index: int):
     self._params.put("LongitudinalPersonality", button_index, block=True)
+
+  def _set_accel_method(self, button_index: int):
+    self._params.put_bool("AccelMethodSwitch", button_index == 1)
+
+  def _edit_auto_door_lock(self):
+    def update_door_lock(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/run_auto_lock.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._auto_door_lock_btn.action_item.set_value("")
+        return
+
+      if self._keyboard.text == "0" or not self._keyboard.text:
+        self._auto_door_lock_btn.action_item.set_value("")
+      else:
+        self._auto_door_lock_btn.action_item.set_value(self._keyboard.text+" [km/h]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("Auto door lock by speed", "")
+    s = self._auto_door_lock_btn.action_item.value
+    s = s.removesuffix(" [km/h]")
+    self._keyboard.set_text(s)
+    self._keyboard.set_callback(update_door_lock)
+    gui_app.push_widget(self._keyboard)
+
+  def _edit_acc_min_speed(self):
+    def update_acc_min_speed(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/acc_min_speed.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._acc_min_speed_btn.action_item.set_value("toyota default") #書けなかったらファイルは無いか空なので、走行はトヨタの既定になる
+        return
+
+      try:
+        speed_kph = int(self._keyboard.text)
+      except Exception as e:
+        speed_kph = 0
+      if speed_kph <= 0: #planner と同じく数字として読めて 1 以上のときだけ設定値。それ以外はトヨタの既定
+        self._acc_min_speed_btn.action_item.set_value("toyota default")
+      else:
+        self._acc_min_speed_btn.action_item.set_value(str(speed_kph)+" [km/h]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("ACC min speed", "")
+    s = self._acc_min_speed_btn.action_item.value
+    s = s.removesuffix(" [km/h]")
+    if s == "toyota default":
+      s = ""
+    self._keyboard.set_text(s)
+    self._keyboard.set_callback(update_acc_min_speed)
+    gui_app.push_widget(self._keyboard)
+
+  # def _edit_vehicle_mass(self):
+  #   def update_mass(result):
+  #     if result != 1:
+  #       return
+
+  #     try:
+  #       with open('/data/vehicle_mass.txt','w') as fp:
+  #         fp.write("%s" % (self._keyboard.text))
+  #     except Exception as e:
+  #       self._vehicle_mass_btn.action_item.set_value("")
+  #       return
+
+  #     if self._keyboard.text == "0" or not self._keyboard.text:
+  #       self._vehicle_mass_btn.action_item.set_value("")
+  #     else:
+  #       self._vehicle_mass_btn.action_item.set_value(self._keyboard.text+" [kg]")
+
+  #   self._keyboard.reset(min_text_size=0)
+  #   self._keyboard.set_title("Vehicle weight", "")
+  #   s = self._vehicle_mass_btn.action_item.value
+  #   s = s.removesuffix(" [kg]")
+  #   self._keyboard.set_text(s)
+  #   self._keyboard.set_callback(update_mass)
+  #   gui_app.push_widget(self._keyboard)
+
+  def _edit_device_offset(self):
+    def update_offset(result):
+      if result != 1:
+        return
+
+      try:
+        with open('/data/device_offset.txt','w') as fp:
+          fp.write("%s" % (self._keyboard.text))
+      except Exception as e:
+        self._device_offset_btn.action_item.set_value("")
+        return
+
+      if self._keyboard.text == "0" or not self._keyboard.text:
+        self._device_offset_btn.action_item.set_value("")
+      else:
+        self._device_offset_btn.action_item.set_value(self._keyboard.text+" [cm]")
+
+    self._keyboard.reset(min_text_size=0)
+    self._keyboard.set_title("Device offset(R+L-)", "")
+    s = self._device_offset_btn.action_item.value
+    s = s.removesuffix(" [cm]")
+    self._keyboard.set_text(s)
+    self._keyboard.set_callback(update_offset)
+    gui_app.push_widget(self._keyboard)

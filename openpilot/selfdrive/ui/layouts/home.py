@@ -1,9 +1,8 @@
 import time
 import raylib_nb as rl
-from collections.abc import Callable
+from openpilot.common.hardware import HARDWARE
 from enum import IntEnum
 from openpilot.common.params import Params
-from openpilot.selfdrive.ui.widgets.exp_mode_button import ExperimentalModeButton
 from openpilot.selfdrive.ui.widgets.offroad_alerts import UpdateAlert, OffroadAlert
 from openpilot.selfdrive.ui.widgets.prime import PrimeWidget
 from openpilot.selfdrive.ui.widgets.setup import SetupWidget
@@ -28,7 +27,7 @@ class HomeLayoutState(IntEnum):
 
 
 class HomeLayout(Widget):
-  def __init__(self, open_toggles: Callable[[], None] | None = None):
+  def __init__(self):
     super().__init__()
     self.params = Params()
 
@@ -56,8 +55,6 @@ class HomeLayout(Widget):
     self.alert_notif_rect = rl.Rectangle(0, 0, 220, HEADER_HEIGHT - 10)
 
     self._prime_widget = PrimeWidget()
-    self._exp_mode_button = ExperimentalModeButton()
-    self._exp_mode_button.set_click_callback(open_toggles)
     self._setup_widget = SetupWidget()
 
     self._setup_callbacks()
@@ -190,10 +187,7 @@ class HomeLayout(Widget):
       self._prime_widget.render(self.left_column_rect)
 
   def _render_right_column(self):
-    rect = self.right_column_rect
-    height = self._exp_mode_button.HEIGHT
-    self._exp_mode_button.render(rl.Rectangle(rect.x, rect.y, rect.width, height))
-    self._setup_widget.render(rl.Rectangle(rect.x, rect.y + height + SPACING, rect.width, rect.height - height - SPACING))
+    self._setup_widget.render(self.right_column_rect)
 
   def _refresh(self):
     self._version_text = self._get_version_text()
@@ -218,6 +212,7 @@ class HomeLayout(Widget):
     self._notification_image = notifications[0]["image"] if notifications else None
 
   def _get_version_text(self) -> str:
-    brand = "openpilot"
+    brand = "ichiropilot"
     description = self.params.get("UpdaterCurrentDescription")
-    return f"{brand} {description}" if description else brand
+    os_ver = HARDWARE.get_os_version()
+    return f"{brand} OS{os_ver} / {description}" if description else f"{brand} {os_ver}"

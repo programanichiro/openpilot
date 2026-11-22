@@ -113,10 +113,6 @@ msgstr "変更"
 msgid "CHECK"
 msgstr "確認"
 
-#: openpilot/selfdrive/ui/widgets/exp_mode_button.py
-msgid "CHILL MODE ON"
-msgstr "チルモードON"
-
 #: openpilot/selfdrive/ui/layouts/sidebar.py
 #: openpilot/system/ui/widgets/network.py
 msgid "CONNECT"
@@ -224,10 +220,6 @@ msgstr "エラー"
 #: openpilot/selfdrive/ui/layouts/sidebar.py
 msgid "ETH"
 msgstr "ETH"
-
-#: openpilot/selfdrive/ui/widgets/exp_mode_button.py
-msgid "EXPERIMENTAL MODE ON"
-msgstr "実験モードON"
 
 #: openpilot/selfdrive/ui/layouts/settings/developer.py
 msgid "Enable"
@@ -802,18 +794,48 @@ msgstr[0] "{}分前"
 msgid "✓ SUBSCRIBED"
 msgstr "✓ 登録済み"
 
-#: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Enable the openpilot longitudinal control (alpha) toggle to allow Experimental mode."
-msgstr "openpilot縦制御（アルファ）のトグルを有効にすると実験モードが使用できます。"
 
-#: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Experimental Mode"
-msgstr "実験モード"
+msgid "Enter APN user name"
+msgstr "APNユーザー名を入力"
 
-#: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "Experimental mode is currently unavailable on this car since the car's stock ACC is used for longitudinal control."
-msgstr "この車では縦制御に純正ACCを使用するため、現在実験モードは利用できません。"
+msgid "Enter APN password"
+msgstr "APNパスワードを入力"
 
-#: openpilot/selfdrive/ui/layouts/settings/toggles.py
-msgid "openpilot longitudinal control may come in a future update."
-msgstr "openpilotの縦制御は将来のアップデートで提供される可能性があります。"
+msgid "APN User Name"
+msgstr "APNユーザー名"
+
+msgid "APN Password"
+msgstr "APNパスワード"
+
+msgid "APN Authentication"
+msgstr "APNログイン方法"
+
+msgid "Off"
+msgstr "オフ"
+
+msgid "PAP"
+msgstr "PAP"
+
+msgid "CHAP"
+msgstr "CHAP"
+
+msgid "Also delete the saved APN user name and password?"
+msgstr "保存済みのAPNユーザー名とパスワードも削除しますか？"
+
+msgid "Yes"
+msgstr "はい"
+
+msgid "No"
+msgstr "いいえ"
+
+msgid "Use 1-64 ASCII letters, digits or symbols, without spaces, double quotes, backslashes or commas."
+msgstr "ASCIIのみ、1-64までで入力してください。スペース、ダブルクォート、バックスラッシュ、カンマは使用できません。"
+
+msgid "Delete APN Credentials"
+msgstr "APNログイン情報を削除"
+
+msgid "DELETE"
+msgstr "削除"
+
+msgid "Delete the saved APN user name and password?"
+msgstr "保存済みのAPNユーザー名とパスワードを削除しますか？"

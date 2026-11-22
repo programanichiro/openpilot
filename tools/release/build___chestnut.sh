@@ -1,0 +1,131 @@
+#!/usr/bin/env bash
+set -ex
+
+# キーが無いと終了コード5を返すので、set -e で落ちないようにする
+git config --unset-all lfs.https://huggingface.co/commaai/openpilot-lfs.git/info/lfs.access || true
+
+DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null && pwd)"
+
+SOURCE_DIR="$(git -C $DIR rev-parse --show-toplevel)"
+if [ -z "$TARGET_DIR" ]; then
+  TARGET_DIR="$(mktemp -d)"
+fi
+
+# set git identity
+source $DIR/identity.sh
+
+# upstream は Git LFS をやめ、Hugging Face の bucket から取る自前の lfs.py に移った（#39206）。
+# git-lfs のコマンドは使わない。install は git-lfs のフックを外し、lfs.py のフィルタとフックを入れる。
+(cd "$SOURCE_DIR" && ./lfs.py install)
+# ビッグモデルは LFS のまま配る。実体は不要なのでポインタのまま残す。
+# warp 2本も除外する。実体化すると rsync が 864KB の実ファイルをコピーし、
+# LFS を外した TARGET_DIR で生バイナリとしてコミットされてしまう。
+# 起点の remotes/__nightly-chestnut はポインタなので、毎回 1.7MB の差分が出ていた。
+MODELS=openpilot/selfdrive/modeld/models
+(cd "$SOURCE_DIR" && ./lfs.py pull --exclude="$MODELS/big_driving_tinygrad.pkl,$MODELS/big_driving_warp_1344x760_tinygrad.pkl,$MODELS/big_driving_warp_1928x1208_tinygrad.pkl")
+
+# -X は未取得にするだけで、以前のビルドで実体化されたファイルはポインタに戻らない。
+# 残っていると rsync が実体をコピーしてしまうので、HEAD のポインタで上書きする。
+for f in "$MODELS"/big_*_tinygrad.pkl; do
+  git show "HEAD:$f" > "$f"
+done
+
+echo "[-] Setting up target repo T=$SECONDS"
+
+rm -rf $TARGET_DIR
+mkdir -p $TARGET_DIR
+cd $TARGET_DIR
+cp -r $SOURCE_DIR/.git $TARGET_DIR
+pre-commit uninstall || true
+
+echo "[-] bringing __nightly-chestnut in sync T=$SECONDS"
+cd $TARGET_DIR
+git branch -D __nightly-chestnut || true
+git push origin --delete __nightly-chestnut || true
+
+# origin と remotes(公式) の両方に同名の追跡 ref があると DWIM が曖昧になるので upstream を明示する。
+# origin 側の追跡 ref は push --delete が失敗したときに残骸として残ることがある。
+git checkout -B __nightly-chestnut remotes/__nightly-chestnut
+
+git config --local lfs.locksverify false
+
+# 配布用のリポジトリでは LFS を使わず、素のファイル（big モデルはポインタのまま）でコミットする。
+# lfs.py の pre-push は認証が要る場合があるので、push の前にフィルタとフックを外しておく。
+git config --local --remove-section filter.lfs 2>/dev/null || true
+rm -f .git/hooks/pre-push
+
+git push --set-upstream origin __nightly-chestnut
+
+git fetch --depth 1 origin __nightly-chestnut
+
+git reset --hard origin/__nightly-chestnut
+git clean -xdff
+
+# ----------------------------------------
+# .gitattributes を退避
+# ----------------------------------------
+
+# release_files.py は .gitattributes を除外するので、ブランチにあるものを持ち回す。起点が upstream の
+# __nightly-chestnut なので、LFS 指定はビッグモデルの1行だけになっている。
+GITATTR_BACKUP=$(mktemp -d)
+cp .gitattributes $GITATTR_BACKUP/
+
+# remove everything except .git
+echo "[-] erasing old openpilot T=$SECONDS"
+find . -maxdepth 1 -not -path './.git' -not -name '.' -not -name '..' -exec rm -rf '{}' \;
+
+# reset source tree
+cd $SOURCE_DIR
+git clean -xdff
+
+# do the files copy
+echo "[-] copying files T=$SECONDS"
+
+cd $SOURCE_DIR
+#cp -pR --parents $(./tools/release/release_files.py) $TARGET_DIR/
+#rsync -l -R --exclude='big_driving_*.onnx' $(./tools/release/release_files.py) $TARGET_DIR/
+INCLUDE_BIG_MODEL=1 ./tools/release/release_files.py |
+  rsync -l -R \
+    --from0 --files-from=- \
+    ./ "$TARGET_DIR/"
+
+# in the directory
+cd $TARGET_DIR
+rm -f panda/board/obj/panda.bin.signed
+
+# ----------------------------------------
+# .gitattributes を復元
+# ----------------------------------------
+
+cp $GITATTR_BACKUP/.gitattributes .
+rm -rf $GITATTR_BACKUP
+
+# include source commit hash and build date in commit
+GIT_HASH=$(git --git-dir=$SOURCE_DIR/.git rev-parse HEAD)
+DATETIME=$(date '+%Y-%m-%dT%H:%M:%S')
+VERSION=$(cat $SOURCE_DIR/openpilot/common/version.h | awk -F\" '{print $2}')
+
+echo "[-] committing version $VERSION T=$SECONDS"
+git add -f .
+git status
+git commit -a -m "openpilot v$VERSION release-pi
+
+date: $DATETIME
+master commit: $GIT_HASH
+"
+
+git push -f origin __nightly-chestnut:__nightly-chestnut
+
+echo "[-] done T=$SECONDS, ready at $TARGET_DIR"
+
+if [ -n "$1" ]; then
+  git branch -D $1 || true
+  git push origin --delete $1 || true
+
+  git checkout -b $1
+  git push --set-upstream origin $1
+  echo "add checkout : $1"
+else
+  echo "done!!"
+fi
+

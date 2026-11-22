@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_DRIVERS_GPIO_H
+#define BOARD_DRIVERS_GPIO_H
 
 #define MODE_INPUT 0
 #define MODE_OUTPUT 1
@@ -78,8 +79,10 @@ int get_gpio_input(const GPIO_TypeDef *GPIO, unsigned int pin) {
 bool detect_with_pull(GPIO_TypeDef *GPIO, int pin, int mode) {
   set_gpio_mode(GPIO, pin, MODE_INPUT);
   set_gpio_pullup(GPIO, pin, mode);
-  for (volatile int i=0; i<PULL_EFFECTIVE_DELAY; i++);
+  for (volatile int i=0; i<PULL_EFFECTIVE_DELAY; i++) {}
   bool ret = get_gpio_input(GPIO, pin);
   set_gpio_pullup(GPIO, pin, PULL_NONE);
   return ret;
 }
+
+#endif  // BOARD_DRIVERS_GPIO_H

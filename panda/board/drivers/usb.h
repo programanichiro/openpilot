@@ -1,4 +1,5 @@
-#pragma once
+#ifndef BOARD_DRIVERS_USB_H
+#define BOARD_DRIVERS_USB_H
 
 #include "board/drivers/drivers.h"
 
@@ -13,9 +14,9 @@ typedef union {
   bw;
 } uint16_t_uint8_t;
 
-typedef union _USB_Setup {
+typedef union USB_Setup {
   uint32_t d8[2];
-  struct _SetupPkt_Struc
+  struct SetupPkt_Struc
   {
     uint8_t           bmRequestType;
     uint8_t           bRequest;
@@ -175,10 +176,10 @@ static void usb_reset(void) {
 
   // flush TX fifo
   USBx->GRSTCTL = USB_OTG_GRSTCTL_TXFFLSH | USB_OTG_GRSTCTL_TXFNUM_4;
-  while ((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) == USB_OTG_GRSTCTL_TXFFLSH);
+  while ((USBx->GRSTCTL & USB_OTG_GRSTCTL_TXFFLSH) == USB_OTG_GRSTCTL_TXFFLSH) {}
   // flush RX FIFO
   USBx->GRSTCTL = USB_OTG_GRSTCTL_RXFFLSH;
-  while ((USBx->GRSTCTL & USB_OTG_GRSTCTL_RXFFLSH) == USB_OTG_GRSTCTL_RXFFLSH);
+  while ((USBx->GRSTCTL & USB_OTG_GRSTCTL_RXFFLSH) == USB_OTG_GRSTCTL_RXFFLSH) {}
 
   // no global NAK
   USBx_DEVICE->DCTL |= USB_OTG_DCTL_CGINAK;
@@ -751,3 +752,5 @@ void can_tx_comms_resume_usb(void) {
   }
   EXIT_CRITICAL();
 }
+
+#endif  // BOARD_DRIVERS_USB_H

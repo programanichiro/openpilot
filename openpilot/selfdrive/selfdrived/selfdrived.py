@@ -10,6 +10,7 @@ from opendbc.car.structs import car
 from openpilot.cereal.visionipc import VisionStreamType
 from msgq.visionipc import VisionIpcClient
 
+from openpilot.system.athena.registration import UNREGISTERED_DONGLE_ID
 
 from openpilot.common.params import Params
 from openpilot.common.realtime import config_realtime_process, Priority, Ratekeeper, DT_CTRL
@@ -45,6 +46,8 @@ MonitoringPolicy = log.DriverMonitoringState.MonitoringPolicy
 
 IGNORED_SAFETY_MODES = (SafetyModel.silent, SafetyModel.noOutput)
 
+ACCEL_PUSH_COUNT = 0
+accel_engaged_str = '0'
 
 class SelfdriveD:
   def __init__(self, CP=None):
@@ -108,8 +111,6 @@ class SelfdriveD:
     # cleanup old params
     if not self.CP.alphaLongitudinalAvailable:
       self.params.remove("AlphaLongitudinalEnabled")
-    if not self.CP.openpilotLongitudinalControl:
-      self.params.remove("ExperimentalMode")
 
     self.CS_prev = car.CarState.new_message()
     self.AM = AlertManager()
@@ -126,7 +127,6 @@ class SelfdriveD:
     self.events_prev = []
     self.logged_comm_issue = None
     self.not_running_prev = None
-    self.experimental_mode = False
     self.personality = self.params.get("LongitudinalPersonality", return_default=True)
     self.recalibrating_seen = False
     self.startup_cruise_checked = False
@@ -136,7 +136,7 @@ class SelfdriveD:
     self.rk = Ratekeeper(100, print_delay_threshold=None)
 
     # Determine startup event
-    self.startup_event = EventName.startup if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
+    self.startup_event = EventName.startup #if build_metadata.openpilot.comma_remote and build_metadata.tested_channel else EventName.startupMaster
     if HARDWARE.get_device_type() == 'mici':
       self.startup_event = None
     if not car_recognized:
@@ -251,8 +251,33 @@ class SelfdriveD:
           # body always wants to enable
           self.events.add(EventName.pcmEnable)
 
+      global ACCEL_PUSH_COUNT,accel_engaged_str
+      engage_disable = False
+      if CS.gasPressed:
+        accel_engaged = False
+        if ACCEL_PUSH_COUNT == 0: #踏んだ瞬間だけ取る
+          try:
+            with open('/dev/shm/accel_engaged.txt','r') as fp: #これも毎度やると遅くなる。踏んだ瞬間だけ取る
+              accel_engaged_str = fp.read()
+          except Exception as e:
+            pass
+        if accel_engaged_str:
+          if int(accel_engaged_str) == 1: #他の***_disable.txtと値の意味が逆（普通に解釈出来る）
+            accel_engaged = True
+          if int(accel_engaged_str) >= 2: #2でALL ACCEL Engage。時間判定がなくなる。3でワンペダルモード
+            accel_engaged = True
+            ACCEL_PUSH_COUNT = 100
+        if accel_engaged == False and CS.gasPressed and not self.CS_prev.gasPressed: #self.disengage_on_accelerator
+          engage_disable = True
+        ACCEL_PUSH_COUNT += 1
+      else:
+        if ACCEL_PUSH_COUNT > 0 and ACCEL_PUSH_COUNT < 100:
+          engage_disable = True
+        ACCEL_PUSH_COUNT = 0
+
       # Disable on rising edge of accelerator or brake. Also disable on brake when speed > 0
-      if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+      #if (CS.gasPressed and not self.CS_prev.gasPressed and self.disengage_on_accelerator) or \
+      if (CS.vEgo * 3.6 > 1 and engage_disable == True) or \
         (CS.brakePressed and (not self.CS_prev.brakePressed or not CS.standstill)) or \
         (CS.regenBraking and (not self.CS_prev.regenBraking or not CS.standstill)):
         self.events.add(EventName.pedalPressed)
@@ -268,7 +293,7 @@ class SelfdriveD:
       self.events.add(EventName.overheat)
     if self.sm['deviceState'].freeSpacePercent < 7 and not SIMULATION:
       self.events.add(EventName.outOfSpace)
-    if self.sm['deviceState'].memoryUsagePercent > 90 and not SIMULATION:
+    if self.sm['deviceState'].memoryUsagePercent > 94 and not SIMULATION:
       self.events.add(EventName.lowMemory)
 
     # Alert if fan isn't spinning for 5 seconds
@@ -393,7 +418,8 @@ class SelfdriveD:
       if not self.sm.all_alive():
         self.events.add(EventName.commIssue)
       elif not self.sm.all_freq_ok():
-        self.events.add(EventName.commIssueAvgFreq)
+        # self.events.add(EventName.commIssueAvgFreq)
+        pass
       else:
         self.events.add(EventName.commIssue)
 
@@ -454,7 +480,7 @@ class SelfdriveD:
 
     # GPS checks
     gps_ok = self.sm.recv_frame[self.gps_location_service] > 0 and (self.sm.frame - self.sm.recv_frame[self.gps_location_service]) * DT_CTRL < 2.0
-    if not gps_ok and self.sm['deviceMotion'].inputsOK and (self.distance_traveled > 1500):
+    if os.environ['DONGLE_ID'] != UNREGISTERED_DONGLE_ID and not gps_ok and self.sm['deviceMotion'].inputsOK and (self.distance_traveled > 1500 and self.distance_traveled < 3000):
       self.events.add(EventName.noGps)
     if gps_ok:
       self.distance_traveled = 0
@@ -470,7 +496,7 @@ class SelfdriveD:
       if any(not be.pressed and be.type == ButtonType.gapAdjustCruise for be in CS.buttonEvents):
         self.personality = (self.personality - 1) % 3
         self.params.put('LongitudinalPersonality', self.personality)
-        self.events.add(EventName.personalityChanged)
+        # self.events.add(EventName.personalityChanged)イチロウパイロットでは要らない。
 
   def data_sample(self):
     _car_state = messaging.recv_one(self.car_state_sock)
@@ -541,7 +567,6 @@ class SelfdriveD:
     ss.active = self.active
     ss.state = self.state_machine.state
     ss.engageable = not self.events.contains(ET.NO_ENTRY)
-    ss.experimentalMode = self.experimental_mode
     ss.personality = self.personality
 
     ss.alertText1 = self.AM.current_alert.alert_text_1
@@ -578,7 +603,6 @@ class SelfdriveD:
       self.is_metric = self.params.get_bool("IsMetric")
       self.is_ldw_enabled = self.params.get_bool("IsLdwEnabled")
       self.disengage_on_accelerator = self.params.get_bool("DisengageOnAccelerator")
-      self.experimental_mode = self.params.get_bool("ExperimentalMode") and self.CP.openpilotLongitudinalControl
       self.personality = self.params.get("LongitudinalPersonality", return_default=True)
       time.sleep(0.1)
 

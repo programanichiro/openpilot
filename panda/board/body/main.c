@@ -6,7 +6,6 @@
 #include "board/drivers/pwm.h"
 #include "board/drivers/usb.h"
 #include "board/early_init.h"
-#include "board/obj/gitversion.h"
 #include "board/body/can.h"
 #include "opendbc/safety/safety.h"
 #include "board/drivers/can_common.h"
@@ -31,7 +30,7 @@ void __attribute__ ((noinline)) enable_fpu(void) {
   SCB->CPACR |= ((3UL << (10U * 2U)) | (3UL << (11U * 2U)));
 }
 
-void __initialize_hardware_early(void) {
+void initialize_hardware_early(void) {
   enable_fpu();
   early_initialization();
 }

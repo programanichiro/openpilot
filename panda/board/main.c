@@ -20,8 +20,6 @@
 
 #include "board/sys/power_saving.h"
 
-#include "board/obj/gitversion.h"
-
 #include "board/can_comms.h"
 #include "board/main_comms.h"
 #include "board/drivers/self_test.h"
@@ -98,9 +96,10 @@ bool is_car_safety_mode(uint16_t mode) {
 
 // ***************************** main code *****************************
 
+// called by the startup code
 // cppcheck-suppress unusedFunction ; used in headers not included in cppcheck
 // cppcheck-suppress misra-c2012-8.4
-void __initialize_hardware_early(void) {
+void initialize_hardware_early(void) {
   early_initialization();
 }
 

@@ -44,10 +44,17 @@ from openpilot.selfdrive.modeld.helpers import MODELS_DIR, chestnut_present, che
 
 SEND_RAW_PRED = os.getenv('SEND_RAW_PRED')
 
-LAT_SMOOTH_SECONDS = 0.0
+LAT_SMOOTH_SECONDS = 0.1
 LONG_SMOOTH_SECONDS = 0.3
 MIN_LAT_CONTROL_SPEED = 0.3
 BIG_MODEL_TIMEOUT = 60
+
+
+def _param_path(params: Params, key: str) -> str | None:
+  value = params.get(key)
+  if isinstance(value, bytes):
+    value = value.decode()
+  return value or None
 
 
 def get_action_from_model(model_output: dict[str, np.ndarray], prev_action: log.ModelDataV2.Action,
@@ -279,8 +286,23 @@ def main(demo=False):
 
   st = time.monotonic()
   cloudlog.warning("loading model")
+  swap_small = _param_path(params, "ModelSwapPkl")
+  swap_big = _param_path(params, "ModelSwapBigPkl")
   model = None
-  if CHESTNUT:
+  if swap_big if CHESTNUT else swap_small:
+    try:
+      from openpilot.selfdrive.modeld.model_swap.runtime import ModelSwapState
+      selected = swap_big if CHESTNUT else swap_small
+      cloudlog.warning(f"loading selected artifact: {selected}")
+      model = ModelSwapState(vipc_client_main.width, vipc_client_main.height, selected, chestnut=CHESTNUT)
+      model.warmup()
+      if CHESTNUT:
+        params.put_bool("ChestnutActive", True)
+    except Exception:
+      cloudlog.exception("selected model load failed")
+      model = None
+
+  if model is None and CHESTNUT:
     big_model = None
     def load_big():
       nonlocal big_model
@@ -303,7 +325,8 @@ def main(demo=False):
     else:
       params.put_bool("ChestnutActive", model is not None)
 
-  small_model = ModelState(cam_w, cam_h, False) if model is None or CHESTNUT else None
+  stock_small = model is None or CHESTNUT
+  small_model = ModelState(cam_w, cam_h, False) if stock_small else None
   if model is None:
     model = small_model
   params.put_bool("ChestnutLoading", False)
@@ -466,7 +489,7 @@ def main(demo=False):
       modelv2_send.modelV2.meta.laneChangeState = DH.lane_change_state
       modelv2_send.modelV2.meta.laneChangeDirection = DH.lane_change_direction
 
-      fill_driving_model_data(drivingdata_send, modelv2_send)
+      fill_driving_model_data(drivingdata_send, modelv2_send, sm['carState'].steeringAngleDeg, DH, v_ego)
       fill_pose_msg(posenet_send, model_output, meta_main.frame_id, vipc_dropped_frames, meta_main.timestamp_eof, extrinsics_calibration_seen)
       pm.send('modelV2', modelv2_send)
       pm.send('drivingModelData', drivingdata_send)
