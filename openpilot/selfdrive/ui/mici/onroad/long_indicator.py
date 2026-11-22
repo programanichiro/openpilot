@@ -1,7 +1,6 @@
 import raylib_nb as rl
 from openpilot.cereal import log
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.selfdrive.ui.mici.onroad import DIMMED_ICON_ALPHA
 from openpilot.selfdrive.ui.mici.onroad.status import status_fade
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app
@@ -25,6 +24,8 @@ class LongIndicator(Widget):
     self._personality: int | None = None
     self._personality_changed_time = -HIGHLIGHT_TIME
     self._should_draw = False
+    # サイドパネルに置くと警告や上部アイコンと重ならないので、常時表示できるようにする。
+    self._always_visible = False
 
   @staticmethod
   def _texture(name: str, width: int, height: int) -> rl.Texture:
@@ -33,18 +34,22 @@ class LongIndicator(Widget):
   def set_should_draw(self, should_draw: bool):
     self._should_draw = should_draw
 
+  def set_always_visible(self, always_visible: bool):
+    self._always_visible = always_visible
+
   def _render(self, rect: rl.Rectangle) -> None:
     # offroad shows the disengaged state
-    if not ui_state.has_longitudinal_control or (ui_state.started and not ui_state.received_since_started('selfdriveState')):
+    # フォーク: 縦制御が無い車でも常時表示にしていれば出す
+    if (not ui_state.has_longitudinal_control and not self._always_visible) or \
+       (ui_state.started and not ui_state.received_since_started('selfdriveState')):
       self._personality = None
       self._personality_changed_time = -HIGHLIGHT_TIME
       self._alpha_filter.x = 0.0
       return
 
-    # grayed out while disengaged, with the lit bars at the dimmed icon alpha
-    visible = self._should_draw
-    dim = 1 - (1 - DIMMED_ICON_ALPHA / 0.9) * status_fade.weight(UIStatus.DISENGAGED)
-    alpha = self._alpha_filter.update(visible) * dim
+    # upstream はエンゲージ前に薄く(灰色に)するが、見にくいのでフォークは薄くしない
+    visible = self._always_visible or self._should_draw
+    alpha = self._alpha_filter.update(visible)
     self._draw_lead_car(rect, alpha)
     self._draw_distance_bars(rect, alpha, visible)
 
