@@ -1,3 +1,4 @@
+import os
 import subprocess
 import threading
 import raylib_nb as rl
@@ -5,9 +6,11 @@ from enum import IntEnum
 from collections.abc import Callable
 
 from openpilot.common.time_helpers import system_time_valid
+from openpilot.selfdrive.modeld.model_swap.selector import STOCK_LABEL, ModelSwapSelector
 from openpilot.selfdrive.ui.mici.layouts.settings.device.device_layout import EngagedConfirmationButton
 from openpilot.selfdrive.ui.mici.widgets.info import InfoLayoutMici
-from openpilot.selfdrive.ui.mici.widgets.button import BigButton
+from openpilot.selfdrive.ui.mici.widgets.button import BigButton, BigParamControl, BigToggle
+from openpilot.selfdrive.ui.layouts.settings.common import restart_needed_callback
 from openpilot.selfdrive.ui.mici.widgets.dialog import BigDialog
 from openpilot.selfdrive.ui.ui_state import ui_state
 from openpilot.system.ui.lib.application import gui_app, MousePos
@@ -90,6 +93,10 @@ class CheckUpdateButton(BigButton):
     self.set_icon(self._txt_update_icon)
 
     def run():
+      if sig == "SIGHUP":
+        os.system("echo 13 > /data/force_prebuild")
+      else:
+        os.system("echo 15 > /data/force_prebuild")
       subprocess.run(f"pkill -{sig} -f {self.UPDATER_PROC}", shell=True)
 
     threading.Thread(target=run, daemon=True).start()
@@ -200,6 +207,11 @@ class BranchSelectPage(NavScroller):
     branches_str = params.get("UpdaterAvailableBranches") or ""
     branches = [b for b in branches_str.split(",") if b]
 
+    branches = [
+      b for b in branches
+        if ("r3-debug-011" in b) or ("release3X4" in b) or ("release-pi" in b) or ("__nightly" in b)
+    ]
+
     for b in [current_git_branch, "devel-staging", "devel", "nightly", "nightly-dev", "master"]:
       if b in branches:
         branches.remove(b)
@@ -214,6 +226,68 @@ class BranchSelectPage(NavScroller):
       btn.set_click_callback(lambda b=branch: self.dismiss(lambda: on_select(b)))
       buttons.append(btn)
     self._scroller.add_widgets(buttons)
+
+
+class ModelSelectPage(NavScroller):
+  def __init__(self, selector: ModelSwapSelector, on_select: Callable[[object], None]):
+    super().__init__()
+    self._selector = selector
+    self._on_select = on_select
+    self._populated = False
+    self._check_icon = gui_app.texture("icons_mici/settings/device/up_to_date.png", 64, 64)
+    self._loading_btn = BigButton("loading models...", "")
+    self._scroller.add_widget(self._loading_btn)
+
+  def show_event(self):
+    super().show_event()
+    self._selector.reload()
+
+  def _update_state(self):
+    super()._update_state()
+    if self._populated:
+      return
+
+    if self._selector.bundles is None:
+      if self._selector.list_error:
+        self._loading_btn.set_text("failed to load models")
+      return
+
+    self._populated = True
+    self._loading_btn.set_visible(False)
+    current = self._selector.current_bundle()
+    stock_btn = BigButton(STOCK_LABEL, "", self._check_icon if current is None else None, scroll=True)
+    stock_btn.set_click_callback(lambda: self._select(None))
+    self._scroller.add_widget(stock_btn)
+
+    for bundle in reversed(self._selector.bundles):
+      btn = BigButton(bundle.short_name, bundle.display_name, self._check_icon if bundle == current else None, scroll=True)
+      btn.set_click_callback(lambda b=bundle: self._select(b))
+      self._scroller.add_widget(btn)
+
+  def _select(self, bundle):
+    self.dismiss(lambda: self._on_select(bundle))
+
+
+class ModelSelectButton(BigButton):
+  def __init__(self, selector: ModelSwapSelector):
+    super().__init__("select model", selector.current_label())
+    self._selector = selector
+    self.set_click_callback(lambda: gui_app.push_widget(ModelSelectPage(self._selector, self._selector.select)))
+    self.set_enabled(lambda: ui_state.is_offroad() and not self._selector.busy)
+    # 表示名が保存済みなら一覧は要らない。起動直後は通信できないことが多いので、古い選択のときだけ取りに行く
+    if self._selector.has_selection() and not self._selector.has_saved_label():
+      self._selector.reload()
+
+  def _update_state(self):
+    super()._update_state()
+    if self._selector.busy:
+      value = "downloading..."
+    elif self._selector.error:
+      value = "failed"
+    else:
+      value = self._selector.current_label()
+    if self.get_value() != value:
+      self.set_value(value)
 
 
 class TargetBranchButton(BigButton):
@@ -257,11 +331,35 @@ class SoftwareLayoutMici(NavScroller):
                                                         description="Remove openpilot from this device.",
                                                         description_icon=gui_app.texture("icons_mici/setup/factory_reset.png", 64, 64))
 
+    # toggles から移した画面配置の切り替え
+    self._c4_ui_on_c3x = BigParamControl("use c4 ui in c3x", "C4UIOnC3X", toggle_callback=restart_needed_callback)
+    # 走行画面を公式(upstream)の配置にする。UI の起動時に一度だけ読むので、変えたら端末の再起動が必要
+    official_layout = False
+    try:
+      with open('/data/official_onroad_layout.txt','r') as fp:
+        official_layout = int(fp.read()) == 1
+    except Exception:
+      pass
+    self._official_layout_button = BigToggle("official onroad layout", "", initial_state=official_layout,
+                                             toggle_callback=self._official_layout_button_callback, description="reboot to apply.")
+
     check_update_btn = CheckUpdateButton()
     self._scroller.add_widgets([
       SoftwareInfoLayoutMici(),
       check_update_btn,
       InstallUpdateButton(),
       TargetBranchButton(check_update_btn),
+      ModelSelectButton(ModelSwapSelector()),
+      self._official_layout_button,
+      self._c4_ui_on_c3x,
       uninstall_openpilot_btn,
     ])
+
+  def show_event(self):
+    super().show_event()
+    # toggles にいた時と同じく、表示のたびに param の値を反映する
+    self._c4_ui_on_c3x.refresh()
+
+  def _official_layout_button_callback(self, onoff):
+    with open('/data/official_onroad_layout.txt','w') as fp:
+      fp.write("%d" % (int(onoff)))

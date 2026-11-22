@@ -160,7 +160,8 @@ class NoEntryAlert(Alert):
 
 class SoftDisableAlert(Alert):
   def __init__(self, alert_text_2: str):
-    super().__init__("TAKE CONTROL IMMEDIATELY", alert_text_2,
+    #super().__init__("TAKE CONTROL0 IMMEDIATELY", alert_text_2,
+    super().__init__(f"TCI {alert_text_2}", alert_text_2,
                      AlertStatus.userPrompt, AlertSize.full,
                      Priority.MID, VisualAlert.steerRequired,
                      AudibleAlert.warningSoft, 2.),
@@ -176,7 +177,8 @@ class UserSoftDisableAlert(SoftDisableAlert):
 
 class ImmediateDisableAlert(Alert):
   def __init__(self, alert_text_2: str):
-    super().__init__("TAKE CONTROL IMMEDIATELY", alert_text_2,
+    #super().__init__("TAKE CONTROL IMMEDIATELY", alert_text_2,
+    super().__init__(f"TCI2 {alert_text_2}", alert_text_2,
                      AlertStatus.critical, AlertSize.full,
                      Priority.HIGHEST, VisualAlert.steerRequired,
                      AudibleAlert.warningImmediateSystem, 4.),
@@ -517,10 +519,11 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
 
   EventName.steerTempUnavailableSilent: {
     ET.WARNING: Alert(
-      "Steering Assist Temporarily Unavailable",
+      #"Steering Assist Temporarily Unavailable",
+      "Steering Assist Silent Unavailable",
       "",
-      AlertStatus.userPrompt, AlertSize.small,
-      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.prompt, 1.8),
+      AlertStatus.normal, AlertSize.small,
+      Priority.LOW, VisualAlert.steerRequired, AudibleAlert.none, 1.8),
   },
 
   EventName.driverDistracted1: {
@@ -583,7 +586,7 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.WARNING: Alert(
       "Press Resume to Exit Standstill",
       "",
-      AlertStatus.userPrompt, AlertSize.small,
+      AlertStatus.normal, AlertSize.small,
       Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
   },
 
@@ -963,6 +966,20 @@ EVENTS: dict[int, dict[str, Alert | AlertCallbackType]] = {
     ET.USER_DISABLE: UserImmediateDisableAlert("Reverse Gear"),
     ET.NO_ENTRY: NoEntryAlert("Reverse Gear"),
   },
+  EventName.hazardWarningLights: {
+    ET.WARNING: Alert(
+      "Hazard\nLights",
+      "",
+      AlertStatus.userPrompt, AlertSize.full,
+      Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
+  },
+  EventName.longActiveBrakeError: {
+    ET.WARNING: Alert(
+      "LongActive\nBrakePressed",
+      "",
+      AlertStatus.critical, AlertSize.full,
+      Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediateUser, .1), # upstream が warningImmediate を System と User に分けた。今までと同じ dm_critical の音にするため User
+  },
 
   # On cars that use stock ACC the car can decide to cancel ACC for various reasons.
   # When this happens we can no long control the car so the user needs to be warned immediately.
@@ -1038,7 +1055,7 @@ if HARDWARE.get_device_type() == 'mici':
       ET.WARNING: Alert(
         "Press Resume",
         "",
-        AlertStatus.userPrompt, AlertSize.small,
+        AlertStatus.normal, AlertSize.small,
         Priority.LOW, VisualAlert.none, AudibleAlert.none, .2),
     },
     EventName.preLaneChangeLeft: {
@@ -1082,6 +1099,20 @@ if HARDWARE.get_device_type() == 'mici':
         Priority.LOWEST, VisualAlert.none, AudibleAlert.none, .2, creation_delay=0.5),
       ET.USER_DISABLE: UserImmediateDisableAlert("Reverse"),
       ET.NO_ENTRY: NoEntryAlert("Reverse"),
+    },
+    EventName.hazardWarningLights: {
+      ET.WARNING: Alert(
+        "hazard lights",
+        "hazard warning lights",
+        AlertStatus.userPrompt, AlertSize.full,
+        Priority.LOW, VisualAlert.none, AudibleAlert.promptRepeat, 2.),
+    },
+    EventName.longActiveBrakeError: {
+      ET.WARNING: Alert(
+        "long brake",
+        "long active brake",
+        AlertStatus.critical, AlertSize.full,
+        Priority.HIGH, VisualAlert.steerRequired, AudibleAlert.warningImmediateUser, .1), # upstream が warningImmediate を System と User に分けた。今までと同じ dm_critical の音にするため User
     },
     EventName.personalityChanged: {},
   })
