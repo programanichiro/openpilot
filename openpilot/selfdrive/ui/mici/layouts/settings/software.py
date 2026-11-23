@@ -237,6 +237,16 @@ class ModelSelectPage(NavScroller):
     self._check_icon = gui_app.texture("icons_mici/settings/device/up_to_date.png", 64, 64)
     self._loading_btn = BigButton("loading models...", "")
     self._scroller.add_widget(self._loading_btn)
+    # 一覧を待つ間や取れないときでも、通信なしで切り替えられる側を出しておく（モデル選択中なら stock、stock なら前に選んだモデル）
+    self._offline_btn: BigButton | None = None
+    if selector.has_selection():
+      self._offline_btn = BigButton(STOCK_LABEL, "", scroll=True)
+      self._offline_btn.set_click_callback(lambda: self._select(None))
+    elif saved := selector.saved_model():
+      self._offline_btn = BigButton(saved[1], "", scroll=True)
+      self._offline_btn.set_click_callback(lambda: self.dismiss(selector.select_saved))
+    if self._offline_btn is not None:
+      self._scroller.add_widget(self._offline_btn)
 
   def show_event(self):
     super().show_event()
@@ -254,6 +264,8 @@ class ModelSelectPage(NavScroller):
 
     self._populated = True
     self._loading_btn.set_visible(False)
+    if self._offline_btn is not None:
+      self._offline_btn.set_visible(False)
     current = self._selector.current_bundle()
     stock_btn = BigButton(STOCK_LABEL, "", self._check_icon if current is None else None, scroll=True)
     stock_btn.set_click_callback(lambda: self._select(None))

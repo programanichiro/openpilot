@@ -93,13 +93,6 @@ class ModelSwapSelector:
     except Exception:
       pass
 
-  def _clear_meta(self) -> None:
-    self._meta = {}
-    try:
-      (model_root() / META_NAME).unlink(missing_ok=True)
-    except Exception:
-      pass
-
   def _param_path(self) -> str | None:
     value = self._params.get(param_key(self._source))
     if isinstance(value, bytes):
@@ -119,6 +112,13 @@ class ModelSwapSelector:
   def has_saved_label(self) -> bool:
     path = self._param_path()
     return bool(path) and self._meta.get("path") == path and bool(self._meta.get("label"))
+
+  def saved_model(self) -> tuple[str, str] | None:
+    """前に選んだモデルのパスと名前。stock に戻してもファイルと .selected.json は残るので、一覧なしで選び直せる"""
+    path, label = self._meta.get("path"), self._meta.get("label")
+    if not path or not label or not Path(path).is_file():
+      return None
+    return path, label
 
   def current_label(self) -> str:
     path = self._param_path()
@@ -163,8 +163,7 @@ class ModelSwapSelector:
         if bundle is None:
           self._params.remove(key)
           self._params.remove(other_key)
-          self._clear_meta()
-          # stock に戻したときは消さない。すぐ同じモデルに戻せるように残しておく（次に別のモデルを選んだときに消える）
+          # stock に戻したときはモデルも .selected.json も消さない。通信できなくても同じモデルに戻せるように残しておく（次に別のモデルを選んだときに消える）
         else:
           paths = download_bundle(bundle)
           path = str(paths[0])
@@ -179,4 +178,16 @@ class ModelSwapSelector:
         self._busy = False
 
     threading.Thread(target=run, daemon=True).start()
+    return True
+
+  def select_saved(self) -> bool:
+    """前に選んだモデルへ戻す。ファイルは手元にあるので、一覧もダウンロードも要らない"""
+    saved = self.saved_model()
+    if self._busy or saved is None:
+      return False
+    key = param_key(self._source)
+    other_key = "ModelSwapPkl" if key == "ModelSwapBigPkl" else "ModelSwapBigPkl"
+    self._error = None
+    self._params.put(key, saved[0], block=True)
+    self._params.remove(other_key)
     return True
