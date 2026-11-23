@@ -129,9 +129,9 @@ class NetworkIcon(Widget):
 class ThermalAndVoltageTextIcon(Widget):
   def __init__(self):
     super().__init__()
-    # 公式のウェイク演出は rect を黒で覆ってフェードさせるので、rect を文字全体（Inter Bold 27px で「14.8V」が 78px、2段で 50px）に合わせる。
+    # 公式のウェイク演出は rect を黒で覆ってフェードさせるので、rect を文字全体（Inter Bold 27px で「100°C」が 83px、2段で 50px）に合わせる。
     # 高さを 44→50 にすると縦中央揃えで rect.y が 3px 上がるので、文字の y オフセットを 3 足して見た目の位置は変えない。
-    self.set_rect(rl.Rectangle(0, 0, 80, 50))
+    self.set_rect(rl.Rectangle(0, 0, 88, 50))
     self.temp_str = "°C"
     self._font_bold: rl.Font = gui_app.font(FontWeight.BOLD)
     self.warning_color = rl.Color(255, 255, 255, int(255 * 0.9))
