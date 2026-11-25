@@ -1,8 +1,21 @@
-import math
-import numpy as np
 import raylib_nb as rl
 
-SIDE_PANEL_WIDTH = 72
+
+def _read_official_layout() -> bool:
+  # 設定画面の「official onroad layout」が書く。UI の起動時に一度だけ読むので、切り替えたら端末の再起動が必要
+  try:
+    with open('/data/official_onroad_layout.txt', 'r') as fp:
+      return int(fp.read()) == 1
+  except Exception:
+    return False
+
+
+# True: upstream の配置（黒いサイドパネルは左。DMoji・LongIndicator・ハンドルをパネルに置く）
+# False: フォークの配置（サイドパネルは右。ブレーキの赤表示・加減速メーター・LongIndicator・車間ボタンをパネルに置く）
+OFFICIAL_LAYOUT = _read_official_layout()
+
+# upstream は 72。フォークの配置は右パネルの中身を 60px で配置しているので 60 のまま
+SIDE_PANEL_WIDTH = 72 if OFFICIAL_LAYOUT else 60
 DIMMED_ICON_ALPHA = 0.32  # side panel icons while disengaged
 
 
@@ -15,31 +28,3 @@ def blend_colors(a: rl.Color, b: rl.Color, f: float) -> rl.Color:
                             v0 + f * (v1 - v0))
   color.a = round(a.a + f * (b.a - a.a))
   return color
-
-
-def gaussian_blur(alpha: np.ndarray, sigma: float) -> np.ndarray:
-  """Blurs a coverage mask, padded by 3 sigma so nothing is clipped"""
-  pad = math.ceil(3 * sigma)
-  out = np.pad(alpha, pad)
-  x = np.arange(-pad, pad + 1)
-  kernel = np.exp(-x ** 2 / (2 * sigma ** 2))
-  kernel /= kernel.sum()
-  for axis in (0, 1):
-    out = np.apply_along_axis(np.convolve, axis, out, kernel, mode='same')
-  return out
-
-
-def alpha_texture(alpha: np.ndarray, px: float = 1.0, color: tuple[int, int, int] = (255, 255, 255)) -> rl.Texture:
-  """A flat color texture from a coverage mask rendered at px pixels per point"""
-  rgba = np.empty((*alpha.shape, 4), dtype=np.uint8)
-  rgba[..., :3] = color
-  rgba[..., 3] = np.clip(alpha * 255, 0, 255)
-  return texture_from_rgba(rgba, px)
-
-
-def texture_from_rgba(rgba: np.ndarray, px: float = 1.0) -> rl.Texture:
-  texture = rl.load_texture_from_image(rl.Image(None, rgba.shape[1], rgba.shape[0], 1, rl.PixelFormat.PIXELFORMAT_UNCOMPRESSED_R8G8B8A8))
-  rl.update_texture(texture, np.ascontiguousarray(rgba))
-  rl.set_texture_filter(texture, rl.TextureFilter.TEXTURE_FILTER_BILINEAR)
-  texture.width, texture.height = round(rgba.shape[1] / px), round(rgba.shape[0] / px)
-  return texture

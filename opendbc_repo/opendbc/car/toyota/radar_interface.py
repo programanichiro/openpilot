@@ -14,7 +14,9 @@ def _create_radar_can_parser(CP):
     RADAR_A_MSGS = list(range(0x210, 0x220))
     RADAR_B_MSGS = list(range(0x220, 0x230))
 
-  messages = [(addr, 20) for addr in RADAR_A_MSGS + RADAR_B_MSGS] + [('STATUS_MSG', 10)]
+  messages = [(addr, 20) for addr in RADAR_A_MSGS + RADAR_B_MSGS]
+  if CP.flags & ToyotaFlags.TSS2:
+    messages.append(('STATUS_MSG', 10))
 
   return CANParser(DBC[CP.carFingerprint][Bus.radar], messages, 1)
 
@@ -39,7 +41,7 @@ class RadarInterface(RadarInterfaceBase):
     if not rcp.can_valid:
       ret.errors.canError = True
 
-    if rcp.vl['STATUS_MSG']['RADAR_STATUS'] != 1 or rcp.vl['STATUS_MSG']['RADAR_PRE_FAULT'] != 0:
+    if self.CP.flags & ToyotaFlags.TSS2 and (rcp.vl['STATUS_MSG']['RADAR_STATUS'] != 1 or rcp.vl['STATUS_MSG']['RADAR_PRE_FAULT'] != 0):
       ret.errors.radarUnavailableTemporary = True
 
     for ii in sorted(updated_messages):

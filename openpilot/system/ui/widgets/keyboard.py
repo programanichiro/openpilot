@@ -110,6 +110,10 @@ class Keyboard(Widget):
   def set_text(self, text: str):
     self._input_box.text = text
 
+  def set_password_mode(self, password_mode: bool):
+    self._password_mode = password_mode
+    self._input_box.set_password_mode(password_mode)
+
   @property
   def text(self):
     return self._input_box.text
