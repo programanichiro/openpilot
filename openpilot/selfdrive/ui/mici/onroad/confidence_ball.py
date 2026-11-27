@@ -1,6 +1,5 @@
 import numpy as np
 import raylib_nb as rl
-from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH, OFFICIAL_LAYOUT
 from openpilot.selfdrive.ui.mici.onroad.long_indicator import LongIndicator
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.selfdrive.ui.mici.onroad.status import status_fade
@@ -32,12 +31,6 @@ def draw_circle_gradient(center_x: float, center_y: float, radius: float,
   draw_polygon(screen, CIRCLE_PTS * radius + (center_x, center_y), gradient=gradient)
 
 
-# LongIndicator は渡した矩形の横幅の中央に、y=100(リード車) と y=122/136/152(車間バー)へ描く。
-# (以前は矩形の x+46 が中心だったが、upstream が矩形の中央に描く形に変えた)
-# 緑アイコンのテクスチャは最大 76px あるが、大半がグロー(光彩)で実体のバーは白と同じ幅。
-# 見えている部分はサイドパネル(60px)に収まるので、縮小は不要。
-LONG_INDICATOR_BOTTOM = 172  # 152 + 39/2 (3本目の緑バーの下端)
-LONG_INDICATOR_Y_OFS = -5     # 0でサイドパネルの下端ぴったりに置く->もう少し下げる。
 # 公式の配置で、左パネルの LongIndicator(y=86〜158 あたり)にかぶせる車間ボタンの範囲。上の DMoji と下のハンドル・MADS ボタン(y=168〜)を避ける
 OFFICIAL_GAP_BUTTON_Y = 76
 OFFICIAL_GAP_BUTTON_H = 90
@@ -49,7 +42,7 @@ OFFICIAL_PANEL_REF_H = 240
 class ConfidenceBall(Widget):
   def __init__(self):
     super().__init__()
-    self._confidence_filter = FirstOrderFilter(0.0 if OFFICIAL_LAYOUT else -0.5, 0.5, 1 / gui_app.target_fps)
+    self._confidence_filter = FirstOrderFilter(0.0, 0.5, 1 / gui_app.target_fps)
     self._alpha_filter = FirstOrderFilter(1.0, 0.05, 1 / gui_app.target_fps)
     self._hidden = False
     # 公式の LongIndicator をここで描く。タコメーターと場所が被るため AugmentedRoadView から移した。
@@ -77,60 +70,19 @@ class ConfidenceBall(Widget):
     self._confidence_filter.update((1 - max(predictions.brakeDisengageProbs or [1])) * (1 - max(predictions.steerOverrideProbs or [1])))
 
   def _render(self, _):
-    if OFFICIAL_LAYOUT:
-      # 公式の配置: 映像の右端に描く。渡される矩形は映像の範囲
-      alpha = self._alpha_filter.update(0.0 if self._hidden else 1.0)
-      if alpha < 1e-2:
-        return
-      status_dot_radius = 16
-      margin = 10
-      dot_x = self._rect.x + self._rect.width - margin - status_dot_radius
-      # rests at the bottom while disengaged. the color still comes from the confidence, so it doesn't pass through the low zones
-      height = self._confidence_filter.x * (1 - status_fade.weight(UIStatus.DISENGAGED))
-      dot_height = (1 - height) * (self._rect.height - 2 * (status_dot_radius + margin)) + status_dot_radius + margin
-      dot_height = self._rect.y + dot_height
-      top_dot_color, bottom_dot_color = self._dot_colors()
-      draw_circle_gradient(dot_x, dot_height, status_dot_radius, top_dot_color, bottom_dot_color, alpha)
+    # 映像の右端に描く。渡される矩形は映像の範囲
+    alpha = self._alpha_filter.update(0.0 if self._hidden else 1.0)
+    if alpha < 1e-2:
       return
-
-    content_rect = rl.Rectangle(
-      self.rect.x + self.rect.width - SIDE_PANEL_WIDTH,
-      self.rect.y,
-      SIDE_PANEL_WIDTH,
-      self.rect.height,
-    )
-
-    status_dot_radius = 24
-    # フォークの配置は右パネルの下端に LongIndicator と車間ボタンを置いているので、エンゲージしていない時は公式の「下端で待機」にせず、従来どおり下(-0.5)に隠す
-    disengaged = status_fade.weight(UIStatus.DISENGAGED)
-    height = self._confidence_filter.x * (1 - disengaged) - 0.5 * disengaged
-    dot_height = (1 - height) * (content_rect.height - 2 * status_dot_radius) + status_dot_radius
+    status_dot_radius = 16
+    margin = 10
+    dot_x = self._rect.x + self._rect.width - margin - status_dot_radius
+    # rests at the bottom while disengaged. the color still comes from the confidence, so it doesn't pass through the low zones
+    height = self._confidence_filter.x * (1 - status_fade.weight(UIStatus.DISENGAGED))
+    dot_height = (1 - height) * (self._rect.height - 2 * (status_dot_radius + margin)) + status_dot_radius + margin
     dot_height = self._rect.y + dot_height
-
-    # ブレーキの赤は一番下に敷く（信頼度ボールと LongIndicator はその上に描く）
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
-    self._draw_brake_light(content_rect)
-    rl.end_blend_mode() #元のブレンドに戻す
-
     top_dot_color, bottom_dot_color = self._dot_colors()
-    draw_circle_gradient(content_rect.x + content_rect.width - status_dot_radius-5,
-                         dot_height, status_dot_radius,
-                         top_dot_color, bottom_dot_color)
-
-    # LongIndicator をサイドパネルの下端に寄せて描く。
-    self._long_indicator.render(rl.Rectangle(
-      content_rect.x,  # サイドパネルの中央に描かれる
-      content_rect.y + content_rect.height - LONG_INDICATOR_BOTTOM - LONG_INDICATOR_Y_OFS,
-      content_rect.width,
-      content_rect.height,
-    ))
-
-    rl.begin_blend_mode(rl.BLEND_ADDITIVE) #加算ブレンド
-    self._draw_accel_meter(content_rect)
-    rl.end_blend_mode() #元のブレンドに戻す
-
-    btn_h = content_rect.width * 1.5 #だいたいこのくらいの高さ
-    self._LongitudinalPersonality_button.render(rl.Rectangle(content_rect.x, content_rect.y + content_rect.height - btn_h, content_rect.width, btn_h))
+    draw_circle_gradient(dot_x, dot_height, status_dot_radius, top_dot_color, bottom_dot_color, alpha)
 
   def render_official_long_indicator(self, panel_rect: rl.Rectangle, should_draw: bool) -> None:
     # 公式の配置: LongIndicator を左パネルに描く（C4 では upstream と同じ位置。下端からの余白で置く）

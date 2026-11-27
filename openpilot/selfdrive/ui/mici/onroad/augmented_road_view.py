@@ -4,7 +4,7 @@ from openpilot.cereal import log
 from opendbc.car.structs import car
 from openpilot.cereal.visionipc import VisionStreamType
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
-from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH, OFFICIAL_LAYOUT
+from openpilot.selfdrive.ui.mici.onroad import SIDE_PANEL_WIDTH
 from openpilot.selfdrive.ui.mici.onroad.alert_renderer import AlertRenderer
 from openpilot.selfdrive.ui.mici.onroad.driver_state import DriverStateRenderer
 from openpilot.selfdrive.ui.mici.onroad.status import status_fade
@@ -177,8 +177,7 @@ class AugmentedRoadView(CameraView):
     self._model_renderer = ModelRenderer()
     self._hud_renderer = HudRenderer()
     self._alert_renderer = AlertRenderer()
-    # 公式の配置は DMoji を黒い左パネルに置くので背景なし。フォークの配置は映像の上に置くので背景あり
-    self._driver_state_renderer = DriverStateRenderer(background=not OFFICIAL_LAYOUT)
+    self._driver_state_renderer = DriverStateRenderer(background=False)
     self._confidence_ball = ConfidenceBall()
     self._offroad_label = UnifiedLabel("start the car", 46, FontWeight.DISPLAY,
                                        text_color=rl.Color(255, 255, 255, 255),
@@ -224,13 +223,9 @@ class AugmentedRoadView(CameraView):
     # Offroad shows the side panel in its disengaged state with text in the camera area
     if not ui_state.started:
       rl.draw_rectangle_rec(self.rect, rl.BLACK)
-      if OFFICIAL_LAYOUT:
-        self._render_offroad_text(rl.Rectangle(self.rect.x + SIDE_PANEL_WIDTH, self.rect.y, self.rect.width - SIDE_PANEL_WIDTH, self.rect.height))
-        self._hud_renderer.set_wheel_critical_icon(False)
-        self._render_left_panel(False)
-      else:
-        # フォークの配置はサイドパネルが右なので、オフロードは従来どおり文字だけ
-        self._render_offroad_text(self._rect)
+      self._render_offroad_text(rl.Rectangle(self.rect.x + SIDE_PANEL_WIDTH, self.rect.y, self.rect.width - SIDE_PANEL_WIDTH, self.rect.height))
+      self._hud_renderer.set_wheel_critical_icon(False)
+      self._render_left_panel(False)
       return
 
     self._switch_stream_if_needed(ui_state.sm)
@@ -241,9 +236,8 @@ class AugmentedRoadView(CameraView):
     alert_to_render, not_animating_out = self._alert_renderer.will_render()
     show_navigation = ui_state.navigation_enabled and ui_state.nav_destination_set and alert_to_render is None
 
-    # Create inner content area with border padding
-    # 公式の配置はナビ表示中以外、黒いサイドパネルが左。フォークの配置はサイドパネルを右に置いたまま
-    side_panel = SIDE_PANEL_WIDTH if OFFICIAL_LAYOUT and not show_navigation else 0
+    # Create inner content area with border padding. Without navigation, the black side panel is on the left
+    side_panel = 0 if show_navigation else SIDE_PANEL_WIDTH
     self._content_rect = rl.Rectangle(
       self.rect.x + side_panel,
       self.rect.y,
@@ -270,25 +264,15 @@ class AugmentedRoadView(CameraView):
     # if gui_app.big_ui() == False:　->model_rendererの方に移動
     #   rl.draw_texture_ex(self._fade_texture, rl.Vector2(self._content_rect.x, self._content_rect.y), 0.0, 1.0, rl.WHITE)
 
-    if not OFFICIAL_LAYOUT:
-      # Hide DMoji when disengaged unless AlwaysOnDM is enabled
-      should_draw_dmoji = ((True or not self._hud_renderer.drawing_top_icons()) and
-                           (ui_state.status != UIStatus.DISENGAGED or ui_state.always_on_dm))
-      self._driver_state_renderer.set_should_draw(should_draw_dmoji)
-      self._driver_state_renderer.set_position(self._rect.x + 16, self._rect.y + 10)
-      self._driver_state_renderer.render()
-      # LongIndicator はタコメーターと場所が被るため ConfidenceBall 側へ移し、常時表示にした。
-
     self._hud_renderer.set_can_draw_top_icons(alert_to_render is None)
-    if OFFICIAL_LAYOUT:
-      # critical alerts show a warning icon where the torque bar is
-      self._hud_renderer.set_torque_bar_hidden(alert_to_render is not None and alert_to_render.status == log.SelfdriveState.AlertStatus.critical)
+    # critical alerts show a warning icon where the torque bar is
+    self._hud_renderer.set_torque_bar_hidden(alert_to_render is not None and alert_to_render.status == log.SelfdriveState.AlertStatus.critical)
     self._hud_renderer.set_wheel_critical_icon(alert_to_render is not None and not not_animating_out and
                                                alert_to_render.visual_alert == car.CarControl.HUDControl.VisualAlert.steerRequired)
     self._alert_renderer.render(self._content_rect)
     self._hud_renderer.render(self._content_rect)
 
-    if OFFICIAL_LAYOUT and not show_navigation:
+    if not show_navigation:
       self._confidence_ball.set_hidden(alert_to_render is not None and not not_animating_out)
       self._confidence_ball.render(self._content_rect)
 
@@ -306,15 +290,12 @@ class AugmentedRoadView(CameraView):
     # End clipping region
     rl.end_scissor_mode()
 
-    if OFFICIAL_LAYOUT:
-      self._render_left_panel(show_navigation)
+    self._render_left_panel(show_navigation)
 
     # Custom UI extension point - add custom overlays here
     # Use self._content_rect for positioning within camera bounds
     if show_navigation:
       self._navigation.render(rl.Rectangle(self._content_rect.x + self._content_rect.width, self.rect.y, PANEL_WIDTH, self.rect.height))
-    elif not OFFICIAL_LAYOUT:
-      self._confidence_ball.render(self.rect)
 
     self._bookmark_icon.render(self.rect)
 
@@ -331,7 +312,6 @@ class AugmentedRoadView(CameraView):
     self._offroad_sublabel.render(rl.Rectangle(rect.x, y + label_h + gap, rect.width, sub_h))
 
   def _render_left_panel(self, show_navigation: bool):
-    # 公式の配置だけで使う
     # DMoji, longitudinal indicator, and steering wheel are centered in the black side panel on the left,
     # or in a column along the left edge of the camera when navigation takes the side panel
     left_rect = rl.Rectangle(self._rect.x, self._rect.y, SIDE_PANEL_WIDTH, self._rect.height)
