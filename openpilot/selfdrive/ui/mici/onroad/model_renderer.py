@@ -10,7 +10,7 @@ from openpilot.selfdrive.controls.radard import RADAR_TO_CAMERA
 from openpilot.selfdrive.locationd.calibrationd import HEIGHT_INIT
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.selfdrive.ui.mici.onroad import blend_colors
-from openpilot.selfdrive.ui.mici.onroad.status import status_fade
+from openpilot.selfdrive.ui.mici.onroad.status import StatusFade, openpilot_available
 from openpilot.system.ui.lib.application import gui_app, FontWeight
 from openpilot.system.ui.lib.polygon import draw_polygon, Gradient
 from openpilot.system.ui.widgets import Widget
@@ -136,6 +136,7 @@ class ModelRenderer(Widget):
     self._road_edge_stds = np.zeros(2, dtype=np.float32)
     self._lead_vehicles = [LeadVehicle(), LeadVehicle()]
     self._path_offset_z = HEIGHT_INIT[0]
+    self._path_half_width = 0.9  # m
     self._enable_lead_indicator = False
     self._lead_indicator_read_ct = 0
 
@@ -145,8 +146,11 @@ class ModelRenderer(Widget):
     self._road_edges = [ModelPoints() for _ in range(2)]
     self._acceleration_x = np.empty((0,), dtype=np.float32)
     self._stop_point = StopPoint()
+    self.has_lead = False
     self._torque_filter = FirstOrderFilter(0, 0.1, 1 / gui_app.target_fps)
+    self._status = StatusFade(0.1)
     self._visible = 0.0
+    self._available_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
 
     # 3x3 car space -> rect-origin space (draw methods add rect.x/y)
     self._car_space_transform = np.zeros((3, 3), dtype=np.float32)
@@ -207,6 +211,7 @@ class ModelRenderer(Widget):
 
   def _render(self, rect: rl.Rectangle):
     sm = ui_state.sm
+    self.has_lead = False
 
     self._torque_filter.update(-ui_state.sm['carOutput'].actuatorsOutput.torque)
 
@@ -230,6 +235,36 @@ class ModelRenderer(Widget):
     if sm.updated['carParams']:
       self._longitudinal_control = sm['carParams'].openpilotLongitudinalControl
 
+    # MADS の状態を読む（エンゲージしていない時だけ）
+    steer_always = 0
+    cruise_available = 0
+    if ui_state.status == UIStatus.DISENGAGED:
+      try:
+        with open('/dev/shm/steer_always.txt','r') as fp:
+          steer_always_str = fp.read()
+          if steer_always_str:
+            if int(steer_always_str) >= 1:
+              steer_always = 2
+        with open('/dev/shm/cruise_available.txt','r') as fp:
+          cruise_available_str = fp.read()
+          if cruise_available_str:
+            if int(cruise_available_str) >= 1:
+              cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
+      except Exception as e:
+        pass
+
+    # while disengaged, lane lines fade out and the path narrows to half width and turns black
+    # フォーク: ステアリング常時オン(MADS)でクルーズ有効なら、エンゲージしていなくても薄くせずに描く
+    if steer_always != 0 and cruise_available:
+      self._visible = 1.0
+    else:
+      self._visible = 1 - self._status.weight(UIStatus.DISENGAGED)
+    if abs((path_half_width := 0.45 * (1 + self._visible)) - self._path_half_width) > 1e-3:
+      self._path_half_width, self._transform_dirty = path_half_width, True
+    # the black path and lead bars hide while openpilot is unavailable, e.g. calibrating or dashcam mode
+    available = openpilot_available()
+    self._available_filter.update(available)
+
     model = sm['modelV2']
     radar_state = sm['radarState'] if sm.valid['radarState'] else None
     lead_one = radar_state.leadOne if radar_state else None
@@ -248,33 +283,9 @@ class ModelRenderer(Widget):
       self._update_model(lead_one, path_x_array)
       self._transform_dirty = False
 
-    # Draw elements (hide when disengaged)
-    steer_always = 0
-    cruise_available = 0
-    if ui_state.status == UIStatus.DISENGAGED:
-      try:
-        with open('/dev/shm/steer_always.txt','r') as fp:
-          steer_always_str = fp.read()
-          if steer_always_str:
-            if int(steer_always_str) >= 1:
-              steer_always = 2
-        with open('/dev/shm/cruise_available.txt','r') as fp:
-          cruise_available_str = fp.read()
-          if cruise_available_str:
-            if int(cruise_available_str) >= 1:
-              cruise_available = 1 #ACCボタンがOFFならBARRIERSを有効にしない。
-      except Exception as e:
-        pass
-
-    # lane lines and path fade out while disengaged
-    # フォーク: ステアリング常時オン(MADS)でクルーズ有効なら、エンゲージしていなくても薄くせずに描く
-    if steer_always != 0 and cruise_available:
-      self._visible = 1.0
-    else:
-      self._visible = 1 - status_fade.weight(UIStatus.DISENGAGED)
     if self._visible > 1e-2:
       self._draw_lane_lines()
-      self._draw_path()
+    self._draw_path()
 
     # Fade out bottom of overlays for looks
     if gui_app.big_ui() == False:
@@ -294,7 +305,7 @@ class ModelRenderer(Widget):
       )
 
     if render_lead_indicator:
-      self._update_leads(sm)
+      self._update_leads(sm, available)
       self._draw_lead_indicator()
     else:
       self._lead_vehicles = [LeadVehicle(), LeadVehicle()]
@@ -322,7 +333,7 @@ class ModelRenderer(Widget):
     self._road_edge_stds = np.array(model.roadEdgeStds, dtype=np.float32)
     self._acceleration_x = np.array(model.acceleration.x, dtype=np.float32)
 
-  def _update_leads(self, sm):
+  def _update_leads(self, sm, available: bool):
     plan = sm['longitudinalPlan']
     if plan.longitudinalPlanSource == log.LongitudinalPlan.LongitudinalPlanSource.e2e and len(sm['modelV2'].leadsV3) > 1:
       leads = [(lead.prob > 0.5, lead.x[0], -lead.y[0]) for lead in list(sm['modelV2'].leadsV3)[:2]]
@@ -336,12 +347,10 @@ class ModelRenderer(Widget):
     # both leads can be the same vehicle
     if leads[0][0] and abs(leads[1][1] - leads[0][1]) < 3.0:
       leads[1] = (False, 0.0, 0.0)
+    self.has_lead = available and (leads[0][0] or leads[1][0])
 
-    ss, cs = sm['selfdriveState'], sm['carState']
-    # braking disengages without making openpilot unavailable
-    available = ss.enabled or ss.engageable or cs.brakePressed
     lane = self._path.raw_points
-    opacity = 0.8 - 0.4 * status_fade.weight(UIStatus.DISENGAGED)
+    opacity = 0.8 - 0.4 * self._status.weight(UIStatus.DISENGAGED)
 
     i = 0
     for lead, (present, d_rel, y_rel) in zip(self._lead_vehicles, leads, strict=True):
@@ -366,7 +375,7 @@ class ModelRenderer(Widget):
 
     # the radar is at the front of the car, which is what stops at the planned stop
     lead_distances = [d_rel for present, d_rel, _ in leads if present]
-    planning_stop = self._stop_point.update(sm['modelV2'], sm.updated['modelV2'], cs.vEgo, lead_distances)
+    planning_stop = self._stop_point.update(sm['modelV2'], sm.updated['modelV2'], sm['carState'].vEgo, lead_distances)
     d_stop = self._stop_point.d + RADAR_TO_CAMERA
     visible = available and planning_stop and d_stop < MAX_DRAW_DISTANCE and len(lane) > 0
     # brighter than a lead bar to tell them apart
@@ -420,7 +429,7 @@ class ModelRenderer(Widget):
 
     max_idx = self._get_path_length_idx(path_x_array, max_distance)
     self._path.projected_points = self._map_line_to_polygon(
-      self._path.raw_points, 0.9, self._path_offset_z, max_idx, allow_invert=False
+      self._path.raw_points, self._path_half_width, self._path_offset_z, max_idx, allow_invert=False
     )
 
     self._update_path_gradient()
@@ -469,7 +478,7 @@ class ModelRenderer(Widget):
   def _get_ll_color(self, prob: float, adjacent: bool, left: bool):
     alpha = np.clip(prob, 0.0, 0.7) * self._visible
     if adjacent:
-      _base_color = status_fade.color(LANE_LINE_COLORS)
+      _base_color = self._status.color(LANE_LINE_COLORS)
       color = rl.Color(_base_color.r, _base_color.g, _base_color.b, int(alpha * 255))
 
       # turn adjacent lls orange if torque is high
@@ -510,6 +519,11 @@ class ModelRenderer(Widget):
       return
 
     path_pts = self._path.projected_points + np.array([self._rect.x, self._rect.y], dtype=np.float32)
+
+    if (black := (1 - self._visible) * self._available_filter.x) > 1e-2:
+      draw_polygon(self._rect, path_pts, rl.Color(0, 0, 0, round(128 * black)))
+    if self._visible < 1e-2:
+      return
 
     if not self._longitudinal_control:
       draw_polygon(self._rect, path_pts, gradient=_faded(STOCK_PATH_GRADIENT, self._visible))

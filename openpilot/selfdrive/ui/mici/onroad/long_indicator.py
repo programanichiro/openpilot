@@ -1,29 +1,23 @@
+import numpy as np
 import raylib_nb as rl
-from openpilot.cereal import log
 from openpilot.common.filter_simple import FirstOrderFilter
-from openpilot.selfdrive.ui.mici.onroad.status import status_fade
+from openpilot.selfdrive.ui.mici.onroad import DIMMED_ICON_ALPHA
+from openpilot.selfdrive.ui.mici.onroad.status import StatusFade
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app
 from openpilot.system.ui.widgets import Widget
-
-HIGHLIGHT_TIME = 2.5  # seconds
 
 
 class LongIndicator(Widget):
   def __init__(self):
     super().__init__()
-    self._txt_lead_car = (self._texture('car', 35, 27), self._texture('car_green', 50, 42))
-    self._txt_distance = [(self._texture('distance_1', 32, 7), self._texture('distance_1_green', 60, 35)),
-                          (self._texture('distance_2', 40, 9), self._texture('distance_2_green', 68, 37)),
-                          (self._texture('distance_3', 48, 11), self._texture('distance_3_green', 76, 39))]
-    self._alpha_filter = FirstOrderFilter(0.0, 0.05, 1 / gui_app.target_fps)
-    # crossfade between states, a white and a green filter per icon
-    self._lead_car_filters = (FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps), FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps))
-    self._distance_filters = [(FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps), FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps))
-                              for _ in range(3)]
-    self._personality: int | None = None
-    self._personality_changed_time = -HIGHLIGHT_TIME
-    self._should_draw = False
+    self._icons = [(self._texture('car', 40, 31), 96), (self._texture('distance_1', 33, 8), 123),
+                   (self._texture('distance_2', 40, 9), 138), (self._texture('distance_3', 48, 10), 155)]
+    self._lit_filters = [FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps) for _ in self._icons]
+    self._alpha_filter = FirstOrderFilter(np.zeros(2), 0.05, 1 / gui_app.target_fps)
+    self._status = StatusFade(0.1)
+    self._txt_speed_dial = self._texture('speed_dial', 56, 48)
+    self._should_draw = self._has_lead = False
     # サイドパネルに置くと警告や上部アイコンと重ならないので、常時表示できるようにする。
     self._always_visible = False
 
@@ -34,59 +28,33 @@ class LongIndicator(Widget):
   def set_should_draw(self, should_draw: bool):
     self._should_draw = should_draw
 
+  def set_has_lead(self, has_lead: bool):
+    self._has_lead = has_lead
+
   def set_always_visible(self, always_visible: bool):
     self._always_visible = always_visible
 
   def _render(self, rect: rl.Rectangle) -> None:
-    # offroad shows the disengaged state
-    # フォーク: 縦制御が無い車でも常時表示にしていれば出す
-    if (not ui_state.has_longitudinal_control and not self._always_visible) or \
-       (ui_state.started and not ui_state.received_since_started('selfdriveState')):
-      self._personality = None
-      self._personality_changed_time = -HIGHLIGHT_TIME
-      self._alpha_filter.x = 0.0
-      return
-
-    # upstream はエンゲージ前に薄く(灰色に)するが、見にくいのでフォークは薄くしない
+    # フォーク: 常時表示なら、縦制御が無い車でもスピードダイヤルではなく車間のアイコンを出す（車間ボタンをこの上に重ねているため）
+    long = ui_state.has_longitudinal_control or self._always_visible
     visible = self._always_visible or self._should_draw
-    alpha = self._alpha_filter.update(visible)
-    self._draw_lead_car(rect, alpha)
-    self._draw_distance_bars(rect, alpha, visible)
+    dial_alpha, icons_alpha = self._alpha_filter.update(np.array([not long, long]) * visible).tolist()
+    # upstream はエンゲージ前に薄く(灰色に)するが、見にくいのでフォークは常時表示のときは薄くしない
+    disengaged = 0.0 if self._always_visible else self._status.weight(UIStatus.DISENGAGED)
+    dial_rect = rl.Rectangle(rect.x - 2, rect.y, rect.width, rect.height)
+    self._draw_centered(self._txt_speed_dial, dial_rect, 120, (0.9 - (0.9 - DIMMED_ICON_ALPHA) * disengaged) * dial_alpha)
 
-  def _draw_lead_car(self, rect: rl.Rectangle, alpha: float) -> None:
-    sm = ui_state.sm
-    plan = sm['longitudinalPlan']
-    has_lead = sm.alive['longitudinalPlan'] and plan.hasLead
-    e2e = has_lead and plan.longitudinalPlanSource == log.LongitudinalPlan.LongitudinalPlanSource.e2e
-    white_f, green_f = self._lead_car_filters
-    white_alpha = white_f.update(0.0 if e2e else 0.9 if has_lead else 0.35)
-    green_alpha = green_f.update(float(e2e))
-    # static and filled in while disengaged, like the lit distance bars
-    disengaged = status_fade.weight(UIStatus.DISENGAGED)
-    white_alpha, green_alpha = white_alpha + (0.9 - white_alpha) * disengaged, green_alpha * (1 - disengaged)
+    # フォーク: 前走車は縦制御の計画からも取る。upstream は ModelRenderer のリードバーから set_has_lead で渡すが、
+    # フォークは ConfidenceBall の中で描いていて、縦制御が無い車でも出すため
+    plan = ui_state.sm['longitudinalPlan']
+    has_lead = self._has_lead or (ui_state.sm.alive['longitudinalPlan'] and plan.hasLead)
 
-    white, green = self._txt_lead_car
-    self._draw_centered(white, rect, 100, white_alpha * alpha)
-    self._draw_centered(green, rect, 100, green_alpha * alpha)
-
-  def _draw_distance_bars(self, rect: rl.Rectangle, alpha: float, visible: bool) -> None:
-    sm = ui_state.sm
-    now = rl.get_time()
-    personality = sm['selfdriveState'].personality.raw if ui_state.started else ui_state.personality_param
-    if self._personality is not None and personality != self._personality:
-      self._personality_changed_time = now
-    self._personality = personality
-    # hold the highlight until the bars show
-    if not visible and now - self._personality_changed_time < HIGHLIGHT_TIME:
-      self._personality_changed_time = now
-    highlight = now - self._personality_changed_time < HIGHLIGHT_TIME
-
-    count = personality + 1
-    for i, ((white, green), y, (active_f, green_f)) in enumerate(zip(self._txt_distance, (122, 136, 152), self._distance_filters, strict=True)):
-      active = active_f.update(float(i < count))
-      green_alpha = green_f.update(float(highlight and i == count - 1))
-      self._draw_centered(white, rect, y, (0.35 * (1 - active) + 0.9 * (active - green_alpha)) * alpha)
-      self._draw_centered(green, rect, y, green_alpha * alpha)
+    live = ui_state.started and ui_state.received_since_started('selfdriveState')
+    personality = ui_state.sm['selfdriveState'].personality.raw if live else ui_state.personality_param
+    lit_alpha = 0.9 + (0.63 - 0.9) * disengaged
+    for i, ((txt, y), f) in enumerate(zip(self._icons, self._lit_filters, strict=True)):
+      lit = f.update(has_lead if i == 0 else i <= personality + 1)
+      self._draw_centered(txt, rect, y, (0.35 + (lit_alpha - 0.35) * lit) * icons_alpha)
 
   @staticmethod
   def _draw_centered(texture: rl.Texture, rect: rl.Rectangle, y: float, alpha: float) -> None:

@@ -1,18 +1,19 @@
 """
 Engaged and override can flap every frame (gas taps, steer override on driver torque near the threshold),
-so anything that looks different between them must go through status_fade instead of switching on
-ui_state.status. Override shows instantly and holds until engaged for OVERRIDE_HOLD, so flapping shows
-a steady override. Everything else fades.
+so anything that looks different between them fades with a StatusFade instead of switching on ui_state.status.
+Override holds until engaged for OVERRIDE_HOLD, so flapping shows a steady override.
 """
 import numpy as np
 import raylib_nb as rl
+from opendbc.car.structs import car
+from openpilot.cereal import log
 from openpilot.common.filter_simple import FirstOrderFilter
 from openpilot.selfdrive.ui.ui_state import ui_state, UIStatus
 from openpilot.system.ui.lib.application import gui_app
 
-STATUS_FADE_RC = 0.25
 OVERRIDE_HOLD = 0.3
 STATUSES = tuple(UIStatus)
+GearShifter = car.CarState.GearShifter
 
 
 def lerp_color(a: rl.Color, b: rl.Color, t: float) -> rl.Color:
@@ -20,27 +21,21 @@ def lerp_color(a: rl.Color, b: rl.Color, t: float) -> rl.Color:
 
 
 class StatusFade:
-  """ui_state.status as weights, stepped once per frame"""
-  def __init__(self):
-    self._weights: FirstOrderFilter | None = None
+  """ui_state.status as weights, faded with rc and stepped once per frame"""
+  def __init__(self, rc: float):
+    self._weights = FirstOrderFilter(np.zeros(len(STATUSES)), rc, 1 / gui_app.target_fps, initialized=False)
     self._frame = -1
     self._override_time = float('-inf')
 
   def _update(self) -> np.ndarray:
-    if self._weights is None or ui_state.sm.frame != self._frame:
+    if ui_state.sm.frame != self._frame:
       self._frame = ui_state.sm.frame
       now = rl.get_time()
       if ui_state.status == UIStatus.OVERRIDE:
         self._override_time = now
       held = ui_state.status == UIStatus.ENGAGED and now - self._override_time < OVERRIDE_HOLD
       status = UIStatus.OVERRIDE if held else ui_state.status
-      target = np.array([status == s for s in STATUSES], dtype=float)
-      if self._weights is None:
-        self._weights = FirstOrderFilter(target, STATUS_FADE_RC, 1 / gui_app.target_fps)
-      elif status == UIStatus.OVERRIDE:
-        self._weights.x = target
-      else:
-        self._weights.update(target)
+      self._weights.update(np.array([status == s for s in STATUSES], dtype=float))
     return self._weights.x
 
   def weight(self, status: UIStatus) -> float:
@@ -51,4 +46,23 @@ class StatusFade:
     return rl.Color(*np.round(rgba).astype(int).tolist())
 
 
-status_fade = StatusFade()
+def openpilot_available() -> bool:
+  """Whether openpilot could drive right now. The path and lead bars only show while it could.
+  Unlike selfdriveState.engageable, what the driver is doing (braking, steering, cruise buttons) doesn't count."""
+  sm, CP = ui_state.sm, ui_state.CP
+  if sm['selfdriveState'].enabled:
+    return True
+  if not ui_state.started or CP is None or CP.passive:  # passive is dashcam mode
+    return False
+
+  cs = sm['carState']
+  unavailable = (
+    sm['extrinsicsCalibration'].calStatus != log.ExtrinsicsCalibration.Status.calibrated,
+    cs.gearShifter in (GearShifter.park, GearShifter.neutral, GearShifter.reverse),
+    cs.parkingBrake,
+    cs.accFaulted,
+    cs.steerFaultPermanent,
+    cs.espDisabled,
+    cs.invalidLkasSetting,
+  )
+  return not any(unavailable)
