@@ -150,6 +150,10 @@ class ModelRenderer(Widget):
     self._torque_filter = FirstOrderFilter(0, 0.1, 1 / gui_app.target_fps)
     self._status = StatusFade(0.1)
     self._visible = 0.0
+    # MADS で disengage 中もパスを明るく描くかどうか。engage 中は直前の値を保つ
+    self._mads_visible = False
+    # MADS の切り替わりも公式と同じ速さでアニメーションさせる
+    self._mads_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
     self._available_filter = FirstOrderFilter(0.0, 0.1, 1 / gui_app.target_fps)
 
     # 3x3 car space -> rect-origin space (draw methods add rect.x/y)
@@ -254,11 +258,13 @@ class ModelRenderer(Widget):
         pass
 
     # while disengaged, lane lines fade out and the path narrows to half width and turns black
-    # フォーク: ステアリング常時オン(MADS)でクルーズ有効なら、エンゲージしていなくても薄くせずに描く
-    if steer_always != 0 and cruise_available:
-      self._visible = 1.0
-    else:
-      self._visible = 1 - self._status.weight(UIStatus.DISENGAGED)
+    # フォーク: ステアリング常時オン(MADS)でクルーズ有効なら、エンゲージしていなくても薄くせずに描く。
+    # MADS の状態は disengage 中だけ読み、engage 中は保つ。こうすると MADS から engage しても
+    # パスは明るいままで、アニメーションし直さない
+    if ui_state.status == UIStatus.DISENGAGED:
+      self._mads_visible = steer_always != 0 and cruise_available != 0
+    self._mads_filter.update(float(self._mads_visible))
+    self._visible = max(1 - self._status.weight(UIStatus.DISENGAGED), self._mads_filter.x)
     if abs((path_half_width := 0.45 * (1 + self._visible)) - self._path_half_width) > 1e-3:
       self._path_half_width, self._transform_dirty = path_half_width, True
     # the black path and lead bars hide while openpilot is unavailable, e.g. calibrating or dashcam mode
